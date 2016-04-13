@@ -1,0 +1,29 @@
+# ------------------------------ Modify for each run ------------------------------ #
+
+# Path to NextSeq directory
+nextseq_dir: /genesis/extscratch/shahlab/asteif/generate_fastq/nextseq_runs/160408_NS500668_0088_AH5NTNAFXX
+
+# Path where files will be output
+out_dir: /genesis/extscratch/shahlab/asteif/single_cell_indexing/alignment/AH5NTNAFXX
+
+# ------------------------------- No need to modify ------------------------------- #
+
+# Read group information (PU and LB are read from the NextSeq SampleSheet.csv file)
+read_group:  
+  # Platform
+  PL: illumina
+  
+  # Sequencing centre identifier (either BCCAGSC or UBCBRC)
+  CN: UBCBRC
+
+# Reference genome to align to in fasta format. Should be indexed by aligner and samtools
+ref_genome: /share/lustre/reference/genomes/GRCh37-lite.fa
+
+# Minimum base quality to count a read
+min_bqual: 20
+
+# Minimum mapping quality to count a read
+min_mqual: 20
+
+# Picard install directory
+picard_dir: /share/lustre/asteif/applications/Picard/picard-tools-1.141
