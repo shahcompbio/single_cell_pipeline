@@ -1,4 +1,4 @@
-# NextSeq single-cell alignment pipeline
+# NextSeq Single Cell Alignment Pipeline
 
 The NextSeq alignment pipeline is designed for multiplexed low-depth single-cell data in BCL format. It processes and aligns raw sequencing data and outputs both a table of sequencing metrics and some QC plots.
 
@@ -6,10 +6,10 @@ The NextSeq alignment pipeline is designed for multiplexed low-depth single-cell
 
 The only required input to the pipeline is a `config.yaml` file, which contains information necessary for the run.
 
-The `config.yaml` file specifies:
-* The NextSeq directory (which must include a `SampleSheet.csv` file)
-* An output directory
-* Several other paths and parameters which do not need to be modified for every run
+* The `config.yaml` file specifies:
+	* The NextSeq directory (which must include a `SampleSheet.csv` file)
+	* An output directory
+	* Several other paths and parameters which do not need to be modified for every run
 
 Note that the `SampleSheet.csv` file must be formatted according to specific requirements that go beyond Illumina's standards. Example `config.yaml` and `SampleSheet.csv` files are found in the `/alignment/templates` directory.
 
