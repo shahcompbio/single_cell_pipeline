@@ -22,6 +22,7 @@ Requirements:
 - Python 2.7
     - Andy Roth's 'pipelines' package
     - ruffus
+    - drmaa
     - yaml
     - pandas
     - matplotlib
@@ -80,11 +81,7 @@ bin_dir = os.path.join(cwd, 'bin')
 
 run_fastqc_script = os.path.join(bin_dir, 'run_fastqc.sh')
 
-run_trim_galore_script = os.path.join(bin_dir, 'run_trim_galore_paired.sh')
-
 run_bwa_script = os.path.join(bin_dir, 'run_bwa_paired_end.sh')
-
-run_metrics_pipeline_script = os.path.join(bin_dir, 'run_metrics_pipeline.sh')
 
 #=======================================================================================================================
 # Set System Paths
@@ -101,27 +98,28 @@ if args.install_dir is not None:
 #=======================================================================================================================
 # Pipeline
 #=======================================================================================================================
-def load_fastq_files_qc():
-    for sample_id in config['samples']:
-        fastq_file_1 = config['samples'][sample_id]['fastq_file_1']
 
-        fastqc_html_1 = os.path.join(config['out_dir'], 'metrics', 'fastqc', '{0}_R1.fastqc.html'.format(sample_id))
-        
-        fastqc_zip_1 = os.path.join(config['out_dir'], 'metrics', 'fastqc', '{0}_R1.fastqc.zip'.format(sample_id))
-        
-        yield [[fastq_file_1], [fastqc_html_1, fastqc_zip_1]]
-        
-        fastq_file_2 = config['samples'][sample_id]['fastq_file_2']
-        
-        fastqc_html_2 = os.path.join(config['out_dir'], 'metrics', 'fastqc', '{0}_R2.fastqc.html'.format(sample_id))
-        
-        fastqc_zip_2 = os.path.join(config['out_dir'], 'metrics', 'fastqc', '{0}_R2.fastqc.zip'.format(sample_id))
+sample_sheet = os.path.join(config['nextseq_dir'], 'SampleSheet.csv')
 
-        yield [[fastq_file_2], [fastqc_html_2, fastqc_zip_2]]
+if not sample_sheet:
+    # break with error
 
-@files(load_fastq_files_qc)
-def generate_fastqc_report(in_file, out_files):
-    make_parent_directory(out_files[0])
+def read_library_and_run_id():
+    #something
+    return library_id, run_id
+
+library_id, run_id = read_library_and_run_id(sample_sheet)
+
+def generate_fastq_file_pairs():        
+    #for each sample
+    #    yield [fastq_file_1, fastq_file_2]
+
+@originate(generate_fastq_file_pairs)
+def produce_fastqc_report(out_files):
+    # NOTE: check that the fastq report will not affect the nextseq directory!
+    # previously it was run on the trimmed fastq files, which were already in the
+    # output directory
+    make_parent_directory(config['out_dir'])
     
     cmd = 'sh'
     
@@ -134,43 +132,11 @@ def generate_fastqc_report(in_file, out_files):
     
     run_cmd(cmd, cmd_args)
 
-def load_fastq_files_trim():
-    for sample_id in config['samples']:
-        fastq_file_1 = config['samples'][sample_id]['fastq_file_1']
-        
-        fastq_file_2 = config['samples'][sample_id]['fastq_file_2']
+@originate(generate_fastq_file_pairs)
+def run_bcl2fastq(out_files):
+    pass
 
-        trim_file_1 = os.path.join(config['out_dir'], 'fastq_trim', '{0}_R1.fq.gz'.format(sample_id))
-        
-        trim_file_2 = os.path.join(config['out_dir'], 'fastq_trim', '{0}_R2.fq.gz'.format(sample_id))
-
-        yield [[fastq_file_1, fastq_file_2], [trim_file_1, trim_file_2]]
-
-@follows(generate_fastqc_report)
-@files(load_fastq_files_trim)
-def trim_fastq_files(in_files, out_files):
-    make_parent_directory(out_files[0])
-    
-    metrics_out_dir = os.path.dirname(out_files[0]).replace('/fastq_trim', '/metrics/trim_galore')
-    
-    make_directory(metrics_out_dir)
-    
-    cmd = 'sh'
-    
-    cmd_args = [
-                run_trim_galore_script,
-                in_files[0], 
-                in_files[1], 
-                'CTGTCTCTTATACACATCTCCGAGCCCACGAGAC', 
-                'CTGTCTCTTATACACATCTGACGCTGCCGACGA', 
-                metrics_out_dir,
-                out_files[0],
-                out_files[1]
-                ]
-    
-    run_cmd(cmd, cmd_args)
-
-@transform(trim_fastq_files, regex('(.*)/fastq_trim/(.*)\_R\d\.fq\.gz'), r'\1/tmp/\2.bam')
+@transform(run_bcl2fastq, regex('(.*)/fastq_trim/(.*)\_R\d\.fq\.gz'), r'\1/tmp/\2.bam')
 def align_fastq_files(in_files, out_file):
     make_parent_directory(out_file)
     
@@ -232,72 +198,7 @@ def sort_bam_file(bam_file, sorted_bam_file):
     
     shutil.move(tmp_file, sorted_bam_file)
 
-@transform(sort_bam_file, suffix('.bam'), '.bam.bai')
-def index_tmp_bam_file(bam_file, bai_file):
-    cmd = 'samtools'
-    
-    cmd_args = ['index', bam_file]
-    
-    run_cmd(cmd, cmd_args)
-
-@follows(index_tmp_bam_file)
-@collate(sort_bam_file, regex('(.*)/.*.sorted.bam$'), r'\1/{0}.realign.intervals'.format(config['analysis_id']))
-def find_realign_intervals(in_files, out_file):
-    jar_file = os.path.join(config['gatk_dir'], 'GenomeAnalysisTK.jar')
-    
-    cmd = 'java'
-    
-    cmd_args = [
-                '-Xmx4g',
-                '-jar',
-                jar_file,
-                '-T ', 'RealignerTargetCreator',
-                '-R ', config['ref_genome'],
-                '-o ', out_file
-                ]
-    
-    for in_file in in_files:
-        cmd_args.append('-I')
-        cmd_args.append(in_file)
-    
-    run_cmd(cmd, cmd_args, max_mem=20)
-
-@follows(find_realign_intervals)
-@collate(sort_bam_file, regex('(.*)/.*.sorted.bam$'), r'\1/{0}.realign.timestamp'.format(config['analysis_id']))
-def realign_bam_files(in_files, out_file):
-    jar_file = os.path.join(config['gatk_dir'], 'GenomeAnalysisTK.jar')
-    
-    interval_file = os.path.join(config['out_dir'], 'tmp', '{0}.realign.intervals'.format(config['analysis_id']))
-    
-    cmd = 'java'
-    
-    cmd_args = [
-                '-Xmx4g',
-                '-jar',
-                jar_file,
-                '-T', 'IndelRealigner',
-                '-R', config['ref_genome'],
-                '-targetIntervals', interval_file,
-                '-nWayOut', '.realigned.bam'
-                ]
-    
-    for in_file in list(in_files):
-        cmd_args.append('-I')
-        cmd_args.append(in_file)
-    
-    run_cmd(cmd, cmd_args, max_mem=20)
-    
-    open(out_file, 'a').close()
-
-@follows(realign_bam_files)
-@transform(sort_bam_file, suffix('.sorted.bam'), '.sorted.realigned.bam')
-def move_realigned_bam_files(in_file, out_file):
-    realign_bams = os.path.join(config['out_dir'], os.path.basename(out_file)[:-1] + '*')
-    
-    for file in glob.glob(realign_bams):
-        shutil.move(file, 'tmp/')
-
-@transform(move_realigned_bam_files, regex('(.*)/tmp/(.*)\.sorted.realigned.bam'), r'\1/bam/\2.sorted.realigned.markdups.bam')
+@transform(sort_bam_file, regex('(.*)/tmp/(.*)\.sorted.realigned.bam'), r'\1/bam/\2.sorted.realigned.markdups.bam')
 def markdups_bam_file(bam_file, markdups_bam_file):
     make_parent_directory(markdups_bam_file)
     
@@ -326,33 +227,7 @@ def markdups_bam_file(bam_file, markdups_bam_file):
     run_cmd(cmd, cmd_args, max_mem=20)
 
 @follows(markdups_bam_file)
-@transform(move_realigned_bam_files, regex('(.*)/tmp/(.*)\.sorted.realigned.bam'), r'\1/bam/\2.sorted.realigned.rmdups.bam')
-def rmdups_bam_file(sorted_bam_file, rmdups_bam_file):
-    sample_id = os.path.basename(sorted_bam_file).split('.')[0]
-
-    metrics_file = os.path.join(config['out_dir'], 'metrics', 'duplication_metrics', '{0}.rmdups.txt'.format(sample_id))
-    make_parent_directory(metrics_file)
-    
-    jar_file = os.path.join(config['picard_dir'], 'MarkDuplicates.jar')
-    
-    cmd = 'java'
-    
-    cmd_args = [
-                '-Xmx4g',
-                '-jar',
-                jar_file,
-                'INPUT=' + sorted_bam_file, 
-                'OUTPUT=' + rmdups_bam_file, 
-                'METRICS_FILE=' + metrics_file,
-                'REMOVE_DUPLICATES=True', 
-                'ASSUME_SORTED=True',
-                'VALIDATION_STRINGENCY=LENIENT'
-                ]
-    
-    run_cmd(cmd, cmd_args, max_mem=20)
-
-@follows(rmdups_bam_file)
-@transform([markdups_bam_file, rmdups_bam_file], suffix('.bam'), '.bam.bai')
+@transform(markdups_bam_file, suffix('.bam'), '.bam.bai')
 def index_bam_file(bam_file, bai_file):
     cmd = 'samtools'
     
