@@ -6,9 +6,10 @@ The NextSeq alignment pipeline is designed for multiplexed low-depth single-cell
 
 The only required input to the pipeline is a `config.yaml` file, which contains information necessary for the run.
 
-### Config
-
-The `config.yaml` file specifies a NextSeq directory (which must include a `SampleSheet.csv` file) and an output directory, as well as several other paths and parameters which do not need to be modified for every run. 
+The `config.yaml` file specifies:
+* The NextSeq directory (which must include a `SampleSheet.csv` file)
+* An output directory
+* Several other paths and parameters which do not need to be modified for every run
 
 Note that the `SampleSheet.csv` file must be formatted according to specific requirements that go beyond Illumina's standards. Example `config.yaml` and `SampleSheet.csv` files are found in the `/alignment/templates` directory.
 
@@ -107,7 +108,7 @@ After installation, please follow the steps below for each pipeline run:
 
 * If the index sequences are specified incorrectly in `SampleSheet.csv`, the pipeline will not be aware of this and will proceed to the alignment steps. If you suspect that demultiplexing was not successful, you can check the file sizes with
 
-	du -sh /genesis/extscratch/shahlab/<your_user_id>/<some_directory>/<run_id>/Data/Intensities/BaseCalls/*.fastq.gz
+		du -sh /genesis/extscratch/shahlab/<your_user_id>/<some_directory>/<run_id>/Data/Intensities/BaseCalls/*.fastq.gz
 
 * File sizes should be in Mb for all non-NTC samples, and in Kb for NTC samples. It is normal for the Undetermined file to be larger than any given single-cell file
 * If you find that demultiplexing was indeed unsuccessful, you MUST do the following:
