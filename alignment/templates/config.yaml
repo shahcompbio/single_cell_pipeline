@@ -25,5 +25,5 @@ min_bqual: 20
 # Minimum mapping quality to count a read
 min_mqual: 20
 
-# Picard install directory
-picard_dir: /share/lustre/asteif/applications/Picard/picard-tools-1.141
+# Picard jar file (version 1.141 or higher)
+picard_jar: /share/lustre/asteif/applications/Picard/picard-tools-1.141/picard.jar

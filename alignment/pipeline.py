@@ -2,14 +2,9 @@
 Pipeline for alignment and QC of NextSeq sequencing data.
 @author: Adi Steif
 
-Inputs:
-- Config file in .yaml format
-    - Includes path to NextSeq directory, which must contain a SampleSheet.csv file
-    - Note SampleSheet.csv must follow specific conventions beyond Illumina's requirements
-
 Steps:
-- Convert BCl files to demultiplexed FASTQ format
-- Generate FastQC report
+- Convert BCL files to demultiplexed FASTQ format
+- Produce FastQC report
 - Align FASTQ files with BWA (include read group tags)
 - Sort BAM files with Picard
 - Mark duplicate reads with Picard
@@ -18,22 +13,9 @@ Steps:
 - Generate metric table
 - Output basic QC plots
 
-Requirements:
-- Python 2.7
-    - Andy Roth's 'pipelines' package
-    - ruffus
-    - drmaa
-    - yaml
-    - pandas
-    - matplotlib
-    - seaborn
-- Illumina's bcl2fastq
-- FastQC
-- Samtools
-- BWA
-- Picard
-'''
+Notes: does NOT include indel realignment!
 
+'''
 from pipelines.io import make_directory, make_parent_directory
 from ruffus import *
 from ruffus.ruffus_utility import CHECKSUM_FILE_TIMESTAMPS
@@ -200,8 +182,6 @@ def align_fastq_files(in_files, out_file):
 
 @transform(align_fastq_files, suffix('.bam'), '.sorted.bam')
 def sort_bam_file(bam_file, sorted_bam_file):
-    jar_file = os.path.join(config['picard_dir'], 'picard.jar')
-    
     tmp_file = sorted_bam_file + '.tmp'
     
     cmd = 'java'
@@ -209,7 +189,7 @@ def sort_bam_file(bam_file, sorted_bam_file):
     cmd_args = [
                 '-Xmx16g',
                 '-jar',
-                jar_file,
+                config['picard_jar'],
                 'SortSam',
                 'INPUT=' + bam_file, 
                 'OUTPUT=' + tmp_file,
@@ -228,20 +208,21 @@ def markdups_bam_file(bam_file, markdups_bam_file):
     
     sample_id = os.path.basename(bam_file).split('.')[0]
     
-    metrics_file = os.path.join(config['out_dir'], 'metrics', 'duplication_metrics', '{0}.markdups.txt'.format(sample_id))
+    metrics_file = os.path.join(config['out_dir'], 
+                                'metrics', 
+                                'duplication_metrics', 
+                                '{0}.markdups.txt'.format(sample_id))
     
     make_parent_directory(metrics_file)
     
     tmp_file = markdups_bam_file + '.tmp'
-    
-    jar_file = os.path.join(config['picard_dir'], 'picard.jar')
     
     cmd = 'java'
     
     cmd_args = [
                 '-Xmx4g',
                 '-jar',
-                jar_file,
+                config['picard_jar'],
                 'MarkDuplicates', 
                 'INPUT=' + bam_file, 
                 'OUTPUT=' + tmp_file, 
@@ -264,26 +245,103 @@ def index_bam_file(bam_file, bai_file):
     run_cmd(cmd, cmd_args)
 
 @follows(index_bam_file)
-@collate([markdups_bam_file, rmdups_bam_file], regex('(.*)/bam/.*bam$'), r'\1/metrics/summary/{0}.metrics_table.csv'.format(config['analysis_id']))
-def run_metrics_pipeline(bam_files, metrics_file):
+@transform(markdups_bam_file, regex(r'(.*)/bam/(.*)\.sorted\.markdups\.bam'), 
+                                    r'\1/metrics/flagstat_metrics/\2\.flagstat')
+def extract_flagstat_metrics(bam_file, flagstat_file):
+    make_parent_directory(flagstat_file)
+    
     cmd = 'sh'
     
     cmd_args = [
-                run_metrics_pipeline_script,
-                args.install_dir,
-                args.config_file, 
-                args.num_cpus, 
-                args.mode
+                run_samtools_flagstat_script, 
+                bam_file, 
+                flagstat_file
                 ]
     
     run_cmd(cmd, cmd_args)
 
-@follows(run_metrics_pipeline)
+
+@follows(index_bam_file)
+@transform(markdups_bam_file, regex(r'(.*)/bam/(.*)\.sorted\.markdups\.bam'), 
+                                    r'\1/metrics/wgs_metrics/\2\.txt')
+def extract_wgs_metrics(bam_file, metrics_file):
+    make_parent_directory(metrics_file)
+    
+    # note this Picard command doesn't run if the ref genome .fai file
+    # is in the same directory as the reference genome...
+    #ref_genome = config['ref_genome'].replace('ref_genomes', 'ref_picard')
+    #jar_file = os.path.join(config['picard_dir'], 'CollectWgsMetrics.jar')
+    
+    cmd = 'java'
+    
+    cmd_args = [
+                '-Xmx4g',
+                '-jar',
+                config['picard_jar'],
+                'CollectWgsMetrics', 
+                'INPUT=' + bam_file, 
+                'OUTPUT=' + metrics_file, 
+                'REFERENCE_SEQUENCE=' + config['ref_genome'], 
+                'MINIMUM_BASE_QUALITY=' + str(config['min_bqual']), 
+                'MINIMUM_MAPPING_QUALITY=' + str(config['min_mqual']), 
+                'COVERAGE_CAP=500', 
+                'VALIDATION_STRINGENCY=LENIENT'
+                ]
+    
+    if 'count_unpaired' in config.keys():
+        cmd_args.append('COUNT_UNPAIRED=True')
+    
+    run_cmd(cmd, cmd_args, max_mem=10)
+
+@follows(index_bam_file)
+@transform(markdups_bam_file, regex(r'(.*)/bam/(.*)\.sorted\.markdups\.bam'), 
+                                    r'\1/metrics/insert_metrics/\2\.txt')
+def extract_insert_metrics(bam_file, metrics_file):
+    make_parent_directory(metrics_file)
+    
+    hist_file = metrics_file.replace('.txt', '.pdf')
+    
+    cmd = 'java'
+    
+    cmd_args = [
+                '-Xmx4g',
+                '-jar',
+                config['picard_jar'], 
+                'CollectInsertSizeMetrics',
+                'INPUT=' + bam_file, 
+                'OUTPUT=' + metrics_file, 
+                'HISTOGRAM_FILE=' + hist_file, 
+                'ASSUME_SORTED=True',
+                'VALIDATION_STRINGENCY=LENIENT'
+                ]
+    
+    run_cmd(cmd, cmd_args, max_mem=10)
+
+@follows(extract_flagstat_metrics, extract_wgs_metrics, extract_insert_metrics)
+@collate(markdups_bam_file, regex(r'(.*)/bam/.*bam'), 
+                                  r'\1/metrics/summary/{0}_{1}.metrics.csv'.format(library_id, run_id))
+def extract_metrics_table(bam_files, out_file):
+    make_parent_directory(out_file)
+    
+    cmd = 'python'
+    
+    cmd_args = [
+                extract_metrics_table_script,
+                out_file
+                ]
+    
+    run_cmd(cmd, cmd_args)
+
+'''
+ADD PLOTS BASED ON METRICS TABLE AND SAMPLE SHEET!
+'''
+
+@follows(extract_metrics_table)
 def end():
     pass
 
 #=======================================================================================================================
-# Run pipeline
+# Run Pipeline
 #=======================================================================================================================    
 if args.mode in ['cluster', 'local']:
     if args.mode == 'cluster':
@@ -303,7 +361,6 @@ if args.mode in ['cluster', 'local']:
     run_cmd = job_manager.run_job
     
     try:
-        # pipeline_run(end, multiprocess=args.num_cpus, use_multi_threading=True)
         pipeline_run(end, multithread=args.num_cpus, checksum_level=CHECKSUM_FILE_TIMESTAMPS)
     
     finally:
