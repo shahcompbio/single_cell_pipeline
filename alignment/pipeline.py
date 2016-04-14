@@ -66,11 +66,28 @@ parser.add_argument('--install_dir', default=None,
 
 args = parser.parse_args()
 
-fh = open(args.config_file)
+#=======================================================================================================================
+# Read Input Files
+#=======================================================================================================================
+try:
+    with open(args.config_file) as file:
+        config = yaml.load(file)
+        
+except IOError as e:
+    print 'Unable to open config file: {0}'.format(args.config_file)
 
-config = yaml.load(fh)
+sample_sheet_file = os.path.join(config['nextseq_dir'], 'SampleSheet.csv')
 
-fh.close()
+try:
+    with open(sample_sheet_file) as file:
+        lines = [x.strip('\n').strip(',') for x in file.readlines()]
+    
+    run_id = [s.split(',')[1] for s in lines if 'Experiment Name,' in s][0]
+    
+    library_id = [s.split(',')[1] for s in lines if 'Description,' in s][0]
+    
+except IOError as e:
+    print 'Unable to open file \'SampleSheet.csv\' in directory: {0}'.format(config['nextseq_dir'])
 
 #=======================================================================================================================
 # Scripts
@@ -98,28 +115,37 @@ if args.install_dir is not None:
 #=======================================================================================================================
 # Pipeline
 #=======================================================================================================================
-
-sample_sheet = os.path.join(config['nextseq_dir'], 'SampleSheet.csv')
-
-if not sample_sheet:
-    # break with error
-
-def read_library_and_run_id():
-    #something
-    return library_id, run_id
-
-library_id, run_id = read_library_and_run_id(sample_sheet)
-
-def generate_fastq_file_pairs():        
-    #for each sample
-    #    yield [fastq_file_1, fastq_file_2]
+def generate_fastq_file_pairs():
+    start_index = lines.index('[Data]')+2
+    
+    num_samples = len(lines[start_index:])
+    
+    fastq_dir = os.path.join(config['nextseq_dir'], 'Data', 'Intensities', 'BaseCalls')
+    
+    for i, line in zip(range(num_samples), lines[start_index:]):
+        sample_id = line.split(',')[0]
+        
+        fastq_file_1 = os.path.join(fastq_dir, '{0}_S{1}_R1_001.fastq.gz'.format(sample_id, str(i+1)))
+        fastq_file_2 = os.path.join(fastq_dir, '{0}_S{1}_R2_001.fastq.gz'.format(sample_id, str(i+1)))
+        
+        yield [fastq_file_1, fastq_file_2]
 
 @originate(generate_fastq_file_pairs)
-def produce_fastqc_report(out_files):
-    # NOTE: check that the fastq report will not affect the nextseq directory!
-    # previously it was run on the trimmed fastq files, which were already in the
-    # output directory
-    make_parent_directory(config['out_dir'])
+def demultiplex_fastq_files(out_files):
+    cmd = 'bcl2fastq'
+    
+    cmd_args = [
+                '--no-lane-splitting', 
+                '--runfolder-dir ' + config['nextseq_dir'], 
+                ]
+    
+    run_cmd(cmd, cmd_args)
+
+@subdivide(demultiplex_fastq_files, regex(r'.*/BaseCalls/(.*)_S[0-9]+\_R(\d)\_001\.fastq\.gz'), 
+                                         [r'{0}/metrics/fastqc/\1_R\2.fastqc.html'.format(config['out_dir']), 
+                                          r'{0}/metrics/fastqc/\1_R\2.fastqc.zip'.format(config['out_dir'])])
+def produce_fastqc_report(in_file, out_files):
+    make_parent_directory(out_files[0])
     
     cmd = 'sh'
     
@@ -132,11 +158,8 @@ def produce_fastqc_report(out_files):
     
     run_cmd(cmd, cmd_args)
 
-@originate(generate_fastq_file_pairs)
-def run_bcl2fastq(out_files):
-    pass
-
-@transform(run_bcl2fastq, regex('(.*)/fastq_trim/(.*)\_R\d\.fq\.gz'), r'\1/tmp/\2.bam')
+@transform(demultiplex_fastq_files, regex(r'.*/BaseCalls/(.*)_S[0-9]+\_R\d\_001\.fastq\.gz'), 
+                                          r'{0}/tmp/\1.bam'.format(config['out_dir']))
 def align_fastq_files(in_files, out_file):
     make_parent_directory(out_file)
     
@@ -155,12 +178,12 @@ def align_fastq_files(in_files, out_file):
     if 'read_group' in config.keys():
         sample_id = os.path.basename(out_file).split('.')[0]
         
-        read_group = ('@RG\tID:' + str(config['read_group']['LB']) + '_' 
+        read_group = ('@RG\tID:' + str(library_id) + '_' 
                                  + str(sample_id) + '_' 
-                                 + str(config['read_group']['PU']) + 
+                                 + str(run_id) + 
                          '\tPL:' + str(config['read_group']['PL']) +
-                         '\tPU:' + str(config['read_group']['PU']) +
-                         '\tLB:' + str(config['read_group']['LB']) + '_' + str(sample_id) +
+                         '\tPU:' + str(run_id) +
+                         '\tLB:' + str(library_id) + '_' + str(sample_id) +
                          '\tSM:' + str(sample_id) +
                          '\tCN:' + str(config['read_group']['CN']))
         
@@ -177,7 +200,7 @@ def align_fastq_files(in_files, out_file):
 
 @transform(align_fastq_files, suffix('.bam'), '.sorted.bam')
 def sort_bam_file(bam_file, sorted_bam_file):
-    jar_file = os.path.join(config['picard_dir'], 'SortSam.jar')
+    jar_file = os.path.join(config['picard_dir'], 'picard.jar')
     
     tmp_file = sorted_bam_file + '.tmp'
     
@@ -187,6 +210,7 @@ def sort_bam_file(bam_file, sorted_bam_file):
                 '-Xmx16g',
                 '-jar',
                 jar_file,
+                'SortSam',
                 'INPUT=' + bam_file, 
                 'OUTPUT=' + tmp_file,
                 'SORT_ORDER=coordinate',
@@ -198,17 +222,19 @@ def sort_bam_file(bam_file, sorted_bam_file):
     
     shutil.move(tmp_file, sorted_bam_file)
 
-@transform(sort_bam_file, regex('(.*)/tmp/(.*)\.sorted.realigned.bam'), r'\1/bam/\2.sorted.realigned.markdups.bam')
+@transform(sort_bam_file, regex('(.*)/tmp/(.*)\.sorted.bam'), r'\1/bam/\2.sorted.markdups.bam')
 def markdups_bam_file(bam_file, markdups_bam_file):
     make_parent_directory(markdups_bam_file)
     
     sample_id = os.path.basename(bam_file).split('.')[0]
-
+    
     metrics_file = os.path.join(config['out_dir'], 'metrics', 'duplication_metrics', '{0}.markdups.txt'.format(sample_id))
     
     make_parent_directory(metrics_file)
     
-    jar_file = os.path.join(config['picard_dir'], 'MarkDuplicates.jar')
+    tmp_file = markdups_bam_file + '.tmp'
+    
+    jar_file = os.path.join(config['picard_dir'], 'picard.jar')
     
     cmd = 'java'
     
@@ -216,8 +242,9 @@ def markdups_bam_file(bam_file, markdups_bam_file):
                 '-Xmx4g',
                 '-jar',
                 jar_file,
+                'MarkDuplicates', 
                 'INPUT=' + bam_file, 
-                'OUTPUT=' + markdups_bam_file, 
+                'OUTPUT=' + tmp_file, 
                 'METRICS_FILE=' + metrics_file,
                 'REMOVE_DUPLICATES=False', 
                 'ASSUME_SORTED=True',
@@ -225,8 +252,9 @@ def markdups_bam_file(bam_file, markdups_bam_file):
                 ]
     
     run_cmd(cmd, cmd_args, max_mem=20)
+    
+    shutil.move(tmp_file, markdups_bam_file)
 
-@follows(markdups_bam_file)
 @transform(markdups_bam_file, suffix('.bam'), '.bam.bai')
 def index_bam_file(bam_file, bai_file):
     cmd = 'samtools'
