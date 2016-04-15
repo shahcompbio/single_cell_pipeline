@@ -82,6 +82,10 @@ run_fastqc_script = os.path.join(bin_dir, 'run_fastqc.sh')
 
 run_bwa_script = os.path.join(bin_dir, 'run_bwa_paired_end.sh')
 
+run_samtools_flagstat_script = os.path.join(bin_dir, 'run_samtools_flagstat.sh')
+
+extract_metrics_table_script = os.path.join(bin_dir, 'extract_metrics_table.py')
+
 #=======================================================================================================================
 # Set System Paths
 #=======================================================================================================================
