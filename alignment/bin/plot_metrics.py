@@ -97,19 +97,24 @@ labels[:] = np.nan
 for i in range(len(df)):
     row_index = int(df.ix[i, 'sample_well'].split('_')[0].replace('R', ''))
     col_index = int(df.ix[i, 'sample_well'].split('_')[1].replace('C', ''))
-    value = str(df.ix[i, 'description'])
+    value = int(df.ix[i, 'description'])
     labels[row_index-1, col_index-1] = value
 
 
 
 # cheat to get labels that are different from the colour value!
-ax = sns.heatmap(labels, linewidths=0.2, annot=True, cmap=None, xticklabels=False, yticklabels=False, cbar=False, annot_kws={'size': 8}, alpha=0)
+fig = plt.figure(figsize=(7,7))
+
+ax = sns.heatmap(labels, linewidths=0.6, square=True, annot=True, cmap=None, xticklabels=False, yticklabels=False, cbar=False, annot_kws={'size': 6}, alpha=0, fmt='.3g')
 for text in ax.texts:
     text.set_color('black')
 
-sns.heatmap(matrix, linewidths=0.2, cbar=False)
+sns.heatmap(matrix, linewidths=0.6, square=True, cbar=False)
+plt.tight_layout()
+plt.savefig(args.out_file)
+plt.close()
 
-
+# TODO: make the index values on the plot start from 1!!!
 
 
 def main():
@@ -123,11 +128,11 @@ df = samples.merge(metrics, on='sample_id', how='left')
 sns.set(context='talk', 
         style='darkgrid', 
         font='Helvetica',
-        rc={'axes.titlesize': 8,
-            'axes.labelsize': 8, 
-            'xtick.labelsize': 8,
-            'ytick.labelsize': 8,
-            'legend.fontsize': 8})
+        rc={'axes.titlesize': 6,
+            'axes.labelsize': 6, 
+            'xtick.labelsize': 6,
+            'ytick.labelsize': 6,
+            'legend.fontsize': 6})
 
 if __name__ == '__main__':
     main()
