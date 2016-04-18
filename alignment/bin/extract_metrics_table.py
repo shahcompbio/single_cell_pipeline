@@ -1,10 +1,6 @@
-"""
-Extract metrics table for multiple samples.
-
-TODO:
-- Option to also output df_hist for wgs metrics and insert size metrics
-- Replace out_file with out_basename, output three files?
-"""
+'''
+Extract metrics table.
+'''
 
 from __future__ import division
 from collections import OrderedDict
@@ -39,8 +35,8 @@ def extract_wgs_metrics(dir):
     metrics = pd.DataFrame()
     
     for file in os.listdir(dir):
-        if file.endswith('.rmdups.txt'):
-            sample_id = file.split(".")[0]
+        if file.endswith('.txt'):
+            sample_id = file.split('.')[0]
             
             df = pd.read_table(os.path.join(dir, file), sep='\t', header=6, skipfooter=1, engine='python')
             
@@ -74,8 +70,8 @@ def extract_insert_metrics(dir):
     metrics = pd.DataFrame()
     
     for file in os.listdir(dir):
-        if file.endswith('.rmdups.txt'):
-            sample_id = file.split(".")[0]
+        if file.endswith('.txt'):
+            sample_id = file.split('.')[0]
             
             df = pd.read_table(os.path.join(dir, file), sep='\t', header=6, skipfooter=1, engine='python')
             
@@ -105,8 +101,8 @@ def extract_duplication_metrics(dir):
     metrics = pd.DataFrame()
     
     for file in os.listdir(dir):
-        if file.endswith('.markdups.txt'):
-            sample_id = file.split(".")[0]
+        if file.endswith('.txt'):
+            sample_id = file.split('.')[0]
             
             df = pd.read_table(os.path.join(dir, file), sep='\t', header=6, skipfooter=1, engine='python')
             
@@ -145,49 +141,14 @@ def extract_duplication_metrics(dir):
     
     return metrics
 
-def extract_alignment_metrics(dir):
-    ''' Extract total reads with and without duplicates '''
-    
-    metrics_with_duplicates = pd.DataFrame()
-    metrics_without_duplicates = pd.DataFrame()
-    
-    for file in os.listdir(dir):
-        if file.endswith('.markdups.txt'):
-            sample_id = file.split(".")[0]
-            
-            df = pd.read_table(os.path.join(dir, file), sep='\t', header=6, skipfooter=2, engine='python')
-            df.columns = [x.lower() for x in df.columns]
-            
-            total_reads = df.ix[2, 'total_reads']
-            
-            sample_metrics = pd.DataFrame({'sample_id': [sample_id], 'total_reads_with_duplicates': [total_reads]})
-            
-            metrics_with_duplicates = metrics_with_duplicates.append(sample_metrics)
-            
-        elif file.endswith('.rmdups.txt'):
-            sample_id = file.split(".")[0]
-            
-            df = pd.read_table(os.path.join(dir, file), sep='\t', header=6, skipfooter=2, engine='python')
-            df.columns = [x.lower() for x in df.columns]
-            
-            total_reads = df.ix[2, 'total_reads']
-            
-            sample_metrics = pd.DataFrame({'sample_id': [sample_id], 'total_reads_without_duplicates': [total_reads]})
-            
-            metrics_without_duplicates = metrics_without_duplicates.append(sample_metrics)
-    
-    metrics = pd.merge(metrics_with_duplicates, metrics_without_duplicates, on='sample_id')
-        
-    return metrics
-
 def extract_flagstat_metrics(dir):
     ''' Extract basic flagstat metrics '''
     
     metrics = pd.DataFrame()
     
     for file in os.listdir(dir):
-        if file.endswith('.markdups.flagstat'):
-            sample_id = file.split(".")[0]
+        if file.endswith('.txt'):
+            sample_id = file.split('.')[0]
             
             df = pd.read_table(os.path.join(dir, file), sep=r'\s\+\s0\s', header=None, names=['value', 'type'], engine='python')
             
@@ -210,9 +171,8 @@ def extract_flagstat_metrics(dir):
 #=======================================================================================================================
 
 '''
-NOTES: 
+NOTE: 
 - All duplicate reads are mapped, since the duplicate flagging is done based on mapping coordinates!
-- Alignment metrics not useful, as key information is contained in flagstat metrics
 
 args.library_id = 'PX0218'
 args.metrics_dir = '/share/lustre/asteif/projects/single_cell_indexing/alignment/PX0218/9_cycles/metrics'
@@ -224,13 +184,11 @@ args.out_file = '/share/scratch/asteif_temp/single_cell_indexing/merge/test_gatk
 '''
 
 def main():
-    # alignment_metrics_dir = os.path.join(args.metrics_dir, 'alignment_metrics')
     duplication_metrics_dir = os.path.join(args.metrics_dir, 'duplication_metrics')
     flagstat_metrics_dir = os.path.join(args.metrics_dir, 'flagstat_metrics')
     insert_metrics_dir = os.path.join(args.metrics_dir, 'insert_metrics')
     wgs_metrics_dir = os.path.join(args.metrics_dir, 'wgs_metrics')
     
-    # alignment_metrics = extract_alignment_metrics(alignment_metrics_dir)    
     duplication_metrics = extract_duplication_metrics(duplication_metrics_dir)
     flagstat_metrics = extract_flagstat_metrics(flagstat_metrics_dir)
     wgs_metrics = extract_wgs_metrics(wgs_metrics_dir)
@@ -239,6 +197,7 @@ def main():
                     duplication_metrics, on='sample_id').merge(
                     wgs_metrics, on='sample_id')
     
+    # runs with single-end reads will not have insert metrics
     if len(os.listdir(insert_metrics_dir)) > 0:
         insert_metrics = extract_insert_metrics(insert_metrics_dir)
         

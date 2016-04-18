@@ -102,34 +102,77 @@ if args.install_dir is not None:
 # Pipeline
 #=======================================================================================================================
 def generate_fastq_file_pairs():
+    '''
+    Note: could modify this to read the 'Project' for each cell, and make the output fastq
+    directory take this into account (e.g. fastq/DLP/sample*.fastq.gz). This will allow 
+    users to put libraries for multiple projects on a single run.
+    '''
     start_index = lines.index('[Data]')+2
     
     num_samples = len(lines[start_index:])
     
-    fastq_dir = os.path.join(config['nextseq_dir'], 'Data', 'Intensities', 'BaseCalls')
-    
     for i, line in zip(range(num_samples), lines[start_index:]):
         sample_id = line.split(',')[0]
         
-        fastq_file_1 = os.path.join(fastq_dir, '{0}_S{1}_R1_001.fastq.gz'.format(sample_id, str(i+1)))
-        fastq_file_2 = os.path.join(fastq_dir, '{0}_S{1}_R2_001.fastq.gz'.format(sample_id, str(i+1)))
+        fastq_file_1 = os.path.join(config['out_dir'], 'fastq', '{0}_S{1}_R1_001.fastq.gz'.format(sample_id, str(i+1)))
+        fastq_file_2 = os.path.join(config['out_dir'], 'fastq', '{0}_S{1}_R2_001.fastq.gz'.format(sample_id, str(i+1)))
         
         yield [fastq_file_1, fastq_file_2]
 
-@originate(generate_fastq_file_pairs)
-def demultiplex_fastq_files(out_files):
+def generate_fastq_file_list():
+    fastq_list = []
+    
+    for files in generate_fastq_file_pairs():
+        fastq_list.append(files)
+    
+    yield [config['nextseq_dir'], fastq_list]
+
+def generate_fastq_files_qc():
+    for files in generate_fastq_file_pairs():
+        fastq_file_1, fastq_file_2 = files
+        
+        sample_id = os.path.basename(fastq_file_1).split('_')[0]
+        
+        fastqc_html_1 = os.path.join(config['out_dir'], 'metrics', 'fastqc', '{0}_R1.fastqc.html'.format(sample_id))
+            
+        fastqc_zip_1 = os.path.join(config['out_dir'], 'metrics', 'fastqc', '{0}_R1.fastqc.zip'.format(sample_id))
+            
+        yield [[fastq_file_1], [fastqc_html_1, fastqc_zip_1]]
+        
+        fastqc_html_2 = os.path.join(config['out_dir'], 'metrics', 'fastqc', '{0}_R2.fastqc.html'.format(sample_id))
+        
+        fastqc_zip_2 = os.path.join(config['out_dir'], 'metrics', 'fastqc', '{0}_R2.fastqc.zip'.format(sample_id))
+
+        yield [[fastq_file_2], [fastqc_html_2, fastqc_zip_2]]
+
+def generate_fastq_files_align():
+    for files in generate_fastq_file_pairs():
+        fastq_file_1, fastq_file_2 = files
+        
+        sample_id = os.path.basename(fastq_file_1).split('_')[0]
+        
+        bam_file = os.path.join(config['out_dir'], 'tmp', '{0}.bam'.format(sample_id))
+
+        yield [[fastq_file_1, fastq_file_2], bam_file]
+
+@files(generate_fastq_file_list)
+def demultiplex_fastq_files(nextseq_dir, out_files):
+    out_dir = os.path.join(config['out_dir'], 'fastq')
+    
+    make_parent_directory(out_dir)
+    
     cmd = 'bcl2fastq'
     
     cmd_args = [
-                '--no-lane-splitting', 
-                '--runfolder-dir ' + config['nextseq_dir'], 
+                '--runfolder-dir=' + nextseq_dir, 
+                '--output-dir=' + out_dir, 
+                '--no-lane-splitting'
                 ]
     
-    run_cmd(cmd, cmd_args)
+    run_cmd(cmd, cmd_args, max_mem=34)
 
-@subdivide(demultiplex_fastq_files, regex(r'.*/BaseCalls/(.*)_S[0-9]+\_R(\d)\_001\.fastq\.gz'), 
-                                         [r'{0}/metrics/fastqc/\1_R\2.fastqc.html'.format(config['out_dir']), 
-                                          r'{0}/metrics/fastqc/\1_R\2.fastqc.zip'.format(config['out_dir'])])
+@follows(demultiplex_fastq_files)
+@files(generate_fastq_files_qc)
 def produce_fastqc_report(in_file, out_files):
     make_parent_directory(out_files[0])
     
@@ -144,8 +187,8 @@ def produce_fastqc_report(in_file, out_files):
     
     run_cmd(cmd, cmd_args)
 
-@transform(demultiplex_fastq_files, regex(r'.*/BaseCalls/(.*)_S[0-9]+\_R\d\_001\.fastq\.gz'), 
-                                          r'{0}/tmp/\1.bam'.format(config['out_dir']))
+@follows(produce_fastqc_report)
+@files(generate_fastq_files_align)
 def align_fastq_files(in_files, out_file):
     make_parent_directory(out_file)
     
@@ -250,7 +293,7 @@ def index_bam_file(bam_file, bai_file):
 
 @follows(index_bam_file)
 @transform(markdups_bam_file, regex(r'(.*)/bam/(.*)\.sorted\.markdups\.bam'), 
-                                    r'\1/metrics/flagstat_metrics/\2\.flagstat')
+                                    r'\1/metrics/flagstat_metrics/\2.flagstat_metrics.txt')
 def extract_flagstat_metrics(bam_file, flagstat_file):
     make_parent_directory(flagstat_file)
     
@@ -267,7 +310,7 @@ def extract_flagstat_metrics(bam_file, flagstat_file):
 
 @follows(index_bam_file)
 @transform(markdups_bam_file, regex(r'(.*)/bam/(.*)\.sorted\.markdups\.bam'), 
-                                    r'\1/metrics/wgs_metrics/\2\.txt')
+                                    r'\1/metrics/wgs_metrics/\2.wgs_metrics.txt')
 def extract_wgs_metrics(bam_file, metrics_file):
     make_parent_directory(metrics_file)
     
@@ -299,7 +342,7 @@ def extract_wgs_metrics(bam_file, metrics_file):
 
 @follows(index_bam_file)
 @transform(markdups_bam_file, regex(r'(.*)/bam/(.*)\.sorted\.markdups\.bam'), 
-                                    r'\1/metrics/insert_metrics/\2\.txt')
+                                    r'\1/metrics/insert_metrics/\2.insert_metrics.txt')
 def extract_insert_metrics(bam_file, metrics_file):
     make_parent_directory(metrics_file)
     
