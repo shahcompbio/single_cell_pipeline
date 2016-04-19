@@ -6,7 +6,7 @@ from __future__ import division
 import argparse
 import os
 import matplotlib
-#matplotlib.use('Agg') # required for running on the cluster
+matplotlib.use('Agg') # required for running on the cluster
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -22,13 +22,13 @@ matplotlib.rcParams['pdf.fonttype'] = 42
 #=======================================================================================================================
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--sample_sheet',
+parser.add_argument('sample_sheet',
                     help='''Path to NextSeq sample sheet.''')
 
-parser.add_argument('--metric_table',
+parser.add_argument('metric_table',
                     help='''Path to metric table for the run.''')
 
-parser.add_argument('--out_file',
+parser.add_argument('out_file',
                     help='''Path to output file where .pdf plots will be written.''')
 
 args = parser.parse_args()
@@ -278,33 +278,33 @@ args.out_file = '/share/lustre/asteif/projects/single_cell_indexing/test/nextseq
 '''
 
 def main():
-metrics = pd.read_csv(args.metric_table)
-
-samples = read_sample_sheet_data_table(args.sample_sheet)
-#samples['sample_id'] = [x.replace('NextSeq-', '') for x in samples['sample_id']]
-
-df = samples.merge(metrics, on='sample_id', how='left')
-
-with PdfPages(args.out_file) as pdf:
-    plot_metric_fraction_total(df, 'total_mapped_reads', 'Mapped', pdf, from_top=False)
-    plot_metric_fraction_total(df, 'total_duplicate_reads', 'Duplicates', pdf, from_top=False)
-    plot_metric_fraction_total(df, 'total_properly_paired', 'Properly paired', pdf, from_top=False)
+    metrics = pd.read_csv(args.metric_table)
     
-    plot_metric_fraction(df, 'total_mapped_reads', 'total_reads', 'Fraction mapped of total', pdf)
-    plot_metric_fraction(df, 'total_duplicate_reads', 'total_mapped_reads', 'Fraction duplicates of mapped', pdf)
-    plot_metric_fraction(df, 'total_properly_paired', 'total_mapped_reads', 'Fraction properly paired of mapped', pdf)
+    samples = read_sample_sheet_data_table(args.sample_sheet)
+    #samples['sample_id'] = [x.replace('NextSeq-', '') for x in samples['sample_id']]
     
-    plot_metric(df, 'coverage_depth', 'Coverage depth', 0.0015, pdf)
-    plot_metric(df, 'coverage_breadth', 'Coverage breadth', 0.0015, pdf)
-    plot_metric(df, 'mean_insert_size', 'Mean insert size', 0.05, pdf)
-    plot_metric(df, 'median_insert_size', 'Median insert size', 0.05, pdf)
+    df = samples.merge(metrics, on='sample_id', how='left')
     
-    plot_metric_heatmap(df, 'total_reads', 'Total reads', pdf)
-    plot_metric_heatmap(df, 'total_mapped_reads', 'Total mapped reads', pdf)
-    plot_metric_heatmap(df, 'percent_duplicate_reads', 'Percent duplicate reads', pdf)
-    plot_metric_heatmap(df, 'total_properly_paired', 'Total properly paired', pdf)
-    plot_metric_heatmap(df, 'coverage_depth', 'Coverage depth', pdf)
-    plot_metric_heatmap(df, 'coverage_breadth', 'Coverage breadth', pdf)
+    with PdfPages(args.out_file) as pdf:
+        plot_metric_fraction_total(df, 'total_mapped_reads', 'Mapped', pdf, from_top=False)
+        plot_metric_fraction_total(df, 'total_duplicate_reads', 'Duplicates', pdf, from_top=False)
+        plot_metric_fraction_total(df, 'total_properly_paired', 'Properly paired', pdf, from_top=False)
+        
+        plot_metric_fraction(df, 'total_mapped_reads', 'total_reads', 'Fraction mapped of total', pdf)
+        plot_metric_fraction(df, 'total_duplicate_reads', 'total_mapped_reads', 'Fraction duplicates of mapped', pdf)
+        plot_metric_fraction(df, 'total_properly_paired', 'total_mapped_reads', 'Fraction properly paired of mapped', pdf)
+        
+        plot_metric(df, 'coverage_depth', 'Coverage depth', 0.0015, pdf)
+        plot_metric(df, 'coverage_breadth', 'Coverage breadth', 0.0015, pdf)
+        plot_metric(df, 'mean_insert_size', 'Mean insert size', 0.05, pdf)
+        plot_metric(df, 'median_insert_size', 'Median insert size', 0.05, pdf)
+        
+        plot_metric_heatmap(df, 'total_reads', 'Total reads', pdf)
+        plot_metric_heatmap(df, 'total_mapped_reads', 'Total mapped reads', pdf)
+        plot_metric_heatmap(df, 'percent_duplicate_reads', 'Percent duplicate reads', pdf)
+        plot_metric_heatmap(df, 'total_properly_paired', 'Total properly paired', pdf)
+        plot_metric_heatmap(df, 'coverage_depth', 'Coverage depth', pdf)
+        plot_metric_heatmap(df, 'coverage_breadth', 'Coverage breadth', pdf)
 
 if __name__ == '__main__':
     main()

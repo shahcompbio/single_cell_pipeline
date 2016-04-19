@@ -86,6 +86,8 @@ run_samtools_flagstat_script = os.path.join(bin_dir, 'run_samtools_flagstat.sh')
 
 extract_metrics_table_script = os.path.join(bin_dir, 'extract_metrics_table.py')
 
+plot_metrics_script = os.path.join(bin_dir, 'plot_metrics.py')
+
 #=======================================================================================================================
 # Set System Paths
 #=======================================================================================================================
@@ -374,16 +376,28 @@ def extract_metrics_table(bam_files, out_file):
     
     cmd_args = [
                 extract_metrics_table_script,
+                os.path.join(config['out_dir'], 'metrics'),
                 out_file
                 ]
     
     run_cmd(cmd, cmd_args)
 
-'''
-ADD PLOTS BASED ON METRICS TABLE AND SAMPLE SHEET!
-'''
+@transform(extract_metrics_table, suffix('.csv'), '.pdf')
+def plot_metrics(metrics_table, out_file):
+    make_parent_directory(out_file)
+    
+    cmd = 'python'
+    
+    cmd_args = [
+                plot_metrics_script,
+                sample_sheet_file, 
+                metrics_table,
+                out_file
+                ]
+    
+    run_cmd(cmd, cmd_args)
 
-@follows(extract_metrics_table)
+@follows(plot_metrics)
 def end():
     pass
 
