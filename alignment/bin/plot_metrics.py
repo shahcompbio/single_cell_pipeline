@@ -50,7 +50,25 @@ def read_sample_sheet_data_table(file):
         sample_dict = dict(zip(header, line.split(',')))
         df = df.append(sample_dict, ignore_index=True)
     
+    df = parse_sample_description(df)
+    
     return df
+
+def parse_sample_description(sample_sheet):
+    '''
+    Does not assume the description acronyms are in the same order in every sheet, 
+    but does assume they are in the same order for every sample within a sheet.
+    '''
+    split = sample_sheet['description'].str.split(';')
+    
+    cell_call_column = np.where(['CC=' in x for x in split[0]])[0][0]
+    exp_condition_column = np.where(['EC=' in x for x in split[0]])[0][0]
+    
+    sample_sheet['cell_call'] = [x[cell_call_column].replace('CC=', '') for x in split]
+    
+    sample_sheet['experimental_condition'] = [x[exp_condition_column].replace('EC=', '') for x in split]
+    
+    return sample_sheet
 
 def add_legend(ax, labels, colours, num_columns, type='rectangle', location='upper center'):
     object_list = []
@@ -106,15 +124,15 @@ def plot_metric_fraction_total(df, metric, metric_label, pdf, from_top=False):
     col_total = '#cfcfcf'
     col_fraction = '#595959'
     
-    if from_top == False:
-        sns.barplot(df['sample_id'], total, color=col_total, ax=ax)
-        sns.barplot(df['sample_id'], fraction, color=col_fraction, ax=ax)
+    if from_top:
+        fraction = total - fraction
+        sns.barplot(df['sample_id'], total, color=col_fraction, ax=ax)
+        sns.barplot(df['sample_id'], fraction, color=col_total, ax=ax)
     else:
-        percent = total - percent
         sns.barplot(df['sample_id'], total, color=col_total, ax=ax)
         sns.barplot(df['sample_id'], fraction, color=col_fraction, ax=ax)
     
-    column_labels = [str(x) for x in df['description']]
+    column_labels = [str(x) for x in df['cell_call']]
     
     ax = add_barplot_labels(ax, column_labels, 0.05, 12)
     
@@ -122,8 +140,8 @@ def plot_metric_fraction_total(df, metric, metric_label, pdf, from_top=False):
     ax.set_ylabel('Number of reads (millions)')
     sns.despine(offset=10, trim=True)
     
-    sample_location = [' (' + ', '.join(x.replace('R', '').replace('C', '').split('_')) + ')' for x in df['sample_well']]
-    sample_labels = [x + y for x, y in zip(df['sample_id'], sample_location)]
+    sample_condition = [' (' + str(x) + ')' for x in df['experimental_condition']]
+    sample_labels = [x + y for x, y in zip(df['sample_id'], sample_condition)]
     
     ax.set_xticklabels(sample_labels)
     
@@ -154,7 +172,7 @@ def plot_metric_fraction(df, numerator_metric, denominator_metric, ylab, pdf):
     
     sns.barplot(df['sample_id'], fraction, color=col_fraction, ax=ax)
     
-    column_labels = [str(x) for x in df['description']]
+    column_labels = [str(x) for x in df['cell_call']]
     
     ax = add_barplot_labels(ax, column_labels, 0.015, 12)
     
@@ -163,8 +181,8 @@ def plot_metric_fraction(df, numerator_metric, denominator_metric, ylab, pdf):
     plt.ylim(0,1)
     sns.despine(offset=10, trim=True)
     
-    sample_location = [' (' + ', '.join(x.replace('R', '').replace('C', '').split('_')) + ')' for x in df['sample_well']]
-    sample_labels = [x + y for x, y in zip(df['sample_id'], sample_location)]
+    sample_condition = [' (' + str(x) + ')' for x in df['experimental_condition']]
+    sample_labels = [x + y for x, y in zip(df['sample_id'], sample_condition)]
     
     ax.set_xticklabels(sample_labels)
     
@@ -191,7 +209,7 @@ def plot_metric(df, metric, ylab, text_spacing, pdf):
     
     sns.barplot(df['sample_id'], df[metric], color=col, ax=ax)
     
-    column_labels = [str(x) for x in df['description']]
+    column_labels = [str(x) for x in df['cell_call']]
     
     ax = add_barplot_labels(ax, column_labels, text_spacing, 12)
     
@@ -199,8 +217,8 @@ def plot_metric(df, metric, ylab, text_spacing, pdf):
     ax.set_ylabel(ylab)
     sns.despine(offset=10, trim=True)
     
-    sample_location = [' (' + ', '.join(x.replace('R', '').replace('C', '').split('_')) + ')' for x in df['sample_well']]
-    sample_labels = [x + y for x, y in zip(df['sample_id'], sample_location)]
+    sample_condition = [' (' + str(x) + ')' for x in df['experimental_condition']]
+    sample_labels = [x + y for x, y in zip(df['sample_id'], sample_condition)]
     
     ax.set_xticklabels(sample_labels)
     
@@ -216,14 +234,16 @@ def plot_metric_heatmap(df, metric, title, pdf, size=72):
     well_labels = np.empty((size,size,))
     well_labels[:] = np.nan
     
+    df['int_cell_call'] = [x.replace('NTC', '0').replace('C', '') for x in df['cell_call']]
+    
     for i in range(len(df)):
-        row_index = int(df.ix[i, 'sample_well'].split('_')[0].replace('R', ''))
-        col_index = int(df.ix[i, 'sample_well'].split('_')[1].replace('C', ''))
+        row_index = int(df.ix[i, 'sample_plate'].split('_')[0].replace('R', ''))
+        col_index = int(df.ix[i, 'sample_plate'].split('_')[1].replace('C', ''))
         
         matrix_value = float(df.ix[i, metric])
         matrix[row_index-1, col_index-1] = matrix_value
         
-        label_value = int(df.ix[i, 'description'])
+        label_value = int(df.ix[i, 'int_cell_call'])
         well_labels[row_index-1, col_index-1] = label_value
     
     sns.set(context='talk', 
@@ -268,6 +288,102 @@ def plot_metric_heatmap(df, metric, title, pdf, size=72):
     
     plt.close()
 
+def plot_metric_boxplot(df, metric, ylab, pdf):
+    sns.set(context='talk', 
+            style='ticks', 
+            font='Helvetica',
+            rc={'axes.titlesize': 12,
+                'axes.labelsize': 12, 
+                'xtick.labelsize': 12,
+                'ytick.labelsize': 12,
+                'legend.fontsize': 12})
+    
+    fig = plt.figure(figsize=(6, 6))
+    
+    ax = fig.gca()
+    
+    tableau_10_medium = ['#729ece', '#ff9e4a', '#67bf5c', '#ed665d', '#ad8bc9', '#a8786e', '#ed97ca', '#a2a2a2', '#cdcc5d', '#6dccda']
+    
+    num_conditions = len(df['experimental_condition'].unique())
+    
+    cols = tableau_10_medium[0:num_conditions]
+    
+    sns.boxplot(df['experimental_condition'], df[metric], palette=cols, ax=ax)
+    
+    num_libs = []
+    
+    for condition in df['experimental_condition'].unique():
+        num_libs.append(len(df[df['experimental_condition']==condition]))
+    
+    condition_labels = [x + '\n(n=' + str(y) + ')' for x, y in zip(df['experimental_condition'].unique(), num_libs)]
+    
+    ax.set_xticklabels(condition_labels)
+    
+    ax.set_xlabel('Experimental condition')
+    ax.set_ylabel(ylab)
+    
+    sns.despine(offset=10, trim=True)
+    
+    pdf.savefig(bbox_inches='tight', pad_inches=0.4)
+    plt.close()
+
+def plot_metric_factorplot(df, metric, ylab, pdf):
+    df_melt = pd.melt(df, id_vars=['sample_id', 'experimental_condition', 'cell_call'], value_vars=[metric])
+    
+    sns.set(context='talk', 
+            style='ticks', 
+            font='Helvetica',
+            rc={'axes.titlesize': 12,
+                'axes.labelsize': 12, 
+                'xtick.labelsize': 12,
+                'ytick.labelsize': 12,
+                'legend.fontsize': 12})
+    
+    fig_height = 6
+    fig_width = 8.5
+    
+    fig = plt.figure(figsize=(fig_width,fig_height))
+    ax = fig.gca()
+    
+    tableau_10_medium = ['#729ece', '#ff9e4a', '#67bf5c', '#ed665d', '#ad8bc9', '#a8786e', '#ed97ca', '#a2a2a2', '#cdcc5d', '#6dccda']
+    
+    num_conditions = len(df['cell_call'].unique())
+    
+    cols = tableau_10_medium[0:num_conditions]
+    
+    g = sns.factorplot('experimental_condition', 
+                        'value', 
+                        'cell_call', 
+                        df_melt, 
+                        kind='box', 
+                        palette=cols, 
+                        legend=False, 
+                        size=fig_height, 
+                        aspect=fig_width/fig_height)
+    
+    plt.legend()
+    
+    g.set_axis_labels('Experimental condition', ylab)
+    
+    num_libs = []
+    
+    for condition in sorted(df['experimental_condition'].unique()):
+        num_call = []
+        
+        for call in sorted(df['cell_call'].unique()):
+            num_call.append(len(df[(df['experimental_condition']==condition) & (df['cell_call']==call)]))
+            
+        num_libs.append(num_call)
+    
+    condition_labels = [x + '\n(n=' + str(y[0]) + ', ' + str(y[1]) + ', ' + str(y[2]) + ')' for x, y in zip(df['experimental_condition'].unique(), num_libs)]
+    
+    g.set_xticklabels(condition_labels)
+    
+    sns.despine(offset=10, trim=True)
+    
+    pdf.savefig(bbox_inches='tight', pad_inches=0.4)
+    plt.close()
+
 #=======================================================================================================================
 # Run script
 #=======================================================================================================================
@@ -287,7 +403,7 @@ def main():
     
     with PdfPages(args.out_file) as pdf:
         plot_metric_fraction_total(df, 'total_mapped_reads', 'Mapped', pdf, from_top=False)
-        plot_metric_fraction_total(df, 'total_duplicate_reads', 'Duplicates', pdf, from_top=False)
+        plot_metric_fraction_total(df, 'total_duplicate_reads', 'Duplicates', pdf, from_top=True)
         plot_metric_fraction_total(df, 'total_properly_paired', 'Properly paired', pdf, from_top=False)
         
         plot_metric_fraction(df, 'total_mapped_reads', 'total_reads', 'Fraction mapped of total', pdf)
@@ -300,11 +416,18 @@ def main():
         plot_metric(df, 'median_insert_size', 'Median insert size', 0.05, pdf)
         
         plot_metric_heatmap(df, 'total_reads', 'Total reads', pdf)
-        plot_metric_heatmap(df, 'total_mapped_reads', 'Total mapped reads', pdf)
         plot_metric_heatmap(df, 'percent_duplicate_reads', 'Percent duplicate reads', pdf)
-        plot_metric_heatmap(df, 'total_properly_paired', 'Total properly paired', pdf)
         plot_metric_heatmap(df, 'coverage_depth', 'Coverage depth', pdf)
         plot_metric_heatmap(df, 'coverage_breadth', 'Coverage breadth', pdf)
+        
+        plot_metric_factorplot(df, 'total_reads', 'Total reads', pdf)
+        plot_metric_factorplot(df, 'total_mapped_reads', 'Total mapped reads', pdf)
+        plot_metric_factorplot(df, 'percent_duplicate_reads', 'Percent duplicate reads', pdf)
+        plot_metric_factorplot(df, 'coverage_depth', 'Coverage depth', pdf)
+        plot_metric_factorplot(df, 'coverage_breadth', 'Coverage breadth', pdf)
+        plot_metric_factorplot(df, 'mean_insert_size', 'Mean insert size', pdf)
+        plot_metric_factorplot(df, 'median_insert_size', 'Median insert size', pdf)
+        plot_metric_factorplot(df, 'estimated_library_size', 'Picard estimated library size', pdf)
 
 if __name__ == '__main__':
     main()
