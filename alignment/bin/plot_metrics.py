@@ -355,7 +355,9 @@ def plot_metric_factorplot(df, metric, ylab, pdf):
                         'value', 
                         'cell_call', 
                         df_melt, 
-                        kind='box', 
+                        kind='box',
+                        order=sorted(df['experimental_condition'].unique()),
+                        hue_order=sorted(df['cell_call'].unique()),
                         palette=cols, 
                         legend=False, 
                         size=fig_height, 
@@ -371,11 +373,12 @@ def plot_metric_factorplot(df, metric, ylab, pdf):
         num_call = []
         
         for call in sorted(df['cell_call'].unique()):
-            num_call.append(len(df[(df['experimental_condition']==condition) & (df['cell_call']==call)]))
+            num_call.append(str(len(df[(df['experimental_condition']==condition) & (df['cell_call']==call)])))
             
+        num_call = ', '.join(num_call)
         num_libs.append(num_call)
     
-    condition_labels = [x + '\n(n=' + str(y[0]) + ', ' + str(y[1]) + ', ' + str(y[2]) + ')' for x, y in zip(df['experimental_condition'].unique(), num_libs)]
+    condition_labels = [x + '\n(n=' + y + ')' for x, y in zip(df['experimental_condition'].unique(), num_libs)]
     
     g.set_xticklabels(condition_labels)
     
