@@ -330,6 +330,26 @@ def plot_metric_boxplot(df, metric, ylab, pdf):
 def plot_metric_factorplot(df, metric, ylab, pdf):
     df_melt = pd.melt(df, id_vars=['sample_id', 'experimental_condition', 'cell_call'], value_vars=[metric])
     
+    experimental_conditions_ordered = sorted(df['experimental_condition'].unique())
+    cell_calls_ordered = sorted(df['cell_call'].unique())
+    
+    num_cell_calls = len(cell_calls_ordered)
+    tableau_10_medium = ['#729ece', '#ff9e4a', '#67bf5c', '#ed665d', '#ad8bc9', '#a8786e', '#ed97ca', '#a2a2a2', '#cdcc5d', '#6dccda']
+    cols = tableau_10_medium[0:num_cell_calls]
+    
+    num_libs = []
+    
+    for condition in experimental_conditions_ordered:
+        num_call = []
+        
+        for call in cell_calls_ordered:
+            num_call.append(str(len(df[(df['experimental_condition']==condition) & (df['cell_call']==call)])))
+        
+        num_call = ', '.join(num_call)
+        num_libs.append(num_call)
+    
+    condition_labels = [x + '\n(n=' + y + ')' for x, y in zip(experimental_conditions_ordered, num_libs)]    
+    
     sns.set(context='talk', 
             style='ticks', 
             font='Helvetica',
@@ -345,19 +365,13 @@ def plot_metric_factorplot(df, metric, ylab, pdf):
     fig = plt.figure(figsize=(fig_width,fig_height))
     ax = fig.gca()
     
-    tableau_10_medium = ['#729ece', '#ff9e4a', '#67bf5c', '#ed665d', '#ad8bc9', '#a8786e', '#ed97ca', '#a2a2a2', '#cdcc5d', '#6dccda']
-    
-    num_conditions = len(df['cell_call'].unique())
-    
-    cols = tableau_10_medium[0:num_conditions]
-    
     g = sns.factorplot('experimental_condition', 
                         'value', 
                         'cell_call', 
                         df_melt, 
                         kind='box',
-                        order=sorted(df['experimental_condition'].unique()),
-                        hue_order=sorted(df['cell_call'].unique()),
+                        order=experimental_conditions_ordered,
+                        hue_order=cell_calls_ordered,
                         palette=cols, 
                         legend=False, 
                         size=fig_height, 
@@ -365,21 +379,7 @@ def plot_metric_factorplot(df, metric, ylab, pdf):
     
     plt.legend()
     
-    g.set_axis_labels('Experimental condition', ylab)
-    
-    num_libs = []
-    
-    for condition in sorted(df['experimental_condition'].unique()):
-        num_call = []
-        
-        for call in sorted(df['cell_call'].unique()):
-            num_call.append(str(len(df[(df['experimental_condition']==condition) & (df['cell_call']==call)])))
-            
-        num_call = ', '.join(num_call)
-        num_libs.append(num_call)
-    
-    condition_labels = [x + '\n(n=' + y + ')' for x, y in zip(df['experimental_condition'].unique(), num_libs)]
-    
+    g.set_axis_labels('Experimental condition', ylab)    
     g.set_xticklabels(condition_labels)
     
     sns.despine(offset=10, trim=True)
