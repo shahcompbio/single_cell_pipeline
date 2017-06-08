@@ -9,7 +9,14 @@ OUT_HTML=$2
 
 OUT_ZIP=$3
 
+FASTQC=$4
+
+JAVA=$5
+
+export PATH=$(dirname $JAVA):$PATH
 # run fastqc
+
+
 
 OUT_DIR=$(dirname $OUT_HTML)
 
@@ -19,7 +26,7 @@ echo $FASTQ
 
 gunzip -c $FASTQ > $FASTQ_TMP || { echo 'gunzip command failed'; exit 1; }
 
-fastqc --outdir=${OUT_DIR} $FASTQ_TMP || { echo 'fastqc command failed'; exit 1; }
+$FASTQC --outdir=${OUT_DIR} $FASTQ_TMP || { echo 'fastqc command failed'; exit 1; }
 
 if [ -f $FASTQ_TMP ]; then
 	rm $FASTQ_TMP
