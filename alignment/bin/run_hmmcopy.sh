@@ -33,8 +33,7 @@ E=${14}
 
 S=${15}
 
-
 export R_LIBS=$RLIBS:$R_LIBS
 
 
-$RSCRIPT $RUN_HMM --tumour_file=$TUM_FILE --gc_file=$GC_FILE --map_file=$MAP_FILE --out_dir=$OUT_DIR --out_basename=$OUT_BASENAME  --map_cutoff=$MAP_CUTOFF --num_states=$NUM_STATES --param_mu=$MU --param_m=$M --param_k=$KAPPA --param_e=$E --param_s=$S
+$RSCRIPT $RUN_HMM --tumour_file=$TUM_FILE --gc_file=$GC_FILE --map_file=$MAP_FILE --out_dir=$OUT_DIR --out_basename=$OUT_BASENAME  --map_cutoff=$MAP_CUTOFF --num_states=$NUM_STATES --param_mu=$MU --param_m=$M --param_k=$KAPPA --param_e=$E --param_s=$S --sample_id=$OUT_BASENAME

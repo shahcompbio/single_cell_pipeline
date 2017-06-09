@@ -61,7 +61,7 @@ class PlotHeatmap(object):
         for line in freader:
             line = line.strip().split(self.sep)
 
-            sample_id = line[idxs['cell_id']]
+            sample_id = line[idxs['sample_id']]
 
             val = line[idxs[self.args.column_name]]
 
@@ -111,7 +111,7 @@ class PlotHeatmap(object):
         for line in freader:
             line = line.strip().split(self.sep)
 
-            sample_id = line[idxs['cell_id']]
+            sample_id = line[idxs['sample_id']]
 
             #skip samples that are just na or inf
             if sample_id not in samples:

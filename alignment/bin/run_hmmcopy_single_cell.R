@@ -23,6 +23,12 @@
 #    [3] File with details of model parameter convergence and log likelihood (.csv)
 #    [4] File with posterior marginals for all positions and states (.csv)
 
+
+
+
+
+
+
 suppressPackageStartupMessages(library("getopt"))
 suppressPackageStartupMessages(library("HMMcopy"))
 suppressPackageStartupMessages(library("plyr"))
@@ -42,8 +48,9 @@ spec = matrix(c(
 				"param_e",      "e",    2, "double",    "optional e parameter, suggested probablity of extending a segment",
 				"param_g",      "a",    2, "double",    "optional g parameter, prior shape on lambda, which is gamma distributed",
 				"param_s",      "s",    2, "double",    "optional s parameter, prior scale on lambda, which is gamma distributed",
-				"out_dir",      "o",    1, "character", "path to output directory",
-				"out_basename", "b",    1, "character", "basic file name to which extensions will be appended",
+		                "out_dir",      "o",    1, "character", "path to output directory",
+                		"out_basename", "b",    1, "character", "basic file name to which extensions will be appended",
+                                "sample_id",	"samplle_id",	1, "character",	"specify sample or cell id",
 				"help",         "h",    0, "logical",   "print usage"
 		), byrow=TRUE, ncol=5);
 opt = getopt(spec)
@@ -209,6 +216,7 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 	warning(paste("Low coverage sample results in loess regression failure, unable to correct and segment ", opt$tumour_file, sep=""))
 	
 	uncorrected.table <- format_read_count_table(samp.uncorrected, chromosomes)
+        uncorrected.table$sample_id <- opt$sample_id
 	
 	write.table(format(uncorrected.table, scientific=F, trim=T), file=out_reads, quote=F, sep=",", col.names=T, row.names=F)
 	
@@ -302,14 +310,18 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 	# add integer copy number to read count table
 	corrected.table <- adply(corrected.table, 1, get_bin_integer_copy_number, segs=segs.integer.medians)
 	colnames(corrected.table)[ncol(corrected.table)] <- "integer_copy_number"
-	
-	# output read count table
+        corrected.table$sample_id <- opt$sample_id	
+	# output read count table\
+
+        #names(corrected.table)[names(corrected.table) == 'cor.map'] <- 'cor_map'
+        #names(corrected.table)[names(corrected.table) == 'cor.gc'] <- 'cor_gc'
 	write.table(format(corrected.table, scientific=F, trim=T), file=out_reads, quote=F, sep=",", col.names=T, row.names=F)
 	
 	# format and output segment table
 	segments.table <- merge(samp.segmented$segs, segs.integer.medians, sort=F)
 	segments.table$chr <- factor(segments.table$chr, levels=chromosomes, ordered=T)
 	segments.table <- segments.table[order(segments.table$chr),]
+        segments.table$sample_id <- opt$sample_id
 	write.table(format(segments.table, scientific=F, trim=T), file=out_segs, quote=F, sep=",", col.names=T, row.names=F)
 	
 	# format and output parameter and posterior marginal tables

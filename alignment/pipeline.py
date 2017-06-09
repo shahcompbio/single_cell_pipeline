@@ -543,6 +543,7 @@ def run_hmmcopy(in_file, out_files):
               config['parameters']['kappa'],
               config['parameters']['e'],
               config['parameters']['s'],
+
              ]
 
     # cmd = config['Rscript']
@@ -611,19 +612,18 @@ def merge_segs(in_files, out_file):
 
     in_segfiles = os.path.dirname(in_files[0][0])
 
-
     cmd = config['python']
     
     cmd_args = [
                 merge_segs_script, 
-                '--merge_type outer',
-                '--nan_value NA',
+                '--merge_type','outer',
+                '--nan_value','NA',
                 '--indir', in_segfiles,
-                '--key_cols sample_id',
-                '--separator comma',
-                '--type concatenate',
+                '--key_cols','sample_id',
+                '--separator','comma',
+                '--type','concatenate',
                 '--output', out_file,
-                '--regex', '"*.segments.csv"',
+                '--regex', '*.segments.csv',
                 ]
     
     run_cmd(cmd, cmd_args, max_mem=10, queue=config['queue'], hosts=config['hosts'])
@@ -645,14 +645,14 @@ def merge_reads(in_files, out_file):
     
     cmd_args = [
                 merge_segs_script, 
-                '--merge_type outer',
-                '--nan_value NA',
-                '--key_cols sample_id',
-                '--separator comma',
-                '--type concatenate',
+                '--merge_type','outer',
+                '--nan_value','NA',
+                '--key_cols','sample_id',
+                '--separator','comma',
+                '--type','concatenate',
                 '--output', out_file,
                 '--indir', in_readsfiles,
-                '--regex','"*.corrected_reads.csv"'
+                '--regex','*.corrected_reads.csv'
                 ]
     
     run_cmd(cmd, cmd_args, max_mem=10, queue=config['queue'], hosts=config['hosts'])
@@ -674,14 +674,14 @@ def merge_gc(in_files, out_file):
     
     cmd_args = [
                 merge_script, 
-                '--merge_type outer',
-                '--nan_value NA',
+                '--merge_type','outer',
+                '--nan_value','NA',
                 '--indir', in_gcfiles,
-                '--key_cols sample_id',
-                '--separator comma',
-                '--type concatenate',
+                '--key_cols','sample_id',
+                '--separator','comma',
+                '--type','concatenate',
                 '--output', out_file,
-                '--regex', '"*.gc_metrics.txt"',
+                '--regex', '*.gc_metrics.txt',
                 ]
     
     run_cmd(cmd, cmd_args, max_mem=10, queue=config['queue'], hosts=config['hosts'])
@@ -694,16 +694,18 @@ def merge_metrics(in_files, out_file):
     
     cmd = config['python']
 
-    in_files = ' '.join(in_files)
     merge_script = os.path.join(bin_dir, 'merge.py')
 
     cmd_args = [
                 merge_script,
-                '--merge_type outer --nan_value NA',
-                '--input', in_files,
-                '--key_cols sample_id --separator comma --type merge',
-                '--output', out_file
+                '--merge_type','outer','--nan_value','NA',
+                '--key_cols','sample_id','--separator','comma','--type','merge',
+                '--output', out_file,
+                '--input'
                 ]
+
+    cmd_args.extend(in_files)
+
     
     run_cmd(cmd, cmd_args, queue=config['queue'], hosts=config['hosts'])
 
@@ -719,10 +721,10 @@ def plot_metrics(metrics_table, out_file):
                 plot_metrics_script,
                 metrics_table, 
                 out_file,
-                '--plot_title QCpipeline',
+                '--plot_title','QCpipeline',
                 ]
     
-    run_cmd(cmd, cmd_args, queue=config['queue'], hosts=config['hosts'])
+    run_cmd(cmd, cmd_args, queue=config['queue'], hosts=config['hosts'],mem=20, max_mem=30)
 
 
 @follows(merge_metrics, merge_reads)
@@ -740,14 +742,13 @@ def plot_heatmap(inputs, out_file):
                 plot_heatmap_script,
                 '--metrics',metrics_table,
                 '--input', reads_all,
-                ' --separator comma', 
-                '--plot_title QCpipeline',
-                '--column_name integer_copy_number',
-                '--by_sample_type',
+                '--separator','comma', 
+                '--plot_title','QCpipeline',
+                '--column_name','integer_copy_number',
                 '--output', out_file
                 ]
     
-    run_cmd(cmd, cmd_args, queue=config['queue'], hosts=config['hosts'])
+    run_cmd(cmd, cmd_args, queue=config['queue'], hosts=config['hosts'],mem=20, max_mem=30)
 
 
 
@@ -759,7 +760,7 @@ def plot_heatmap(inputs, out_file):
         '{0}/metrics/summary/bias.pdf'.format(config['out_dir']),
         '{0}/metrics/summary/segs.pdf'.format(config['out_dir'])])
 def plot_hmmcopy(inputs, outputs):
-    make_parent_directory(out_file)
+    make_parent_directory(outputs[0])
 
     plot_hmm_script = os.path.join(bin_dir, 'plot_hmmcopy.py')
 
@@ -778,11 +779,11 @@ def plot_hmmcopy(inputs, outputs):
                 '--reads_output', reads_out,
                 '--bias_output', bias_output,
                 '--segs_output', segs_output, 
-                '--plot_title QCpipeline',
-                '--num_states 7'
+                '--plot_title','QCpipeline',
+                '--num_states','7'
                 ]
-    
-    run_cmd(cmd, cmd_args, queue=config['queue'], hosts=config['hosts'])
+
+    run_cmd(cmd, cmd_args, queue=config['queue'], hosts=config['hosts'],mem=20, max_mem=30)
 
 
 

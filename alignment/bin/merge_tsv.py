@@ -25,6 +25,11 @@ class MergeFiles(object):
 	if self.args.input:
             self.input = self.args.input
         else:
+            print self.args.indir
+            print self.args.regex
+            print os.path.join(self.args.indir, self.args.regex)
+            print glob(os.path.join(self.args.indir, self.args.regex))
+
             self.input = glob(os.path.join(self.args.indir, self.args.regex))
 
     

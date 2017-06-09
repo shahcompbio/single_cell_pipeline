@@ -138,7 +138,6 @@ def compute_quality_metrics(df, sample_id):
         autocorrelation_hmmcopy = compute_autocorrelation_hmmcopy(df)
         
         metrics = pd.Series({'sample_id': sample_id, 
-                             'total_reads': total_reads, 
                              'total_reads_hmmcopy': total_reads_hmmcopy,
                              'mad_chr19': mad_chr19, 
                              'mad_hmmcopy': mad_hmmcopy, 
@@ -149,7 +148,6 @@ def compute_quality_metrics(df, sample_id):
     
     else: 
         metrics = pd.Series({'sample_id': sample_id, 
-                             'total_reads': float('NaN'), 
                              'total_reads_hmmcopy': float('NaN'),
                              'mad_chr19': float('NaN'), 
                              'mad_hmmcopy': float('NaN'), 
