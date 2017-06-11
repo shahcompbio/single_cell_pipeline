@@ -6,6 +6,4 @@ BAM_FILE=$1
 
 OUT_FILE=$2
 
-SAMTOOLS=$3
-
-$SAMTOOLS flagstat $BAM_FILE > $OUT_FILE || { echo 'samtools flagstat command failed'; exit 1; }
+samtools flagstat $BAM_FILE > $OUT_FILE || { echo 'samtools flagstat command failed'; exit 1; }

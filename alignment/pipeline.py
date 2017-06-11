@@ -383,14 +383,11 @@ def extract_gc_metrics(bam_file, metrics_file):
 
     cmd_args = [
                 run_gc_metrics_script,
-                config['java'],
-                config['picard_jar'],
                 bam_file,
                 metrics_file,
                 config['ref_genome'],
                 sum_file,
                 chart_file,
-                config['R']
                 ]
 
 
@@ -427,12 +424,9 @@ def extract_insert_metrics(bam_file, metrics_file):
 
     cmd_args = [
                 run_insert_metrics_script,
-                config['java'],
-                config['picard_jar'],
                 bam_file,
                 metrics_file,
                 hist_file,
-                config['R']
                 ]
     
     # cmd = config['java']

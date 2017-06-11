@@ -3,25 +3,15 @@
 #   [2] : OUT_HTML - File where .html report will be written
 #   [3] : OUT_ZIP - File where .zip report files will be written
 
-JAVA=$1
+BAM=$1
 
-PICARD=$2
+METRICS=$2
 
-BAM=$3
+REFERENCE=$3
 
-METRICS=$4
+SUMM=$4
 
-REFERENCE=$5
+CHART=$5
 
-SUMM=$6
-
-CHART=$7
-
-R=$8
-
-export PATH=$(dirname $R):$PATH
-
-
-
-$JAVA -Xmx4g -jar $PICARD CollectGcBiasMetrics INPUT=$BAM OUTPUT=$METRICS REFERENCE_SEQUENCE=$REFERENCE S=$SUMM CHART_OUTPUT=$CHART VALIDATION_STRINGENCY=LENIENT
+picard CollectGcBiasMetrics INPUT=$BAM OUTPUT=$METRICS REFERENCE_SEQUENCE=$REFERENCE S=$SUMM CHART_OUTPUT=$CHART VALIDATION_STRINGENCY=LENIENT
 
