@@ -101,17 +101,6 @@ run_hmmcopy_shscript = os.path.join(bin_dir, 'run_hmmcopy.sh')
 extract_quality_metrics_script = os.path.join(bin_dir, 'extract_quality_metrics.py')
 
 plot_hmmcopy_script = os.path.join(bin_dir, 'plot_hmmcopy.py')
-#=======================================================================================================================
-# Set System Paths
-#=======================================================================================================================
-if args.install_dir is not None:
-    os.environ['PATH'] = os.path.join(args.install_dir, 'bin') + ':' + os.environ['PATH']
-    
-    if 'LD_LIBRARY_PATH' in os.environ:
-        os.environ['LD_LIBRARY_PATH'] = os.path.join(args.install_dir, 'lib') + ':' + os.environ['LD_LIBRARY_PATH']
-    
-    else:
-        os.environ['LD_LIBRARY_PATH'] = os.path.join(args.install_dir, 'lib')
 
 #=======================================================================================================================
 # Pipeline
@@ -199,7 +188,7 @@ def demultiplex_fastq_files(nextseq_dir, out_files):
     
     make_parent_directory(out_dir)
     
-    cmd = config['bcl2fastq']
+    cmd = 'bcl_to_fastq'
     
     cmd_args = [
                 '--runfolder-dir=' + nextseq_dir, 
@@ -221,8 +210,8 @@ def produce_fastqc_report(in_file, out_files):
                 in_file[0], 
                 out_files[0], 
                 out_files[1],
-                config['fastqc'],
-                config['java']
+                'fastqc',
+                'java'
                 ]
     
     run_cmd(cmd, cmd_args, queue=config['queue'], hosts=config['hosts'], max_mem=10)
@@ -242,8 +231,8 @@ def align_fastq_files(in_files, out_file):
                 in_files[0],
                 in_files[1],
                 tmp_file,
-                config['bwa'],
-                config['samtools']
+                'bwa',
+                'samtools'
                 ]
     
     if 'read_group' in config.keys():
@@ -273,12 +262,9 @@ def align_fastq_files(in_files, out_file):
 def sort_bam_file(bam_file, sorted_bam_file):
     tmp_file = sorted_bam_file + '.tmp'
     
-    cmd = config['java']
+    cmd = 'picard'
     
     cmd_args = [
-                '-Xmx16g',
-                '-jar',
-                config['picard_jar'],
                 'SortSam',
                 'INPUT=' + bam_file, 
                 'OUTPUT=' + tmp_file,
@@ -306,12 +292,9 @@ def markdups_bam_file(bam_file, markdups_bam_file):
     
     tmp_file = markdups_bam_file + '.tmp'
     
-    cmd = config['java']
+    cmd = 'picard'
     
     cmd_args = [
-                '-Xmx4g',
-                '-jar',
-                config['picard_jar'],
                 'MarkDuplicates', 
                 'INPUT=' + bam_file, 
                 'OUTPUT=' + tmp_file, 
@@ -362,12 +345,9 @@ def extract_wgs_metrics(bam_file, metrics_file):
     #ref_genome = config['ref_genome'].replace('ref_genomes', 'ref_picard')
     #jar_file = os.path.join(config['picard_dir'], 'CollectWgsMetrics.jar')
     
-    cmd = config['java']
+    cmd = 'picard'
     
     cmd_args = [
-                '-Xmx4g',
-                '-jar',
-                config['picard_jar'],
                 'CollectWgsMetrics', 
                 'INPUT=' + bam_file, 
                 'OUTPUT=' + metrics_file, 
@@ -483,7 +463,7 @@ def extract_metrics_table(bam_files, out_file):
                 extract_metrics_table_script,
                 os.path.join(config['out_dir'], 'metrics'),
                 out_file,
-                '--samplesheet', config['library_info']
+                '--samplesheet', sample_sheet_file
                 ]
     
     run_cmd(cmd, cmd_args, queue=config['queue'], hosts=config['hosts'])

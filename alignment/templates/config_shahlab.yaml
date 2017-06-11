@@ -2,13 +2,21 @@
 queue: shahlab.q
 hosts: 'h=node0501.genesis.hpc.bcgsc.ca|node0502.genesis.hpc.bcgsc.ca|node0503.genesis.hpc.bcgsc.ca|node0504.genesis.hpc.bcgsc.ca|node0505.genesis.hpc.bcgsc.ca|node0506.genesis.hpc.bcgsc.ca|node0507.genesis.hpc.bcgsc.ca|node0508.genesis.hpc.bcgsc.ca|node0509.genesis.hpc.bcgsc.ca|node0510.genesis.hpc.bcgsc.ca|node0511.genesis.hpc.bcgsc.ca|node0512.genesis.hpc.bcgsc.ca|node0513.genesis.hpc.bcgsc.ca|node0514.genesis.hpc.bcgsc.ca'
 
-bcl2fastq: /gsc/software/linux-x86_64-centos6/bcl2fastq-2.17/bin/bcl2fastq
 
+python: /shahlab/pipelines/virtual_environments/single_cell_analysis_pipeline/bin/python
+bcl2fastq: /gsc/software/linux-x86_64-centos6/bcl2fastq-2.17/bin/bcl2fastq
+java: /shahlab/pipelines/apps_centos6/jdk1.8.0_51/bin/java
+readcounter: /shahlab/pipelines/apps_centos6/readcounter/readCounter
+samtools: /shahlab/pipelines/apps_centos6/samtools-1.2/samtools  
+fastqc: /shahlab/pipelines/apps_centos6/FastQC/fastqc
+bwa: /shahlab/pipelines/apps_centos6/bwa-0.7.12/bwa
+R: /gsc/software/linux-x86_64-centos6/R-3.1.1/bin/R
+Rscript: /gsc/software/linux-x86_64-centos6/R-3.1.1/bin/Rscript
 # Path to NextSeq directory
-nextseq_dir: /shahlab/archive/single_cell_indexing/NextSeq/161230_NS500668_0153_AHHHWJAFXX/
+nextseq_dir: /shahlab/dgrewal/upd_asteif/wdir/170322_NS500668_0178_AHJYLHAFXX/
 R_libs: /shahlab/pipelines/apps_centos6/R_libs_titan_1.5.5/
 # Path where files will be output
-out_dir: /shahlab/amcpherson/single_cell_nextseq1/test_output/
+out_dir: /shahlab/dgrewal/upd_asteif/wdir/output1
 
 # ------------------------------- No need to modify ------------------------------- #
 
@@ -29,8 +37,15 @@ min_bqual: 20
 # Minimum mapping quality to count a read
 min_mqual: 20
 
+# Picard jar file (version 1.141 or higher)
+picard_jar: /shahlab/pipelines/apps_centos6/picard-tools-1.141/picard.jar
+
+
 # Identifier for analysis
 analysis_id: test
+
+# Optional library info file (will add cell call to HMMcopy plots)
+library_info: /shahlab/dgrewal/upd_asteif/wdir/170322_NS500668_0178_AHJYLHAFXX/SampleSheet.csv
 
 # Bin size
 bin_size: 500000

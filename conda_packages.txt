@@ -1,0 +1,5 @@
+hmmcopy_utils
+samtools
+bwa
+fastqc
+picard
