@@ -110,3 +110,36 @@ def bam_collect_insert_metrics(bam_filename, metrics_filename, histogram_filenam
         'VALIDATION_STRINGENCY=LENIENT')
 
 
+def run_hmmcopy(
+    readcount_wig_filename,
+    corrected_reads_filename,
+    segments_filename,
+    parameters_filename,
+    posterior_marginals_filename,
+    temp_directory,
+    sample_id,
+    config):
+
+    pypeliner.commandline.execute(
+        'Rscript', run_hmmcopy_rscript,
+        '--tumour_file=' + readcount_wig_filename,
+        '--gc_file=' + config['gc_wig_file'],
+        '--map_file=' + config['map_wig_file'],
+        '--out_dir=' + temp_directory,
+        '$OUT_DIR --out_basename=$OUT_BASENAME'
+        '--map_cutoff=' + config['map_cutoff'],
+        '--num_states=' + config['num_states'],
+        '--param_mu=$MU', config['parameters']['mu'],
+        '--param_m=$M', config['parameters']['m'],
+        '--param_k=$KAPPA', config['parameters']['kappa'],
+        '--param_e=$E', config['parameters']['e'],
+        '--param_s=$S', config['parameters']['s'],
+        '--sample_id=' + sample_id)
+
+    results_basename = os.path.join(temp_directory, sample_id)
+    os.rename(results_basename + '.corrected_reads.csv'), corrected_reads_filename)
+    os.rename(results_basename + '.segments.csv'), segments_filename)
+    os.rename(results_basename + '.parameters.csv'), parameters_filename)
+    os.rename(results_basename + '.posterior_marginals.csv'), posterior_marginals_filename)
+
+

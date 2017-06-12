@@ -116,7 +116,6 @@ def create_metrics_workflow(
         ),
     )
 
-
     workflow.commandline(
         name='bam_collect_wgs_metrics',
         ctx={'mem': 4},
@@ -154,5 +153,44 @@ def create_metrics_workflow(
     )
 
     return workflow
+
+
+def create_hmmcopy_workflow(
+    bam_filename,
+    config,
+):
+
+    chroms = get_wig_chromosomes(config['gc_wig_file'])
+
+    workflow = pypeliner.workflow.Workflow()
+
+    workflow.commandline(
+        name='count_reads',
+        ctx={'mem': 4},
+        args=(
+            'readCounter',
+            '-w', str(config['bin_size']),
+            '-q', str(config['min_mqual']),
+            '-c', chroms,
+            mgd.InputFile(bam_filename),
+            '>',
+            mgd.OutputFile(wig_filename),
+        ),
+    )
+
+    workflow.commandline(
+        name='run_hmmcopy',
+        ctx={'mem': 4},
+        args=(
+            mgd.InputFile(wig_filename),
+            mgd.OutputFile(corrected_reads_filename),
+            mgd.OutputFile(segments_filename),
+            mgd.OutputFile(parameters_filename),
+            mgd.OutputFile(posterior_marginals_filename),
+            mgd.TempSpace('hmmcopy_temp'),
+            sample_id,
+            config,
+        ),
+    )
 
 
