@@ -23,9 +23,6 @@ if __name__ == '__main__':
 
     pyp = pypeliner.app.Pypeline(config=args)
 
-    #=======================================================================================================================
-    # Read Input Files
-    #=======================================================================================================================
     try:
         with open(args.config_file) as file:
             config = yaml.load(file)
@@ -33,7 +30,7 @@ if __name__ == '__main__':
     except IOError as e:
         print 'Unable to open config file: {0}'.format(args.config_file)
 
-    sample_sheet_file = os.path.join(config['nextseq_dir'], 'SampleSheet.csv')
+    sample_sheet_filename = os.path.join(config['nextseq_dir'], 'SampleSheet.csv')
 
     try:
         with open(sample_sheet_file) as file:
@@ -43,12 +40,87 @@ if __name__ == '__main__':
         
         library_id = [s.split(',')[1] for s in lines if 'Description,' in s][0]
         
+        start_index = lines.index('[Data]')+2
+
+        sample_ids = []
+        for i, line in zip(range(num_samples), lines[start_index:]):
+            sample_id = line.split(',')[0]
+            sample_ids.append(sample_id)
+        
     except IOError as e:
         print 'Unable to open file \'SampleSheet.csv\' in directory: {0}'.format(config['nextseq_dir'])
 
+    if 'read_group' in config.keys():
+        read_group_template = (
+            '@RG\tID:' + str(library_id) + '_{sample_id}_' + str(run_id) + 
+            '\tPL:' + str(config['read_group']['PL']) +
+            '\tPU:' + str(run_id) +
+            '\tLB:' + str(library_id) + '_{sample_id}' +
+            '\tSM:' + '{sample_id}' +
+            '\tCN:' + str(config['read_group']['CN']))
+    
+    else:
+        warnings.warn('Config file does not contain read group information! ' + 
+                      'This will affect duplicate marking if BAMs are later merged. ' +
+                      'Creating BAM without read group information in header.')
+
     workflow = pypeliner.workflow.Workflow()
 
-    
+    workflow.setobj(
+        obj=mgd.OutputChunks('sample_id'),
+        value=sample_ids,
+    )
+
+    workflow.transform(
+        name='demultiplex_fastq_files',
+        func=tasks.demultiplex_fastq_files,
+        args=(
+            mgd.InputFile(sample_sheet_filename),
+            config['nextseq_dir'],
+            mgd.TempOutputFile('fastq_1', 'sample_id'),
+            mgd.TempOutputFile('fastq_2', 'sample_id'),
+            mgd.TempSpace('demultiplex_temp'),
+        ),
+    )
+
+    workflow.transform(
+        name='produce_fastqc_report_1',
+        axes=('sample_id',),
+        func=tasks.produce_fastqc_report,
+        args=(
+            mgd.TempOutputFile('fastq_1', 'sample_id'),
+            mgd.OutputFile('fastqc_1_html', 'sample_id', template=),
+            mgd.OutputFile('fastqc_1_plots', 'sample_id', template=),
+            mgd.TempSpace('demultiplex_1_temp', 'sample_id'),
+        ),
+    )
+
+    workflow.transform(
+        name='produce_fastqc_report_2',
+        axes=('sample_id',),
+        func=tasks.produce_fastqc_report,
+        args=(
+            mgd.TempOutputFile('fastq_2', 'sample_id'),
+            mgd.OutputFile('fastqc_2_html', 'sample_id', template=),
+            mgd.OutputFile('fastqc_2_plots', 'sample_id', template=),
+            mgd.TempSpace('demultiplex_2_temp', 'sample_id'),
+        ),
+    )
+
+    workflow.subworkflow(
+        name='alignment',
+        axes=('sample_id',),
+        func=create_alignment_workflow,
+        args=(
+            mgd.TempInputFile('fastq_1', 'sample_id'),
+            mgd.TempInputFile('fastq_2', 'sample_id'),
+            mgd.InputFile(ref_genome),
+            mgd.TempOutputFile('bam', 'sample_id'),
+            mgd.Template(read_group_template, 'sample_id'),
+            config,
+        ),
+    )
+
 
 
 
