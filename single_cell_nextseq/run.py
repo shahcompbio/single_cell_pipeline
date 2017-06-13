@@ -88,10 +88,10 @@ if __name__ == '__main__':
         axes=('sample_id',),
         func=tasks.produce_fastqc_report,
         args=(
-            mgd.TempOutputFile('fastq_1', 'sample_id'),
+            mgd.TempInputFile('fastq_1', 'sample_id'),
             mgd.OutputFile('fastqc_1_html', 'sample_id', template=),
             mgd.OutputFile('fastqc_1_plots', 'sample_id', template=),
-            mgd.TempSpace('demultiplex_1_temp', 'sample_id'),
+            mgd.TempSpace('fastqc_1_temp', 'sample_id'),
         ),
     )
 
@@ -100,10 +100,27 @@ if __name__ == '__main__':
         axes=('sample_id',),
         func=tasks.produce_fastqc_report,
         args=(
-            mgd.TempOutputFile('fastq_2', 'sample_id'),
+            mgd.TempInputFile('fastq_2', 'sample_id'),
             mgd.OutputFile('fastqc_2_html', 'sample_id', template=),
             mgd.OutputFile('fastqc_2_plots', 'sample_id', template=),
-            mgd.TempSpace('demultiplex_2_temp', 'sample_id'),
+            mgd.TempSpace('fastqc_2_temp', 'sample_id'),
+        ),
+    )
+
+    workflow.transform(
+        name='run_trimgalore',
+        axes=('sample_id',),
+        func=tasks.run_trimgalore,
+        args=(
+            mgd.TempInputFile('fastq_1', 'sample_id'),
+            mgd.TempInputFile('fastq_2', 'sample_id'),
+            basename1,
+            basename2,
+            adapter1,
+            adapter2,
+            mgd.TempOutputFile('fastq_trim_1', 'sample_id'),
+            mgd.TempOutputFile('fastq_trim_2', 'sample_id'),
+            mgd.Template(trimgalore_results_template, 'sample_id'),
         ),
     )
 
@@ -112,8 +129,8 @@ if __name__ == '__main__':
         axes=('sample_id',),
         func=create_alignment_workflow,
         args=(
-            mgd.TempInputFile('fastq_1', 'sample_id'),
-            mgd.TempInputFile('fastq_2', 'sample_id'),
+            mgd.TempInputFile('fastq_trim_1', 'sample_id'),
+            mgd.TempInputFile('fastq_trim_2', 'sample_id'),
             mgd.InputFile(ref_genome),
             mgd.TempOutputFile('bam', 'sample_id'),
             mgd.Template(read_group_template, 'sample_id'),

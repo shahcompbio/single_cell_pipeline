@@ -33,21 +33,31 @@ def demultiplex_fastq_files(sample_sheet_filename, nextseq_directory, fastq_1_fi
         os.rename(temp_fq_2, fastq_2_filenames[sample_id])
 
 
-def produce_fastqc_report(fastq_filename, output_html, output_plots, temp_directory):
+def produce_fastqc_report(fastq_filename, fastq_basename, output_html, output_plots, temp_directory):
     pypeliner.commmandline(
         'fastqc',
         '--outdir=' + temp_directory,
         fastq_filename)
 
-    output_basename = os.path.join(temp_directory, os.path.basename(fastq_filename))
-    output_basename, compression = os.path.splitext(output_basename)
-    output_basename, fastq = os.path.splitext(output_basename)[0]
-
-    assert compression in ('gzip', 'gz')
-    assert fastq in ('fastq', 'fq')
-
+    output_basename = os.path.join(temp_directory, fastq_basename)
     os.rename(output_basename + '_fastqc.html', output_html)
     os.rename(output_basename + '_fastqc.zip', output_plots)
+
+
+def run_trimgalore(fastq_1_filename, fastq_2_filename, fastq_1_basename, fastq_2_basename,
+                   adapter, adapter2, trim_1_filename, trim_2_filename, results_directory):
+    pypeliner.commandline.execute(
+        'trim_galore',
+        '--fastqc',
+        '--paired',
+        '--output_dir', results_directory,
+        '--adapter', adapter,
+        '--adapter2', adapter2,
+        fastq_1_filename,
+        fastq_2_filename)
+
+    os.rename(os.path.join(results_directory, fastq_1_basename) + '_val_1.fq.gz', trim_1_filename)
+    os.rename(os.path.join(results_directory, fastq_2_basename) + '_val_2.fq.gz', trim_2_filename)
 
 
 def bam_sort(bam_filename, sorted_bam_filename):

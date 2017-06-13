@@ -93,15 +93,16 @@ def create_metrics_workflow(
     bam_filename,
     ref_genome,
     metrics_summary_filename,
-    metrics_directory):
+    metrics_directory,
+    sample_id):
 
-    flagstat_metrics_filename = os.path.join(metrics_directory, 'flagstat_metrics/\2.flagstat_metrics.txt')
-    wgs_metrics_filename = os.path.join(metrics_directory, 'wgs_metrics/\2.wgs_metrics.txt')
-    gc_metrics_filename = os.path.join(metrics_directory, 'gc_metrics/\2.gc_metrics.txt')
-    gc_summary_filename = os.path.join(metrics_directory, 'gc_metrics/\2.gc_metrics.summ.txt')
-    gc_chart_filename = os.path.join(metrics_directory, 'gc_metrics/\2.gc_metrics.pdf')
-    insert_metrics_filename = os.path.join(metrics_directory, 'insert_metrics/\2.insert_metrics.txt')
-    insert_histogram_filename = os.path.join(metrics_directory, 'insert_metrics/\2.insert_metrics.pdf')
+    flagstat_metrics_filename = os.path.join(metrics_directory, 'flagstat_metrics/{}.flagstat_metrics.txt'.format(sample_id))
+    wgs_metrics_filename = os.path.join(metrics_directory, 'wgs_metrics/{}.wgs_metrics.txt'.format(sample_id))
+    gc_metrics_filename = os.path.join(metrics_directory, 'gc_metrics/{}.gc_metrics.txt'.format(sample_id))
+    gc_summary_filename = os.path.join(metrics_directory, 'gc_metrics/{}.gc_metrics.summ.txt'.format(sample_id))
+    gc_chart_filename = os.path.join(metrics_directory, 'gc_metrics/{}.gc_metrics.pdf'.format(sample_id))
+    insert_metrics_filename = os.path.join(metrics_directory, 'insert_metrics/{}.insert_metrics.txt'.format(sample_id))
+    insert_histogram_filename = os.path.join(metrics_directory, 'insert_metrics/{}.insert_metrics.pdf'.format(sample_id))
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -151,6 +152,15 @@ def create_metrics_workflow(
             mgd.OutputFile(insert_histogram_filename),
         ),
     )
+
+    cmd_args = [
+                extract_metrics_table_script,
+                os.path.join(config['out_dir'], 'metrics'),
+                out_file,
+                '--samplesheet', sample_sheet_file
+                ]
+    
+
 
     return workflow
 
