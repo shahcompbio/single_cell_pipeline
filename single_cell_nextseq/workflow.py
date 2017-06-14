@@ -2,14 +2,29 @@ import pypeliner
 import pypeliner.managed as mgd
 
 
+scripts_directory = os.path.join(os.path.readlpath(os.dirname(__file__)), 'scripts')
+collect_metrics_script = os.path.join(scripts_directory, 'collect_metrics.py')
+
+
 def create_alignment_workflow(
-        fastq_1_filename,
-        fastq_2_filename,
-        bam_filename,
-        bam_index_filename,
-        ref_genome,
-        read_group,
-        config):
+    fastq_1_filename,
+    fastq_2_filename,
+    bam_filename,
+    bam_index_filename,
+    ref_genome,
+    read_group,
+    metrics_summary_filename,
+    metrics_directory,
+    config):
+
+    markdups_metrics_filename = os.path.join(metrics_directory, 'markdups_metrics/{}.markdups_metrics.txt'.format(sample_id))
+    flagstat_metrics_filename = os.path.join(metrics_directory, 'flagstat_metrics/{}.flagstat_metrics.txt'.format(sample_id))
+    wgs_metrics_filename = os.path.join(metrics_directory, 'wgs_metrics/{}.wgs_metrics.txt'.format(sample_id))
+    gc_metrics_filename = os.path.join(metrics_directory, 'gc_metrics/{}.gc_metrics.txt'.format(sample_id))
+    gc_summary_filename = os.path.join(metrics_directory, 'gc_metrics/{}.gc_metrics.summ.txt'.format(sample_id))
+    gc_chart_filename = os.path.join(metrics_directory, 'gc_metrics/{}.gc_metrics.pdf'.format(sample_id))
+    insert_metrics_filename = os.path.join(metrics_directory, 'insert_metrics/{}.insert_metrics.txt'.format(sample_id))
+    insert_histogram_filename = os.path.join(metrics_directory, 'insert_metrics/{}.insert_metrics.pdf'.format(sample_id))
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -68,13 +83,13 @@ def create_alignment_workflow(
     )
 
     workflow.transform(
-        name='bam_mark_dups',
+        name='bam_markdups',
         ctx={'mem': 4},
-        func=tasks.bam_mark_dups,
+        func=tasks.bam_markdups,
         args=(
             mgd.TempInputFile('sorted.bam'),
             mgd.OutputFile(bam_filename),
-            mgd.TempOutputFile('metrics.txt'),
+            mgd.OutputFile(markdups_metrics_filename),
         ),
     )
 
@@ -87,26 +102,6 @@ def create_alignment_workflow(
             mgd.OutputFile(bam_index_filename),
         ),
     )
-
-    return workflow
-
-
-def create_metrics_workflow(
-    bam_filename,
-    ref_genome,
-    metrics_summary_filename,
-    metrics_directory,
-    sample_id):
-
-    flagstat_metrics_filename = os.path.join(metrics_directory, 'flagstat_metrics/{}.flagstat_metrics.txt'.format(sample_id))
-    wgs_metrics_filename = os.path.join(metrics_directory, 'wgs_metrics/{}.wgs_metrics.txt'.format(sample_id))
-    gc_metrics_filename = os.path.join(metrics_directory, 'gc_metrics/{}.gc_metrics.txt'.format(sample_id))
-    gc_summary_filename = os.path.join(metrics_directory, 'gc_metrics/{}.gc_metrics.summ.txt'.format(sample_id))
-    gc_chart_filename = os.path.join(metrics_directory, 'gc_metrics/{}.gc_metrics.pdf'.format(sample_id))
-    insert_metrics_filename = os.path.join(metrics_directory, 'insert_metrics/{}.insert_metrics.txt'.format(sample_id))
-    insert_histogram_filename = os.path.join(metrics_directory, 'insert_metrics/{}.insert_metrics.pdf'.format(sample_id))
-
-    workflow = pypeliner.workflow.Workflow()
 
     workflow.commandline(
         name='bam_flagstat',
@@ -154,23 +149,27 @@ def create_metrics_workflow(
             mgd.OutputFile(insert_histogram_filename),
         ),
     )
-
-    cmd_args = [
-                extract_metrics_table_script,
-                os.path.join(config['out_dir'], 'metrics'),
-                out_file,
-                '--samplesheet', sample_sheet_file
-                ]
     
-
+    workflow.commandline(
+        name='collect_metrics',
+        ctx={'mem': 4},
+        args=(
+            'python',
+            collect_metrics_script,
+            mgd.InputFile(flagstat_metrics_filename),
+            mgd.InputFile(markdups_metrics_filename),
+            mgd.InputFile(insert_metrics_filename),
+            mgd.InputFile(wgs_metrics_filename),
+            mgd.OutputFile(metrics_summary_filename),
+        ),
+    )
 
     return workflow
 
 
 def create_hmmcopy_workflow(
     bam_filename,
-    config,
-):
+    config):
 
     chroms = get_wig_chromosomes(config['gc_wig_file'])
 
@@ -205,4 +204,5 @@ def create_hmmcopy_workflow(
         ),
     )
 
+    return workflow
 

@@ -73,9 +73,8 @@ if __name__ == '__main__':
     fastqc_1_zip_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R1.fastqc.zip'.format(sample_id))
     fastqc_2_html_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R2.fastqc.html'.format(sample_id))
     fastqc_2_zip_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R2.fastqc.zip'.format(sample_id))
-    trimgalore_results_template
-    metrics_summary_filename
-    metrics_directory
+    trimgalore_results_template = 
+    metrics_summary_filename = os.path.join(metrics_directory, 'summary', '{sample_id}_summary.csv'.format(sample_id))
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -158,23 +157,13 @@ if __name__ == '__main__':
         args=(
             mgd.TempInputFile('fastq_trim_1', 'sample_id'),
             mgd.TempInputFile('fastq_trim_2', 'sample_id'),
-            mgd.InputFile(ref_genome),
             mgd.TempOutputFile('bam', 'sample_id'),
-            mgd.Template(read_group_template, 'sample_id'),
-            config,
-        ),
-    )
-
-    workflow.subworkflow(
-        name='metrics_workflow',
-        axes=('sample_id',),
-        func=create_metrics_workflow,
-        args=(
-            mgd.TempInputFile('bam', 'sample_id'),
+            mgd.TempOutputFile('bam_index', 'sample_id'),
             mgd.InputFile(ref_genome),
-            mgd.InputFile(metrics_summary_filename),
+            mgd.Template(read_group_template, 'sample_id'),
+            mgd.OutputFile(metrics_summary_filename),
             metrics_directory,
-            mgd.InputInstance(ref_genome),
+            config,
         ),
     )
 
