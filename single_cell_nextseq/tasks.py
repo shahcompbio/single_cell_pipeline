@@ -22,7 +22,7 @@ def generate_fastq_file_pairs(sample_sheet_filename, fastq_directory):
 
 
 def demultiplex_fastq_files(sample_sheet_filename, nextseq_directory, fastq_1_filenames, fastq_2_filenames, temp_directory):
-    pypeliner.commmandline(
+    pypeliner.commandline.execute(
         'bcl2fastq',
         '--runfolder-dir=' + nextseq_directory,
         '--output-dir=' + temp_directory,
@@ -34,7 +34,7 @@ def demultiplex_fastq_files(sample_sheet_filename, nextseq_directory, fastq_1_fi
 
 
 def produce_fastqc_report(fastq_filename, fastq_basename, output_html, output_plots, temp_directory):
-    pypeliner.commmandline(
+    pypeliner.commandline.execute(
         'fastqc',
         '--outdir=' + temp_directory,
         fastq_filename)

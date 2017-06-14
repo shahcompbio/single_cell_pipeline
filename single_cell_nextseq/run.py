@@ -96,19 +96,18 @@ def main():
     )
 
     workflow.setobj(
-        obj=mgd.TempOutputObj('fastq_1_basename', 'sample_id', axes_origin=[]),
+        obj=mgd.TempOutputObj('fastq_1_basename', 'sample_id'),
         value=fastq_1_basename,
-        axes=('sample_id',),
     )
 
     workflow.setobj(
-        obj=mgd.TempOutputObj('fastq_2_basename', 'sample_id', axes_origin=[]),
+        obj=mgd.TempOutputObj('fastq_2_basename', 'sample_id'),
         value=fastq_2_basename,
-        axes=('sample_id',),
     )
 
     workflow.transform(
         name='demultiplex_fastq_files',
+        ctx={'mem': 64},
         func=single_cell_nextseq.tasks.demultiplex_fastq_files,
         args=(
             mgd.InputFile(sample_sheet_filename),
