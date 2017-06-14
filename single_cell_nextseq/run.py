@@ -41,6 +41,7 @@ def main():
         print 'Unable to open config file: {0}'.format(args['config_file'])
 
     sample_sheet_filename = os.path.join(args['nextseq_dir'], 'SampleSheet.csv')
+    fastq_directory = os.path.join(args['out_dir'], 'fastq')
 
     try:
         with open(sample_sheet_filename) as file:
@@ -55,12 +56,16 @@ def main():
         num_samples = len(lines[start_index:])
 
         sample_ids = []
-        fastq_1_basename = {}
-        fastq_2_basename = {}
+        fastq_1_basenames = {}
+        fastq_2_basenames = {}
+        fastq_1_filenames = {}
+        fastq_2_filenames = {}
         for i, line in zip(range(num_samples), lines[start_index:]):
             sample_id = line.split(',')[0]
-            fastq_1_basename[sample_id] = '{0}_S{1}_R1_001'
-            fastq_2_basename[sample_id] = '{0}_S{1}_R2_001'
+            fastq_1_basenames[sample_id] = '{0}_S{1}_R1_001'.format(sample_id, str(i+1))
+            fastq_2_basenames[sample_id] = '{0}_S{1}_R2_001'.format(sample_id, str(i+1))
+            fastq_1_filenames[sample_id] = os.path.join(fastq_directory, fastq_1_basenames[sample_id] + '.fastq.gz')
+            fastq_2_filenames[sample_id] = os.path.join(fastq_directory, fastq_2_basenames[sample_id] + '.fastq.gz')
             sample_ids.append(sample_id)
 
     except IOError as e:
@@ -97,12 +102,12 @@ def main():
 
     workflow.setobj(
         obj=mgd.TempOutputObj('fastq_1_basename', 'sample_id'),
-        value=fastq_1_basename,
+        value=fastq_1_basenames,
     )
 
     workflow.setobj(
         obj=mgd.TempOutputObj('fastq_2_basename', 'sample_id'),
-        value=fastq_2_basename,
+        value=fastq_2_basenames,
     )
 
     workflow.transform(
@@ -112,8 +117,8 @@ def main():
         args=(
             mgd.InputFile(sample_sheet_filename),
             args['nextseq_dir'],
-            mgd.TempOutputFile('fastq_1.gz', 'sample_id', axes_origin=[]),
-            mgd.TempOutputFile('fastq_2.gz', 'sample_id', axes_origin=[]),
+            mgd.OutputFile('fastq_1', 'sample_id', fnames=fastq_1_filenames, axes_origin=[]),
+            mgd.OutputFile('fastq_2', 'sample_id', fnames=fastq_2_filenames, axes_origin=[]),
             mgd.TempSpace('demultiplex_temp'),
         ),
     )
@@ -123,7 +128,7 @@ def main():
         axes=('sample_id',),
         func=single_cell_nextseq.tasks.produce_fastqc_report,
         args=(
-            mgd.TempInputFile('fastq_1.gz', 'sample_id'),
+            mgd.InputFile('fastq_1', 'sample_id', fnames=fastq_1_filenames),
             mgd.TempInputObj('fastq_1_basename', 'sample_id'),
             mgd.OutputFile('fastqc_1_html', 'sample_id', template=fastqc_1_html_template),
             mgd.OutputFile('fastqc_1_plots', 'sample_id', template=fastqc_1_zip_template),
@@ -136,7 +141,7 @@ def main():
         axes=('sample_id',),
         func=single_cell_nextseq.tasks.produce_fastqc_report,
         args=(
-            mgd.TempInputFile('fastq_2.gz', 'sample_id'),
+            mgd.InputFile('fastq_2', 'sample_id', fnames=fastq_2_filenames),
             mgd.TempInputObj('fastq_2_basename', 'sample_id'),
             mgd.OutputFile('fastqc_2_html', 'sample_id', template=fastqc_2_html_template),
             mgd.OutputFile('fastqc_2_plots', 'sample_id', template=fastqc_2_zip_template),
@@ -149,8 +154,8 @@ def main():
         axes=('sample_id',),
         func=single_cell_nextseq.tasks.run_trimgalore,
         args=(
-            mgd.TempInputFile('fastq_1.gz', 'sample_id'),
-            mgd.TempInputFile('fastq_2.gz', 'sample_id'),
+            mgd.InputFile('fastq_1', 'sample_id', fnames=fastq_1_filenames),
+            mgd.InputFile('fastq_2', 'sample_id', fnames=fastq_2_filenames),
             mgd.TempInputObj('fastq_1_basename', 'sample_id'),
             mgd.TempInputObj('fastq_2_basename', 'sample_id'),
             mgd.TempOutputFile('fastq_trim_1', 'sample_id'),
