@@ -12,25 +12,27 @@ if __name__ == '__main__':
 
     pypeliner.app.add_arguments(argparser)
 
+    parser.add_argument('nextseq_dir',
+                        help='''Path to input nextseq directory.''')
+
+    parser.add_argument('out_dir',
+                        help='''Path to output files.''')
+
     parser.add_argument('config_file',
                         help='''Path to yaml config file.''')
 
     args = vars(argparser.parse_args())
-
-    config = {}
-    if args['config'] is not None:
-        execfile(args['config'], {}, config)
 
     pyp = pypeliner.app.Pypeline(config=args)
 
     try:
         with open(args.config_file) as file:
             config = yaml.load(file)
-            
+
     except IOError as e:
         print 'Unable to open config file: {0}'.format(args.config_file)
 
-    sample_sheet_filename = os.path.join(config['nextseq_dir'], 'SampleSheet.csv')
+    sample_sheet_filename = os.path.join(args['nextseq_dir'], 'SampleSheet.csv')
 
     try:
         with open(sample_sheet_file) as file:
@@ -52,7 +54,7 @@ if __name__ == '__main__':
             sample_ids.append(sample_id)
 
     except IOError as e:
-        print 'Unable to open file \'SampleSheet.csv\' in directory: {0}'.format(config['nextseq_dir'])
+        print 'Unable to open file \'SampleSheet.csv\' in directory: {0}'.format(args['nextseq_dir'])
 
     if 'read_group' in config.keys():
         read_group_template = (
@@ -68,13 +70,13 @@ if __name__ == '__main__':
                       'This will affect duplicate marking if BAMs are later merged. ' +
                       'Creating BAM without read group information in header.')
 
-    trimgalore_results_template = os.path.join(config['out_dir'], 'trim', '{}')
-    metrics_directory = os.path.join(config['out_dir'], 'metrics')
+    trimgalore_results_template = os.path.join(args['out_dir'], 'trim', '{sample_id}')
+    metrics_directory = os.path.join(args['out_dir'], 'metrics')
     fastqc_1_html_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R1.fastqc.html')
     fastqc_1_zip_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R1.fastqc.zip')
     fastqc_2_html_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R2.fastqc.html')
     fastqc_2_zip_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R2.fastqc.zip')
-    metrics_summary_filename = os.path.join(metrics_directory, 'summary', '{sample_id}_summary.csv')
+    metrics_summary_template = os.path.join(metrics_directory, 'summary', '{sample_id}_summary.csv')
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -100,7 +102,7 @@ if __name__ == '__main__':
         func=tasks.demultiplex_fastq_files,
         args=(
             mgd.InputFile(sample_sheet_filename),
-            config['nextseq_dir'],
+            args['nextseq_dir'],
             mgd.TempOutputFile('fastq_1', 'sample_id', axes_origin=[]),
             mgd.TempOutputFile('fastq_2', 'sample_id', axes_origin=[]),
             mgd.TempSpace('demultiplex_temp'),
@@ -161,7 +163,7 @@ if __name__ == '__main__':
             mgd.TempOutputFile('bam_index', 'sample_id'),
             mgd.InputFile(ref_genome),
             mgd.Template(read_group_template, 'sample_id'),
-            mgd.OutputFile(metrics_summary_filename),
+            mgd.OutputFile(metrics_summary_template, 'sample_id'),
             metrics_directory,
             config,
         ),

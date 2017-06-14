@@ -171,7 +171,7 @@ def create_hmmcopy_workflow(
     bam_filename,
     config):
 
-    chroms = get_wig_chromosomes(config['gc_wig_file'])
+    chromosomes = config['chromosomes']
 
     workflow = pypeliner.workflow.Workflow()
 
