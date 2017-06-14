@@ -58,3 +58,7 @@ gc_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.gc.ws_5
 
 # Binned mappability file
 map_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.map.ws_125_to_500000.wig
+
+# Adapter sequences for trimgalore
+adapter: 'CTGTCTCTTATACACATCTCCGAGCCCACGAGAC'
+adapter2: 'CTGTCTCTTATACACATCTGACGCTGCCGACGA'

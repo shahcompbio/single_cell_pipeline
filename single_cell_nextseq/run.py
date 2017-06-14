@@ -43,10 +43,14 @@ if __name__ == '__main__':
         start_index = lines.index('[Data]')+2
 
         sample_ids = []
+        fastq_1_basename = {}
+        fastq_2_basename = {}
         for i, line in zip(range(num_samples), lines[start_index:]):
             sample_id = line.split(',')[0]
+            fastq_1_basename[sample_id] = '{0}_S{1}_R1_001'
+            fastq_2_basename[sample_id] = '{0}_S{1}_R2_001'
             sample_ids.append(sample_id)
-        
+
     except IOError as e:
         print 'Unable to open file \'SampleSheet.csv\' in directory: {0}'.format(config['nextseq_dir'])
 
@@ -64,11 +68,32 @@ if __name__ == '__main__':
                       'This will affect duplicate marking if BAMs are later merged. ' +
                       'Creating BAM without read group information in header.')
 
+    metrics_directory = os.path.join(config['out_dir'], 'metrics')
+    fastqc_1_html_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R1.fastqc.html'.format(sample_id))
+    fastqc_1_zip_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R1.fastqc.zip'.format(sample_id))
+    fastqc_2_html_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R2.fastqc.html'.format(sample_id))
+    fastqc_2_zip_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R2.fastqc.zip'.format(sample_id))
+    trimgalore_results_template
+    metrics_summary_filename
+    metrics_directory
+
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
         obj=mgd.OutputChunks('sample_id'),
         value=sample_ids,
+    )
+
+    workflow.setobj(
+        obj=mgd.TempOutputObj('fastq_1_basename', 'sample_id', axes_origin=[]),
+        value=fastq_1_basename,
+        axes=('sample_id',),
+    )
+
+    workflow.setobj(
+        obj=mgd.TempOutputObj('fastq_2_basename', 'sample_id', axes_origin=[]),
+        value=fastq_2_basename,
+        axes=('sample_id',),
     )
 
     workflow.transform(
@@ -77,8 +102,8 @@ if __name__ == '__main__':
         args=(
             mgd.InputFile(sample_sheet_filename),
             config['nextseq_dir'],
-            mgd.TempOutputFile('fastq_1', 'sample_id'),
-            mgd.TempOutputFile('fastq_2', 'sample_id'),
+            mgd.TempOutputFile('fastq_1', 'sample_id', axes_origin=[]),
+            mgd.TempOutputFile('fastq_2', 'sample_id', axes_origin=[]),
             mgd.TempSpace('demultiplex_temp'),
         ),
     )
@@ -89,8 +114,9 @@ if __name__ == '__main__':
         func=tasks.produce_fastqc_report,
         args=(
             mgd.TempInputFile('fastq_1', 'sample_id'),
-            mgd.OutputFile('fastqc_1_html', 'sample_id', template=),
-            mgd.OutputFile('fastqc_1_plots', 'sample_id', template=),
+            mgd.TempInputObj('fastq_1_basename', 'sample_id'),
+            mgd.OutputFile('fastqc_1_html', 'sample_id', template=fastqc_1_html_template),
+            mgd.OutputFile('fastqc_1_plots', 'sample_id', template=fastqc_1_zip_template),
             mgd.TempSpace('fastqc_1_temp', 'sample_id'),
         ),
     )
@@ -101,8 +127,9 @@ if __name__ == '__main__':
         func=tasks.produce_fastqc_report,
         args=(
             mgd.TempInputFile('fastq_2', 'sample_id'),
-            mgd.OutputFile('fastqc_2_html', 'sample_id', template=),
-            mgd.OutputFile('fastqc_2_plots', 'sample_id', template=),
+            mgd.TempInputObj('fastq_2_basename', 'sample_id'),
+            mgd.OutputFile('fastqc_2_html', 'sample_id', template=fastqc_2_html_template),
+            mgd.OutputFile('fastqc_2_plots', 'sample_id', template=fastqc_2_zip_template),
             mgd.TempSpace('fastqc_2_temp', 'sample_id'),
         ),
     )
@@ -114,18 +141,18 @@ if __name__ == '__main__':
         args=(
             mgd.TempInputFile('fastq_1', 'sample_id'),
             mgd.TempInputFile('fastq_2', 'sample_id'),
-            basename1,
-            basename2,
-            adapter1,
-            adapter2,
             mgd.TempOutputFile('fastq_trim_1', 'sample_id'),
             mgd.TempOutputFile('fastq_trim_2', 'sample_id'),
             mgd.Template(trimgalore_results_template, 'sample_id'),
+            mgd.TempInputObj('fastq_1_basename', 'sample_id'),
+            mgd.TempInputObj('fastq_2_basename', 'sample_id'),
+            config['adapter'],
+            config['adapter2'],
         ),
     )
 
     workflow.subworkflow(
-        name='alignment',
+        name='alignment_workflow',
         axes=('sample_id',),
         func=create_alignment_workflow,
         args=(
@@ -138,80 +165,16 @@ if __name__ == '__main__':
         ),
     )
 
-
-
-
-
-
-
-
-    experiment_template = os.path.join(args['raw_data_dir'], '{sim_id}', 'experiment.pickle')
-    experiment_plot_template = os.path.join(args['raw_data_dir'], '{sim_id}', 'experiment_plot.pdf')
-    results_template = os.path.join(args['raw_data_dir'], '{sim_id}', 'results.h5')
-    evaluation_template = os.path.join(args['raw_data_dir'], '{sim_id}', 'evaluation.h5')
-
-    workflow = pypeliner.workflow.Workflow(default_ctx={'mem': 4})
-
-    workflow.transform(
-        name='read_sim_defs',
-        ctx={'local': True},
-        func=remixt.simulations.pipeline.create_simulations,
-        ret=mgd.TempOutputObj('sim_defs', 'sim_id'),
-        args=(
-            mgd.InputFile(args['sim_defs']),
-            config,
-            args['ref_data_dir'],
-        ),
-    )
-
-    workflow.transform(
-        name='simulate_experiment',
-        axes=('sim_id',),
-        func=remixt.simulations.pipeline.simulate_experiment,
-        args=(
-            mgd.OutputFile('experiment', 'sim_id', template=experiment_template),
-            mgd.OutputFile('experiment_plot', 'sim_id', template=experiment_plot_template),
-            mgd.TempInputObj('sim_defs', 'sim_id'),
-        ),
-    )
-
-    if args['simulate_only']:
-        pyp.run(workflow)
-        sys.exit()
-
     workflow.subworkflow(
-        name='create_tool_workflow',
-        axes=('sim_id',),
-        func=remixt.workflow.create_fit_model_workflow,
+        name='metrics_workflow',
+        axes=('sample_id',),
+        func=create_metrics_workflow,
         args=(
-            mgd.InputFile('experiment', 'sim_id', template=experiment_template),
-            mgd.OutputFile('results', 'sim_id', template=results_template),
-            config,
-            args['ref_data_dir'],
-        ),
-    )
-
-    workflow.transform(
-        name='evaluate_results',
-        axes=('sim_id',),
-        func=remixt.simulations.pipeline.evaluate_results_task,
-        args=(
-            mgd.OutputFile('evaluation', 'sim_id', template=evaluation_template),
-            mgd.InputFile('results', 'sim_id', template=results_template),
-        ),
-        kwargs={
-            'experiment_filename': mgd.InputFile('experiment', 'sim_id', template=experiment_template),
-        },
-    )
-
-    workflow.transform(
-        name='merge_evaluations',
-        func=remixt.simulations.pipeline.merge_evaluations,
-        args=(
-            mgd.OutputFile(args['table']),
-            mgd.TempInputObj('sim_defs', 'sim_id'),
-            mgd.InputFile('evaluation', 'sim_id', template=evaluation_template),
-            ['sim_id'],
+            mgd.TempInputFile('bam', 'sample_id'),
+            mgd.InputFile(ref_genome),
+            mgd.InputFile(metrics_summary_filename),
+            metrics_directory,
+            mgd.InputInstance(ref_genome),
         ),
     )
 

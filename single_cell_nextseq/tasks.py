@@ -1,7 +1,6 @@
 import pypeliner.commmandline
 
 
-
 def generate_fastq_file_pairs(sample_sheet_filename, fastq_directory):
     ''' Generate standardized filenames from sample sheet.
     '''
