@@ -112,8 +112,8 @@ def main():
         args=(
             mgd.InputFile(sample_sheet_filename),
             args['nextseq_dir'],
-            mgd.TempOutputFile('fastq_1', 'sample_id', axes_origin=[]),
-            mgd.TempOutputFile('fastq_2', 'sample_id', axes_origin=[]),
+            mgd.TempOutputFile('fastq_1.gz', 'sample_id', axes_origin=[]),
+            mgd.TempOutputFile('fastq_2.gz', 'sample_id', axes_origin=[]),
             mgd.TempSpace('demultiplex_temp'),
         ),
     )
@@ -123,7 +123,7 @@ def main():
         axes=('sample_id',),
         func=single_cell_nextseq.tasks.produce_fastqc_report,
         args=(
-            mgd.TempInputFile('fastq_1', 'sample_id'),
+            mgd.TempInputFile('fastq_1.gz', 'sample_id'),
             mgd.TempInputObj('fastq_1_basename', 'sample_id'),
             mgd.OutputFile('fastqc_1_html', 'sample_id', template=fastqc_1_html_template),
             mgd.OutputFile('fastqc_1_plots', 'sample_id', template=fastqc_1_zip_template),
@@ -136,7 +136,7 @@ def main():
         axes=('sample_id',),
         func=single_cell_nextseq.tasks.produce_fastqc_report,
         args=(
-            mgd.TempInputFile('fastq_2', 'sample_id'),
+            mgd.TempInputFile('fastq_2.gz', 'sample_id'),
             mgd.TempInputObj('fastq_2_basename', 'sample_id'),
             mgd.OutputFile('fastqc_2_html', 'sample_id', template=fastqc_2_html_template),
             mgd.OutputFile('fastqc_2_plots', 'sample_id', template=fastqc_2_zip_template),
@@ -149,8 +149,8 @@ def main():
         axes=('sample_id',),
         func=single_cell_nextseq.tasks.run_trimgalore,
         args=(
-            mgd.TempInputFile('fastq_1', 'sample_id'),
-            mgd.TempInputFile('fastq_2', 'sample_id'),
+            mgd.TempInputFile('fastq_1.gz', 'sample_id'),
+            mgd.TempInputFile('fastq_2.gz', 'sample_id'),
             mgd.TempInputObj('fastq_1_basename', 'sample_id'),
             mgd.TempInputObj('fastq_2_basename', 'sample_id'),
             mgd.TempOutputFile('fastq_trim_1', 'sample_id'),
