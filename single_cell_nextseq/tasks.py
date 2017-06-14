@@ -119,6 +119,10 @@ def bam_collect_insert_metrics(bam_filename, metrics_filename, histogram_filenam
         'VALIDATION_STRINGENCY=LENIENT')
 
 
+scripts_directory = os.path.join(os.path.readlpath(os.dirname(__file__)), 'scripts')
+run_hmmcopy_rscript = os.path.join(scripts_directory, 'hmmcopy.R')
+
+
 def run_hmmcopy(
     readcount_wig_filename,
     corrected_reads_filename,
