@@ -68,13 +68,13 @@ if __name__ == '__main__':
                       'This will affect duplicate marking if BAMs are later merged. ' +
                       'Creating BAM without read group information in header.')
 
+    trimgalore_results_template = os.path.join(config['out_dir'], 'trim', '{}')
     metrics_directory = os.path.join(config['out_dir'], 'metrics')
-    fastqc_1_html_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R1.fastqc.html'.format(sample_id))
-    fastqc_1_zip_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R1.fastqc.zip'.format(sample_id))
-    fastqc_2_html_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R2.fastqc.html'.format(sample_id))
-    fastqc_2_zip_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R2.fastqc.zip'.format(sample_id))
-    trimgalore_results_template = 
-    metrics_summary_filename = os.path.join(metrics_directory, 'summary', '{sample_id}_summary.csv'.format(sample_id))
+    fastqc_1_html_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R1.fastqc.html')
+    fastqc_1_zip_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R1.fastqc.zip')
+    fastqc_2_html_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R2.fastqc.html')
+    fastqc_2_zip_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R2.fastqc.zip')
+    metrics_summary_filename = os.path.join(metrics_directory, 'summary', '{sample_id}_summary.csv')
 
     workflow = pypeliner.workflow.Workflow()
 
