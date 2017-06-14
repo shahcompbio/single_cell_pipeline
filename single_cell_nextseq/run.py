@@ -151,11 +151,11 @@ def main():
         args=(
             mgd.TempInputFile('fastq_1', 'sample_id'),
             mgd.TempInputFile('fastq_2', 'sample_id'),
+            mgd.TempInputObj('fastq_1_basename', 'sample_id'),
+            mgd.TempInputObj('fastq_2_basename', 'sample_id'),
             mgd.TempOutputFile('fastq_trim_1', 'sample_id'),
             mgd.TempOutputFile('fastq_trim_2', 'sample_id'),
             mgd.Template(trimgalore_results_template, 'sample_id'),
-            mgd.TempInputObj('fastq_1_basename', 'sample_id'),
-            mgd.TempInputObj('fastq_2_basename', 'sample_id'),
             config['adapter'],
             config['adapter2'],
         ),

@@ -49,5 +49,12 @@ the nextseq input directory, and the output directory.
 Run the pipeline as follows:
 
 ```
-single_cell_nextseq 
+single_cell_nextseq \
+  /shahlab/archive/single_cell_indexing/NextSeq/161230_NS500668_0153_AHHHWJAFXX/ \
+  /shahlab/amcpherson/single_cell_nextseq1/test_output_new/ \
+  /shahlab/amcpherson/single_cell_nextseq1/config_shahlab_new.yaml \
+  --loglevel DEBUG \
+  --submit asyncqsub \
+  --maxjobs 1000 \
+  --nocleanup
 ```

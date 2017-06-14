@@ -1,4 +1,5 @@
 import os
+import errno
 import pypeliner.commandline
 
 
@@ -34,6 +35,12 @@ def demultiplex_fastq_files(sample_sheet_filename, nextseq_directory, fastq_1_fi
 
 
 def produce_fastqc_report(fastq_filename, fastq_basename, output_html, output_plots, temp_directory):
+    try:
+        os.makedirs(temp_directory)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+
     pypeliner.commandline.execute(
         'fastqc',
         '--outdir=' + temp_directory,
@@ -45,7 +52,7 @@ def produce_fastqc_report(fastq_filename, fastq_basename, output_html, output_pl
 
 
 def run_trimgalore(fastq_1_filename, fastq_2_filename, fastq_1_basename, fastq_2_basename,
-                   adapter, adapter2, trim_1_filename, trim_2_filename, results_directory):
+                   trim_1_filename, trim_2_filename, results_directory, adapter, adapter2):
     pypeliner.commandline.execute(
         'trim_galore',
         '--fastqc',
