@@ -5,12 +5,18 @@ import argparse
 import pypeliner
 import pypeliner.managed as mgd
 
+import single_cell_nextseq.tasks
+import single_cell_nextseq.workflow
+
 
 if __name__ == '__main__':
+    main()
 
-    argparser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    pypeliner.app.add_arguments(argparser)
+def main():
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    pypeliner.app.add_arguments(parser)
 
     parser.add_argument('nextseq_dir',
                         help='''Path to input nextseq directory.''')
@@ -21,7 +27,7 @@ if __name__ == '__main__':
     parser.add_argument('config_file',
                         help='''Path to yaml config file.''')
 
-    args = vars(argparser.parse_args())
+    args = vars(parser.parse_args())
 
     pyp = pypeliner.app.Pypeline(config=args)
 
@@ -99,7 +105,7 @@ if __name__ == '__main__':
 
     workflow.transform(
         name='demultiplex_fastq_files',
-        func=tasks.demultiplex_fastq_files,
+        func=single_cell_nextseq.tasks.demultiplex_fastq_files,
         args=(
             mgd.InputFile(sample_sheet_filename),
             args['nextseq_dir'],
@@ -112,7 +118,7 @@ if __name__ == '__main__':
     workflow.transform(
         name='produce_fastqc_report_1',
         axes=('sample_id',),
-        func=tasks.produce_fastqc_report,
+        func=single_cell_nextseq.tasks.produce_fastqc_report,
         args=(
             mgd.TempInputFile('fastq_1', 'sample_id'),
             mgd.TempInputObj('fastq_1_basename', 'sample_id'),
@@ -125,7 +131,7 @@ if __name__ == '__main__':
     workflow.transform(
         name='produce_fastqc_report_2',
         axes=('sample_id',),
-        func=tasks.produce_fastqc_report,
+        func=single_cell_nextseq.tasks.produce_fastqc_report,
         args=(
             mgd.TempInputFile('fastq_2', 'sample_id'),
             mgd.TempInputObj('fastq_2_basename', 'sample_id'),
@@ -138,7 +144,7 @@ if __name__ == '__main__':
     workflow.transform(
         name='run_trimgalore',
         axes=('sample_id',),
-        func=tasks.run_trimgalore,
+        func=single_cell_nextseq.tasks.run_trimgalore,
         args=(
             mgd.TempInputFile('fastq_1', 'sample_id'),
             mgd.TempInputFile('fastq_2', 'sample_id'),

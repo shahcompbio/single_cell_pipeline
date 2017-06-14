@@ -1,8 +1,11 @@
+import os
 import pypeliner
 import pypeliner.managed as mgd
 
+import single_cell_nextseq.tasks
 
-scripts_directory = os.path.join(os.path.readlpath(os.dirname(__file__)), 'scripts')
+
+scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
 collect_metrics_script = os.path.join(scripts_directory, 'collect_metrics.py')
 
 
@@ -75,7 +78,7 @@ def create_alignment_workflow(
     workflow.transform(
         name='bam_sort',
         ctx={'mem': 4},
-        func=tasks.bam_sort,
+        func=single_cell_nextseq.tasks.bam_sort,
         args=(
             mgd.TempInputFile('aligned.bam'),
             mgd.TempOutputFile('sorted.bam'),
@@ -85,7 +88,7 @@ def create_alignment_workflow(
     workflow.transform(
         name='bam_markdups',
         ctx={'mem': 4},
-        func=tasks.bam_markdups,
+        func=single_cell_nextseq.tasks.bam_markdups,
         args=(
             mgd.TempInputFile('sorted.bam'),
             mgd.OutputFile(bam_filename),
@@ -117,7 +120,7 @@ def create_alignment_workflow(
     workflow.commandline(
         name='bam_collect_wgs_metrics',
         ctx={'mem': 4},
-        func=tasks.bam_collect_wgs_metrics,
+        func=single_cell_nextseq.tasks.bam_collect_wgs_metrics,
         args=(
             mgd.InputFile(bam_filename),
             mgd.InputFile(ref_genome),
@@ -129,7 +132,7 @@ def create_alignment_workflow(
     workflow.commandline(
         name='bam_collect_gc_metrics',
         ctx={'mem': 4},
-        func=tasks.bam_collect_gc_metrics,
+        func=single_cell_nextseq.tasks.bam_collect_gc_metrics,
         args=(
             mgd.InputFile(bam_filename),
             mgd.InputFile(ref_genome),
@@ -142,7 +145,7 @@ def create_alignment_workflow(
     workflow.commandline(
         name='bam_collect_insert_metrics',
         ctx={'mem': 4},
-        func=tasks.bam_collect_insert_metrics,
+        func=single_cell_nextseq.tasks.bam_collect_insert_metrics,
         args=(
             mgd.InputFile(bam_filename),
             mgd.OutputFile(insert_metrics_filename),

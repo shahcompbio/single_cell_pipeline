@@ -1,4 +1,5 @@
-import pypeliner.commmandline
+import os
+import pypeliner.commandline
 
 
 def generate_fastq_file_pairs(sample_sheet_filename, fastq_directory):
@@ -119,7 +120,7 @@ def bam_collect_insert_metrics(bam_filename, metrics_filename, histogram_filenam
         'VALIDATION_STRINGENCY=LENIENT')
 
 
-scripts_directory = os.path.join(os.path.readlpath(os.dirname(__file__)), 'scripts')
+scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
 run_hmmcopy_rscript = os.path.join(scripts_directory, 'hmmcopy.R')
 
 
@@ -150,9 +151,9 @@ def run_hmmcopy(
         '--sample_id=' + sample_id)
 
     results_basename = os.path.join(temp_directory, sample_id)
-    os.rename(results_basename + '.corrected_reads.csv'), corrected_reads_filename)
-    os.rename(results_basename + '.segments.csv'), segments_filename)
-    os.rename(results_basename + '.parameters.csv'), parameters_filename)
-    os.rename(results_basename + '.posterior_marginals.csv'), posterior_marginals_filename)
+    os.rename(results_basename + '.corrected_reads.csv', corrected_reads_filename)
+    os.rename(results_basename + '.segments.csv', segments_filename)
+    os.rename(results_basename + '.parameters.csv', parameters_filename)
+    os.rename(results_basename + '.posterior_marginals.csv', posterior_marginals_filename)
 
 
