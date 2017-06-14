@@ -26,6 +26,21 @@ conda create --name singlecellpipeline python=2.7 \
   pypeliner
 ```
 
+Activate the environment:
+
+```
+source activate singlecellpipeline
+```
+
+Add the single cell nextseq pipeline into the current site packages:
+
+```
+python setup.py develop
+```
+
+Use develop mode to allow for modifying of the code during the debugging phase.
+Later versions will be released through conda.
+
 ## Run the pipeline
 
 The pipeline takes 3 arguments.  A config file (example for genesis provided),
@@ -34,4 +49,5 @@ the nextseq input directory, and the output directory.
 Run the pipeline as follows:
 
 ```
+single_cell_nextseq 
 ```

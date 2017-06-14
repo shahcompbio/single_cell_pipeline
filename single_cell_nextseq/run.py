@@ -28,6 +28,7 @@ def main():
                         help='''Path to yaml config file.''')
 
     args = vars(parser.parse_args())
+    args['tmpdir'] = os.path.join(args['out_dir'], 'tmp')
 
     pyp = pypeliner.app.Pypeline(config=args)
 
