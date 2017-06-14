@@ -1,5 +1,6 @@
 import os
 import sys
+import yaml
 import argparse
 
 import pypeliner
@@ -33,16 +34,16 @@ def main():
     pyp = pypeliner.app.Pypeline(config=args)
 
     try:
-        with open(args.config_file) as file:
+        with open(args['config_file']) as file:
             config = yaml.load(file)
 
     except IOError as e:
-        print 'Unable to open config file: {0}'.format(args.config_file)
+        print 'Unable to open config file: {0}'.format(args['config_file'])
 
     sample_sheet_filename = os.path.join(args['nextseq_dir'], 'SampleSheet.csv')
 
     try:
-        with open(sample_sheet_file) as file:
+        with open(sample_sheet_filename) as file:
             lines = [x.strip('\n').strip(',') for x in file.readlines()]
         
         run_id = [s.split(',')[1] for s in lines if 'Experiment Name,' in s][0]
@@ -50,6 +51,8 @@ def main():
         library_id = [s.split(',')[1] for s in lines if 'Description,' in s][0]
         
         start_index = lines.index('[Data]')+2
+
+        num_samples = len(lines[start_index:])
 
         sample_ids = []
         fastq_1_basename = {}
@@ -162,13 +165,13 @@ def main():
     workflow.subworkflow(
         name='alignment_workflow',
         axes=('sample_id',),
-        func=create_alignment_workflow,
+        func=single_cell_nextseq.workflow.create_alignment_workflow,
         args=(
             mgd.TempInputFile('fastq_trim_1', 'sample_id'),
             mgd.TempInputFile('fastq_trim_2', 'sample_id'),
             mgd.TempOutputFile('bam', 'sample_id'),
             mgd.TempOutputFile('bam_index', 'sample_id'),
-            mgd.InputFile(ref_genome),
+            mgd.InputFile(config['ref_genome']),
             mgd.Template(read_group_template, 'sample_id'),
             mgd.OutputFile(metrics_summary_template, 'sample_id'),
             metrics_directory,
