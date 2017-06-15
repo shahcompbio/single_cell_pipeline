@@ -7,6 +7,7 @@ import single_cell_nextseq.tasks
 
 scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
 collect_metrics_script = os.path.join(scripts_directory, 'collect_metrics.py')
+extract_quality_metrics_script = os.path.join(scripts_directory, 'extract_quality_metrics.py')
 
 
 def create_alignment_workflow(
@@ -173,6 +174,12 @@ def create_alignment_workflow(
 
 def create_hmmcopy_workflow(
     bam_filename,
+    wig_filename,
+    corrected_reads_filename,
+    segments_filename,
+    parameters_filename,
+    posterior_marginals_filename,
+    hmm_metrics_filename,
     config):
 
     chromosomes = config['chromosomes']
@@ -205,6 +212,20 @@ def create_hmmcopy_workflow(
             mgd.TempSpace('hmmcopy_temp'),
             sample_id,
             config,
+        ),
+    )
+
+    workflow.commandline(
+        name='extract_quality_metrics',
+        ctx={'mem': 4},
+        args=(
+            'python',
+            extract_quality_metrics_script,
+            mgd.InputFile(parameters_filename),
+            mgd.InputFile(corrected_reads_filename),
+            mgd.InputFile(segments_filename),
+            mgd.OutputFile(hmm_metrics_filename),
+            sample_id,
         ),
     )
 

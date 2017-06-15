@@ -180,3 +180,10 @@ def run_hmmcopy(
     os.rename(results_basename + '.posterior_marginals.csv', posterior_marginals_filename)
 
 
+def concatenate_csv(in_filenames, out_filename):
+    data = []
+    for key, in_filename in in_filenames.iteritems():
+        data.append(pd.read_csv(in_filename))
+    data = pd.concat(data, ignore_index=True)
+    data.to_csv(out_filename, index=False)
+
