@@ -153,7 +153,6 @@ def run_hmmcopy(
     segments_filename,
     parameters_filename,
     posterior_marginals_filename,
-    temp_directory,
     sample_id,
     config):
 
@@ -162,22 +161,18 @@ def run_hmmcopy(
         '--tumour_file=' + readcount_wig_filename,
         '--gc_file=' + config['gc_wig_file'],
         '--map_file=' + config['map_wig_file'],
-        '--out_dir=' + temp_directory,
-        '$OUT_DIR --out_basename=$OUT_BASENAME'
+        '--reads_output=' + corrected_reads_filename,
+        '--segs_output=' + segments_filename,
+        '--params_output=' + parameters_filename,
+        '--post_marginals_output=' + posterior_marginals_filename,
         '--map_cutoff=' + config['map_cutoff'],
         '--num_states=' + config['num_states'],
-        '--param_mu=$MU', config['parameters']['mu'],
-        '--param_m=$M', config['parameters']['m'],
-        '--param_k=$KAPPA', config['parameters']['kappa'],
-        '--param_e=$E', config['parameters']['e'],
-        '--param_s=$S', config['parameters']['s'],
+        '--param_mu=', config['parameters']['mu'],
+        '--param_m=', config['parameters']['m'],
+        '--param_k=', config['parameters']['kappa'],
+        '--param_e=', config['parameters']['e'],
+        '--param_s=', config['parameters']['s'],
         '--sample_id=' + sample_id)
-
-    results_basename = os.path.join(temp_directory, sample_id)
-    os.rename(results_basename + '.corrected_reads.csv', corrected_reads_filename)
-    os.rename(results_basename + '.segments.csv', segments_filename)
-    os.rename(results_basename + '.parameters.csv', parameters_filename)
-    os.rename(results_basename + '.posterior_marginals.csv', posterior_marginals_filename)
 
 
 def concatenate_csv(in_filenames, out_filename):
