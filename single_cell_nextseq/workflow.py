@@ -166,6 +166,7 @@ def create_alignment_workflow(
             mgd.InputFile(insert_metrics_filename),
             mgd.InputFile(wgs_metrics_filename),
             mgd.OutputFile(metrics_summary_filename),
+            sample_id,
         ),
     )
 

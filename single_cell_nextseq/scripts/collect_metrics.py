@@ -30,6 +30,9 @@ parser.add_argument('wgs_metrics',
 parser.add_argument('out_file',
                     help='''Path to .csv file where table output will be written.''')
 
+parser.add_argument('sample_id',
+                    help=''' identifier string for the library.''')
+
 args = parser.parse_args()
 
 #=========================================================================
@@ -260,13 +263,14 @@ def main():
     flagstat_metrics = extract_flagstat_metrics(args.flagstat_metrics)
     wgs_metrics = extract_wgs_metrics(args.wgs_metrics)
 
-    header = ['unpaired_mapped_reads', 'paired_mapped_reads', 'unpaired_duplicate_reads',
+    header = ['sample_id',
+              'unpaired_mapped_reads', 'paired_mapped_reads', 'unpaired_duplicate_reads',
               'paired_duplicate_reads', 'unmapped_reads', 'percent_duplicate_reads',
               'estimated_library_size', 'total_reads', 'total_mapped_reads',
               'total_duplicate_reads', 'total_properly_paired',
               'coverage_breadth', 'coverage_depth']
 
-    output = duplication_metrics + flagstat_metrics + wgs_metrics
+    output = (args.sample_id,) + duplication_metrics + flagstat_metrics + wgs_metrics
 
     if args.insert_metrics:
         insert_metrics = extract_insert_metrics(args.insert_metrics)
