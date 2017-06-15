@@ -179,6 +179,7 @@ def main():
             mgd.Template(read_group_template, 'sample_id'),
             mgd.OutputFile(metrics_summary_template, 'sample_id'),
             metrics_directory,
+            mgd.InputInstance('sample_id'),
             config,
         ),
     )

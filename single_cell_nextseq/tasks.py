@@ -43,7 +43,7 @@ def demultiplex_fastq_files(sample_sheet_filename, nextseq_directory, fastq_1_fi
 
 
 def produce_fastqc_report(fastq_filename, fastq_basename, output_html, output_plots, temp_directory):
-    os.makedirs(temp_directory)
+    makedirs(temp_directory)
 
     pypeliner.commandline.execute(
         'fastqc',
@@ -57,7 +57,17 @@ def produce_fastqc_report(fastq_filename, fastq_basename, output_html, output_pl
 
 def run_trimgalore(fastq_1_filename, fastq_2_filename, fastq_1_basename, fastq_2_basename,
                    trim_1_filename, trim_2_filename, results_directory, adapter, adapter2):
-    os.makedirs(results_directory)
+    makedirs(results_directory)
+
+    print ' '.join((
+        'trim_galore',
+        '--fastqc',
+        '--paired',
+        '--output_dir', results_directory,
+        '--adapter', adapter,
+        '--adapter2', adapter2,
+        fastq_1_filename,
+        fastq_2_filename))
 
     pypeliner.commandline.execute(
         'trim_galore',

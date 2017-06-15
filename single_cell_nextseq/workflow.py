@@ -18,6 +18,7 @@ def create_alignment_workflow(
     read_group,
     metrics_summary_filename,
     metrics_directory,
+    sample_id,
     config):
 
     markdups_metrics_filename = os.path.join(metrics_directory, 'markdups_metrics/{}.markdups_metrics.txt'.format(sample_id))
