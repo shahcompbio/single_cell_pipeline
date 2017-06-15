@@ -106,7 +106,7 @@ def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename):
         'VALIDATION_STRINGENCY=LENIENT')
 
 
-def bam_collect_wgs_metrics(bam_filename, metrics_filename, ref_genome, config):
+def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config):
     pypeliner.commandline.execute(
         'picard', '-Xmx12G',
         'CollectWgsMetrics',
