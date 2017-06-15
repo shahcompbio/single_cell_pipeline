@@ -10,6 +10,10 @@ import single_cell_nextseq.tasks
 import single_cell_nextseq.workflow
 
 
+scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
+plot_hmmcopy_script = os.path.join(scripts_directory, 'plot_hmmcopy.py')
+
+
 if __name__ == '__main__':
     main()
 
@@ -246,6 +250,25 @@ def main():
         args=(
             mgd.InputFile(metrics_summary_template, 'sample_id'),
             mgd.OutputFile(metrics_summary_filename),
+        ),
+    )
+
+    workflow.transform(
+        name='plot_hmm_copy',
+        func=single_cell_nextseq.tasks.concatenate_csv,
+        args=(
+            'python',
+            plot_hmmcopy_script,
+            '--corrected_reads', mgd.InputFile(hmmcopy_reads_filename),
+            '--segments', mgd.InputFile(hmmcopy_segments_filename),
+            '--hmm_metrics', mgd.InputFile(hmmcopy_hmm_metrics_filename),
+            '--align_metrics', mgd.InputFile(metrics_summary_filename),
+            '--ref_genome', mgd.InputFile(config['ref_genome']),
+            '--num_states', config['num_states'],
+            '--reads_output', mgd.OutputFile(reads_plot_filename),
+            '--bias_output', mgd.OutputFile(bias_plot_filename),
+            '--segs_output', mgd.OutputFile(segs_plot_filename),
+            '--plot_title', 'QC pipeline metrics',
         ),
     )
 
