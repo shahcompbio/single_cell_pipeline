@@ -19,6 +19,9 @@ min_bqual: 20
 # Minimum mapping quality to count a read
 min_mqual: 20
 
+# Count unpaired reads for wgs metrics
+count_unpaired: false
+
 # Identifier for analysis
 analysis_id: test
 

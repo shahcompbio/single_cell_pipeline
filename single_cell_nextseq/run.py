@@ -92,6 +92,7 @@ def main():
     fastqc_2_html_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R2.fastqc.html')
     fastqc_2_zip_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R2.fastqc.zip')
     metrics_summary_template = os.path.join(metrics_directory, 'summary', '{sample_id}_summary.csv')
+    metrics_summary_filename = os.path.join(metrics_directory, 'summary', 'summary.csv')
 
     hmmcopy_directory = os.path.join(args['out_dir'], 'hmmcopy')
     hmmcopy_wig_template = os.path.join(hmmcopy_directory, 'hmmcopy', '{sample_id}_readcount.wig')
@@ -104,7 +105,6 @@ def main():
     hmmcopy_segments_filename = os.path.join(hmmcopy_directory, 'hmmcopy', 'segments.csv')
     hmmcopy_reads_filename = os.path.join(hmmcopy_directory, 'hmmcopy', 'reads.csv')
     hmmcopy_hmm_metrics_filename = os.path.join(hmmcopy_directory, 'hmmcopy', 'hmm_metrics.csv')
-    metrics_summary_filename = os.path.join(hmmcopy_directory, 'hmmcopy', 'hmm_metrics.csv')
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -114,12 +114,12 @@ def main():
     )
 
     workflow.setobj(
-        obj=mgd.TempOutputObj('fastq_1_basename', 'sample_id'),
+        obj=mgd.TempOutputObj('fastq_1_basename', 'sample_id', axes_origin=[]),
         value=fastq_1_basenames,
     )
 
     workflow.setobj(
-        obj=mgd.TempOutputObj('fastq_2_basename', 'sample_id'),
+        obj=mgd.TempOutputObj('fastq_2_basename', 'sample_id', axes_origin=[]),
         value=fastq_2_basenames,
     )
 
@@ -202,7 +202,7 @@ def main():
         axes=('sample_id',),
         func=single_cell_nextseq.workflow.create_hmmcopy_workflow,
         args=(
-            mgd.TempOutputFile('bam', 'sample_id'),
+            mgd.TempInputFile('bam', 'sample_id'),
             mgd.OutputFile(hmmcopy_wig_template, 'sample_id'),
             mgd.OutputFile(hmmcopy_reads_template, 'sample_id'),
             mgd.OutputFile(hmmcopy_segments_template, 'sample_id'),
@@ -217,7 +217,7 @@ def main():
         name='merge_tables',
         func=single_cell_nextseq.tasks.concatenate_csv,
         args=(
-            mgd.OutputFile(hmmcopy_segments_template, 'sample_id'),
+            mgd.InputFile(hmmcopy_segments_template, 'sample_id'),
             mgd.OutputFile(hmmcopy_segments_filename),
         ),
     )
@@ -226,7 +226,7 @@ def main():
         name='merge_reads',
         func=single_cell_nextseq.tasks.concatenate_csv,
         args=(
-            mgd.OutputFile(hmmcopy_reads_template, 'sample_id'),
+            mgd.InputFile(hmmcopy_reads_template, 'sample_id'),
             mgd.OutputFile(hmmcopy_reads_filename),
         ),
     )
@@ -235,7 +235,7 @@ def main():
         name='merge_hmm_metrics',
         func=single_cell_nextseq.tasks.concatenate_csv,
         args=(
-            mgd.OutputFile(hmmcopy_hmm_metrics_template, 'sample_id'),
+            mgd.InputFile(hmmcopy_hmm_metrics_template, 'sample_id'),
             mgd.OutputFile(hmmcopy_hmm_metrics_filename),
         ),
     )
@@ -244,7 +244,7 @@ def main():
         name='merge_summary_metrics',
         func=single_cell_nextseq.tasks.concatenate_csv,
         args=(
-            mgd.OutputFile(metrics_summary_template, 'sample_id'),
+            mgd.InputFile(metrics_summary_template, 'sample_id'),
             mgd.OutputFile(metrics_summary_filename),
         ),
     )

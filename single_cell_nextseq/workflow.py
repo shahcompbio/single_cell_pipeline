@@ -79,7 +79,7 @@ def create_alignment_workflow(
 
     workflow.transform(
         name='bam_sort',
-        ctx={'mem': 4},
+        ctx={'mem': 16},
         func=single_cell_nextseq.tasks.bam_sort,
         args=(
             mgd.TempInputFile('aligned.bam'),
@@ -89,7 +89,7 @@ def create_alignment_workflow(
 
     workflow.transform(
         name='bam_markdups',
-        ctx={'mem': 4},
+        ctx={'mem': 16},
         func=single_cell_nextseq.tasks.bam_markdups,
         args=(
             mgd.TempInputFile('sorted.bam'),
@@ -100,7 +100,7 @@ def create_alignment_workflow(
 
     workflow.commandline(
         name='bam_index',
-        ctx={'mem': 4},
+        ctx={'mem': 16},
         args=(
             'samtools', 'index',
             mgd.InputFile(bam_filename),
@@ -110,7 +110,7 @@ def create_alignment_workflow(
 
     workflow.commandline(
         name='bam_flagstat',
-        ctx={'mem': 4},
+        ctx={'mem': 16},
         args=(
             'samtools', 'flagstat',
             mgd.InputFile(bam_filename),
@@ -119,9 +119,9 @@ def create_alignment_workflow(
         ),
     )
 
-    workflow.commandline(
+    workflow.transform(
         name='bam_collect_wgs_metrics',
-        ctx={'mem': 4},
+        ctx={'mem': 16},
         func=single_cell_nextseq.tasks.bam_collect_wgs_metrics,
         args=(
             mgd.InputFile(bam_filename),
@@ -131,9 +131,9 @@ def create_alignment_workflow(
         ),
     )
 
-    workflow.commandline(
+    workflow.transform(
         name='bam_collect_gc_metrics',
-        ctx={'mem': 4},
+        ctx={'mem': 16},
         func=single_cell_nextseq.tasks.bam_collect_gc_metrics,
         args=(
             mgd.InputFile(bam_filename),
@@ -144,9 +144,9 @@ def create_alignment_workflow(
         ),
     )
 
-    workflow.commandline(
+    workflow.transform(
         name='bam_collect_insert_metrics',
-        ctx={'mem': 4},
+        ctx={'mem': 16},
         func=single_cell_nextseq.tasks.bam_collect_insert_metrics,
         args=(
             mgd.InputFile(bam_filename),
@@ -157,7 +157,7 @@ def create_alignment_workflow(
     
     workflow.commandline(
         name='collect_metrics',
-        ctx={'mem': 4},
+        ctx={'mem': 16},
         args=(
             'python',
             collect_metrics_script,

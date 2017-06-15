@@ -85,7 +85,7 @@ def run_trimgalore(fastq_1_filename, fastq_2_filename, fastq_1_basename, fastq_2
 
 def bam_sort(bam_filename, sorted_bam_filename):
     pypeliner.commandline.execute(
-        'picard',
+        'picard', '-Xmx12G',
         'SortSam',
         'INPUT=' + bam_filename,
         'OUTPUT=' + sorted_bam_filename,
@@ -94,9 +94,9 @@ def bam_sort(bam_filename, sorted_bam_filename):
         'MAX_RECORDS_IN_RAM=5000000')
 
 
-def bam_mark_dups(bam_filename, markduped_bam_filename, metrics_filename):
+def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename):
     pypeliner.commandline.execute(
-        'picard'
+        'picard', '-Xmx8G',
         'MarkDuplicates',
         'INPUT=' + bam_filename,
         'OUTPUT=' + markduped_bam_filename,
@@ -108,7 +108,7 @@ def bam_mark_dups(bam_filename, markduped_bam_filename, metrics_filename):
 
 def bam_collect_wgs_metrics(bam_filename, metrics_filename, ref_genome, config):
     pypeliner.commandline.execute(
-        'picard',
+        'picard', '-Xmx12G',
         'CollectWgsMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
@@ -122,7 +122,7 @@ def bam_collect_wgs_metrics(bam_filename, metrics_filename, ref_genome, config):
 
 def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename):
     pypeliner.commandline.execute(
-        'picard',
+        'picard', '-Xmx12G',
         'CollectGcBiasMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
@@ -134,7 +134,7 @@ def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_f
 
 def bam_collect_insert_metrics(bam_filename, metrics_filename, histogram_filename):
     pypeliner.commandline.execute(
-        'picard',
+        'picard', '-Xmx12G',
         'CollectInsertSizeMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
