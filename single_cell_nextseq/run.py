@@ -93,6 +93,19 @@ def main():
     fastqc_2_zip_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R2.fastqc.zip')
     metrics_summary_template = os.path.join(metrics_directory, 'summary', '{sample_id}_summary.csv')
 
+    hmmcopy_directory = os.path.join(args['out_dir'], 'hmmcopy')
+    hmmcopy_wig_template = os.path.join(hmmcopy_directory, 'hmmcopy', '{sample_id}_readcount.wig')
+    hmmcopy_reads_template = os.path.join(hmmcopy_directory, 'hmmcopy', '{sample_id}_reads.csv')
+    hmmcopy_segments_template = os.path.join(hmmcopy_directory, 'hmmcopy', '{sample_id}_segments.csv')
+    hmmcopy_parameters_template = os.path.join(hmmcopy_directory, 'hmmcopy', '{sample_id}_parameters.csv')
+    hmmcopy_posteriors_template = os.path.join(hmmcopy_directory, 'hmmcopy', '{sample_id}_posteriors.csv')
+    hmmcopy_hmm_metrics_template = os.path.join(hmmcopy_directory, 'hmmcopy', '{sample_id}_hmm_metrics.csv')
+
+    hmmcopy_segments_filename = os.path.join(hmmcopy_directory, 'hmmcopy', 'segments.csv')
+    hmmcopy_reads_filename = os.path.join(hmmcopy_directory, 'hmmcopy', 'reads.csv')
+    hmmcopy_hmm_metrics_filename = os.path.join(hmmcopy_directory, 'hmmcopy', 'hmm_metrics.csv')
+    metrics_summary_filename = os.path.join(hmmcopy_directory, 'hmmcopy', 'hmm_metrics.csv')
+
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
@@ -181,6 +194,58 @@ def main():
             metrics_directory,
             mgd.InputInstance('sample_id'),
             config,
+        ),
+    )
+
+    workflow.subworkflow(
+        name='hmmcopy_workflow',
+        axes=('sample_id',),
+        func=single_cell_nextseq.workflow.create_hmmcopy_workflow,
+        args=(
+            mgd.TempOutputFile('bam', 'sample_id'),
+            mgd.OutputFile(hmmcopy_wig_template, 'sample_id'),
+            mgd.OutputFile(hmmcopy_reads_template, 'sample_id'),
+            mgd.OutputFile(hmmcopy_segments_template, 'sample_id'),
+            mgd.OutputFile(hmmcopy_parameters_template, 'sample_id'),
+            mgd.OutputFile(hmmcopy_posteriors_template, 'sample_id'),
+            mgd.OutputFile(hmmcopy_hmm_metrics_template, 'sample_id'),
+            config,
+        ),
+    )
+
+    workflow.transform(
+        name='merge_tables',
+        func=single_cell_nextseq.tasks.concatenate_csv,
+        args=(
+            mgd.OutputFile(hmmcopy_segments_template, 'sample_id'),
+            mgd.OutputFile(hmmcopy_segments_filename),
+        ),
+    )
+
+    workflow.transform(
+        name='merge_reads',
+        func=single_cell_nextseq.tasks.concatenate_csv,
+        args=(
+            mgd.OutputFile(hmmcopy_reads_template, 'sample_id'),
+            mgd.OutputFile(hmmcopy_reads_filename),
+        ),
+    )
+
+    workflow.transform(
+        name='merge_hmm_metrics',
+        func=single_cell_nextseq.tasks.concatenate_csv,
+        args=(
+            mgd.OutputFile(hmmcopy_hmm_metrics_template, 'sample_id'),
+            mgd.OutputFile(hmmcopy_hmm_metrics_filename),
+        ),
+    )
+
+    workflow.transform(
+        name='merge_summary_metrics',
+        func=single_cell_nextseq.tasks.concatenate_csv,
+        args=(
+            mgd.OutputFile(metrics_summary_template, 'sample_id'),
+            mgd.OutputFile(metrics_summary_filename),
         ),
     )
 
