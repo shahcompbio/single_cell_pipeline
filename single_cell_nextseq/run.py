@@ -110,6 +110,11 @@ def main():
     hmmcopy_reads_filename = os.path.join(hmmcopy_directory, 'hmmcopy', 'reads.csv')
     hmmcopy_hmm_metrics_filename = os.path.join(hmmcopy_directory, 'hmmcopy', 'hmm_metrics.csv')
 
+    plots_directory = os.path.join(args['out_dir'], 'plots')
+    reads_plot_filename = os.path.join(plots_directory, 'corrected_reads.pdf')
+    bias_plot_filename = os.path.join(plots_directory, 'bias.pdf')
+    segs_plot_filename = os.path.join(plots_directory, 'segments.pdf')
+
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
