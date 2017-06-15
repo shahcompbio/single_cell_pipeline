@@ -188,7 +188,7 @@ def demultiplex_fastq_files(nextseq_dir, out_files):
     
     make_parent_directory(out_dir)
     
-    cmd = 'bcl_to_fastq'
+    cmd = 'bcl2fastq'
     
     cmd_args = [
                 '--runfolder-dir=' + nextseq_dir, 

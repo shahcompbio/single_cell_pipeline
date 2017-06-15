@@ -1,4 +1,14 @@
-import pypeliner.commmandline
+import os
+import errno
+import pypeliner.commandline
+
+
+def makedirs(directory):
+    try:
+        os.makedirs(directory)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
 
 
 def generate_fastq_file_pairs(sample_sheet_filename, fastq_directory):
@@ -21,7 +31,7 @@ def generate_fastq_file_pairs(sample_sheet_filename, fastq_directory):
 
 
 def demultiplex_fastq_files(sample_sheet_filename, nextseq_directory, fastq_1_filenames, fastq_2_filenames, temp_directory):
-    pypeliner.commmandline(
+    pypeliner.commandline.execute(
         'bcl2fastq',
         '--runfolder-dir=' + nextseq_directory,
         '--output-dir=' + temp_directory,
@@ -33,7 +43,9 @@ def demultiplex_fastq_files(sample_sheet_filename, nextseq_directory, fastq_1_fi
 
 
 def produce_fastqc_report(fastq_filename, fastq_basename, output_html, output_plots, temp_directory):
-    pypeliner.commmandline(
+    os.makedirs(temp_directory)
+
+    pypeliner.commandline.execute(
         'fastqc',
         '--outdir=' + temp_directory,
         fastq_filename)
@@ -44,7 +56,9 @@ def produce_fastqc_report(fastq_filename, fastq_basename, output_html, output_pl
 
 
 def run_trimgalore(fastq_1_filename, fastq_2_filename, fastq_1_basename, fastq_2_basename,
-                   adapter, adapter2, trim_1_filename, trim_2_filename, results_directory):
+                   trim_1_filename, trim_2_filename, results_directory, adapter, adapter2):
+    os.makedirs(results_directory)
+
     pypeliner.commandline.execute(
         'trim_galore',
         '--fastqc',
@@ -119,6 +133,10 @@ def bam_collect_insert_metrics(bam_filename, metrics_filename, histogram_filenam
         'VALIDATION_STRINGENCY=LENIENT')
 
 
+scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
+run_hmmcopy_rscript = os.path.join(scripts_directory, 'hmmcopy.R')
+
+
 def run_hmmcopy(
     readcount_wig_filename,
     corrected_reads_filename,
@@ -146,9 +164,9 @@ def run_hmmcopy(
         '--sample_id=' + sample_id)
 
     results_basename = os.path.join(temp_directory, sample_id)
-    os.rename(results_basename + '.corrected_reads.csv'), corrected_reads_filename)
-    os.rename(results_basename + '.segments.csv'), segments_filename)
-    os.rename(results_basename + '.parameters.csv'), parameters_filename)
-    os.rename(results_basename + '.posterior_marginals.csv'), posterior_marginals_filename)
+    os.rename(results_basename + '.corrected_reads.csv', corrected_reads_filename)
+    os.rename(results_basename + '.segments.csv', segments_filename)
+    os.rename(results_basename + '.parameters.csv', parameters_filename)
+    os.rename(results_basename + '.posterior_marginals.csv', posterior_marginals_filename)
 
 

@@ -3,3 +3,5 @@ samtools
 bwa
 fastqc
 picard
+cutadapt
+trim-galore
