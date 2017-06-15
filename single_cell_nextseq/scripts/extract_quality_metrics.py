@@ -31,9 +31,6 @@ parser.add_argument('--hmmcopy_segments',
 parser.add_argument('--out_file',
                     help='''Path to where output table will be written in .csv format.''')
 
-parser.add_argument('--sample_info',
-                    help='''Path to csv file with the sample id information.''')
-
 parser.add_argument('--sample_id',
                     help='''sample id information.''')
 
@@ -291,28 +288,6 @@ def compute_quality_metrics(df, df_seg, sample_id):
     return metrics
 
 
-def extract_sample_info(sample_info, sample_id, infile):
-    """
-    get info
-    """
-
-    if not sample_info and sample_id:
-        return sample_id
-
-    if not sample_info and not sample_id:
-        return os.path.basename(args.hmmcopy_corrected_reads).split('.')[0]
-
-    sample_info = open(sample_info)
-    header = sample_info.readline()
-    sampdata = sample_info.readline()
-
-    assert sample_info.readline() == ''
-
-    sampdata = sampdata.strip().split(',')
-    samp = sampdata[0]
-
-    return samp
-
 #=======================================================================================================================
 # Run script
 #=======================================================================================================================
@@ -348,8 +323,6 @@ def main():
     
     df_loglik = pd.Series()
 
-    sample_id = extract_sample_info(args.sample_info, args.sample_id, args.hmmcopy_corrected_reads)
-
     corrected_data = pd.read_csv(args.hmmcopy_corrected_reads)
 
     if os.stat(args.hmmcopy_segments).st_size != 0:
@@ -358,7 +331,7 @@ def main():
         segments_data = None
 
 
-    metrics = compute_quality_metrics(corrected_data, segments_data, sample_id)
+    metrics = compute_quality_metrics(corrected_data, segments_data, args.sample_info)
 
     df_metrics = pd.concat([df_metrics, pd.DataFrame(metrics).transpose()])
 
@@ -368,10 +341,10 @@ def main():
 
         loglik = float(param_data.ix[param_data['parameter']=='loglik', 'final'])
 
-        df_loglik = df_loglik.append(pd.Series({sample_id: loglik}))
+        df_loglik = df_loglik.append(pd.Series({args.sample_info: loglik}))
 
     else:
-        df_loglik = df_loglik.append(pd.Series({sample_id: np.nan}))
+        df_loglik = df_loglik.append(pd.Series({args.sample_info: np.nan}))
 
     df_loglik = pd.DataFrame(df_loglik.reset_index())
     
