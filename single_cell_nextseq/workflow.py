@@ -121,7 +121,7 @@ def create_alignment_workflow(
 
     workflow.transform(
         name='bam_collect_wgs_metrics',
-        ctx={'mem': 16},
+        ctx={'mem': 24},
         func=single_cell_nextseq.tasks.bam_collect_wgs_metrics,
         args=(
             mgd.InputFile(bam_filename),
@@ -146,7 +146,7 @@ def create_alignment_workflow(
 
     workflow.transform(
         name='bam_collect_insert_metrics',
-        ctx={'mem': 16},
+        ctx={'mem': 24},
         func=single_cell_nextseq.tasks.bam_collect_insert_metrics,
         args=(
             mgd.InputFile(bam_filename),
