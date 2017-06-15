@@ -132,7 +132,27 @@ def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_f
         'VALIDATION_STRINGENCY=LENIENT')
 
 
-def bam_collect_insert_metrics(bam_filename, metrics_filename, histogram_filename):
+def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_filename, histogram_filename):
+    # Check if any paired reads exist
+    has_paired = None
+    with open(flagstat_metrics_filename) as f:
+        for line in f:
+            if 'properly paired' in line:
+                if line.startswith('0 ')
+                    has_paired = False
+                else:
+                    has_paired = True
+
+    if has_paired is None:
+        raise Exception('Unable to determine number of properly paired reads from {}'.format(flagstat_metrics_filename))
+
+    if not has_paired:
+        with open(metrics_filename, 'w') as f:
+            f.write('## FAILED: No properly paired reads\n')
+        with open(histogram_filename, 'w'):
+            pass
+        return
+
     pypeliner.commandline.execute(
         'picard', '-Xmx12G',
         'CollectInsertSizeMetrics',

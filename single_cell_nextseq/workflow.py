@@ -150,6 +150,7 @@ def create_alignment_workflow(
         func=single_cell_nextseq.tasks.bam_collect_insert_metrics,
         args=(
             mgd.InputFile(bam_filename),
+            mgd.InputFile(flagstat_metrics_filename),
             mgd.OutputFile(insert_metrics_filename),
             mgd.OutputFile(insert_histogram_filename),
         ),
