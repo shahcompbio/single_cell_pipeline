@@ -1,118 +1,126 @@
-# NextSeq Single Cell Alignment Pipeline
+# Single Cell Pipeline
 
-The NextSeq alignment pipeline is designed for multiplexed low-depth single-cell data in BCL format. It processes and aligns raw sequencing data and outputs both a table of sequencing metrics and some QC plots.
+## Setup and installation
 
-## Inputs
+Set up conda with the required packages.
 
-The only required input to the pipeline is a `config.yaml` file, which contains information necessary for the run.
+First ensure you have the correct channels:
 
-* The `config.yaml` file specifies:
-	* The NextSeq directory (which must include a `SampleSheet.csv` file)
-	* An output directory
-	* Several other paths and parameters which do not need to be modified for every run
+```
+conda config --add channels https://conda.anaconda.org/dranew
+conda config --add channels 'bioconda'
+conda config --add channels 'r'
+```
 
-Note that the `SampleSheet.csv` file must be formatted according to specific requirements that go beyond Illumina's standards. Example `config.yaml` and `SampleSheet.csv` files are found in the `/alignment/templates` directory.
+Then create an environment with the required packages:
 
-## Requirements
+```
+conda create --name singlecellpipeline python=2.7 \
+  hmmcopy_utils \
+  samtools \
+  bwa \
+  fastqc \
+  picard \
+  cutadapt \
+  trim-galore \
+  pypeliner \
+  bioconductor-hmmcopy \
+  r-plyr \
+  r-getopt
+```
 
-### Python
+Activate the environment:
 
-Python 2.7 is required and should be on the path. The [Anaconda](https://docs.continuum.io/anaconda) distribution is recommended.
+```
+source activate singlecellpipeline
+```
 
-* Python packages:
-	* [pipelines](https://bitbucket.org/aroth85/pipelines)
-	* [ruffus](http://www.ruffus.org.uk)
-	* [drmaa](https://pypi.python.org/pypi/drmaa) (required for running pipeline in cluster mode)
-	* [pandas](http://pandas.pydata.org)
-	* [matplotlib](http://matplotlib.org) (included in Anaconda distribution, required for generating plots)
-	* [seaborn](https://stanford.edu/~mwaskom/software/seaborn) (required for generating plots)
+Add the single cell nextseq pipeline into the current site packages:
 
-### Illumina's bcl2fastq2
+```
+python setup.py develop
+```
 
-[bcl2fastq](http://support.illumina.com/downloads/bcl2fastq-conversion-software-v217.html) is required and should be on the path.
+Use develop mode to allow for modifying of the code during the debugging phase.
+Later versions will be released through conda.
 
-### FastQC
+## Run the pipeline
 
-[FastQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc) is required and should be on the path.
+The pipeline takes 3 arguments.  A config file (example for genesis provided),
+the nextseq input directory, and the output directory.
 
-### BWA
+Run the pipeline as follows:
 
-[BWA](http://bio-bwa.sourceforge.net) is required and should be on the path.
+```
+single_cell_nextseq \
+  /shahlab/archive/single_cell_indexing/NextSeq/161230_NS500668_0153_AHHHWJAFXX/ \
+  /shahlab/amcpherson/single_cell_nextseq1/test_output_new/ \
+  /shahlab/amcpherson/single_cell_nextseq1/config_shahlab_new.yaml \
+  --loglevel DEBUG \
+  --submit asyncqsub \
+  --maxjobs 1000 \
+  --nocleanup
+```
 
-### Samtools
+## Setup in the cloud
 
-[Samtools](http://www.htslib.org) is required and should be on the path.
+Run the following in an instance:
 
-### Picard
+```
+sudo mkdir /mnt/software
+sudo chown shahlab:shahlab /mnt/software
+cd /mnt/software/
+wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
+bash Miniconda2-latest-Linux-x86_64.sh -b -p /mnt/software/miniconda2
 
-[Picard](http://broadinstitute.github.io/picard) is required. A path must be specified in the config.yaml file.
+source ~/.bashrc
 
-## Running the pipeline on the Shah lab infrastructure
+# conda environment
+conda config --add channels https://conda.anaconda.org/dranew
+conda config --add channels 'bioconda'
+conda config --add channels 'r'
 
-After installation, please follow the steps below for each pipeline run:
+conda create --name singlecellpipeline python=2.7 \
+  hmmcopy_utils \
+  samtools \
+  bwa \
+  fastqc \
+  picard \
+  cutadapt \
+  trim-galore \
+  pypeliner \
+  bioconductor-hmmcopy \
+  r-plyr \
+  r-getopt \
+  pyyaml \
+  pandas \
+  statsmodels
+  
 
-* Download the NextSeq run from the UBC BRC web server to lustre archive
+source activate singlecellpipeline
 
-		cd /share/lustre/archive/single_cell_indexing/NextSeq/bcl
-		wget -m -np -nH --cut-dirs=1 --reject="index.html*" <webserver_address>/sequencing/<run_id>/
+git clone https://dranew@bitbucket.org/dranew/single_cell_nextseq.git
+cd single_cell_nextseq/
+python setup.py develop
 
-* Create a `SampleSheet.csv` file that conforms to specifications, and save it in the NextSeq run directory on lustre archive
-* Use rsync to transfer the NextSeq run directory to genesis scratch space
+# Download reference genome
+sudo mkdir /mnt/refdata
+sudo chown shahlab:shahlab /mnt/refdata
+cd /mnt/refdata/
+wget ftp://ftp.bcgsc.ca/public/shahlab/singlecellpipeline/*
 
-		ssh xhost
-		ssh thost05
-		rsync --dry-run -avzL <your_user_id>@<beast_ip_address>:/share/lustre/archive/single_cell_indexing/NextSeq/bcl/<run_id> /genesis/extscratch/shahlab/<your_user_id>/<some_directory>
+# Create analysis space
+sudo mkdir /mnt/analysis
+sudo chown shahlab:shahlab /mnt/analysis
+```
 
-* Create a run output directory on genesis scratch space and copy the `config.yaml` template and `run_pipeline.sh` template to it
+Copy the fastq files.  Run the following on thost:
 
-		mkdir /genesis/extscratch/shahlab/<your_user_id>/<run_analysis_directory>
-		cp /path/to/pipeline/installation/single_cell_nextseq/alignment/templates/config.yaml /genesis/extscratch/shahlab/<your_user_id>/<analysis_directory>
-		cp /path/to/pipeline/installation/single_cell_nextseq/alignment/templates/run_pipeline.sh /genesis/extscratch/shahlab/<your_user_id>/<analysis_directory>
+```
+scp -r /shahlab/amcpherson/single_cell_nextseq1/test_output_new/fastq sccompute:/mnt/analysis/
+scp -r /shahlab/archive/single_cell_indexing/NextSeq/161230_NS500668_0153_AHHHWJAFXX/SampleSheet.csv sccompute:/mnt/analysis/
+```
 
-* Specify the paths to the NextSeq run directory and output directory in the `config.yaml` file
-* Specify the path to the `config.yaml` file in the `run_pipeline.sh` file
-* Open a screen on genesis
 
-		screen -S <name_of_screen>
 
-* Source your bashrc file and ensure the required programs are on the path
 
-		source ~/.bashrc
-		which python
-
-* Launch the pipeline from your run directory
-
-		cd /genesis/extscratch/shahlab/<your_user_id>/<run_analysis_directory>
-		bash run_pipeline.sh
-
-* You can check on your jobs with
-
-		qstat -u <your_user_id>
-
-* You can check for pipeline completion status with
-
-		cat run_pipeline.error.txt
-
-* After successful completion, rsync the output files to your directory on lustre projects
-
-		rsync --dry-run -avzL --exclude='tmp/' /genesis/extscratch/shahlab/<your_user_id>/<analysis_directory> <your_user_id>@<beast_ip_address>:/share/lustre/projects/<some_directory>
-
-* Note that you should NOT rsync the NextSeq directory back, we will only store the original BCL files and `SampleSheet.csv` on lustre archive
-* Open the metric table and figures on lustre and check that they look sensible
-* Clean up your temporary genesis directories
-* Close your screen
-
-		exit
-
-## Notes
-
-* If the index sequences are specified incorrectly in `SampleSheet.csv`, the pipeline will not be aware of this and will proceed to the alignment steps. If you suspect that demultiplexing was not successful, you can check the file sizes with
-
-		du -sh /genesis/extscratch/shahlab/<your_user_id>/<some_directory>/<run_id>/Data/Intensities/BaseCalls/*.fastq.gz
-
-* File sizes should be in Mb for all non-NTC samples, and in Kb for NTC samples. It is normal for the Undetermined file to be larger than any given single-cell file
-* If you find that demultiplexing was indeed unsuccessful, you MUST do the following:
-	* Delete the NextSeq run directory on genesis
-	* Fix the SampleSheet.csv file on lustre archive
-	* Re-transfer the NextSeq directory to genesis and launch the pipeline again
-* It is very important that the correct `SampleSheet.csv` is saved on archive for future reference
