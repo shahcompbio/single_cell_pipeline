@@ -69,6 +69,32 @@ def parse_sample_sheet(sample_sheet_filename, sample_info_filename):
     data = data.rename(columns=column_renames)
     data = data[column_renames.values()]
 
+    def extract_cell_call(description):
+        if ';' in description:
+            return description.split(';')[0].replace('CC=','')
+        elif description == '':
+            return 'C1'
+        else:
+            return description
+
+    data['cell_call'] = data['sample_description'].apply(extract_cell_call)
+
+    def extract_experimental_condition(description):
+        if ';' in description:
+            return description.split(';')[1].replace('EC=','')
+        elif description == '':
+            return 'A'
+        else:
+            return 'NA'
+
+    data['experimental_condition'] = data['sample_description'].apply(extract_experimental_condition)
+
+    # Set to default values
+    data.loc[data['sample_well'] == '', 'sample_well'] = 'R1_C1'
+    data.loc[data['sample_plate'] == '', 'sample_plate'] = 'R1-C1'
+    data.loc[data['i5_barcode'] == '', 'i5_barcode'] = 'i5-1'
+    data.loc[data['i7_barcode'] == '', 'i7_barcode'] = 'i7-1'
+
     # Replace '-' with '_' for sample id and sample plate
     data['sample_id'] = data['sample_id'].apply(lambda a: a.replace('-', '_'))
     data['sample_plate'] = data['sample_plate'].apply(lambda a: a.replace('-', '_'))
