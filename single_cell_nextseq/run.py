@@ -282,7 +282,7 @@ def main():
             '--corrected_reads', mgd.InputFile(hmmcopy_reads_filename),
             '--segments', mgd.InputFile(hmmcopy_segments_filename),
             '--hmm_metrics', mgd.InputFile(hmmcopy_hmm_metrics_filename),
-            '--align_metrics', mgd.InputFile(metrics_summary_filename),
+            '--sample_info', mgd.InputFile(sample_info_filename),
             '--ref_genome', mgd.InputFile(config['ref_genome']),
             '--num_states', config['num_states'],
             '--reads_output', mgd.OutputFile(reads_plot_filename),
