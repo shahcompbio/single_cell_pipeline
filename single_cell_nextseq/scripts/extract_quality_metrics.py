@@ -330,8 +330,7 @@ def main():
     else:
         segments_data = None
 
-
-    metrics = compute_quality_metrics(corrected_data, segments_data, args.sample_info)
+    metrics = compute_quality_metrics(corrected_data, segments_data, args.sample_id)
 
     df_metrics = pd.concat([df_metrics, pd.DataFrame(metrics).transpose()])
 
@@ -341,10 +340,10 @@ def main():
 
         loglik = float(param_data.ix[param_data['parameter']=='loglik', 'final'])
 
-        df_loglik = df_loglik.append(pd.Series({args.sample_info: loglik}))
+        df_loglik = df_loglik.append(pd.Series({args.sample_id: loglik}))
 
     else:
-        df_loglik = df_loglik.append(pd.Series({args.sample_info: np.nan}))
+        df_loglik = df_loglik.append(pd.Series({args.sample_id: np.nan}))
 
     df_loglik = pd.DataFrame(df_loglik.reset_index())
     
