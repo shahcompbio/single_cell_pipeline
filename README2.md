@@ -93,6 +93,7 @@ conda create --name singlecellpipeline python=2.7 \
   r-plyr \
   r-getopt \
   pyyaml \
+  statsmodels
   
 
 source activate singlecellpipeline

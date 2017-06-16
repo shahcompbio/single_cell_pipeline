@@ -224,11 +224,11 @@ def create_hmmcopy_workflow(
         args=(
             'python',
             extract_quality_metrics_script,
-            mgd.InputFile(parameters_filename),
-            mgd.InputFile(corrected_reads_filename),
-            mgd.InputFile(segments_filename),
-            mgd.OutputFile(hmm_metrics_filename),
-            sample_id,
+            '--hmmcopy_params', mgd.InputFile(parameters_filename),
+            '--hmmcopy_corrected_reads', mgd.InputFile(corrected_reads_filename),
+            '--hmmcopy_segments', mgd.InputFile(segments_filename),
+            '--out_file', mgd.OutputFile(hmm_metrics_filename),
+            '--sample_id', sample_id,
         ),
     )
 
