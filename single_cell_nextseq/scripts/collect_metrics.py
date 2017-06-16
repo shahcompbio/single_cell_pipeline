@@ -177,6 +177,10 @@ def extract_insert_metrics(metrics_file):
     targetlines = []
     
     line = mfile.readline()
+
+    # Check whether a dummy file has been written in case of picard insert metrics failure
+    if 'FAILED' in line:
+        return 0, 0, 0
     
     while line != '':
         if line.startswith('## METRICS CLASS'):
