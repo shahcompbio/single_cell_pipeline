@@ -187,11 +187,11 @@ def run_hmmcopy(
         '--post_marginals_output=' + posterior_marginals_filename,
         '--map_cutoff=' + str(config['map_cutoff']),
         '--num_states=' + str(config['num_states']),
-        '--param_mu=', str(config['parameters']['mu']),
-        '--param_m=', str(config['parameters']['m']),
-        '--param_k=', str(config['parameters']['kappa']),
-        '--param_e=', str(config['parameters']['e']),
-        '--param_s=', str(config['parameters']['s']),
+        '--param_mu=' + str(config['parameters']['mu']),
+        '--param_m=' + str(config['parameters']['m']),
+        '--param_k=' + str(config['parameters']['kappa']),
+        '--param_e=' + str(config['parameters']['e']),
+        '--param_s=' + str(config['parameters']['s']),
         '--sample_id=' + sample_id)
 
 
