@@ -263,9 +263,8 @@ def main():
         ),
     )
 
-    workflow.transform(
+    workflow.commandline(
         name='plot_hmm_copy',
-        func=single_cell_nextseq.tasks.concatenate_csv,
         args=(
             'python',
             plot_hmmcopy_script,
