@@ -36,7 +36,7 @@ def parse_args():
     # Read Command Line Input
     #=======================================================================================================================
     parser = argparse.ArgumentParser()
-    
+
     parser.add_argument('--corrected_reads',
                         required=True, 
                         help='''Path to HMMcopy corrected reads output .csv file.''')
@@ -45,9 +45,13 @@ def parse_args():
                         required=True, 
                         help='''Path to HMMcopy segments output .csv file.''')
     
-    parser.add_argument('--quality_metrics',
+    parser.add_argument('--hmm_metrics',
                         required=True, 
-                        help='''Optional quality metrics file for the run, with 'mad_neutral_state' column.''')
+                        help='''HMM quality metrics file for the run, with 'mad_neutral_state' column.''')
+
+    parser.add_argument('--sample_info',
+                        required=True, 
+                        help='''Sample info .csv file.''')
 
     parser.add_argument('--ref_genome',
                         required=True, 
@@ -104,12 +108,22 @@ class GenHmmPlots(object):
         return data
 
 
-    def read_quality_metrics(self):
+    def read_hmm_metrics(self):
         """
         
         """
         
-        df = self.load_data_pandas(self.args.quality_metrics)
+        df = self.load_data_pandas(self.args.hmm_metrics)
+
+        return df
+
+
+    def read_sample_info(self):
+        """
+
+        """
+
+        df = self.load_data_pandas(self.args.sample_info)
         
         return df
 
@@ -132,7 +146,7 @@ class GenHmmPlots(object):
         
         return df
 
-    def get_sample_ids(self, df, metrics):
+    def get_sample_ids(self, df, sample_info):
         """
         
         """
@@ -140,7 +154,7 @@ class GenHmmPlots(object):
 
         samdata = defaultdict(list)
         for samp in samples:
-            ec = metrics.get_group(samp)['experimental_condition'].iloc[0]
+            ec = sample_info.get_group(samp)['experimental_condition'].iloc[0]
         
             samdata[ec].append(samp)
         
@@ -163,17 +177,17 @@ class GenHmmPlots(object):
 
         return reads_pdf, segs_pdf, bias_pdf
 
-    def get_plot_title(self, sample_id, metrics):
+    def get_plot_title(self, sample_id, sample_info, metrics):
         """
         
         """
-        if 'cell_call' in metrics.get_group(sample_id):
-            cellcall = metrics.get_group(sample_id)['cell_call'].iloc[0]
+        if 'cell_call' in sample_info.get_group(sample_id):
+            cellcall = sample_info.get_group(sample_id)['cell_call'].iloc[0]
         else:
             cellcall='NA'
 
-        if 'experimental_condition' in metrics.get_group(sample_id):
-            cond = metrics.get_group(sample_id)['experimental_condition'].iloc[0]
+        if 'experimental_condition' in sample_info.get_group(sample_id):
+            cond = sample_info.get_group(sample_id)['experimental_condition'].iloc[0]
         else:
             cond='NA'
 
@@ -362,17 +376,18 @@ class GenHmmPlots(object):
         """
         main
         """
-        metrics = self.read_quality_metrics()
+        sample_info = self.read_sample_info()
+        metrics = self.read_hmm_metrics()
         reads = self.read_corrected_reads()
         segs = self.read_segments()
 
         if self.args.samples:
             samples = self.args.samples
         else:
-            samples = self.get_sample_ids(reads, metrics)
+            samples = self.get_sample_ids(reads, sample_info)
 
         for sample in samples:
-            plot_title = self.get_plot_title(sample, metrics)
+            plot_title = self.get_plot_title(sample, metrics, sample_info)
 
             #If the check_mad returns false: filter it
             if not self.check_mad_score(sample, metrics):
