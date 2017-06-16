@@ -1,5 +1,6 @@
 import os
 import errno
+import pandas as pd
 import pypeliner.commandline
 
 
