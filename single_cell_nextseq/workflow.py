@@ -182,6 +182,7 @@ def create_hmmcopy_workflow(
     parameters_filename,
     posterior_marginals_filename,
     hmm_metrics_filename,
+    sample_id,
     config):
 
     chromosomes = config['chromosomes']
@@ -195,23 +196,23 @@ def create_hmmcopy_workflow(
             'readCounter',
             '-w', str(config['bin_size']),
             '-q', str(config['min_mqual']),
-            '-c', chroms,
+            '-c', ','.join(chromosomes),
             mgd.InputFile(bam_filename),
             '>',
             mgd.OutputFile(wig_filename),
         ),
     )
 
-    workflow.commandline(
+    workflow.transform(
         name='run_hmmcopy',
         ctx={'mem': 4},
+        func=single_cell_nextseq.tasks.run_hmmcopy,
         args=(
             mgd.InputFile(wig_filename),
             mgd.OutputFile(corrected_reads_filename),
             mgd.OutputFile(segments_filename),
             mgd.OutputFile(parameters_filename),
             mgd.OutputFile(posterior_marginals_filename),
-            mgd.TempSpace('hmmcopy_temp'),
             sample_id,
             config,
         ),

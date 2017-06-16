@@ -138,7 +138,7 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_
     with open(flagstat_metrics_filename) as f:
         for line in f:
             if 'properly paired' in line:
-                if line.startswith('0 ')
+                if line.startswith('0 '):
                     has_paired = False
                 else:
                     has_paired = True
@@ -185,13 +185,13 @@ def run_hmmcopy(
         '--segs_output=' + segments_filename,
         '--params_output=' + parameters_filename,
         '--post_marginals_output=' + posterior_marginals_filename,
-        '--map_cutoff=' + config['map_cutoff'],
-        '--num_states=' + config['num_states'],
-        '--param_mu=', config['parameters']['mu'],
-        '--param_m=', config['parameters']['m'],
-        '--param_k=', config['parameters']['kappa'],
-        '--param_e=', config['parameters']['e'],
-        '--param_s=', config['parameters']['s'],
+        '--map_cutoff=' + str(config['map_cutoff']),
+        '--num_states=' + str(config['num_states']),
+        '--param_mu=', str(config['parameters']['mu']),
+        '--param_m=', str(config['parameters']['m']),
+        '--param_k=', str(config['parameters']['kappa']),
+        '--param_e=', str(config['parameters']['e']),
+        '--param_s=', str(config['parameters']['s']),
         '--sample_id=' + sample_id)
 
 

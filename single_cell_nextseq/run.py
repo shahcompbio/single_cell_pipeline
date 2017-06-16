@@ -98,6 +98,10 @@ def main():
     metrics_summary_template = os.path.join(metrics_directory, 'summary', '{sample_id}_summary.csv')
     metrics_summary_filename = os.path.join(metrics_directory, 'summary', 'summary.csv')
 
+    bam_directory = os.path.join(args['out_dir'], 'bams')
+    bam_template = os.path.join(bam_directory, '{sample_id}.bam')
+    bam_index_template = os.path.join(bam_directory, '{sample_id}.bam.bai')
+
     hmmcopy_directory = os.path.join(args['out_dir'], 'hmmcopy')
     hmmcopy_wig_template = os.path.join(hmmcopy_directory, 'hmmcopy', '{sample_id}_readcount.wig')
     hmmcopy_reads_template = os.path.join(hmmcopy_directory, 'hmmcopy', '{sample_id}_reads.csv')
@@ -195,8 +199,8 @@ def main():
         args=(
             mgd.TempInputFile('fastq_trim_1', 'sample_id'),
             mgd.TempInputFile('fastq_trim_2', 'sample_id'),
-            mgd.TempOutputFile('bam', 'sample_id'),
-            mgd.TempOutputFile('bam_index', 'sample_id'),
+            mgd.OutputFile('bam', 'sample_id', template=bam_template),
+            mgd.OutputFile('bam_index', 'sample_id', template=bam_index_template),
             mgd.InputFile(config['ref_genome']),
             mgd.Template(read_group_template, 'sample_id'),
             mgd.OutputFile(metrics_summary_template, 'sample_id'),
@@ -211,13 +215,14 @@ def main():
         axes=('sample_id',),
         func=single_cell_nextseq.workflow.create_hmmcopy_workflow,
         args=(
-            mgd.TempInputFile('bam', 'sample_id'),
+            mgd.InputFile('bam', 'sample_id', template=bam_template),
             mgd.OutputFile(hmmcopy_wig_template, 'sample_id'),
             mgd.OutputFile(hmmcopy_reads_template, 'sample_id'),
             mgd.OutputFile(hmmcopy_segments_template, 'sample_id'),
             mgd.OutputFile(hmmcopy_parameters_template, 'sample_id'),
             mgd.OutputFile(hmmcopy_posteriors_template, 'sample_id'),
             mgd.OutputFile(hmmcopy_hmm_metrics_template, 'sample_id'),
+            mgd.InputInstance('sample_id'),
             config,
         ),
     )
