@@ -389,7 +389,7 @@ class GenHmmPlots(object):
             samples = self.get_sample_ids(reads, sample_info)
 
         for sample in samples:
-            plot_title = self.get_plot_title(sample, metrics, sample_info)
+            plot_title = self.get_plot_title(sample, sample_info, metrics)
 
             #If the check_mad returns false: filter it
             if not self.check_mad_score(sample, metrics):
