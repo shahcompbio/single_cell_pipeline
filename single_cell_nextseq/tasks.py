@@ -43,6 +43,39 @@ def demultiplex_fastq_files(sample_sheet_filename, nextseq_directory, fastq_1_fi
         os.rename(temp_fq_2, fastq_2_filenames[sample_id])
 
 
+def parse_sample_sheet(sample_sheet_filename, sample_info_filename):
+    """ Parse the sample sheet data into a csv table
+    """
+    header = None
+    with open(sample_sheet_filename) as sample_sheet_file:
+        for idx, line in enumerate(sample_sheet_file):
+            if line.startswith('[Data]'):
+                header = idx + 1
+                break
+
+    if header is None:
+        raise Exception('Unable to find [Data] in samplesheet {}'.format(sample_sheet_filename))
+
+    data = pd.read_csv(sample_sheet_filename, header=header, dtype=str)
+
+    column_renames = {
+        'Sample_ID': 'sample_id',
+        'Sample_Well': 'sample_well',
+        'Description': 'sample_description',
+        'Sample_Plate': 'sample_plate',
+        'I5_Index_ID': 'i5_barcode',
+        'I7_Index_ID': 'i7_barcode'}
+    
+    data = data.rename(columns=column_renames)
+    data = data[column_renames.values()]
+
+    # Replace '-' with '_' for sample id and sample plate
+    data['sample_id'] = data['sample_id'].apply(lambda a: a.replace('-', '_'))
+    data['sample_plate'] = data['sample_plate'].apply(lambda a: a.replace('-', '_'))
+
+    data.to_csv(sample_info_filename, index=False)
+
+
 def produce_fastqc_report(fastq_filename, fastq_basename, output_html, output_plots, temp_directory):
     makedirs(temp_directory)
 

@@ -89,6 +89,7 @@ def main():
                       'This will affect duplicate marking if BAMs are later merged. ' +
                       'Creating BAM without read group information in header.')
 
+    sample_info_filename = os.path.join(args['out_dir'], 'sample_info.csv')
     trimgalore_results_template = os.path.join(args['out_dir'], 'trim', '{sample_id}')
     metrics_directory = os.path.join(args['out_dir'], 'metrics')
     fastqc_1_html_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R1.fastqc.html')
@@ -134,6 +135,16 @@ def main():
     workflow.setobj(
         obj=mgd.TempOutputObj('fastq_2_basename', 'sample_id', axes_origin=[]),
         value=fastq_2_basenames,
+    )
+
+    workflow.transform(
+        name='parse_sample_sheet',
+        ctx={'mem': 64},
+        func=single_cell_nextseq.tasks.parse_sample_sheet,
+        args=(
+            mgd.InputFile(sample_sheet_filename),
+            mgd.OutputFile(sample_info_filename),
+        ),
     )
 
     workflow.transform(
