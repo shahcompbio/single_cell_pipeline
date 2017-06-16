@@ -1,0 +1,54 @@
+
+# Read group information (PU and LB are read from the NextSeq SampleSheet.csv file)
+read_group:  
+  # Platform
+  PL: illumina
+  
+  # Sequencing centre identifier (either BCCAGSC or UBCBRC)
+  CN: UBCBRC
+
+# Reference genome to align to in fasta format. Should be indexed by aligner and samtools
+ref_genome: /mnt/refdata/GRCh37-lite.fa
+
+# Chromosomes for copy number analysis
+chromosomes: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X']
+
+# Minimum base quality to count a read
+min_bqual: 20
+
+# Minimum mapping quality to count a read
+min_mqual: 20
+
+# Identifier for analysis
+analysis_id: test
+
+# Bin size
+bin_size: 500000
+
+# Optional mappability cutoff
+map_cutoff: 0.9
+
+# Number of states
+num_states: 7
+
+# HMMcopy parameters
+parameters:
+    mu: 0,0.5,1.0,1.5,2.0,2.5,3.0
+
+    m: 0,0.5,1.0,1.5,2.0,2.5,3.0
+
+    kappa: 25,100,700,100,25,25,25
+
+    e: 0.995
+
+    s: 35
+
+# Binned GC content file
+gc_wig_file: /mnt/refdata/GRCh37-lite.gc.ws_500000.wig
+
+# Binned mappability file
+map_wig_file: /mnt/refdata/GRCh37-lite.map.ws_125_to_500000.wig
+
+# Adapter sequences for trimgalore
+adapter: 'CTGTCTCTTATACACATCTCCGAGCCCACGAGAC'
+adapter2: 'CTGTCTCTTATACACATCTGACGCTGCCGACGA'

@@ -23,7 +23,10 @@ conda create --name singlecellpipeline python=2.7 \
   picard \
   cutadapt \
   trim-galore \
-  pypeliner
+  pypeliner \
+  bioconductor-hmmcopy \
+  r-plyr \
+  r-getopt
 ```
 
 Activate the environment:
@@ -58,3 +61,64 @@ single_cell_nextseq \
   --maxjobs 1000 \
   --nocleanup
 ```
+
+## Setup in the cloud
+
+Run the following in an instance:
+
+```
+sudo mkdir /mnt/software
+sudo chown shahlab:shahlab /mnt/software
+cd /mnt/software/
+wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
+bash Miniconda2-latest-Linux-x86_64.sh -b -p /mnt/software/miniconda2
+
+source ~/.bashrc
+
+# conda environment
+conda config --add channels https://conda.anaconda.org/dranew
+conda config --add channels 'bioconda'
+conda config --add channels 'r'
+
+conda create --name singlecellpipeline python=2.7 \
+  hmmcopy_utils \
+  samtools \
+  bwa \
+  fastqc \
+  picard \
+  cutadapt \
+  trim-galore \
+  pypeliner \
+  bioconductor-hmmcopy \
+  r-plyr \
+  r-getopt \
+  pyyaml \
+  
+
+source activate singlecellpipeline
+
+git clone https://dranew@bitbucket.org/dranew/single_cell_nextseq.git
+cd single_cell_nextseq/
+python setup.py develop
+
+# Download reference genome
+sudo mkdir /mnt/refdata
+sudo chown shahlab:shahlab /mnt/refdata
+cd /mnt/refdata/
+wget ftp://ftp.bcgsc.ca/public/shahlab/singlecellpipeline/*
+
+# Create analysis space
+sudo mkdir /mnt/analysis
+sudo chown shahlab:shahlab /mnt/analysis
+```
+
+Copy the fastq files.  Run the following on thost:
+
+```
+scp -r /shahlab/amcpherson/single_cell_nextseq1/test_output_new/fastq sccompute:/mnt/analysis/
+scp -r /shahlab/archive/single_cell_indexing/NextSeq/161230_NS500668_0153_AHHHWJAFXX/SampleSheet.csv sccompute:/mnt/analysis/
+```
+
+
+
+
