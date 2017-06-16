@@ -103,6 +103,8 @@ class GenHmmPlots(object):
         data = pd.read_csv(infile,
                            sep=',')
 
+        # HACK!
+        data['sample_id'] = data['sample_id'].apply(lambda a: a.replace('-', '_'))
         data = data.groupby('sample_id')
         
         return data
