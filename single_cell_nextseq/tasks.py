@@ -199,7 +199,11 @@ def run_hmmcopy(
 def concatenate_csv(in_filenames, out_filename):
     data = []
     for key, in_filename in in_filenames.iteritems():
-        data.append(pd.read_csv(in_filename))
+        with open(in_filename) as f:
+            first_line = f.readline()
+            if len(first_line) == 0:
+                continue
+        data.append(pd.read_csv(in_filename, dtype=str))
     data = pd.concat(data, ignore_index=True)
     data.to_csv(out_filename, index=False)
 
