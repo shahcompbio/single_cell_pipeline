@@ -15,18 +15,7 @@ conda config --add channels 'r'
 Then create an environment with the required packages:
 
 ```
-conda create --name singlecellpipeline python=2.7 \
-  hmmcopy_utils \
-  samtools \
-  bwa \
-  fastqc \
-  picard \
-  cutadapt \
-  trim-galore \
-  pypeliner \
-  bioconductor-hmmcopy \
-  r-plyr \
-  r-getopt
+conda create --name singlecellpipeline --file conda_packages.txt
 ```
 
 Activate the environment:
