@@ -66,6 +66,7 @@ def main():
         fastq_2_filenames = {}
         for i, line in zip(range(num_samples), lines[start_index:]):
             sample_id = line.split(',')[0]
+            sample_id = sample_id.replace('-', '_')
             fastq_1_basenames[sample_id] = '{0}_S{1}_R1_001'.format(sample_id, str(i+1))
             fastq_2_basenames[sample_id] = '{0}_S{1}_R2_001'.format(sample_id, str(i+1))
             fastq_1_filenames[sample_id] = os.path.join(fastq_directory, fastq_1_basenames[sample_id] + '.fastq.gz')
@@ -104,16 +105,16 @@ def main():
     bam_index_template = os.path.join(bam_directory, '{sample_id}.bam.bai')
 
     hmmcopy_directory = os.path.join(args['out_dir'], 'hmmcopy')
-    hmmcopy_wig_template = os.path.join(hmmcopy_directory, 'hmmcopy', '{sample_id}_readcount.wig')
-    hmmcopy_reads_template = os.path.join(hmmcopy_directory, 'hmmcopy', '{sample_id}_reads.csv')
-    hmmcopy_segments_template = os.path.join(hmmcopy_directory, 'hmmcopy', '{sample_id}_segments.csv')
-    hmmcopy_parameters_template = os.path.join(hmmcopy_directory, 'hmmcopy', '{sample_id}_parameters.csv')
-    hmmcopy_posteriors_template = os.path.join(hmmcopy_directory, 'hmmcopy', '{sample_id}_posteriors.csv')
-    hmmcopy_hmm_metrics_template = os.path.join(hmmcopy_directory, 'hmmcopy', '{sample_id}_hmm_metrics.csv')
+    hmmcopy_wig_template = os.path.join(hmmcopy_directory, '{sample_id}_readcount.wig')
+    hmmcopy_reads_template = os.path.join(hmmcopy_directory, '{sample_id}_reads.csv')
+    hmmcopy_segments_template = os.path.join(hmmcopy_directory, '{sample_id}_segments.csv')
+    hmmcopy_parameters_template = os.path.join(hmmcopy_directory, '{sample_id}_parameters.csv')
+    hmmcopy_posteriors_template = os.path.join(hmmcopy_directory, '{sample_id}_posteriors.csv')
+    hmmcopy_hmm_metrics_template = os.path.join(hmmcopy_directory, '{sample_id}_hmm_metrics.csv')
 
-    hmmcopy_segments_filename = os.path.join(hmmcopy_directory, 'hmmcopy', 'segments.csv')
-    hmmcopy_reads_filename = os.path.join(hmmcopy_directory, 'hmmcopy', 'reads.csv')
-    hmmcopy_hmm_metrics_filename = os.path.join(hmmcopy_directory, 'hmmcopy', 'hmm_metrics.csv')
+    hmmcopy_segments_filename = os.path.join(hmmcopy_directory, 'segments.csv')
+    hmmcopy_reads_filename = os.path.join(hmmcopy_directory, 'reads.csv')
+    hmmcopy_hmm_metrics_filename = os.path.join(hmmcopy_directory, 'hmm_metrics.csv')
 
     plots_directory = os.path.join(args['out_dir'], 'plots')
     reads_plot_filename = os.path.join(plots_directory, 'corrected_reads.pdf')
