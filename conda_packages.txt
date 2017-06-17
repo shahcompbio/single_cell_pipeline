@@ -12,3 +12,4 @@ r-plyr
 r-getopt
 matplotlib
 seaborn
+statsmodels
