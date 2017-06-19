@@ -119,16 +119,6 @@ def run_trimgalore(fastq_1_filename, fastq_2_filename, fastq_1_basename, fastq_2
                    trim_1_filename, trim_2_filename, results_directory, adapter, adapter2):
     makedirs(results_directory)
 
-    print ' '.join((
-        'trim_galore',
-        '--fastqc',
-        '--paired',
-        '--output_dir', results_directory,
-        '--adapter', adapter,
-        '--adapter2', adapter2,
-        fastq_1_filename,
-        fastq_2_filename))
-
     pypeliner.commandline.execute(
         'trim_galore',
         '--fastqc',
