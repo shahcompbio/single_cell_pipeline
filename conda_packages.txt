@@ -13,3 +13,4 @@ r-getopt
 matplotlib
 seaborn
 statsmodels
+pyyaml
