@@ -24,6 +24,7 @@ def generate_fastq_file_pairs(sample_sheet_filename, fastq_directory):
 
     for i, line in zip(range(num_samples), lines[start_index:]):
         sample_id = line.split(',')[0]
+        sample_id = sample_id.replace('-','_')
 
         fastq_file_1 = os.path.join(fastq_directory, '{0}_S{1}_R1_001.fastq.gz'.format(sample_id, str(i+1)))
         fastq_file_2 = os.path.join(fastq_directory, '{0}_S{1}_R2_001.fastq.gz'.format(sample_id, str(i+1)))
