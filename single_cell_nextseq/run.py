@@ -3,7 +3,7 @@ import argparse
 import utils
 import pypeliner
 import pypeliner.managed as mgd
-import single_cell_nextseq.tasks
+from single_cell_nextseq.workflows import tasks
 from workflows import alignment_workflow, hmmcopy_workflow
 from workflows import summary_workflow, fastqc_workflow
 
