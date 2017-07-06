@@ -7,7 +7,7 @@ Created on Jul 6, 2017
 import os
 import pypeliner
 import pypeliner.managed as mgd
-import single_cell_nextseq.tasks
+import tasks
 
 def create_fastqc_workflow(fastq_1, fastq_2, trim_1_trim, trim_2_trim, config, metrics_directory, sample_id):#, fastq_1_basename, fastq_2_basename):
 
@@ -22,7 +22,7 @@ def create_fastqc_workflow(fastq_1, fastq_2, trim_1_trim, trim_2_trim, config, m
 
     workflow.transform(
         name='produce_fastqc_report_1',
-        func=single_cell_nextseq.tasks.produce_fastqc_report,
+        func=tasks.produce_fastqc_report,
         args=(
             mgd.InputFile(fastq_1),
             mgd.OutputFile('fastqc_1_html'),
@@ -34,7 +34,7 @@ def create_fastqc_workflow(fastq_1, fastq_2, trim_1_trim, trim_2_trim, config, m
 
     workflow.transform(
         name='produce_fastqc_report_2',
-        func=single_cell_nextseq.tasks.produce_fastqc_report,
+        func=tasks.produce_fastqc_report,
         args=(
             mgd.InputFile(fastq_2),
             mgd.OutputFile('fastqc_2_html'),

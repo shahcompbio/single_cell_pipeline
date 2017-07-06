@@ -7,7 +7,7 @@ import os
 import pypeliner
 import pypeliner.managed as mgd
 
-import single_cell_nextseq.tasks
+import tasks
 
 def create_alignment_workflow(
     fastq_1_filename,
@@ -88,7 +88,7 @@ def create_alignment_workflow(
     workflow.transform(
         name='bam_sort',
         ctx={'mem': 16},
-        func=single_cell_nextseq.tasks.bam_sort,
+        func=tasks.bam_sort,
         args=(
             mgd.TempInputFile('aligned.bam'),
             mgd.TempOutputFile('sorted.bam'),
@@ -99,7 +99,7 @@ def create_alignment_workflow(
     workflow.transform(
         name='bam_markdups',
         ctx={'mem': 16},
-        func=single_cell_nextseq.tasks.bam_markdups,
+        func=tasks.bam_markdups,
         args=(
             mgd.TempInputFile('sorted.bam'),
             mgd.OutputFile(bam_filename),
@@ -132,7 +132,7 @@ def create_alignment_workflow(
     workflow.transform(
         name='bam_collect_wgs_metrics',
         ctx={'mem': 24},
-        func=single_cell_nextseq.tasks.bam_collect_wgs_metrics,
+        func=tasks.bam_collect_wgs_metrics,
         args=(
             mgd.InputFile(bam_filename),
             mgd.InputFile(ref_genome),
@@ -144,7 +144,7 @@ def create_alignment_workflow(
     workflow.transform(
         name='bam_collect_gc_metrics',
         ctx={'mem': 24},
-        func=single_cell_nextseq.tasks.bam_collect_gc_metrics,
+        func=tasks.bam_collect_gc_metrics,
         args=(
             mgd.InputFile(bam_filename),
             mgd.InputFile(ref_genome),
@@ -158,7 +158,7 @@ def create_alignment_workflow(
     workflow.transform(
         name='bam_collect_insert_metrics',
         ctx={'mem': 24},
-        func=single_cell_nextseq.tasks.bam_collect_insert_metrics,
+        func=tasks.bam_collect_insert_metrics,
         args=(
             mgd.InputFile(bam_filename),
             mgd.InputFile(flagstat_metrics_filename),

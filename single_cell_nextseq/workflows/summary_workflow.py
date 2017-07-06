@@ -6,7 +6,7 @@ Created on Jul 6, 2017
 import os
 import pypeliner
 import pypeliner.managed as mgd
-import single_cell_nextseq.tasks
+import tasks
 
 
 def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summary, gc_matrix, cn_matrix, config, args):
@@ -73,7 +73,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.transform(
         name='merge_tables',
-        func=single_cell_nextseq.tasks.concatenate_csv,
+        func=tasks.concatenate_csv,
         args=(
             hmm_segments,
             mgd.OutputFile(hmmcopy_segments_filename),
@@ -82,7 +82,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.transform(
         name='merge_reads',
-        func=single_cell_nextseq.tasks.concatenate_csv,
+        func=tasks.concatenate_csv,
         args=(
             hmm_reads,
             mgd.OutputFile(hmmcopy_reads_filename),
@@ -91,7 +91,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.transform(
         name='merge_hmm_metrics',
-        func=single_cell_nextseq.tasks.concatenate_csv,
+        func=tasks.concatenate_csv,
         args=(
             hmm_metrics,
             mgd.OutputFile(hmmcopy_hmm_metrics_filename),
@@ -100,7 +100,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.transform(
         name='merge_summary_metrics',
-        func=single_cell_nextseq.tasks.concatenate_csv,
+        func=tasks.concatenate_csv,
         args=(
             metrics_summary,
             mgd.OutputFile(metrics_summary_filename),
@@ -109,7 +109,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.transform(
         name='merge_gc_metrics',
-        func=single_cell_nextseq.tasks.merge_csv,
+        func=tasks.merge_csv,
         args=(
             gc_matrix,
             mgd.OutputFile(gc_metrics_filename),
@@ -120,7 +120,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.transform(
         name='merge_cn_metrics',
-        func=single_cell_nextseq.tasks.merge_csv,
+        func=tasks.merge_csv,
         args=(
             cn_matrix,
             mgd.OutputFile(cn_metrics_filename),

@@ -83,7 +83,7 @@ def main():
     workflow.transform(
         name='demultiplex_fastq_files',
         ctx={'mem': 64},
-        func=single_cell_nextseq.tasks.demultiplex_fastq_files,
+        func=tasks.demultiplex_fastq_files,
         args=(
             mgd.InputFile(args['samplesheet']),
             args['nextseq_dir'],

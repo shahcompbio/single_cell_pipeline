@@ -7,7 +7,7 @@ import os
 import pypeliner
 import pypeliner.managed as mgd
 
-import single_cell_nextseq.tasks
+import tasks
 
 
 
@@ -53,7 +53,7 @@ def create_hmmcopy_workflow(
     workflow.transform(
         name='run_hmmcopy',
         ctx={'mem': 4},
-        func=single_cell_nextseq.tasks.run_hmmcopy,
+        func=tasks.run_hmmcopy,
         args=(
             mgd.InputFile(wig_filename),
             mgd.OutputFile(corrected_reads_filename),
