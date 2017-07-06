@@ -246,7 +246,7 @@ def compute_quality_metrics(df, df_seg, sample_id):
             
             MSRSI_non_integerness = float('NaN')
         
-        metrics = pd.Series({'sample_id': sample_id, 
+        metrics = pd.Series({'cell_id': sample_id, 
 #                             'total_reads': total_reads, 
                              'total_reads_hmmcopy': total_reads_hmmcopy,
                              'mad_chr19': mad_chr19, 
@@ -266,7 +266,7 @@ def compute_quality_metrics(df, df_seg, sample_id):
                              'MSRSI_non_integerness': MSRSI_non_integerness})
     
     else: 
-        metrics = pd.Series({'sample_id': sample_id, 
+        metrics = pd.Series({'cell_id': sample_id, 
  #                            'total_reads': float('NaN'), 
                              'total_reads_hmmcopy': float('NaN'),
                              'mad_chr19': float('NaN'), 
@@ -347,11 +347,11 @@ def main():
 
     df_loglik = pd.DataFrame(df_loglik.reset_index())
     
-    df_loglik.columns = ['sample_id', 'log_likelihood']
+    df_loglik.columns = ['cell_id', 'log_likelihood']
     
     df_metrics = df_metrics.merge(df_loglik)
     
-    df_metrics.sort_values('sample_id', inplace=True)
+    df_metrics.sort_values('cell_id', inplace=True)
     
     df_metrics.reset_index(inplace=True, drop=True)
     

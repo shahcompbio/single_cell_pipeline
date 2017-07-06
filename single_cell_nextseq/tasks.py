@@ -24,22 +24,24 @@ def generate_fastq_file_pairs(sample_sheet_filename, fastq_directory):
 
     for i, line in zip(range(num_samples), lines[start_index:]):
         sample_id = line.split(',')[0]
-        sample_id = sample_id.replace('-','_')
 
         fastq_file_1 = os.path.join(fastq_directory, '{0}_S{1}_R1_001.fastq.gz'.format(sample_id, str(i+1)))
         fastq_file_2 = os.path.join(fastq_directory, '{0}_S{1}_R2_001.fastq.gz'.format(sample_id, str(i+1)))
 
+        sample_id = sample_id.replace('-','_')
         yield sample_id, fastq_file_1, fastq_file_2
 
 
-def demultiplex_fastq_files(sample_sheet_filename, nextseq_directory, fastq_1_filenames, fastq_2_filenames, temp_directory):
+def demultiplex_fastq_files(sample_sheet_filename, nextseq_directory, fastq_1_filenames, fastq_2_filenames, temp_directory, bcl2fastq):
     pypeliner.commandline.execute(
-        'bcl2fastq',
+        bcl2fastq,
         '--runfolder-dir=' + nextseq_directory,
         '--output-dir=' + temp_directory,
         '--no-lane-splitting')
 
+    print fastq_1_filenames
     for sample_id, temp_fq_1, temp_fq_2 in generate_fastq_file_pairs(sample_sheet_filename, temp_directory):
+        print temp_fq_1, fastq_1_filenames[sample_id], sample_id
         os.rename(temp_fq_1, fastq_1_filenames[sample_id])
         os.rename(temp_fq_2, fastq_2_filenames[sample_id])
 
@@ -103,40 +105,60 @@ def parse_sample_sheet(sample_sheet_filename, sample_info_filename):
     data.to_csv(sample_info_filename, index=False)
 
 
-def produce_fastqc_report(fastq_filename, fastq_basename, output_html, output_plots, temp_directory):
+def produce_fastqc_report(fastq_filename, output_html, output_plots, temp_directory, fastqc):
     makedirs(temp_directory)
 
+    # print 'printing',temp_directory, fastqc, fastq_filename,  output_plots, output_html
     pypeliner.commandline.execute(
-        'fastqc',
+        fastqc,
         '--outdir=' + temp_directory,
         fastq_filename)
 
+
+    fastq_basename = os.path.basename(fastq_filename).split('.')[0]
+
     output_basename = os.path.join(temp_directory, fastq_basename)
-    os.rename(output_basename + '_fastqc.html', output_html)
     os.rename(output_basename + '_fastqc.zip', output_plots)
 
+    os.rename(output_basename + '_fastqc.html', output_html)
 
-def run_trimgalore(fastq_1_filename, fastq_2_filename, fastq_1_basename, fastq_2_basename,
-                   trim_1_filename, trim_2_filename, results_directory, adapter, adapter2):
-    makedirs(results_directory)
 
+    assert os.path.isfile(output_html)
+
+    print output_html
+    print os.stat(output_html)
+
+    open(output_html).close()
+
+
+
+def run_trimgalore(fastq1_filename, fastq2_filename, trim1_filename, trim2_filename,
+                    fqrep1_filename, fqrep2_filename, zip1_filename, zip2_filename,
+                    rep1_filename, rep2_filename, trim_temp, config):
     pypeliner.commandline.execute(
-        'trim_galore',
-        '--fastqc',
-        '--paired',
-        '--output_dir', results_directory,
-        '--adapter', adapter,
-        '--adapter2', adapter2,
-        fastq_1_filename,
-        fastq_2_filename)
+        # 'export PATH=/shahlab/pipelines/apps_centos6/jdk1.8.0_51/bin/:$PATH;'
+        'python', os.path.join(scripts_directory, 'run_trimgalore.py'),
+        fastq1_filename,
+        fastq2_filename,
+        trim1_filename,
+        trim2_filename,
+        fqrep1_filename,
+        fqrep2_filename,
+        zip1_filename,
+        zip2_filename,
+        rep1_filename,
+        rep2_filename,
+        trim_temp,
+         '--adapter', config['adapter'],
+         '--adapter2', config['adapter2'],
+         '--trimgalore_path', config['trimgalore'],
+         '--cutadapt_path', config['cutadapt'],
+         )
 
-    os.rename(os.path.join(results_directory, fastq_1_basename) + '_val_1.fq.gz', trim_1_filename)
-    os.rename(os.path.join(results_directory, fastq_2_basename) + '_val_2.fq.gz', trim_2_filename)
-
-
-def bam_sort(bam_filename, sorted_bam_filename):
+def bam_sort(bam_filename, sorted_bam_filename, config):
     pypeliner.commandline.execute(
-        'picard', '-Xmx12G',
+        config['java'], '-Xmx12G', '-jar',
+        config['picard'],
         'SortSam',
         'INPUT=' + bam_filename,
         'OUTPUT=' + sorted_bam_filename,
@@ -145,9 +167,10 @@ def bam_sort(bam_filename, sorted_bam_filename):
         'MAX_RECORDS_IN_RAM=5000000')
 
 
-def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename):
+def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, config):
     pypeliner.commandline.execute(
-        'picard', '-Xmx8G',
+        config['java'], '-Xmx12G', '-jar',
+        config['picard'],
         'MarkDuplicates',
         'INPUT=' + bam_filename,
         'OUTPUT=' + markduped_bam_filename,
@@ -159,7 +182,8 @@ def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename):
 
 def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config):
     pypeliner.commandline.execute(
-        'picard', '-Xmx12G',
+        config['java'],  '-Xmx12G', '-jar',
+        config['picard'],
         'CollectWgsMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
@@ -171,9 +195,10 @@ def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config):
         'COUNT_UNPAIRED=' + ('True' if config['count_unpaired'] else 'False'))
 
 
-def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename):
+def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, config):
     pypeliner.commandline.execute(
-        'picard', '-Xmx12G',
+        config['java'], '-Xmx12G', '-jar',
+        config['picard'],
         'CollectGcBiasMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
@@ -183,7 +208,7 @@ def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_f
         'VALIDATION_STRINGENCY=LENIENT')
 
 
-def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_filename, histogram_filename):
+def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_filename, histogram_filename, config):
     # Check if any paired reads exist
     has_paired = None
     with open(flagstat_metrics_filename) as f:
@@ -205,7 +230,8 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_
         return
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx12G',
+        config['java'], '-Xmx12G', '-jar',
+        config['picard'],
         'CollectInsertSizeMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
@@ -228,7 +254,7 @@ def run_hmmcopy(
     config):
 
     pypeliner.commandline.execute(
-        'Rscript', run_hmmcopy_rscript,
+        config['Rscript'], run_hmmcopy_rscript,
         '--tumour_file=' + readcount_wig_filename,
         '--gc_file=' + config['gc_wig_file'],
         '--map_file=' + config['map_wig_file'],
@@ -246,7 +272,7 @@ def run_hmmcopy(
         '--sample_id=' + sample_id)
 
 
-def concatenate_csv(in_filenames, out_filename):
+def concatenate_csv(in_filenames, out_filename, nan_val = 'NA'):
     data = []
     for key, in_filename in in_filenames.iteritems():
         with open(in_filename) as f:
@@ -255,5 +281,42 @@ def concatenate_csv(in_filenames, out_filename):
                 continue
         data.append(pd.read_csv(in_filename, dtype=str))
     data = pd.concat(data, ignore_index=True)
+    data = data.fillna(nan_val)
     data.to_csv(out_filename, index=False)
 
+
+def merge_csv(in_filenames, out_filename, how, on, nan_val = 'NA'):
+    data = []
+    for key, in_filename in in_filenames.iteritems():
+        with open(in_filename) as f:
+            first_line = f.readline()
+            if len(first_line) == 0:
+                continue
+        data.append(pd.read_csv(in_filename, dtype=str))
+
+    data = merge_frames(data, how, on)
+    data = data.fillna(nan_val)
+    data.to_csv(out_filename, index=False)
+
+
+def merge_frames(frames, how, on):
+    '''
+    annotates input_df using ref_df
+    '''
+
+    if ',' in on:
+        on = on.split(',')
+
+    if len(frames) == 1:
+        return frames[0]
+    else:
+        left = frames[0]
+        right = frames[1]
+        merged_frame = pd.merge(left, right,
+                                    how=how,
+                                    on=on)
+        for frame in frames[2:]:
+            merged_frame = pd.merge(merged_frame, frame,
+                                        how=how,
+                                        on=on)
+        return merged_frame

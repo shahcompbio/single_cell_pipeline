@@ -36,7 +36,7 @@ def parse_args():
     # Read Command Line Input
     #=======================================================================================================================
     parser = argparse.ArgumentParser()
-
+    
     parser.add_argument('--corrected_reads',
                         required=True, 
                         help='''Path to HMMcopy corrected reads output .csv file.''')
@@ -45,13 +45,9 @@ def parse_args():
                         required=True, 
                         help='''Path to HMMcopy segments output .csv file.''')
     
-    parser.add_argument('--hmm_metrics',
+    parser.add_argument('--quality_metrics',
                         required=True, 
-                        help='''HMM quality metrics file for the run, with 'mad_neutral_state' column.''')
-
-    parser.add_argument('--sample_info',
-                        required=True, 
-                        help='''Sample info .csv file.''')
+                        help='''Optional quality metrics file for the run, with 'mad_neutral_state' column.''')
 
     parser.add_argument('--ref_genome',
                         required=True, 
@@ -103,29 +99,17 @@ class GenHmmPlots(object):
         data = pd.read_csv(infile,
                            sep=',')
 
-        # HACK!
-        data['sample_id'] = data['sample_id'].apply(lambda a: a.replace('-', '_'))
-        data = data.groupby('sample_id')
+        data = data.groupby('cell_id')
         
         return data
 
 
-    def read_hmm_metrics(self):
+    def read_quality_metrics(self):
         """
         
         """
         
-        df = self.load_data_pandas(self.args.hmm_metrics)
-
-        return df
-
-
-    def read_sample_info(self):
-        """
-
-        """
-
-        df = self.load_data_pandas(self.args.sample_info)
+        df = self.load_data_pandas(self.args.quality_metrics)
         
         return df
 
@@ -148,7 +132,7 @@ class GenHmmPlots(object):
         
         return df
 
-    def get_sample_ids(self, df, sample_info):
+    def get_sample_ids(self, df, metrics):
         """
         
         """
@@ -156,7 +140,7 @@ class GenHmmPlots(object):
 
         samdata = defaultdict(list)
         for samp in samples:
-            ec = sample_info.get_group(samp)['experimental_condition'].iloc[0]
+            ec = metrics.get_group(samp)['experimental_condition'].iloc[0]
         
             samdata[ec].append(samp)
         
@@ -179,19 +163,25 @@ class GenHmmPlots(object):
 
         return reads_pdf, segs_pdf, bias_pdf
 
-    def get_plot_title(self, sample_id, sample_info, metrics):
+    def get_plot_title(self, sample_id, metrics):
         """
         
         """
-        if 'cell_call' in sample_info.get_group(sample_id):
-            cellcall = sample_info.get_group(sample_id)['cell_call'].iloc[0]
+        if 'cell_call' in metrics.get_group(sample_id):
+            cellcall = metrics.get_group(sample_id)['cell_call'].iloc[0]
         else:
             cellcall='NA'
 
-        if 'experimental_condition' in sample_info.get_group(sample_id):
-            cond = sample_info.get_group(sample_id)['experimental_condition'].iloc[0]
+        if 'experimental_condition' in metrics.get_group(sample_id):
+            cond = metrics.get_group(sample_id)['experimental_condition'].iloc[0]
         else:
             cond='NA'
+
+        if 'sample_type' in metrics.get_group(sample_id):
+            st = metrics.get_group(sample_id)['sample_type'].iloc[0]
+            st = str(st)
+        else:
+            st = 'NA'
 
         mad = metrics.get_group(sample_id)['mad_neutral_state'].iloc[0]
         mad = str('%.3f' % mad)
@@ -199,7 +189,7 @@ class GenHmmPlots(object):
         ni = str('%.3f' % ni)
 
         title_str = [sample_id , '(cell call', cellcall, ', condition',
-                      cond, ', neutral MAD ', mad, ', MSRSI Non Integerness ',
+                      cond, ', sample_type', st, ' neutral MAD ', mad, ', MSRSI Non Integerness ',
                       ni, ')']
 
         title_str = ' '.join(title_str) + self.args.plot_title 
@@ -226,9 +216,9 @@ class GenHmmPlots(object):
 
         if typ == 'norm':
             ax.set_ylabel('Normalized reads per bin')
-        elif typ == 'cor.gc':
+        elif typ == 'cor_gc':
             ax.set_ylabel('GC corrected reads per bin')
-        elif typ == 'cor.map':
+        elif typ == 'cor_map':
             ax.set_ylabel('GC and mappability \n corrected reads per bin')
         ax.tick_params(axis='x', which='minor', pad=9.1)
         ax = utl.add_open_grid_lines(ax)
@@ -248,12 +238,12 @@ class GenHmmPlots(object):
     
         plt.subplot(3, 1, 2)
         ax = fig.gca()
-        self.gen_reads_plot(df, ax, typ='cor.gc')
+        self.gen_reads_plot(df, ax, typ='cor_gc')
         ax.set_xlabel('')
         
         plt.subplot(3, 1, 3)
         ax = fig.gca()
-        self.gen_reads_plot(df, ax, typ='cor.map')
+        self.gen_reads_plot(df, ax, typ='cor_map')
         
         sns.despine(offset=10, trim=True)
         plt.tight_layout()
@@ -282,15 +272,15 @@ class GenHmmPlots(object):
         ax3.set_xlabel('GC content')
         ax3.set_ylabel('Normalized read count')
         ax3.set_title('GC corrected')
-        not_null = df_ideal['cor.gc'].notnull()
+        not_null = df_ideal['cor_gc'].notnull()
         if df is not None:
-            ax3.scatter(df_ideal['gc'][not_null], df_ideal['cor.gc'][not_null], edgecolors=col, facecolors='none', alpha=0.1)
+            ax3.scatter(df_ideal['gc'][not_null], df_ideal['cor_gc'][not_null], edgecolors=col, facecolors='none', alpha=0.1)
         
         ax4.set_xlabel('Mappability')
         ax4.set_title('GC and mappability corrected')
-        not_null = df_ideal['cor.map'].notnull()
+        not_null = df_ideal['cor_map'].notnull()
         if df is not None:
-            ax4.scatter(df_ideal['map'][not_null], df_ideal['cor.map'][not_null], edgecolors=col, facecolors='none', alpha=0.1)
+            ax4.scatter(df_ideal['map'][not_null], df_ideal['cor_map'][not_null], edgecolors=col, facecolors='none', alpha=0.1)
 
         fig.suptitle(title)
         sns.despine(offset=10, trim=True)
@@ -378,18 +368,17 @@ class GenHmmPlots(object):
         """
         main
         """
-        sample_info = self.read_sample_info()
-        metrics = self.read_hmm_metrics()
+        metrics = self.read_quality_metrics()
         reads = self.read_corrected_reads()
         segs = self.read_segments()
 
         if self.args.samples:
             samples = self.args.samples
         else:
-            samples = self.get_sample_ids(reads, sample_info)
+            samples = self.get_sample_ids(reads, metrics)
 
         for sample in samples:
-            plot_title = self.get_plot_title(sample, sample_info, metrics)
+            plot_title = self.get_plot_title(sample, metrics)
 
             #If the check_mad returns false: filter it
             if not self.check_mad_score(sample, metrics):

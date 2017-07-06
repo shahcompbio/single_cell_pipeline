@@ -7,7 +7,6 @@ from __future__ import division
 import argparse
 import pandas as pd
 from __builtin__ import True
-import warnings
 import os
 
 #=========================================================================
@@ -30,8 +29,12 @@ parser.add_argument('wgs_metrics',
 parser.add_argument('out_file',
                     help='''Path to .csv file where table output will be written.''')
 
+parser.add_argument('sample_info',
+                    help=''' identifier string for the library.''')
+
 parser.add_argument('sample_id',
                     help=''' identifier string for the library.''')
+
 
 args = parser.parse_args()
 
@@ -177,10 +180,6 @@ def extract_insert_metrics(metrics_file):
     targetlines = []
     
     line = mfile.readline()
-
-    # Check whether a dummy file has been written in case of picard insert metrics failure
-    if 'FAILED' in line:
-        return 0, 0, 0
     
     while line != '':
         if line.startswith('## METRICS CLASS'):
@@ -217,37 +216,54 @@ def write_data(header, data):
     writer.close()
 
 
-def extract_sample_info(sample_info):
+def extract_sample_info(sample_info, sample_id):
     """
     get info
     """
-    sample_info = open(sample_info)
+    header = True
 
-    header = sample_info.readline()
-    header = header.strip().split(',')
-    header = {v:i for i,v in enumerate(header)}
+    with open(sample_info) as sample_info:
+        for line in sample_info:
+            line = line.strip().split(',')
+    
+            if header:
+                if line[0] == "[Data]":
+                    header = False
+            else:
+                if line[0] in ['Sample_ID', 'Sample-ID']:
+                    continue
+                sampid = line[0]
+                
+                if sampid.replace('-','_') != sample_id.replace('-','_'):
+                    continue
+                plate = line[2]
+                well = line[3]
+                desc = line[9]
+                i7 = line[6]
+                i5 = line[8]
 
-    sampdata = sample_info.readline()
 
-    assert sample_info.readline() == ''
-
-    sampdata = sampdata.strip().split(',')
-    samp = sampdata[header['sample_id']]
-    well = sampdata[header['sample_well']]
-    desc = sampdata[header['sample_description']]
-    plate = sampdata[header['sample_plate']]
-    i5 = sampdata[header['i5_barcode']]
-    i7 = sampdata[header['i7_barcode']]
     if ';' in desc:
         desc = desc.split(';')
-        cell_call = desc[0].replace('CC=','')
-        exp_cond = desc[1].replace('EC=','')
+        desc = [val.split('=') for val in desc]
+
+        cell_call = [val[1] for val in desc if val[0] == 'CC']
+        cell_call = cell_call[0] if cell_call else 'NA'
+
+        exp_cond = [val[1] for val in desc if val[0] == 'EC']
+        exp_cond = exp_cond[0] if exp_cond else 'NA'
+
+
+        samp_typ = [val[1] for val in desc if val[0] == 'ST']
+        samp_typ = samp_typ[0] if samp_typ else 'NA'
     elif desc == '':
         cell_call = 'C1'
         exp_cond = 'A'
+        samp_typ = '1'
     else:
         cell_call = desc
         exp_cond = 'NA'
+        samp_typ = 'NA'
 
     well = well if well != '' else 'R1_C1'
     plate = plate if plate !='' else 'R1-C1'
@@ -255,7 +271,7 @@ def extract_sample_info(sample_info):
     i7 = i7  if i7 != '' else 'i7-1'
 
 
-    return samp, cell_call, exp_cond, well, plate, i5, i7
+    return cell_call, exp_cond, samp_typ, well, plate, i5, i7
 
 #=========================================================================
 # Run script
@@ -267,14 +283,19 @@ def main():
     flagstat_metrics = extract_flagstat_metrics(args.flagstat_metrics)
     wgs_metrics = extract_wgs_metrics(args.wgs_metrics)
 
-    header = ['sample_id',
-              'unpaired_mapped_reads', 'paired_mapped_reads', 'unpaired_duplicate_reads',
+    header = ['cell_id', 'cell_call', 'experimental_condition', 'sample_type', 'sample_well',
+              'sample_plate', 'i5_barcode', 'i7_barcode', 'unpaired_mapped_reads',
+              'paired_mapped_reads', 'unpaired_duplicate_reads',
               'paired_duplicate_reads', 'unmapped_reads', 'percent_duplicate_reads',
               'estimated_library_size', 'total_reads', 'total_mapped_reads',
               'total_duplicate_reads', 'total_properly_paired',
               'coverage_breadth', 'coverage_depth']
 
-    output = (args.sample_id,) + duplication_metrics + flagstat_metrics + wgs_metrics
+    sample_id = args.sample_id
+    cell_call, exp_cond, samp_typ, samp_well, samp_plate, i5, i7 = extract_sample_info(args.sample_info, sample_id)
+
+
+    output = (sample_id, cell_call, exp_cond, samp_typ, samp_well, samp_plate, i5, i7) + duplication_metrics + flagstat_metrics + wgs_metrics
 
     if args.insert_metrics:
         insert_metrics = extract_insert_metrics(args.insert_metrics)
@@ -287,4 +308,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 

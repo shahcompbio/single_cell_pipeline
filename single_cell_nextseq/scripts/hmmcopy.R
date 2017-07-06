@@ -223,7 +223,7 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 	warning(paste("Low coverage sample results in loess regression failure, unable to correct and segment ", opt$tumour_file, sep=""))
 	
 	uncorrected.table <- format_read_count_table(samp.uncorrected, chromosomes)
-        uncorrected.table$sample_id <- opt$sample_id
+        uncorrected.table$cell_id <- opt$sample_id
 	
 	write.table(format(uncorrected.table, scientific=F, trim=T), file=out_reads, quote=F, sep=",", col.names=T, row.names=F)
 	
@@ -317,15 +317,19 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 	# add integer copy number to read count table
 	corrected.table <- adply(corrected.table, 1, get_bin_integer_copy_number, segs=segs.integer.medians)
 	colnames(corrected.table)[ncol(corrected.table)] <- "integer_copy_number"
-        corrected.table$sample_id <- opt$sample_id	
-	# output read count table
+        corrected.table$cell_id <- opt$sample_id	
+	# output read count table\
+
+        names(corrected.table)[names(corrected.table) == 'cor.map'] <- 'cor_map'
+        names(corrected.table)[names(corrected.table) == 'cor.gc'] <- 'cor_gc'
+        #print(colnames(corrected.table))
 	write.table(format(corrected.table, scientific=F, trim=T), file=out_reads, quote=F, sep=",", col.names=T, row.names=F)
 	
 	# format and output segment table
 	segments.table <- merge(samp.segmented$segs, segs.integer.medians, sort=F)
 	segments.table$chr <- factor(segments.table$chr, levels=chromosomes, ordered=T)
 	segments.table <- segments.table[order(segments.table$chr),]
-        segments.table$sample_id <- opt$sample_id
+        segments.table$cell_id <- opt$sample_id
 	write.table(format(segments.table, scientific=F, trim=T), file=out_segs, quote=F, sep=",", col.names=T, row.names=F)
 	
 	# format and output parameter and posterior marginal tables
