@@ -9,14 +9,14 @@ import pypeliner
 import pypeliner.managed as mgd
 import tasks
 
-def create_fastqc_workflow(fastq_1, fastq_2, trim_1_trim, trim_2_trim, config, metrics_directory, sample_id):#, fastq_1_basename, fastq_2_basename):
+def create_fastqc_workflow(fastq_1, fastq_2, trim_1_trim, trim_2_trim, config, metrics_directory, sample_id):
 
     scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
 
-    fastqc_1_html_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R1.fastqc.html')
-    fastqc_1_zip_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R1.fastqc.zip')
-    fastqc_2_html_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R2.fastqc.html')
-    fastqc_2_zip_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R2.fastqc.zip')
+#     fastqc_1_html_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R1.fastqc.html')
+#     fastqc_1_zip_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R1.fastqc.zip')
+#     fastqc_2_html_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R2.fastqc.html')
+#     fastqc_2_zip_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R2.fastqc.zip')
 
     workflow = pypeliner.workflow.Workflow()
 
