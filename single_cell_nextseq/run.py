@@ -104,8 +104,8 @@ def main():
               mgd.OutputFile('fastq_trim_1', 'sample_id', template=trimgalore_results_template_r1),
               mgd.OutputFile('fastq_trim_2', 'sample_id', template=trimgalore_results_template_r2),
               config,
-              metrics_directory,
               mgd.InputInstance('sample_id'),
+              args
             ),
         )
 

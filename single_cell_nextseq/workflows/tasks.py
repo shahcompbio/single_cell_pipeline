@@ -274,7 +274,7 @@ def run_hmmcopy(
 
 def concatenate_csv(in_filenames, out_filename, nan_val = 'NA'):
     data = []
-    for key, in_filename in in_filenames.iteritems():
+    for _, in_filename in in_filenames.iteritems():
         with open(in_filename) as f:
             first_line = f.readline()
             if len(first_line) == 0:
@@ -287,7 +287,7 @@ def concatenate_csv(in_filenames, out_filename, nan_val = 'NA'):
 
 def merge_csv(in_filenames, out_filename, how, on, nan_val = 'NA'):
     data = []
-    for key, in_filename in in_filenames.iteritems():
+    for _, in_filename in in_filenames.iteritems():
         with open(in_filename) as f:
             first_line = f.readline()
             if len(first_line) == 0:
