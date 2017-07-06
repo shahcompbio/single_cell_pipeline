@@ -11,6 +11,8 @@ import single_cell_nextseq.tasks
 
 def create_fastqc_workflow(fastq_1, fastq_2, trim_1_trim, trim_2_trim, config, metrics_directory, sample_id):#, fastq_1_basename, fastq_2_basename):
 
+    scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
+
     fastqc_1_html_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R1.fastqc.html')
     fastqc_1_zip_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R1.fastqc.zip')
     fastqc_2_html_template = os.path.join(metrics_directory, 'fastqc', '{sample_id}_R2.fastqc.html')
@@ -43,13 +45,13 @@ def create_fastqc_workflow(fastq_1, fastq_2, trim_1_trim, trim_2_trim, config, m
     )
 
 
-    workflow.transform(
+    workflow.commandline(
         name='run_trimgalore',
-        # axes=('sample_id',),
-        func=single_cell_nextseq.tasks.run_trimgalore,
         args=(
-            fastq_1,
-            fastq_2,
+          config['python'],
+          os.path.join(scripts_directory, 'run_trimgalore.py'),
+            mgd.InputFile(fastq_1),
+            mgd.InputFile(fastq_2),
             mgd.OutputFile(trim_1_trim),
             mgd.OutputFile(trim_2_trim),
             mgd.TempOutputFile('fastq_fqrep_1'),
@@ -59,9 +61,32 @@ def create_fastqc_workflow(fastq_1, fastq_2, trim_1_trim, trim_2_trim, config, m
             mgd.TempOutputFile('fastq_rep_1'),
             mgd.TempOutputFile('fastq_rep_2'),
             mgd.TempSpace('trim_temp'),
-            config
-        ),
+            '--adapter', config['adapter'],
+            '--adapter2', config['adapter2'],
+            '--trimgalore_path', config['trimgalore'],
+            '--cutadapt_path', config['cutadapt'],
+          )
     )
+# 
+#     workflow.transform(
+#         name='run_trimgalore',
+#         # axes=('sample_id',),
+#         func=single_cell_nextseq.tasks.run_trimgalore,
+#         args=(
+#             fastq_1,
+#             fastq_2,
+#             mgd.OutputFile(trim_1_trim),
+#             mgd.OutputFile(trim_2_trim),
+#             mgd.TempOutputFile('fastq_fqrep_1'),
+#             mgd.TempOutputFile('fastq_fqrep_2'),
+#             mgd.TempOutputFile('fastq_zip_1'),
+#             mgd.TempOutputFile('fastq_zip_2'),
+#             mgd.TempOutputFile('fastq_rep_1'),
+#             mgd.TempOutputFile('fastq_rep_2'),
+#             mgd.TempSpace('trim_temp'),
+#             config
+#         ),
+#     )
 
     return workflow
 
