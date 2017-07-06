@@ -9,7 +9,7 @@ import pypeliner.managed as mgd
 import single_cell_nextseq.tasks
 
 
-def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summary, gc_matrix, sample_info_filename, cn_matrix, config, args):#, sample_info_file, sample_id, config):
+def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summary, gc_matrix, cn_matrix, config, args):
 
 
     scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')

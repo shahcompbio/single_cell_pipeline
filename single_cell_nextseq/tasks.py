@@ -137,7 +137,7 @@ def run_trimgalore(fastq1_filename, fastq2_filename, trim1_filename, trim2_filen
                     rep1_filename, rep2_filename, trim_temp, config):
     pypeliner.commandline.execute(
         # 'export PATH=/shahlab/pipelines/apps_centos6/jdk1.8.0_51/bin/:$PATH;'
-        'python', os.path.join(scripts_directory, 'run_trimgalore.py'),
+        config['python'], os.path.join(scripts_directory, 'run_trimgalore.py'),
         fastq1_filename,
         fastq2_filename,
         trim1_filename,

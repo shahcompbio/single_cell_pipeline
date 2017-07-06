@@ -1,14 +1,11 @@
 import os
 import argparse
-
+import utils
 import pypeliner
 import pypeliner.managed as mgd
-
 import single_cell_nextseq.tasks
-from workflows import alignment_workflow, hmmcopy_workflow, summary_workflow, fastqc_workflow
-
-
-import utils as utl
+from workflows import alignment_workflow, hmmcopy_workflow
+from workflows import summary_workflow, fastqc_workflow
 
 
 
@@ -46,16 +43,15 @@ def main():
 
     pyp = pypeliner.app.Pypeline(config=args)
 
-    config = utl.load_config(args)
+    config = utils.load_config(args)
 
     fastq_directory = os.path.join(args['out_dir'], 'fastq')
 
 
-    run_id, library_id, sample_ids, fastq_1_filenames, fastq_2_filenames, _, _ = utl.read_samplesheet(args,fastq_directory)
+    run_id, library_id, sample_ids, fastq_1_filenames, fastq_2_filenames = utils.read_samplesheet(args,fastq_directory)
 
-    rg_template = utl.get_readgroup_template(library_id, run_id, config)
+    rg_template = utils.get_readgroup_template(library_id, run_id, config)
 
-    sample_info_filename = os.path.join(args['out_dir'], 'sample_info.csv')
     trimgalore_results_template_r1 = os.path.join(args['out_dir'], 'trim', '{sample_id}_R1.fastq.gz')
     trimgalore_results_template_r2 = os.path.join(args['out_dir'], 'trim', '{sample_id}_R2.fastq.gz')
     metrics_directory = os.path.join(args['out_dir'], 'metrics')
@@ -73,7 +69,7 @@ def main():
     hmmcopy_reads_template = os.path.join(hmmcopy_directory, '{sample_id}_reads.csv')
     hmmcopy_segments_template = os.path.join(hmmcopy_directory, '{sample_id}_segments.csv')
     hmmcopy_parameters_template = os.path.join(hmmcopy_directory, '{sample_id}_parameters.csv')
-    hmmcopy_posteriors_template = os.path.join(hmmcopy_directory, '{sample_id}_posteriors.csv')
+#     hmmcopy_posteriors_template = os.path.join(hmmcopy_directory, '{sample_id}_posteriors.csv')
     hmmcopy_hmm_metrics_template = os.path.join(hmmcopy_directory, '{sample_id}_hmm_metrics.csv')
 
 
@@ -82,17 +78,6 @@ def main():
     workflow.setobj(
         obj=mgd.OutputChunks('sample_id'),
         value=sample_ids,
-    )
-
-
-    workflow.transform(
-        name='parse_sample_sheet',
-        ctx={'mem': 64},
-        func=single_cell_nextseq.tasks.parse_sample_sheet,
-        args=(
-            mgd.InputFile(args['samplesheet']),
-            mgd.OutputFile(sample_info_filename),
-        ),
     )
 
     workflow.transform(
@@ -155,11 +140,12 @@ def main():
             mgd.OutputFile(hmmcopy_reads_template, 'sample_id'),
             mgd.OutputFile(hmmcopy_segments_template, 'sample_id'),
             mgd.OutputFile(hmmcopy_parameters_template, 'sample_id'),
-            mgd.OutputFile(hmmcopy_posteriors_template, 'sample_id'),
+#             mgd.OutputFile(hmmcopy_posteriors_template, 'sample_id'),
             mgd.OutputFile(hmmcopy_hmm_metrics_template, 'sample_id'),
             mgd.OutputFile(cnmatrix_template, 'sample_id'),
             mgd.InputInstance('sample_id'),
             config,
+            args
         ),
     )
 
@@ -173,7 +159,6 @@ def main():
             mgd.InputFile(hmmcopy_hmm_metrics_template, 'sample_id'),
             mgd.InputFile(metrics_summary_template, 'sample_id'),
             mgd.InputFile(metrics_gcmatrix_template, 'sample_id'),
-            mgd.InputFile(sample_info_filename),
             mgd.InputFile(cnmatrix_template, 'sample_id'),
             config,
             args,

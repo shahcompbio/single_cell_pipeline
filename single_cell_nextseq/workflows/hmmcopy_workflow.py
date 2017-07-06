@@ -18,17 +18,21 @@ def create_hmmcopy_workflow(
     corrected_reads_filename,
     segments_filename,
     parameters_filename,
-    posterior_marginals_filename,
     hmm_metrics_filename,
     cnmatrix_filename,
     sample_id,
-    config):
+    config,
+    args):
 
     scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
     extract_quality_metrics_script = os.path.join(scripts_directory, 'extract_quality_metrics.py')
     cn_metrics_script = os.path.join(scripts_directory, 'gen_cn_matrix.py')
 
     chromosomes = config['chromosomes']
+
+    hmmcopy_directory = os.path.join(args['out_dir'], 'hmmcopy')
+    posterior_marginals_filename = os.path.join(hmmcopy_directory, sample_id+'_posteriors.csv')
+
 
     workflow = pypeliner.workflow.Workflow()
 
