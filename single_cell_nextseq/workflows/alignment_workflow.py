@@ -18,10 +18,10 @@ def create_alignment_workflow(
     read_group,
     metrics_summary_filename,
     gc_matrix_filename,
-    metrics_directory,
     sample_id,
     samplesheet,
-    config):
+    config,
+    args):
     
 
     scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
@@ -30,6 +30,7 @@ def create_alignment_workflow(
     gc_metrics_script = os.path.join(scripts_directory, 'gen_cn_matrix.py')
 
 
+    metrics_directory = os.path.join(args['out_dir'], 'metrics')
     markdups_metrics_filename = os.path.join(metrics_directory, 'markdups_metrics/{}.markdups_metrics.txt'.format(sample_id))
     flagstat_metrics_filename = os.path.join(metrics_directory, 'flagstat_metrics/{}.flagstat_metrics.txt'.format(sample_id))
     wgs_metrics_filename = os.path.join(metrics_directory, 'wgs_metrics/{}.wgs_metrics.txt'.format(sample_id))

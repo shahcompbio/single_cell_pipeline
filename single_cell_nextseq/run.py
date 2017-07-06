@@ -65,11 +65,8 @@ def main():
     bam_index_template = os.path.join(bam_directory, '{sample_id}.bam.bai')
 
     hmmcopy_directory = os.path.join(args['out_dir'], 'hmmcopy')
-    hmmcopy_wig_template = os.path.join(hmmcopy_directory, '{sample_id}_readcount.wig')
     hmmcopy_reads_template = os.path.join(hmmcopy_directory, '{sample_id}_reads.csv')
     hmmcopy_segments_template = os.path.join(hmmcopy_directory, '{sample_id}_segments.csv')
-    hmmcopy_parameters_template = os.path.join(hmmcopy_directory, '{sample_id}_parameters.csv')
-#     hmmcopy_posteriors_template = os.path.join(hmmcopy_directory, '{sample_id}_posteriors.csv')
     hmmcopy_hmm_metrics_template = os.path.join(hmmcopy_directory, '{sample_id}_hmm_metrics.csv')
 
 
@@ -122,11 +119,11 @@ def main():
             mgd.InputFile(config['ref_genome']),
             mgd.Template(rg_template, 'sample_id'),
             mgd.OutputFile(metrics_summary_template, 'sample_id'),
-            mgd.OutputFile(metrics_gcmatrix_template, 'sample_id'),            
-            metrics_directory,
+            mgd.OutputFile(metrics_gcmatrix_template, 'sample_id'),
             mgd.InputInstance('sample_id'),
             mgd.InputFile(args['samplesheet']),
             config,
+            args
         ),
     )
 
@@ -136,11 +133,8 @@ def main():
         func=hmmcopy_workflow.create_hmmcopy_workflow,
         args=(
             mgd.InputFile('bam', 'sample_id', template=bam_template),
-            mgd.OutputFile(hmmcopy_wig_template, 'sample_id'),
             mgd.OutputFile(hmmcopy_reads_template, 'sample_id'),
             mgd.OutputFile(hmmcopy_segments_template, 'sample_id'),
-            mgd.OutputFile(hmmcopy_parameters_template, 'sample_id'),
-#             mgd.OutputFile(hmmcopy_posteriors_template, 'sample_id'),
             mgd.OutputFile(hmmcopy_hmm_metrics_template, 'sample_id'),
             mgd.OutputFile(cnmatrix_template, 'sample_id'),
             mgd.InputInstance('sample_id'),
