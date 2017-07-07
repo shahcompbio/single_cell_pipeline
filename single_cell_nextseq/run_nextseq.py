@@ -48,7 +48,7 @@ def main():
     fastq_directory = os.path.join(args['out_dir'], 'fastq')
 
 
-    run_id, library_id, sample_ids, fastq_1_filenames, fastq_2_filenames = utils.read_samplesheet(args,fastq_directory)
+    run_id, library_id, sample_ids, fastq_1_filenames, fastq_2_filenames = utils.read_samplesheet_nextseq(args,fastq_directory)
 
     rg_template = utils.get_readgroup_template(library_id, run_id, config)
 
