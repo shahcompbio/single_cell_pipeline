@@ -156,6 +156,7 @@ def main():
             mgd.InputFile(cnmatrix_template, 'sample_id'),
             config,
             args,
+            sample_ids
         ),
     )
 

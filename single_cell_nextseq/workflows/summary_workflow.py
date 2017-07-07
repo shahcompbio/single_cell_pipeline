@@ -9,7 +9,7 @@ import pypeliner.managed as mgd
 import tasks
 
 
-def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summary, gc_matrix, cn_matrix, config, args):
+def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summary, gc_matrix, cn_matrix, config, args, sample_ids):
 
 
     scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
@@ -67,13 +67,16 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow = pypeliner.workflow.Workflow()
 
-    # raise Exception(hmmcopy_segments.values())
-
+    workflow.setobj(
+        obj=mgd.OutputChunks('sample_id'),
+        value=sample_ids,
+    )
+    
     workflow.transform(
         name='merge_tables',
         func=tasks.concatenate_csv,
         args=(
-            hmm_segments,
+            mgd.InputFile('hmm_segments', 'sample_id', fnames=hmm_segments),
             mgd.OutputFile(hmmcopy_segments_filename),
         ),
     )
@@ -82,7 +85,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
         name='merge_reads',
         func=tasks.concatenate_csv,
         args=(
-            hmm_reads,
+            mgd.InputFile('hmm_reads', 'sample_id', fnames=hmm_reads),
             mgd.OutputFile(hmmcopy_reads_filename),
         ),
     )
@@ -91,7 +94,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
         name='merge_hmm_metrics',
         func=tasks.concatenate_csv,
         args=(
-            hmm_metrics,
+            mgd.InputFile('hmm_metrics', 'sample_id', fnames=hmm_metrics),
             mgd.OutputFile(hmmcopy_hmm_metrics_filename),
         ),
     )
@@ -100,7 +103,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
         name='merge_summary_metrics',
         func=tasks.concatenate_csv,
         args=(
-            metrics_summary,
+            mgd.InputFile('metrics_summary', 'sample_id', fnames=metrics_summary),
             mgd.OutputFile(metrics_summary_filename),
         ),
     )
@@ -109,7 +112,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
         name='merge_gc_metrics',
         func=tasks.merge_csv,
         args=(
-            gc_matrix,
+            mgd.InputFile('gc_matrix', 'sample_id', fnames=gc_matrix),
             mgd.OutputFile(gc_metrics_filename),
             'outer',
             'gc'
@@ -120,7 +123,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
         name='merge_cn_metrics',
         func=tasks.merge_csv,
         args=(
-            cn_matrix,
+            mgd.InputFile('cn_matrix', 'sample_id', fnames=cn_matrix),
             mgd.OutputFile(cn_metrics_filename),
             'outer',
             'chr,start,end,width'
