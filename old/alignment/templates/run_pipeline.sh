@@ -1,1 +1,0 @@
-python /path/to/code/single_cell_nextseq/alignment/pipeline.py /path/to/config.yaml --num_cpus 500 --mode cluster --install_dir /path/to/code/single_cell_nextseq/alignment 2> "run_pipeline.error.txt" > "run_pipeline.log.txt" &
