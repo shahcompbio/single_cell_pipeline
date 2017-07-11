@@ -1,3 +1,5 @@
+##TODO: merge with run.py (single script for both hiseq and nextseq
+
 import os
 import argparse
 import utils
@@ -84,8 +86,8 @@ def main():
         args=(
             mgd.InputFile(args['samplesheet']),
             args['nextseq_dir'],
-            mgd.OutputFile('fastq_1', 'sample_id', fnames=fastq_1_filenames, axes_origin=[]),
-            mgd.OutputFile('fastq_2', 'sample_id', fnames=fastq_2_filenames, axes_origin=[]),
+            mgd.OutputFile('fastq_1', 'sample_id', fnames=fastq_1_filenames),
+            mgd.OutputFile('fastq_2', 'sample_id', fnames=fastq_2_filenames),
             mgd.TempSpace('demultiplex_temp'),
             config['bcl2fastq']
         ),

@@ -380,8 +380,8 @@ def sort_samples(df):
     # sort the df, by row and then by col
 
 
-    df['row'] = df['cell_id'].str.extract('.*_R([0-9]*)_C[0-9]*').astype(int)
-    df['col'] = df['cell_id'].str.extract('.*_R[0-9]*_C([0-9]*)').astype(int)
+    df['row'] = df['cell_id'].str.extract('.*-R([0-9]*)-C[0-9]*').astype(int)
+    df['col'] = df['cell_id'].str.extract('.*-R[0-9]*-C([0-9]*)').astype(int)
     df = df.sort_index(by=['row', 'col'], ascending=[True, True])
 
     return df

@@ -9,20 +9,22 @@ import pypeliner.managed as mgd
 
 import tasks
 
+
 def create_alignment_workflow(
     fastq_1_filename,
     fastq_2_filename,
     bam_filename,
     bam_index_filename,
     ref_genome,
-    read_group,
     metrics_summary_filename,
     gc_matrix_filename,
+    lane_id,
     sample_id,
     samplesheet,
     config,
-    args):
-    
+    args, desc):
+
+    read_group = tasks.get_readgroup(desc, lane_id, config, sample_id)
 
     scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
     collect_metrics_script = os.path.join(scripts_directory, 'collect_metrics.py')
@@ -31,14 +33,14 @@ def create_alignment_workflow(
 
 
     metrics_directory = os.path.join(args['out_dir'], 'metrics')
-    markdups_metrics_filename = os.path.join(metrics_directory, 'markdups_metrics/{}.markdups_metrics.txt'.format(sample_id))
-    flagstat_metrics_filename = os.path.join(metrics_directory, 'flagstat_metrics/{}.flagstat_metrics.txt'.format(sample_id))
-    wgs_metrics_filename = os.path.join(metrics_directory, 'wgs_metrics/{}.wgs_metrics.txt'.format(sample_id))
-    gc_metrics_filename = os.path.join(metrics_directory, 'gc_metrics/{}.gc_metrics.txt'.format(sample_id))
-    gc_summary_filename = os.path.join(metrics_directory, 'gc_metrics/{}.gc_metrics.summ.txt'.format(sample_id))
-    gc_chart_filename = os.path.join(metrics_directory, 'gc_metrics/{}.gc_metrics.pdf'.format(sample_id))
-    insert_metrics_filename = os.path.join(metrics_directory, 'insert_metrics/{}.insert_metrics.txt'.format(sample_id))
-    insert_histogram_filename = os.path.join(metrics_directory, 'insert_metrics/{}.insert_metrics.pdf'.format(sample_id))
+    markdups_metrics_filename = os.path.join(metrics_directory, 'markdups_metrics', lane_id, '{}.markdups_metrics.txt'.format(sample_id))
+    flagstat_metrics_filename = os.path.join(metrics_directory, 'flagstat_metrics', lane_id, '{}.flagstat_metrics.txt'.format(sample_id))
+    wgs_metrics_filename = os.path.join(metrics_directory, 'wgs_metrics', lane_id, '{}.wgs_metrics.txt'.format(sample_id))
+    gc_metrics_filename = os.path.join(metrics_directory, 'gc_metrics', lane_id, '{}.gc_metrics.txt'.format(sample_id))
+    gc_summary_filename = os.path.join(metrics_directory, 'gc_metrics', lane_id, '{}.gc_metrics.summ.txt'.format(sample_id))
+    gc_chart_filename = os.path.join(metrics_directory, 'gc_metrics', lane_id, '{}.gc_metrics.pdf'.format(sample_id))
+    insert_metrics_filename = os.path.join(metrics_directory, 'insert_metrics', lane_id, '{}.insert_metrics.txt'.format(sample_id))
+    insert_histogram_filename = os.path.join(metrics_directory, 'insert_metrics', lane_id, '{}.insert_metrics.pdf'.format(sample_id))
 
     workflow = pypeliner.workflow.Workflow()
 

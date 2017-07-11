@@ -12,7 +12,7 @@ import tasks
 
 def create_hmmcopy_workflow(bam_file, corrected_reads_file,
                             segments_file, hmm_metrics_file,
-                            cnmatrix_file, sample_id, config, args):
+                            cnmatrix_file, lane, sample_id, config, args):
 
     scripts_dir = os.path.join(os.path.realpath(os.path.dirname(__file__)),
                                'scripts')
@@ -24,13 +24,13 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
     chromosomes = config['chromosomes']
 
     hmmcopy_directory = os.path.join(args['out_dir'], 'hmmcopy')
-    posterior_marginals_filename = os.path.join(hmmcopy_directory,
+    posterior_marginals_filename = os.path.join(hmmcopy_directory, lane,
                                                 sample_id + '_posteriors.csv')
 
-    params_filename = os.path.join(hmmcopy_directory,
+    params_filename = os.path.join(hmmcopy_directory, lane,
                                    sample_id + '_parameters.csv')
 
-    wig_file =  os.path.join(hmmcopy_directory,
+    wig_file =  os.path.join(hmmcopy_directory, lane,
                              sample_id + '_readcounter.wig')
 
 

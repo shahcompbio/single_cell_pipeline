@@ -2,6 +2,33 @@ import os
 import errno
 import pandas as pd
 import pypeliner.commandline
+import shutil
+import warnings
+
+def merge_bams(inputs, output):
+    print inputs
+
+def get_readgroup(library_id, run_id, config, sample_id):
+    if 'read_group' in config.keys():
+        read_group_template = (
+            '@RG\tID:' + str(library_id) + '_' + sample_id+'_' + str(run_id) + 
+            '\tPL:' + str(config['read_group']['PL']) +
+            '\tPU:' + str(run_id) +
+            '\tLB:' + str(library_id) + '_' + sample_id +
+            '\tSM:' + sample_id +
+            '\tCN:' + str(config['read_group']['CN']))
+    
+    else:
+        warnings.warn('Config file does not contain read group information! ' + 
+                      'This will affect duplicate marking if BAMs are later merged. ' +
+                      'Creating BAM without read group information in header.')
+
+    return read_group_template
+
+
+def copy_files(in_r1,in_r2,out_r1, out_r2):
+    shutil.copy(in_r1, out_r1)
+    shutil.copy(in_r2, out_r2)
 
 
 def makedirs(directory):
@@ -10,7 +37,6 @@ def makedirs(directory):
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
-
 
 def generate_fastq_file_pairs(sample_sheet_filename, fastq_directory):
     ''' Generate standardized filenames from sample sheet.
@@ -30,6 +56,67 @@ def generate_fastq_file_pairs(sample_sheet_filename, fastq_directory):
 
         sample_id = sample_id.replace('-','_')
         yield sample_id, fastq_file_1, fastq_file_2
+
+
+
+def read_samplesheet_hiseq(samplesheet, hiseq_dir):
+
+    lib_id = os.path.normpath(hiseq_dir)
+    lib_id = os.path.basename(lib_id)
+
+
+    sample_ids = []
+    fastq_1_filenames = {}
+    fastq_2_filenames = {}
+
+
+    with open(samplesheet) as freader:
+        header = True
+    
+        for line in freader:
+            line = line.strip().split(',')
+    
+            if header:
+                if line[0] == "Experiment Name":
+                    exptnames = line[1].split(';')
+                elif line[0] == "[Data]":
+                    header = False
+            else:
+                if line[0] in ['Sample_ID', 'Sample-ID']:
+                    continue
+                sampid = line[0]
+                samp_idx = line[5]
+                samp_idx2 = line[7]
+
+                dirname = lib_id + '_' + samp_idx + '-' + samp_idx2
+                sample_ids.append(sampid)
+
+                for exptname in exptnames:
+                    if exptname not in fastq_1_filenames: 
+                        fastq_1_filenames[exptname] = {}
+                        fastq_2_filenames[exptname] = {}
+                    basename = exptname + '_' + samp_idx + '-' + samp_idx2
+    
+                    fq1 = os.path.join(hiseq_dir, exptname, dirname,
+                                       basename + "_1.fastq.gz")
+                    fq2 = os.path.join(hiseq_dir, exptname, dirname,
+                                       basename + "_2.fastq.gz")
+                    fastq_1_filenames[exptname][sampid] = fq1
+                    fastq_2_filenames[exptname][sampid] = fq2                
+
+    return sample_ids, fastq_1_filenames, fastq_2_filenames
+
+
+def get_fastq_files(samplesheet, hiseq_dir, output_r1, output_r2, sample_id, lane_id):
+ 
+    _, fq1, fq2 = read_samplesheet_hiseq(samplesheet, hiseq_dir)
+
+    infile = fq1[lane_id][sample_id]
+    shutil.copy(infile, output_r1)
+
+    infile = fq2[lane_id][sample_id]
+    shutil.copy(infile, output_r2)
+
 
 
 def demultiplex_fastq_files(sample_sheet_filename, nextseq_directory, fastq_1_filenames, fastq_2_filenames, temp_directory, bcl2fastq):

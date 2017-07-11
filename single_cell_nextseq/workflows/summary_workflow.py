@@ -9,7 +9,7 @@ import pypeliner.managed as mgd
 import tasks
 
 
-def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summary, gc_matrix, cn_matrix, config, args, sample_ids):
+def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summary, gc_matrix, cn_matrix, config, args, lane, sample_ids):
 
 
     scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
@@ -24,45 +24,45 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
 
     results_dir = os.path.join(args['out_dir'], 'results')
-    hmmcopy_segments_filename = os.path.join(results_dir, 'segments.csv')
-    hmmcopy_reads_filename = os.path.join(results_dir, 'reads.csv')
-    hmmcopy_hmm_metrics_filename = os.path.join(results_dir, 'hmm_metrics.csv')
-    hmmcopy_hmm_reads_filt_filename = os.path.join(results_dir, 'filtered_reads.csv')
-    hmmcopy_hmm_segs_filt_filename = os.path.join(results_dir, 'filtered_segs.csv')
+    hmmcopy_segments_filename = os.path.join(results_dir, lane, 'segments.csv')
+    hmmcopy_reads_filename = os.path.join(results_dir, lane, 'reads.csv')
+    hmmcopy_hmm_metrics_filename = os.path.join(results_dir, lane, 'hmm_metrics.csv')
+    hmmcopy_hmm_reads_filt_filename = os.path.join(results_dir, lane, 'filtered_reads.csv')
+    hmmcopy_hmm_segs_filt_filename = os.path.join(results_dir, lane, 'filtered_segs.csv')
 
 
-    metrics_summary_filename = os.path.join(results_dir, 'merged_summary', 'summary.csv')
-    gc_metrics_filename = os.path.join(results_dir, 'summary', 'gc_metrics_summary.csv')
-    all_metrics_filename = os.path.join(results_dir, 'summary', 'all_metrics_summary.csv')
-    all_metrics_heatmap_filename = os.path.join(results_dir, 'summary', 'all_metrics_summary_hmap.csv')
-    cn_metrics_filename = os.path.join(results_dir, 'summary', 'cn_metrics_summary.csv')
+    metrics_summary_filename = os.path.join(results_dir, lane, 'merged_summary', 'summary.csv')
+    gc_metrics_filename = os.path.join(results_dir, lane, 'summary', 'gc_metrics_summary.csv')
+    all_metrics_filename = os.path.join(results_dir, lane, 'summary', 'all_metrics_summary.csv')
+    all_metrics_heatmap_filename = os.path.join(results_dir, lane, 'summary', 'all_metrics_summary_hmap.csv')
+    cn_metrics_filename = os.path.join(results_dir, lane, 'summary', 'cn_metrics_summary.csv')
 
 
-    reads_plot_filename = os.path.join(results_dir, 'plots', 'corrected_reads.pdf')
-    bias_plot_filename = os.path.join(results_dir, 'plots', 'bias.pdf')
-    segs_plot_filename = os.path.join(results_dir, 'plots', 'segments.pdf')
+    reads_plot_filename = os.path.join(results_dir, lane, 'plots', 'corrected_reads.pdf')
+    bias_plot_filename = os.path.join(results_dir, lane, 'plots', 'bias.pdf')
+    segs_plot_filename = os.path.join(results_dir, lane, 'plots', 'segments.pdf')
 
-    reads_plot_filename_mad = os.path.join(results_dir, 'plots', 'corrected_reads_mad_0.2.pdf')
-    bias_plot_filename_mad = os.path.join(results_dir, 'plots', 'bias_mad_0.2.pdf')
-    segs_plot_filename_mad = os.path.join(results_dir, 'plots', 'segments_mad_0.2.pdf')
+    reads_plot_filename_mad = os.path.join(results_dir, lane, 'plots', 'corrected_reads_mad_0.2.pdf')
+    bias_plot_filename_mad = os.path.join(results_dir, lane, 'plots', 'bias_mad_0.2.pdf')
+    segs_plot_filename_mad = os.path.join(results_dir, lane, 'plots', 'segments_mad_0.2.pdf')
 
-    plot_heatmap_all_output = os.path.join(results_dir, 'plots', 'plot_heatmap_all.pdf')
-    order_data_all_output = os.path.join(results_dir, 'plots', 'plot_heatmap_all.csv')
-
-
-
-    plot_heatmap_ec_output = os.path.join(results_dir, 'plots', 'plot_heatmap_ec.pdf')
-    plot_heatmap_ec_mad_output = os.path.join(results_dir, 'plots', 'plot_heatmap_ec_mad.pdf')
-    plot_heatmap_ec_numreads_output = os.path.join(results_dir, 'plots', 'plot_heatmap_ec_numreads.pdf')
-
-    plot_heatmap_st_output = os.path.join(results_dir, 'plots', 'plot_heatmap_st.pdf')
-    plot_heatmap_st_mad_output = os.path.join(results_dir, 'plots', 'plot_heatmap_st_mad.pdf')
-    plot_heatmap_st_numreads_output = os.path.join(results_dir, 'plots', 'plot_heatmap_st_numreads.pdf')
+    plot_heatmap_all_output = os.path.join(results_dir, lane, 'plots', 'plot_heatmap_all.pdf')
+    order_data_all_output = os.path.join(results_dir, lane, 'plots', 'plot_heatmap_all.csv')
 
 
-    plot_metrics_output = os.path.join(results_dir, 'plots', 'plot_metrics.pdf')
-    plot_kernel_density_output = os.path.join(results_dir, 'plots', 'plot_kernel_density.pdf')
-    summary_metrics_output = os.path.join(results_dir, 'plots', 'summary_metrics.txt')
+
+    plot_heatmap_ec_output = os.path.join(results_dir, lane, 'plots', 'plot_heatmap_ec.pdf')
+    plot_heatmap_ec_mad_output = os.path.join(results_dir, lane, 'plots', 'plot_heatmap_ec_mad.pdf')
+    plot_heatmap_ec_numreads_output = os.path.join(results_dir, lane, 'plots', 'plot_heatmap_ec_numreads.pdf')
+
+    plot_heatmap_st_output = os.path.join(results_dir, lane, 'plots', 'plot_heatmap_st.pdf')
+    plot_heatmap_st_mad_output = os.path.join(results_dir, lane, 'plots', 'plot_heatmap_st_mad.pdf')
+    plot_heatmap_st_numreads_output = os.path.join(results_dir, lane, 'plots', 'plot_heatmap_st_numreads.pdf')
+
+
+    plot_metrics_output = os.path.join(results_dir, lane, 'plots', 'plot_metrics.pdf')
+    plot_kernel_density_output = os.path.join(results_dir, lane, 'plots', 'plot_kernel_density.pdf')
+    summary_metrics_output = os.path.join(results_dir, lane, 'plots', 'summary_metrics.txt')
 
 
     workflow = pypeliner.workflow.Workflow()

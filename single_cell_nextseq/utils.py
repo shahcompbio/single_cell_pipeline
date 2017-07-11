@@ -1,6 +1,5 @@
 import yaml
 import os
-import warnings
 
 def load_config(args):
     try:
@@ -42,54 +41,52 @@ def read_samplesheet_nextseq(args, fastq_directory):
     return run_id, library_id, sample_ids, fastq_1_filenames, fastq_2_filenames
 
 
+def read_samplesheet_hiseq(args):
 
-def read_samplesheet_hiseq(args, fastq_directory):
-    try:
-        with open(args['samplesheet']) as infile:
-            lines = [x.strip('\n').strip(',') for x in infile.readlines()]
-        
-        run_id = [s.split(',')[1] for s in lines if 'Experiment Name,' in s][0]
-        
-        library_id = [s.split(',')[1] for s in lines if 'Description,' in s][0]
-        
-        start_index = lines.index('[Data]')+2
+    lib_id = os.path.normpath(args['hiseq_dir'])
+    lib_id = os.path.basename(lib_id)
 
-        num_samples = len(lines[start_index:])
+    sample_ids = []
 
-        sample_ids = []
-        fastq_1_filenames = {}
-        fastq_2_filenames = {}
-        for i, line in zip(range(num_samples), lines[start_index:]):
-            sample_id = line.split(',')[0]
-            sample_id = sample_id.replace('-', '_')
-            r1_basename = '{0}_S{1}_R1_001'.format(sample_id, str(i+1))
-            r2_basename = '{0}_S{1}_R2_001'.format(sample_id, str(i+1))
-            fastq_1_filenames[sample_id] = os.path.join(fastq_directory, r1_basename + '.fastq.gz')
-            fastq_2_filenames[sample_id] = os.path.join(fastq_directory, r2_basename + '.fastq.gz')
-            sample_ids.append(sample_id)
-
-    except IOError:
-        print 'Unable to open file \'SampleSheet.csv\' in directory: {0}'.format(args['nextseq_dir'])
-
-    return run_id, library_id, sample_ids, fastq_1_filenames, fastq_2_filenames
-
-
-def get_readgroup_template(library_id, run_id, config):
-    if 'read_group' in config.keys():
-        read_group_template = (
-            '@RG\tID:' + str(library_id) + '_{sample_id}_' + str(run_id) + 
-            '\tPL:' + str(config['read_group']['PL']) +
-            '\tPU:' + str(run_id) +
-            '\tLB:' + str(library_id) + '_{sample_id}' +
-            '\tSM:' + '{sample_id}' +
-            '\tCN:' + str(config['read_group']['CN']))
+    with open(args['samplesheet']) as freader:
+        header = True
     
-    else:
-        warnings.warn('Config file does not contain read group information! ' + 
-                      'This will affect duplicate marking if BAMs are later merged. ' +
-                      'Creating BAM without read group information in header.')
+        for line in freader:
+            line = line.strip().split(',')
+    
+            if header:
+                if line[0] == "Experiment Name":
+                    exptnames = line[1].split(';')
+                elif line[0] == "Description":
+                    desc = line[1]
+                elif line[0] == "[Data]":
+                    header = False
+            else:
+                if line[0] in ['Sample_ID', 'Sample-ID']:
+                    continue
+                sampid = line[0]
+                samp_idx = line[5]
+                samp_idx2 = line[7]
 
-    return read_group_template
+                dirname = lib_id + '_' + samp_idx + '-' + samp_idx2
+                sample_ids.append(sampid)
+
+#                 for exptname in exptnames:
+#                     if exptname not in fastq_1_filenames: 
+#                         fastq_1_filenames[exptname] = {}
+#                         fastq_2_filenames[exptname] = {}
+#                     basename = exptname + '_' + samp_idx + '-' + samp_idx2
+#                     fq1 = os.path.join(args['hiseq_dir'], exptname, dirname,
+#                                        basename + "_1.fastq.gz")
+#                     fq2 = os.path.join(args['hiseq_dir'], exptname, dirname,
+#                                        basename + "_2.fastq.gz")
+#                     fastq_1_filenames[exptname][sampid] = fq1
+#                     fastq_2_filenames[exptname][sampid] = fq2                
+
+    return exptnames, desc, sample_ids
+
+
+
 
 def getpath(vals):
     return os.path.join(*vals)
