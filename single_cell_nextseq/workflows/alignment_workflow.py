@@ -32,15 +32,15 @@ def create_alignment_workflow(
     gc_metrics_script = os.path.join(scripts_directory, 'gen_cn_matrix.py')
 
 
-    metrics_directory = os.path.join(args['out_dir'], 'metrics')
-    markdups_metrics_filename = os.path.join(metrics_directory, 'markdups_metrics', lane_id, '{}.markdups_metrics.txt'.format(sample_id))
-    flagstat_metrics_filename = os.path.join(metrics_directory, 'flagstat_metrics', lane_id, '{}.flagstat_metrics.txt'.format(sample_id))
-    wgs_metrics_filename = os.path.join(metrics_directory, 'wgs_metrics', lane_id, '{}.wgs_metrics.txt'.format(sample_id))
-    gc_metrics_filename = os.path.join(metrics_directory, 'gc_metrics', lane_id, '{}.gc_metrics.txt'.format(sample_id))
-    gc_summary_filename = os.path.join(metrics_directory, 'gc_metrics', lane_id, '{}.gc_metrics.summ.txt'.format(sample_id))
-    gc_chart_filename = os.path.join(metrics_directory, 'gc_metrics', lane_id, '{}.gc_metrics.pdf'.format(sample_id))
-    insert_metrics_filename = os.path.join(metrics_directory, 'insert_metrics', lane_id, '{}.insert_metrics.txt'.format(sample_id))
-    insert_histogram_filename = os.path.join(metrics_directory, 'insert_metrics', lane_id, '{}.insert_metrics.pdf'.format(sample_id))
+    metrics_dir = os.path.join(args['out_dir'], 'lanes', lane_id, 'metrics')
+    markdups_metrics_filename = os.path.join(metrics_dir, 'markdups_metrics', '{}.markdups_metrics.txt'.format(sample_id))
+    flagstat_metrics_filename = os.path.join(metrics_dir,'flagstat_metrics',  '{}.flagstat_metrics.txt'.format(sample_id))
+    wgs_metrics_filename = os.path.join(metrics_dir, 'wgs_metrics', '{}.wgs_metrics.txt'.format(sample_id))
+    gc_metrics_filename = os.path.join(metrics_dir, 'gc_metrics', '{}.gc_metrics.txt'.format(sample_id))
+    gc_summary_filename = os.path.join(metrics_dir, 'gc_metrics', '{}.gc_metrics.summ.txt'.format(sample_id))
+    gc_chart_filename = os.path.join(metrics_dir, 'gc_metrics', '{}.gc_metrics.pdf'.format(sample_id))
+    insert_metrics_filename = os.path.join(metrics_dir, 'insert_metrics', '{}.insert_metrics.txt'.format(sample_id))
+    insert_histogram_filename = os.path.join(metrics_dir, 'insert_metrics', '{}.insert_metrics.pdf'.format(sample_id))
 
     workflow = pypeliner.workflow.Workflow()
 

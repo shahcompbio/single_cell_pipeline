@@ -5,8 +5,23 @@ import pypeliner.commandline
 import shutil
 import warnings
 
-def merge_bams(inputs, output):
-    print inputs
+def merge_bams(inputs, output, config):
+    filenames = inputs.values()
+    
+    
+    cmd = [config['java'], '-Xmx12G', '-jar',
+           config['picard'],
+           'MergeSamFiles',
+           'OUTPUT=' + output,
+           'SORT_ORDER=coordinate',
+           'ASSUME_SORTED=true',
+           'VALIDATION_STRINGENCY=LENIENT',
+           ]
+    for bamfile in filenames:
+        cmd.append('I='+bamfile)
+    
+    pypeliner.commandline.execute(*cmd)
+
 
 def get_readgroup(library_id, run_id, config, sample_id):
     if 'read_group' in config.keys():
