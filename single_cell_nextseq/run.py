@@ -3,7 +3,7 @@ import argparse
 import utils
 import pypeliner
 import pypeliner.managed as mgd
-from workflows import tasks, fastqc_workflow, alignment_workflow, hmmcopy_workflow, summary_workflow, merge_workflow
+from workflows import fastqc_workflow, alignment_workflow, hmmcopy_workflow, summary_workflow, merge_workflow
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -36,19 +36,15 @@ def main():
 
     config = utils.load_config(args)
 
-    lanes, desc, sample_ids = utils.read_samplesheet_hiseq(args)
+    lanes, desc, sample_ids, fastq_1_filenames, fastq_2_filenames = utils.read_samplesheet_hiseq(args)
 
     workflow = pypeliner.workflow.Workflow()
 
 
     perlane_dir = os.path.join(args['out_dir'], 'lanes')
 
-    fastq_r1 = os.path.join(perlane_dir, '{lane}', 'fastq', '{sample_id}_R1.fastq.gz')
-    fastq_r2 = os.path.join(perlane_dir, '{lane}', 'fastq', '{sample_id}_R2.fastq.gz')
-
     trimgalore_results_template_r1 = os.path.join(perlane_dir, '{lane}', 'trim', '{sample_id}_R1.fastq.gz')
     trimgalore_results_template_r2 = os.path.join(perlane_dir, '{lane}', 'trim', '{sample_id}_R2.fastq.gz')
-
 
     bam_template = os.path.join(perlane_dir, '{lane}', 'bams', '{sample_id}.bam')
     bam_index_template = os.path.join(perlane_dir, '{lane}', 'bams', '{sample_id}.bam.bai')
@@ -77,26 +73,14 @@ def main():
         value=vals,
     )
 
-    workflow.transform(
-                       name='get_fastq_files',
-                       axes=('sample_id', 'lane',),
-                       func=tasks.get_fastq_files,
-                       args=(mgd.InputFile(args['samplesheet']),
-                             mgd.InputFile(args['hiseq_dir']),
-                             mgd.OutputFile('fastq_1', 'sample_id', 'lane', template=fastq_r1),
-                             mgd.OutputFile('fastq_2', 'sample_id', 'lane', template=fastq_r2),
-                             mgd.InputInstance('sample_id'),
-                             mgd.InputInstance('lane'),
-                             )
-                       )
 
     workflow.subworkflow(
         name='fastqc_workflow',
         axes=('sample_id', 'lane',),
         func=fastqc_workflow.create_fastqc_workflow,
         args=(
-              mgd.InputFile('fastq_1', 'sample_id', 'lane', template=fastq_r1),
-              mgd.InputFile('fastq_2', 'sample_id', 'lane', template=fastq_r2),
+              mgd.InputFile('fastq_1', 'sample_id', 'lane', fnames=fastq_1_filenames),
+              mgd.InputFile('fastq_2', 'sample_id', 'lane', fnames=fastq_2_filenames),
               mgd.OutputFile('fastq_trim_1', 'sample_id', 'lane', template=trimgalore_results_template_r1),
               mgd.OutputFile('fastq_trim_2', 'sample_id', 'lane', template=trimgalore_results_template_r2),
               config,
