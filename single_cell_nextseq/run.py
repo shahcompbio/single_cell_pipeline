@@ -23,6 +23,7 @@ def parse_args():
                         help='''Path to yaml config file.''')
 
     parser.add_argument('--lanes',
+                        nargs='*',
                         help='''Lanes to analyze.''')
 
     args = vars(parser.parse_args())
