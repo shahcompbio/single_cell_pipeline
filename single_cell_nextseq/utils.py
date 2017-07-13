@@ -42,6 +42,7 @@ def read_samplesheet_nextseq(args, fastq_directory):
 
 
 def read_samplesheet_hiseq(args):
+    lanes = args['lanes']
 
     lib_id = os.path.normpath(args['hiseq_dir'])
     lib_id = os.path.basename(lib_id)
@@ -58,9 +59,7 @@ def read_samplesheet_hiseq(args):
             line = line.strip().split(',')
     
             if header:
-                if line[0] == "Experiment Name":
-                    exptnames = line[1].split(';') if ';' in line[1] else [line[1]]
-                elif line[0] == "Description":
+                if line[0] == "Description":
                     desc = line[1]
                 elif line[0] == "[Data]":
                     header = False
@@ -74,16 +73,16 @@ def read_samplesheet_hiseq(args):
                 dirname = lib_id + '_' + samp_idx + '-' + samp_idx2
                 sample_ids.append(sampid)
 
-                for exptname in exptnames:
-                    basename = exptname + '_' + samp_idx + '-' + samp_idx2
-                    fq1 = os.path.join(args['hiseq_dir'], exptname, dirname,
+                for lane in lanes:
+                    basename = lane + '_' + samp_idx + '-' + samp_idx2
+                    fq1 = os.path.join(args['hiseq_dir'], lane, dirname,
                                        basename + "_1.fastq.gz")
-                    fq2 = os.path.join(args['hiseq_dir'], exptname, dirname,
+                    fq2 = os.path.join(args['hiseq_dir'], lane, dirname,
                                        basename + "_2.fastq.gz")
-                    fastq_1_filenames[(sampid,exptname)] = fq1
-                    fastq_2_filenames[(sampid,exptname)] = fq2                
+                    fastq_1_filenames[(sampid,lane)] = fq1
+                    fastq_2_filenames[(sampid,lane)] = fq2                
 
-    return exptnames, desc, sample_ids, fastq_1_filenames, fastq_2_filenames
+    return lanes, desc, sample_ids, fastq_1_filenames, fastq_2_filenames
 
 def getpath(vals):
     return os.path.join(*vals)

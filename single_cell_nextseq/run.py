@@ -22,6 +22,9 @@ def parse_args():
     parser.add_argument('config_file',
                         help='''Path to yaml config file.''')
 
+    parser.add_argument('--lanes',
+                        help='''Lanes to analyze.''')
+
     args = vars(parser.parse_args())
     args['tmpdir'] = os.path.join(args['out_dir'], 'tmp')
 
