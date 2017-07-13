@@ -46,7 +46,7 @@ def create_alignment_workflow(
 
     workflow.commandline(
         name='aln_read_1',
-        ctx={'mem': 6},
+        ctx={'mem': config['med_mem']},
         args=(
             config['bwa'],
             'aln',
@@ -59,7 +59,7 @@ def create_alignment_workflow(
 
     workflow.commandline(
         name='aln_read_2',
-        ctx={'mem': 6},
+        ctx={'mem': config['med_mem']},
         args=(
             config['bwa'], 'aln',
             mgd.InputFile(ref_genome),
@@ -71,7 +71,7 @@ def create_alignment_workflow(
 
     workflow.commandline(
         name='sampe',
-        ctx={'mem': 6},
+        ctx={'mem': config['med_mem']},
         args=(
             config['bwa'], 'sampe',
             '-r', read_group,
@@ -90,7 +90,7 @@ def create_alignment_workflow(
 
     workflow.transform(
         name='bam_sort',
-        ctx={'mem': 16},
+        ctx={'mem': config['high_mem']},
         func=tasks.bam_sort,
         args=(
             mgd.TempInputFile('aligned.bam'),
@@ -101,7 +101,7 @@ def create_alignment_workflow(
 
     workflow.transform(
         name='bam_markdups',
-        ctx={'mem': 16},
+        ctx={'mem': config['high_mem']},
         func=tasks.bam_markdups,
         args=(
             mgd.TempInputFile('sorted.bam'),
@@ -113,7 +113,7 @@ def create_alignment_workflow(
 
     workflow.commandline(
         name='bam_index',
-        ctx={'mem': 16},
+        ctx={'mem': config['low_mem']},
         args=(
             config['samtools'], 'index',
             mgd.InputFile(bam_filename),
@@ -123,7 +123,7 @@ def create_alignment_workflow(
 
     workflow.commandline(
         name='bam_flagstat',
-        ctx={'mem': 16},
+        ctx={'mem': config['low_mem']},
         args=(
             config['samtools'], 'flagstat',
             mgd.InputFile(bam_filename),
@@ -134,7 +134,7 @@ def create_alignment_workflow(
 
     workflow.transform(
         name='bam_collect_wgs_metrics',
-        ctx={'mem': 24},
+        ctx={'mem': config['high_mem']},
         func=tasks.bam_collect_wgs_metrics,
         args=(
             mgd.InputFile(bam_filename),
@@ -146,7 +146,7 @@ def create_alignment_workflow(
 
     workflow.transform(
         name='bam_collect_gc_metrics',
-        ctx={'mem': 24},
+        ctx={'mem': config['high_mem']},
         func=tasks.bam_collect_gc_metrics,
         args=(
             mgd.InputFile(bam_filename),
@@ -160,7 +160,7 @@ def create_alignment_workflow(
 
     workflow.transform(
         name='bam_collect_insert_metrics',
-        ctx={'mem': 24},
+        ctx={'mem': config['high_mem']},
         func=tasks.bam_collect_insert_metrics,
         args=(
             mgd.InputFile(bam_filename),
@@ -173,7 +173,7 @@ def create_alignment_workflow(
     
     workflow.commandline(
         name='collect_metrics',
-        ctx={'mem': 16},
+        ctx={'mem': config['low_mem']},
         args=(
             config['python'],
             collect_metrics_script,
@@ -189,7 +189,7 @@ def create_alignment_workflow(
 
     workflow.commandline(
         name='collect_gc_metrics',
-        ctx={'mem': 16},
+        ctx={'mem': config['low_mem']},
         args=(
             config['python'],
             gc_metrics_script,

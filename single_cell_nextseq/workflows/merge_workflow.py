@@ -54,6 +54,7 @@ def create_merge_workflow(
 
     workflow.transform(
         name='merge_bams',
+        ctx={'mem': config['high_mem']},
         func=tasks.merge_bams,
         args=(
             mgd.InputFile('bam', 'lane', fnames=bam),
@@ -64,7 +65,7 @@ def create_merge_workflow(
 
     workflow.transform(
         name='bam_sort',
-        ctx={'mem': 16},
+        ctx={'mem': config['high_mem']},
         func=tasks.bam_sort,
         args=(
             mgd.TempInputFile('merged.bam'),
@@ -75,7 +76,7 @@ def create_merge_workflow(
   
     workflow.transform(
         name='bam_markdups',
-        ctx={'mem': 16},
+        ctx={'mem': config['high_mem']},
         func=tasks.bam_markdups,
         args=(
             mgd.TempInputFile('sorted.bam'),
@@ -87,7 +88,7 @@ def create_merge_workflow(
   
     workflow.commandline(
         name='bam_index',
-        ctx={'mem': 16},
+        ctx={'mem': config['low_mem']},
         args=(
             config['samtools'], 'index',
             mgd.InputFile(bam_filename),
@@ -97,7 +98,7 @@ def create_merge_workflow(
   
     workflow.commandline(
         name='bam_flagstat',
-        ctx={'mem': 16},
+        ctx={'mem': config['low_mem']},
         args=(
             config['samtools'], 'flagstat',
             mgd.InputFile(bam_filename),
@@ -108,7 +109,7 @@ def create_merge_workflow(
   
     workflow.transform(
         name='bam_collect_wgs_metrics',
-        ctx={'mem': 24},
+        ctx={'mem': config['high_mem']},
         func=tasks.bam_collect_wgs_metrics,
         args=(
             mgd.InputFile(bam_filename),
@@ -120,7 +121,7 @@ def create_merge_workflow(
   
     workflow.transform(
         name='bam_collect_gc_metrics',
-        ctx={'mem': 24},
+        ctx={'mem': config['high_mem']},
         func=tasks.bam_collect_gc_metrics,
         args=(
             mgd.InputFile(bam_filename),
@@ -134,7 +135,7 @@ def create_merge_workflow(
   
     workflow.transform(
         name='bam_collect_insert_metrics',
-        ctx={'mem': 24},
+        ctx={'mem': config['high_mem']},
         func=tasks.bam_collect_insert_metrics,
         args=(
             mgd.InputFile(bam_filename),
@@ -147,7 +148,7 @@ def create_merge_workflow(
       
     workflow.commandline(
         name='collect_metrics',
-        ctx={'mem': 16},
+        ctx={'mem': config['low_mem']},
         args=(
             config['python'],
             collect_metrics_script,
@@ -163,7 +164,7 @@ def create_merge_workflow(
   
     workflow.commandline(
         name='collect_gc_metrics',
-        ctx={'mem': 16},
+        ctx={'mem': config['low_mem']},
         args=(
             config['python'],
             gc_metrics_script,

@@ -34,7 +34,7 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
 
     workflow.commandline(
         name='count_reads',
-        ctx={'mem': 4},
+        ctx={'mem': config['low_mem']},
         args=(
             config['readcounter'],
             '-w', str(config['bin_size']),
@@ -48,7 +48,7 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
 
     workflow.transform(
         name='run_hmmcopy',
-        ctx={'mem': 4},
+        ctx={'mem': config['low_mem']},
         func=tasks.run_hmmcopy,
         args=(
             mgd.InputFile(wig_file),
@@ -63,7 +63,7 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
  
     workflow.commandline(
         name='extract_quality_metrics',
-        ctx={'mem': 4},
+        ctx={'mem': config['low_mem']},
         args=(
             config['python'],
             extract_quality_metrics_script,
@@ -78,7 +78,7 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
  
     workflow.commandline(
         name='collect_gc_metrics',
-        ctx={'mem': 16},
+        ctx={'mem': config['low_mem']},
         args=(
             config['python'],
             cn_metrics_script,

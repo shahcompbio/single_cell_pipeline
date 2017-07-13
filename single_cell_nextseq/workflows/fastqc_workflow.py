@@ -33,6 +33,7 @@ def create_fastqc_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, s
 
     workflow.transform(
         name='produce_fastqc_report_1',
+        ctx={'mem': config['low_mem']},
         func=tasks.produce_fastqc_report,
         args=(
             mgd.InputFile(fastq_r1),
@@ -45,6 +46,7 @@ def create_fastqc_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, s
 
     workflow.transform(
         name='produce_fastqc_report_2',
+        ctx={'mem': config['low_mem']},
         func=tasks.produce_fastqc_report,
         args=(
             mgd.InputFile(fastq_r2),
@@ -58,6 +60,7 @@ def create_fastqc_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, s
     if trim:
         workflow.commandline(
             name='run_trimgalore',
+            ctx={'mem': config['low_mem']},
             args=(
               config['python'],
               os.path.join(scripts_directory, 'run_trimgalore.py'),

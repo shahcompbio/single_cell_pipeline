@@ -67,6 +67,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
     
     workflow.transform(
         name='merge_tables',
+        ctx={'mem': config['med_mem']},
         func=tasks.concatenate_csv,
         args=(
             mgd.InputFile('hmm_segments', 'sample_id', fnames=hmm_segments),
@@ -76,6 +77,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.transform(
         name='merge_reads',
+        ctx={'mem': config['high_mem']},
         func=tasks.concatenate_csv,
         args=(
             mgd.InputFile('hmm_reads', 'sample_id', fnames=hmm_reads),
@@ -85,6 +87,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.transform(
         name='merge_hmm_metrics',
+        ctx={'mem': config['low_mem']},
         func=tasks.concatenate_csv,
         args=(
             mgd.InputFile('hmm_metrics', 'sample_id', fnames=hmm_metrics),
@@ -94,6 +97,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.transform(
         name='merge_summary_metrics',
+        ctx={'mem': config['low_mem']},
         func=tasks.concatenate_csv,
         args=(
             mgd.InputFile('metrics_summary', 'sample_id', fnames=metrics_summary),
@@ -103,6 +107,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.transform(
         name='merge_gc_metrics',
+        ctx={'mem': config['low_mem']},
         func=tasks.merge_csv,
         args=(
             mgd.InputFile('gc_matrix', 'sample_id', fnames=gc_matrix),
@@ -114,6 +119,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.transform(
         name='merge_cn_metrics',
+        ctx={'mem': config['low_mem']},
         func=tasks.merge_csv,
         args=(
             mgd.InputFile('cn_matrix', 'sample_id', fnames=cn_matrix),
@@ -125,6 +131,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.commandline(
         name='filter_hmmcopy_results',
+        ctx={'mem': config['high_mem']},
         args=(
             config['python'],
             filter_hmmcopy_script,
@@ -141,6 +148,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.commandline(
         name='merge_all_metrics',
+        ctx={'mem': config['low_mem']},
         args=(
             config['python'],
             merge_tables_script,
@@ -156,6 +164,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.commandline(
         name='plot_heatmap_all',
+        ctx={'mem': config['high_mem']},
         args=(
             config['python'],
             plot_heatmap_script,
@@ -171,6 +180,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.commandline(
         name='merge_all_metrics_heatmap',
+        ctx={'mem': config['high_mem']},
         args=(
             config['python'],
             merge_tables_script,
@@ -186,6 +196,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.commandline(
         name='plot_hmm_copy',
+        ctx={'mem': config['high_mem']},
         args=(
             config['python'],
             plot_hmmcopy_script,
@@ -203,6 +214,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.commandline(
         name='plot_hmm_copy_mad',
+        ctx={'mem': config['high_mem']},
         args=(
             config['python'],
             plot_hmmcopy_script,
@@ -223,6 +235,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.commandline(
         name='plot_metrics',
+        ctx={'mem': config['high_mem']},
         args=(
             config['python'],
             plot_metrics_script,
@@ -236,6 +249,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.commandline(
         name='plot_kernel_density',
+        ctx={'mem': config['high_mem']},
         args=(
             config['python'],
             plot_kernel_density_script,
@@ -249,6 +263,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.commandline(
         name='summary_metrics',
+        ctx={'mem': config['low_mem']},
         args=(
             config['python'],
             summary_metrics_script,
@@ -259,6 +274,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.commandline(
         name='plot_heatmap_ec',
+        ctx={'mem': config['high_mem']},
         args=(
             config['python'],
             plot_heatmap_script,
@@ -274,6 +290,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.commandline(
         name='plot_heatmap_ec_mad',
+        ctx={'mem': config['high_mem']},
         args=(
             config['python'],
             plot_heatmap_script,
@@ -291,6 +308,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.commandline(
         name='plot_heatmap_ec_nreads',
+        ctx={'mem': config['high_mem']},
         args=(
             config['python'],
             plot_heatmap_script,
@@ -309,6 +327,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.commandline(
         name='plot_heatmap_st',
+        ctx={'mem': config['high_mem']},
         args=(
             config['python'],
             plot_heatmap_script,
@@ -324,6 +343,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.commandline(
         name='plot_heatmap_st_mad',
+        ctx={'mem': config['high_mem']},
         args=(
             config['python'],
             plot_heatmap_script,
@@ -341,6 +361,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
 
     workflow.commandline(
         name='plot_heatmap_st_nreads',
+        ctx={'mem': config['high_mem']},
         args=(
             config['python'],
             plot_heatmap_script,
