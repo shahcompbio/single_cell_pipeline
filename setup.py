@@ -7,4 +7,5 @@ setup(
     author='Andrew McPherson',
     author_email='andrew.mcpherson@gmail.com',
     entry_points={'console_scripts': ['single_cell_nextseq = single_cell_nextseq.run:main']},
+    package_data={'':['scripts/*']}
 )
