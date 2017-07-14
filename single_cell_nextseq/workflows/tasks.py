@@ -9,8 +9,7 @@ def merge_bams(inputs, output, config):
     filenames = inputs.values()
     
     
-    cmd = [config['java'], '-Xmx12G', '-jar',
-           config['picard'],
+    cmd = [config['picard'], '-Xmx12G',
            'MergeSamFiles',
            'OUTPUT=' + output,
            'SORT_ORDER=coordinate',
@@ -259,8 +258,7 @@ def run_trimgalore(fastq1_filename, fastq2_filename, trim1_filename, trim2_filen
 
 def bam_sort(bam_filename, sorted_bam_filename, config):
     pypeliner.commandline.execute(
-        config['java'], '-Xmx12G', '-jar',
-        config['picard'],
+        config['picard'], '-Xmx12G',
         'SortSam',
         'INPUT=' + bam_filename,
         'OUTPUT=' + sorted_bam_filename,
@@ -271,8 +269,7 @@ def bam_sort(bam_filename, sorted_bam_filename, config):
 
 def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, config):
     pypeliner.commandline.execute(
-        config['java'], '-Xmx12G', '-jar',
-        config['picard'],
+        config['picard'], '-Xmx12G',
         'MarkDuplicates',
         'INPUT=' + bam_filename,
         'OUTPUT=' + markduped_bam_filename,
@@ -284,8 +281,7 @@ def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, config)
 
 def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config):
     pypeliner.commandline.execute(
-        config['java'],  '-Xmx12G', '-jar',
-        config['picard'],
+        config['picard'], '-Xmx12G',
         'CollectWgsMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
@@ -299,8 +295,7 @@ def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config):
 
 def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, config):
     pypeliner.commandline.execute(
-        config['java'], '-Xmx12G', '-jar',
-        config['picard'],
+        config['picard'], '-Xmx12G',
         'CollectGcBiasMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
@@ -332,8 +327,7 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_
         return
 
     pypeliner.commandline.execute(
-        config['java'], '-Xmx12G', '-jar',
-        config['picard'],
+        config['picard'], '-Xmx12G',
         'CollectInsertSizeMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
@@ -394,6 +388,7 @@ def merge_csv(in_filenames, out_filename, how, on, nan_val = 'NA'):
             first_line = f.readline()
             if len(first_line) == 0:
                 continue
+        print in_filename
         data.append(pd.read_csv(in_filename, dtype=str))
 
     data = merge_frames(data, how, on)

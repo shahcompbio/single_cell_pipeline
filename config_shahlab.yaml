@@ -56,17 +56,17 @@ map_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.map.ws
 adapter: 'CTGTCTCTTATACACATCTCCGAGCCCACGAGAC'
 adapter2: 'CTGTCTCTTATACACATCTGACGCTGCCGACGA'
 
-trimgalore: '/shahlab/pipelines/apps_centos6/trim_galore/trim_galore'
-cutadapt: '/shahlab/dgrewal/KRONOS-79/wdir_parallel/venv_k2.2.1/bin/cutadapt'
-bcl2fastq: '/gsc/software/linux-x86_64-centos6/bcl2fastq-2.17/bin/bcl2fastq'
-fastqc: '/shahlab/pipelines/apps_centos6/FastQC/fastqc'
-bwa: '/shahlab/pipelines/apps_centos6/bwa-0.7.12/bwa'
-samtools: '/shahlab/pipelines/apps_centos6/samtools-1.2/samtools'
-python: '/shahlab/pipelines/virtual_environments/single_cell_analysis_pipeline/bin/python'
-picard: '/shahlab/pipelines/apps_centos6/picard-tools-1.141/picard.jar'
-java: '/shahlab/pipelines/apps_centos6/jdk1.8.0_51/bin/java'
-readcounter: '/shahlab/pipelines/apps_centos6/readcounter/readCounter'
-Rscript: '/gsc/software/linux-x86_64-centos6/R-3.1.1/bin/Rscript'
+trimgalore: 'trim_galore'
+cutadapt: 'cutadapt'
+bcl2fastq: 'bcl2fastq'
+fastqc: 'fastqc'
+bwa: 'bwa'
+samtools: 'samtools'
+python: 'python'
+picard: 'picard'
+java: 'java'
+readcounter: 'readCounter'
+Rscript: 'Rscript'
 
 
 

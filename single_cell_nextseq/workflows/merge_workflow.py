@@ -158,7 +158,7 @@ def create_merge_workflow(
             mgd.InputFile(wgs_metrics_filename),
             mgd.OutputFile(metrics_summary_filename),
             mgd.InputFile(samplesheet),
-            sample_id,
+            '--sample_id',sample_id,
         ),
     )
   

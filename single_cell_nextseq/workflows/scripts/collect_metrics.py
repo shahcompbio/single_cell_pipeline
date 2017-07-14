@@ -32,7 +32,7 @@ parser.add_argument('out_file',
 parser.add_argument('sample_info',
                     help=''' identifier string for the library.''')
 
-parser.add_argument('sample_id',
+parser.add_argument('--sample_id',
                     help=''' identifier string for the library.''')
 
 
@@ -291,9 +291,11 @@ def main():
               'total_duplicate_reads', 'total_properly_paired',
               'coverage_breadth', 'coverage_depth']
 
-    sample_id = args.sample_id
-    cell_call, exp_cond, samp_typ, samp_well, samp_plate, i5, i7 = extract_sample_info(args.sample_info, sample_id)
-
+    if args.sample_id:
+        sample_id = args.sample_id
+        cell_call, exp_cond, samp_typ, samp_well, samp_plate, i5, i7 = extract_sample_info(args.sample_info, sample_id)
+    else:
+        sample_id = cell_call = exp_cond = samp_typ = samp_well = samp_plate = i5 = i7 = 'NA'
 
     output = (sample_id, cell_call, exp_cond, samp_typ, samp_well, samp_plate, i5, i7) + duplication_metrics + flagstat_metrics + wgs_metrics
 

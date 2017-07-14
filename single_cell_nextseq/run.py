@@ -3,7 +3,7 @@ import argparse
 import utils
 import pypeliner
 import pypeliner.managed as mgd
-from workflows import fastqc_workflow, alignment_workflow, hmmcopy_workflow, summary_workflow, merge_workflow
+from workflows import fastqc_workflow, alignment_workflow, hmmcopy_workflow, summary_workflow, merge_workflow, wgs_workflow, strelka, snv_postprocessing
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -21,6 +21,10 @@ def parse_args():
 
     parser.add_argument('config_file',
                         help='''Path to yaml config file.''')
+
+    parser.add_argument('matched_normal',
+                        help='''Path to matched wgs normal.''')
+
 
     args = vars(parser.parse_args())
     args['tmpdir'] = os.path.join(args['out_dir'], 'tmp')
@@ -64,6 +68,10 @@ def main():
     hmmcopy_segments_template = os.path.join(hmmcopy_directory, '{sample_id}_segments.csv')
     hmmcopy_hmm_metrics_template = os.path.join(hmmcopy_directory, '{sample_id}_hmm_metrics.csv')
     cnmatrix_template = os.path.join(hmmcopy_directory, '{sample_id}_cnmatrix.csv')
+
+    pseudo_wgs_bam = os.path.join(args['out_dir'], 'pseudo_wgs', 'merged.sorted.markdups.bam')
+    pseudo_wgs_bai = os.path.join(args['out_dir'], 'pseudo_wgs', 'merged.sorted.markdups.bam.bai')
+
 
 
     vals = [(sample,lane) for lane in lanes for sample in sample_ids]
@@ -166,6 +174,52 @@ def main():
         ),
     )
  
+    workflow.subworkflow(
+                         name='wgs_workflow',
+                         func=wgs_workflow.create_wgs_workflow,
+                         args = (
+                                 mgd.InputFile('bam', 'sample_id', template=merge_template),
+                                 mgd.OutputFile(pseudo_wgs_bam),
+                                 mgd.OutputFile(pseudo_wgs_bai),
+                                 mgd.InputFile(config['ref_genome']),
+                                 sample_ids,
+                                 mgd.InputFile(args['samplesheet']),
+                                 config,
+                                 args,
+                                 desc,
+                                 )
+                         )
+    
+    
+    strelka_indel = os.path.join(args['out_dir'], 'pseudo_wgs', 'variant_calling', 'strelka.indels.vcf')
+    strelka_snv = os.path.join(args['out_dir'], 'pseudo_wgs', 'variant_calling', 'strelka.snv.vcf')
+    workflow.subworkflow(
+            name='strelka',
+            func=strelka.create_strelka_workflow,
+            args=(
+                  mgd.InputFile(args['matched_normal']),
+                  mgd.InputFile(pseudo_wgs_bam),
+                  mgd.InputFile(config['ref_genome']),
+                  mgd.OutputFile(strelka_indel),
+                  mgd.OutputFile(strelka_snv),
+            ),
+        )
+
+
+    countdata = os.path.join(args['out_dir'], 'pseudo_wgs', 'counts', 'counts.csv')
+    workflow.subworkflow(
+                         name='postprocessing',
+                         func=snv_postprocessing.create_snv_postprocessing_workflow,
+                         args=(
+                               mgd.InputFile('bam', 'sample_id', template=merge_template),
+                               mgd.InputFile(strelka_snv),
+                               mgd.OutputFile(countdata),
+                               sample_ids,
+                               config,
+                               args
+                               )
+                         )
+
     pyp.run(workflow)
 
 if __name__ == '__main__':
