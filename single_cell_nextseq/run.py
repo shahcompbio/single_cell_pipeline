@@ -140,7 +140,7 @@ def main():
             lanes
         ),
     )
-  
+
     workflow.subworkflow(
         name='hmmcopy_workflow',
         axes=('sample_id',),
@@ -189,8 +189,7 @@ def main():
                                  desc,
                                  )
                          )
-    
-    
+
     strelka_indel = os.path.join(args['out_dir'], 'pseudo_wgs', 'variant_calling', 'strelka.indels.vcf')
     strelka_snv = os.path.join(args['out_dir'], 'pseudo_wgs', 'variant_calling', 'strelka.snv.vcf')
     workflow.subworkflow(
@@ -204,7 +203,6 @@ def main():
                   mgd.OutputFile(strelka_snv),
             ),
         )
-
 
     countdata = os.path.join(args['out_dir'], 'pseudo_wgs', 'counts', 'counts.csv')
     workflow.subworkflow(
