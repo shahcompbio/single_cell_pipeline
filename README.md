@@ -35,16 +35,62 @@ Later versions will be released through conda.
 
 ## Run the pipeline
 
-The pipeline takes 3 arguments.  A config file (example for genesis provided),
-the nextseq input directory, and the output directory.
+### Inputs
 
-Run the pipeline as follows:
+#### Configuration file
+
+The configuration file contains global options including:
+
+* reference genome
+* chromosomes to operate on
+* hmm parameters
+* thresholds
+* adapters
+
+See config_shahlab.yaml and config_cloud.yaml for examples.
+
+#### Input Fastq Directory
+
+The fastqs are assumed to be in a single directory with a specific structure.
+
+```
+/.../{sequencing_library_id}/{lane_id}/{sequencing_library_id}_{index_1}-{index_2}/{lane_id}_{index_1}-{index_2}_{read_end}.fastq.gz
+```
+
+The directory provided should be `/.../{sequencing_library_id}`, and `sequencing_library_id` will be inferred from the directory name.
+
+#### Lanes to analyze
+
+The set of lanes to be analyzed should be provided as a list of `lane_id`.
+
+#### Sample Sheet
+
+The sample sheet provides information about the indices (`index_1` and `index_2`) of each cell, in
+addition to per cell metadata.  The library id is also extracted from the header and added to bam
+header.
+
+### Command line interface
+
+The pipeline takes 4 positional arguments:
+
+1. input fastq directory
+2. sample sheet filename
+3. output directory
+4. config filename
+
+In addition a list of lanes should be provided using `--lanes`.
+
+The remaining arguments are for controlling execution using [pypeliner](http://pypeliner.readthedocs.org/).
+
+For example, run the pipeline as follows:
 
 ```
 single_cell_nextseq \
-  /shahlab/archive/single_cell_indexing/NextSeq/161230_NS500668_0153_AHHHWJAFXX/ \
-  /shahlab/amcpherson/single_cell_nextseq1/test_output_new/ \
-  /shahlab/amcpherson/single_cell_nextseq1/config_shahlab_new.yaml \
+  /genesis/shahlab/dgrewal/test_andrew_sc/data/hiseq/PX0577/ \
+  /genesis/shahlab/dgrewal/test_andrew_sc/data/hiseq/SampleSheet_CB643ANXX_3.csv \
+  /genesis/shahlab/dgrewal/test_andrew_sc/test_output \
+  /shahlab/dgrewal/test_andrew_sc/data/config_shahlab.yaml \
+  --lanes CB643ANXX_3 CB8HDANXX_4 CB8HDANXX_5 \
   --loglevel DEBUG \
   --submit asyncqsub \
   --maxjobs 1000 \

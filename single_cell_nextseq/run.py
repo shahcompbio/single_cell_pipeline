@@ -25,6 +25,9 @@ def parse_args():
     parser.add_argument('matched_normal',
                         help='''Path to matched wgs normal.''')
 
+    parser.add_argument('--lanes',
+                        nargs='*',
+                        help='''Lanes to analyze.''')
 
     args = vars(parser.parse_args())
     args['tmpdir'] = os.path.join(args['out_dir'], 'tmp')
@@ -95,7 +98,7 @@ def main():
               mgd.InputInstance('lane'),
               mgd.InputInstance('sample_id'),
               args,
-              False
+              True
             ),
         )
 
