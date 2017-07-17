@@ -20,6 +20,9 @@ from matplotlib.colors import ListedColormap
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.patches import Patch
 
+import sys
+sys.setrecursionlimit(10000)
+
 
 class PlotHeatmap(object):
     '''

@@ -91,7 +91,7 @@ def main():
               mgd.InputInstance('lane'),
               mgd.InputInstance('sample_id'),
               args,
-              False
+              True
             ),
         )
 
