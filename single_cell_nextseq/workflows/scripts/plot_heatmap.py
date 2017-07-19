@@ -4,6 +4,7 @@ Created on Sep 8, 2015
 @author: dgrewal
 '''
 
+import sys
 import math
 import argparse
 import matplotlib
@@ -20,8 +21,7 @@ from matplotlib.colors import ListedColormap
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.patches import Patch
 
-import sys
-sys.setrecursionlimit(10000)
+sys.setrecursionlimit(2000)
 
 
 class PlotHeatmap(object):
@@ -70,7 +70,6 @@ class PlotHeatmap(object):
 
             val = line[idxs[self.args.column_name]]
 
-            print val
             val = float('nan') if val == "NA" else float(val)
 
             chrom = line[idxs['chr']]
@@ -382,6 +381,7 @@ class PlotHeatmap(object):
             title = self.args.plot_title + \
                 ' (%s) n=%s/%s' % (sep, len(samples), num_samples)
 
+            print pltdata.shape
             self.plot_heatmap(pltdata, chr_idxs, cmap, vmax,
                               colordata, title, pdfout)
 

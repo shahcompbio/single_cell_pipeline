@@ -9,7 +9,7 @@ import pypeliner
 import pypeliner.managed as mgd
 import tasks
 
-def create_fastqc_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, sample_id, args, trim):
+def create_fastq_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, sample_id, args, trim):
 
     scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
 
@@ -68,12 +68,12 @@ def create_fastqc_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, s
                 mgd.InputFile(fastq_r2),
                 mgd.OutputFile(trim_r1),
                 mgd.OutputFile(trim_r2),
-                mgd.TempOutputFile(qc_report_r1),
-                mgd.TempOutputFile(qc_report_r2),
-                mgd.TempOutputFile(zip_r1),
-                mgd.TempOutputFile(zip_r2),
-                mgd.TempOutputFile(report_r1),
-                mgd.TempOutputFile(report_r2),
+                mgd.OutputFile(qc_report_r1),
+                mgd.OutputFile(qc_report_r2),
+                mgd.OutputFile(zip_r1),
+                mgd.OutputFile(zip_r2),
+                mgd.OutputFile(report_r1),
+                mgd.OutputFile(report_r2),
                 mgd.TempSpace('trim_temp'),
                 '--adapter', config['adapter'],
                 '--adapter2', config['adapter2'],
@@ -83,15 +83,22 @@ def create_fastqc_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, s
             )
     else:
         workflow.transform(
-            name='copy_files',
+            name='copy_files_r1',
             func=tasks.copy_files,
             args=(
                 mgd.InputFile(fastq_r1),
-                mgd.InputFile(fastq_r2),
                 mgd.OutputFile(trim_r1),
+            ),
+        )
+
+        workflow.transform(
+            name='copy_files_r2',
+            func=tasks.copy_files,
+            args=(
+                mgd.InputFile(fastq_r2),
                 mgd.OutputFile(trim_r2),
             ),
-    )
+        )
 
     return workflow
 

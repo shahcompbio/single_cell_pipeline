@@ -168,7 +168,6 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
         args=(
             config['python'],
             plot_heatmap_script,
-            '--output', mgd.OutputFile(plot_heatmap_all_output),
             '--metrics', mgd.TempInputFile('all_metrics.csv'),
             '--separator', 'comma',
             '--plot_title', 'QC pipeline metrics',

@@ -22,7 +22,7 @@ def create_snv_postprocessing_workflow(
     script_path = os.path.join(os.path.realpath(os.path.dirname(__file__)),
                                'scripts', 'get_cell_counts.py')
 
-    countdata = os.path.join(args['out_dir'], 'counts', '{sample_id}_counts.csv')
+    countdata = os.path.join(args['out_dir'], 'pseudo_wgs', 'counts', '{sample_id}_counts.csv')
 
     
     workflow = pypeliner.workflow.Workflow()

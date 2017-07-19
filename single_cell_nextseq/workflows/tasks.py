@@ -4,6 +4,75 @@ import pandas as pd
 import pypeliner.commandline
 import shutil
 import warnings
+            
+def gatk_realign(inputs, outputs, targets, ref_genome, config, tempdir):
+
+    if not os.path.exists(tempdir):
+        os.makedirs(tempdir)
+
+    mapfile = os.path.join(tempdir, 'realignment_mapping.map')
+
+    with open(mapfile, 'w') as map_outfile:
+        for _,val in inputs.iteritems():
+            val = os.path.basename(val)
+            outpath = os.path.join(tempdir,val)
+            map_outfile.write(val+"\t"+outpath+"\n")
+
+    
+    cmd = [config['gatk'], '-Xmx12G',
+           '-T', 'IndelRealigner',
+           '-R', ref_genome,
+           '-targetIntervals', targets,
+           '--nWayOut', mapfile
+            ]
+
+    for _,bamfile in inputs.iteritems():
+        cmd.extend(['-I',bamfile])
+    
+    pypeliner.commandline.execute(*cmd)
+
+    with open(mapfile) as filemapping:
+        for line in filemapping:
+            line = line.strip().split()
+            
+            sample_id = line[0].strip().split('.')[0]
+            bampath = line[1]
+            target_path = outputs[sample_id]
+            os.rename(bampath, target_path)
+
+
+def realigner_target_creator(input_bams, output, ref, config):
+
+    cmd = [config['gatk'], '-Xmx12G',
+           '-T', 'RealignerTargetCreator',
+           '-R', config['ref_genome'],
+            '-o', output
+            ]
+
+    for _,bamfile in input_bams.iteritems():
+        cmd.extend(['-I', bamfile])
+    
+    pypeliner.commandline.execute(*cmd)
+
+
+def run_museq(tumour, normal, reference, museq_dir, out, log, interval, config):
+    script = os.path.join(museq_dir, 'classify.py')
+    model = os.path.join(museq_dir, 'model_v4.1.2_anaconda_sk_0.13.1.npz')
+
+    conf = os.path.join(museq_dir, 'metadata.config')
+
+    pypeliner.commandline.execute(config['python'],
+                                  script,
+                                   'normal:'+ normal,
+                                   'tumour:'+ tumour,
+                                   'reference:'+ reference,
+                                   'model:'+ model,
+                                   '--out', out,
+                                   '--log', log,
+                                   '--interval', interval,
+                                   '--config', conf
+                                  )
+
 
 def merge_bams(inputs, output, config):
     filenames = inputs.values()
@@ -40,9 +109,8 @@ def get_readgroup(library_id, run_id, config, sample_id):
     return read_group_template
 
 
-def copy_files(in_r1,in_r2,out_r1, out_r2):
+def copy_files(in_r1,out_r1):
     shutil.copy(in_r1, out_r1)
-    shutil.copy(in_r2, out_r2)
 
 
 def makedirs(directory):
@@ -417,3 +485,43 @@ def merge_frames(frames, how, on):
                                         how=how,
                                         on=on)
         return merged_frame
+
+
+def concatenate_vcf(infiles, outfile):
+    def get_header(infile):
+        '''
+        extract header from the file
+        '''
+        header = []
+        for line in infile:
+            if line.startswith('##'):
+                header.append(line)
+            elif line.startswith('#'):
+                header.append(line)
+                return header
+            else:
+                raise Exception('invalid header: missing #CHROM line')
+
+        warnings.warn("One of the input files is empty")
+        return []
+
+    with open(outfile, 'w') as ofile:
+        header = None
+
+        for _,ifile in infiles.iteritems():
+
+            with open(ifile) as f:
+
+                if not header:
+                    header = get_header(f)
+
+                    for line in header:
+                        ofile.write(line)
+                else:
+                    if not get_header(f) == header:
+                        warnings.warn(
+                            'merging vcf files with mismatching headers')
+
+                for l in f:
+                    print >> ofile, l,
+

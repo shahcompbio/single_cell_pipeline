@@ -67,8 +67,8 @@ picard: 'picard'
 java: 'java'
 readcounter: 'readCounter'
 Rscript: 'Rscript'
-
-
+mutationseq: /shahlab/pipelines/apps_centos6/mutationSeq_4.3.7_anaconda/
+gatk: 'gatk'
 
 hmmcopy_plot_mad_threshold: 0.2
 heatmap_plot_mad_threshold: 0.2

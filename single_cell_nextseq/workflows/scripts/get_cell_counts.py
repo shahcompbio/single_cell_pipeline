@@ -179,20 +179,25 @@ def load_positions(file_name):
     else:
         merge_file = open(file_name)
 
-    for line in merge_file:
-        if line.startswith('#'):
-            continue
-        if len(line) > 1:
-            columns = line.split("\t")
-            chrom = columns[0]
-            pos = int(columns[1])
-            ref = columns[3]
-            alt  = columns[4]
+    header = merge_file.readline().strip().split()
+    chr_idx = header.index('chromosome')
+    pos_idx = header.index('start')
+    ref_idx = header.index('ref')
+    alt_idx = header.index('alt')
 
-            pos = (chrom, pos)
-            target_bases[pos] = {'ref_base': ref, 'var_base': alt}
-            
-            positions.append(pos)
+
+
+    for line in merge_file:
+        columns = line.split("\t")
+        chrom = columns[chr_idx]
+        pos = int(columns[pos_idx])
+        ref = columns[ref_idx]
+        alt  = columns[alt_idx]
+
+        pos = (chrom, pos)
+        target_bases[pos] = {'ref_base': ref, 'var_base': alt}
+        
+        positions.append(pos)
     
     merge_file.close()
 
