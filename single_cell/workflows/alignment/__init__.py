@@ -15,14 +15,15 @@ def create_alignment_workflow(
     fastq_2_filename,
     bam_filename,
     ref_genome,
+    library_id,
     lane_id,
     sample_id,
     config,
-    args, desc):
+    out_dir):
 
-    read_group = tasks.get_readgroup(desc, lane_id, config, sample_id)
+    read_group = tasks.get_readgroup(library_id, lane_id, config, sample_id)
 
-    metrics_dir = os.path.join(args['out_dir'], 'metrics_per_lane', lane_id,)
+    metrics_dir = os.path.join(out_dir, 'metrics_per_lane', lane_id,)
     flagstat_metrics_filename = os.path.join(metrics_dir, '{}.flagstat_metrics.txt'.format(sample_id))
 
     workflow = pypeliner.workflow.Workflow()

@@ -10,9 +10,9 @@ import pypeliner.managed as mgd
 import tasks
 
 
-def create_realignment_workflow(input_bams, output_bams, config, args, sample_ids):
+def create_realignment_workflow(input_bams, output_bams, config, out_dir, realign, sample_ids):
 
-    realn_dir = os.path.join(args['out_dir'], 'realignment')
+    realn_dir = os.path.join(out_dir, 'realignment')
     targets = os.path.join(realn_dir, 'realignment_targets.intervals')
 
     output_bams = dict([(sampid, output_bams[sampid]) for sampid in sample_ids])
@@ -24,7 +24,7 @@ def create_realignment_workflow(input_bams, output_bams, config, args, sample_id
         value=sample_ids,
     )
 
-    if args['realign']:
+    if realign:
 
         chromosomes = map(str, range(1,22)) + ['X', 'Y']
     

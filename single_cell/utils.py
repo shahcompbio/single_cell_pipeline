@@ -7,7 +7,7 @@ def load_config(args):
             config = yaml.load(infile)
 
     except IOError:
-        print 'Unable to open config file: {0}'.format(args['config_file'])
+        raise Exception('Unable to open config file: {0}'.format(args['config_file']))
     return config
 
 def read_samplesheet_nextseq(args, fastq_directory):

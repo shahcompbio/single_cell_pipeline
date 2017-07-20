@@ -9,16 +9,16 @@ import pypeliner
 import pypeliner.managed as mgd
 import tasks
 
-def create_fastq_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, sample_id, args, trim):
+def create_fastq_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, sample_id, out_dir, trim):
 
-    fastqc_dir = os.path.join(args['out_dir'], 'fastqc')
+    fastqc_dir = os.path.join(out_dir, 'fastqc')
     html_r1 = os.path.join(fastqc_dir, lane, '{}_R1.html'.format(sample_id))
     html_r2 = os.path.join(fastqc_dir, lane, '{}_R2.html'.format(sample_id))
 
     plots_r1 = os.path.join(fastqc_dir, lane, '{}_R1.zip'.format(sample_id))
     plots_r2 = os.path.join(fastqc_dir, lane, '{}_R2.zip'.format(sample_id))
 
-    trimgalore_dir = os.path.join(args['out_dir'], 'fastqc', 'trimgalore')
+    trimgalore_dir = os.path.join(out_dir, 'fastqc', 'trimgalore')
     qc_report_r1 = os.path.join(trimgalore_dir, lane, '{}_QC_R1.html'.format(sample_id))
     qc_report_r2 = os.path.join(trimgalore_dir, lane, '{}_QC_R2.html'.format(sample_id))
     zip_r1 = os.path.join(trimgalore_dir, lane, '{}_R1.zip'.format(sample_id))

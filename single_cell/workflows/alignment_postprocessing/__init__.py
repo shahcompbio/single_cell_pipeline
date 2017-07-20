@@ -23,12 +23,11 @@ def create_bam_post_workflow(
     metrics_summary_filename,
     gc_matrix_filename,
     sample_id,
-    samplesheet,
     config,
-    args, desc, 
+    out_dir,
     lanes):
  
-    metrics_dir = os.path.join(args['out_dir'], 'metrics')
+    metrics_dir = os.path.join(out_dir, 'metrics')
     markdups_metrics_filename = os.path.join(metrics_dir, 'markdups_metrics', '{}.markdups_metrics.txt'.format(sample_id))
     flagstat_metrics_filename = os.path.join(metrics_dir, 'flagstat_metrics', '{}.flagstat_metrics.txt'.format(sample_id))
     wgs_metrics_filename = os.path.join(metrics_dir, 'wgs_metrics', '{}.wgs_metrics.txt'.format(sample_id))
@@ -138,7 +137,6 @@ def create_bam_post_workflow(
             mgd.InputFile(markdups_metrics_filename),
             mgd.InputFile(insert_metrics_filename),
             mgd.InputFile(wgs_metrics_filename),
-            mgd.InputFile(samplesheet),
             mgd.OutputFile(metrics_summary_filename),
             sample_id,
         ),

@@ -37,6 +37,8 @@ Later versions will be released through conda.
 
 ### Inputs
 
+TODO: cell id or sample id???
+
 #### Configuration file
 
 The configuration file contains global options including:
@@ -49,36 +51,43 @@ The configuration file contains global options including:
 
 See config_shahlab.yaml and config_cloud.yaml for examples.
 
-#### Input Fastq Directory
+#### Input sample info table
 
-The fastqs are assumed to be in a single directory with a specific structure.
+The input sample info table provides meta data per cell.  The columns should be:
 
-```
-/.../{sequencing_library_id}/{lane_id}/{sequencing_library_id}_{index_1}-{index_2}/{lane_id}_{index_1}-{index_2}_{read_end}.fastq.gz
-```
+- cell_id
+- cell_call
+- experimental_condition
+- sample_type
+- sample_well
+- sample_plate
+- i5_barcode
+- i7_barcode
 
-The directory provided should be `/.../{sequencing_library_id}`, and `sequencing_library_id` will be inferred from the directory name.
+#### Input fastq table
 
-#### Lanes to analyze
+The fastq file paths should be provided in a CSV file, and the path to this input
+file given on the command line.  The following columns are required:
 
-The set of lanes to be analyzed should be provided as a list of `lane_id`.
+- sample_id
+- lane_id
+- fastq_1
+- fastq_2
 
-#### Sample Sheet
+#### Library id
 
-The sample sheet provides information about the indices (`index_1` and `index_2`) of each cell, in
-addition to per cell metadata.  The library id is also extracted from the header and added to bam
-header.
+The library id should be provided as an argument on the command line and will be
+added to the header of the bam file.
 
 ### Command line interface
 
 The pipeline takes 4 positional arguments:
 
-1. input fastq directory
-2. sample sheet filename
-3. output directory
-4. config filename
-
-In addition a list of lanes should be provided using `--lanes`.
+1. input sample info table
+2. input fastq filename table
+3. library id
+4. output directory
+5. config filename
 
 The remaining arguments are for controlling execution using [pypeliner](http://pypeliner.readthedocs.org/).
 
@@ -86,11 +95,11 @@ For example, run the pipeline as follows:
 
 ```
 single_cell \
-  /genesis/shahlab/dgrewal/test_andrew_sc/data/hiseq/PX0577/ \
-  /genesis/shahlab/dgrewal/test_andrew_sc/data/hiseq/SampleSheet_CB643ANXX_3.csv \
-  /genesis/shahlab/dgrewal/test_andrew_sc/test_output \
+  /shahlab/amcpherson/single_cell_test/A90696ABC_sample_info.csv \
+  /shahlab/amcpherson/single_cell_test/A90696ABC_fastqs.csv \
+  A90696ABC \
+  /shahlab/amcpherson/single_cell_test/results/ \
   /shahlab/dgrewal/test_andrew_sc/data/config_shahlab.yaml \
-  --lanes CB643ANXX_3 CB8HDANXX_4 CB8HDANXX_5 \
   --loglevel DEBUG \
   --submit asyncqsub \
   --maxjobs 1000 \
@@ -115,27 +124,16 @@ conda config --add channels https://conda.anaconda.org/dranew
 conda config --add channels 'bioconda'
 conda config --add channels 'r'
 
-conda create --name singlecellpipeline python=2.7 \
-  hmmcopy_utils \
-  samtools \
-  bwa \
-  fastqc \
-  picard \
-  cutadapt \
-  trim-galore \
-  pypeliner \
-  bioconductor-hmmcopy \
-  r-plyr \
-  r-getopt \
-  pyyaml \
-  pandas \
-  statsmodels
-  
-
 source activate singlecellpipeline
 
-git clone https://dranew@bitbucket.org/dranew/single_cell_nextseq.git
-cd single_cell_nextseq/
+# Install GATK
+wget -O GATK.tar.bz2 https://software.broadinstitute.org/gatk/download/auth?package=GATK
+tar -jxvf GATK.tar.bz2
+gatk-register GenomeAnalysisTK.jar
+
+git clone https://amcpherson@svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git
+cd single_cell_pipeline/
+conda create --name singlecellpipeline --file conda_packages.txt --yes
 python setup.py develop
 
 # Download reference genome
@@ -143,6 +141,7 @@ sudo mkdir /mnt/refdata
 sudo chown shahlab:shahlab /mnt/refdata
 cd /mnt/refdata/
 wget ftp://ftp.bcgsc.ca/public/shahlab/singlecellpipeline/*
+picard CreateSequenceDictionary R= /mnt/refdata/GRCh37-lite.fa O= /mnt/refdata/GRCh37-lite.dict
 
 # Create analysis space
 sudo mkdir /mnt/analysis
@@ -152,8 +151,40 @@ sudo chown shahlab:shahlab /mnt/analysis
 Copy the fastq files.  Run the following on thost:
 
 ```
-scp -r /shahlab/amcpherson/single_cell_nextseq1/test_output_new/fastq sccompute:/mnt/analysis/
-scp -r /shahlab/archive/single_cell_indexing/NextSeq/161230_NS500668_0153_AHHHWJAFXX/SampleSheet.csv sccompute:/mnt/analysis/
+scp -r /genesis/shahlab/dgrewal/test_andrew_sc/data/hiseq/PX0577/ sccompute:/mnt/analysis/
+scp -r /genesis/shahlab/amcpherson/single_cell_test/*.csv sccompute:/mnt/analysis/
+```
+
+Reformat the fastq list:
+
+```
+cd /mnt/analysis
+sed 's#/genesis/shahlab/dgrewal/test_andrew_sc/data/hiseq#/mnt/analysis#g' < A90696ABC_fastqs.csv > A90696ABC_fastqs_local.csv
+```
+
+Subset:
+
+```
+head -1 A90696ABC_fastqs_local.csv > A90696ABC_fastqs_local_subset.csv
+grep '\(R03-C63\|R08-C63\|R04-C63\|R11-C63\|R13-C63\|R15-C63\|R20-C63\|R45-C63\)' A90696ABC_fastqs_local.csv >> A90696ABC_fastqs_local_subset.csv
+head -1 A90696ABC_sample_info.csv > A90696ABC_sample_info_subset.csv
+grep '\(R03-C63\|R08-C63\|R04-C63\|R11-C63\|R13-C63\|R15-C63\|R20-C63\|R45-C63\)' A90696ABC_sample_info.csv >> A90696ABC_sample_info_subset.csv
+```
+
+Run the pipeline:
+
+```
+single_cell_nextseq \
+  /mnt/analysis/A90696ABC_sample_info_subset.csv \
+  /mnt/analysis/A90696ABC_fastqs_local_subset.csv \
+  A90696ABC \
+  /mnt/analysis/results/ \
+  /mnt/software/single_cell_pipeline/config_cloud.yaml \
+  --loglevel DEBUG \
+  --submit local \
+  --maxjobs 32 \
+  --nocleanup \
+  --realign
 ```
 
 

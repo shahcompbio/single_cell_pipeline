@@ -1,6 +1,7 @@
 import os
 import argparse
 import utils
+import pandas as pd
 import pypeliner
 import pypeliner.managed as mgd
 from workflows import fastq_preprocessing, alignment, hmmcopy, strelka
@@ -13,11 +14,14 @@ def parse_args():
 
     pypeliner.app.add_arguments(parser)
 
-    parser.add_argument('hiseq_dir',
-                        help='''Path to input hiseq directory.''')
+    parser.add_argument('sample_info',
+                        help='''Per sample meta data CSV''')
 
-    parser.add_argument('samplesheet',
-                        help='''Path to the samplesheet.''')
+    parser.add_argument('fastqs_file',
+                        help='''Path to input fastq table CSV.''')
+
+    parser.add_argument('library_id',
+                        help='''Library id.''')
 
     parser.add_argument('out_dir',
                         help='''Path to output files.''')
@@ -53,6 +57,7 @@ def parse_args():
     
     return args
 
+
 def main():
 
     args = parse_args()
@@ -63,7 +68,22 @@ def main():
 
     config = utils.load_config(args)
 
-    desc, sample_ids, fastq_1_filenames, fastq_2_filenames = utils.read_samplesheet_hiseq(args)
+    library_id = args['library_id']
+
+    fastqs = pd.read_csv(args['fastqs_file'], dtype=str)
+
+    for column in ('sample_id', 'lane_id', 'fastq_1', 'fastq_2',):
+        if column not in fastqs.columns:
+            raise Exception('input fastqs_file should contain {}'.format(column))
+
+    sample_ids = list(sorted(fastqs['sample_id'].unique()))
+    lanes = list(sorted(fastqs['lane_id'].unique()))
+
+    fastq_1_filenames = dict()
+    fastq_2_filenames = dict()
+    for idx, row in fastqs.iterrows():
+        fastq_1_filenames[(row['sample_id'], row['lane_id'])] = row['fastq_1']
+        fastq_2_filenames[(row['sample_id'], row['lane_id'])] = row['fastq_2']
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -84,13 +104,10 @@ def main():
 
 
     countdata = os.path.join(args['out_dir'], 'pseudo_wgs', 'counts', 'counts.csv')
-
-
-    vals = [(sample,lane) for lane in args['lanes'] for sample in sample_ids]
     
     workflow.setobj(
         obj=mgd.OutputChunks('sample_id', 'lane'),
-        value=vals,
+        value=fastq_1_filenames.keys(),
     )
 
     workflow.subworkflow(
@@ -105,7 +122,7 @@ def main():
               config,
               mgd.InputInstance('lane'),
               mgd.InputInstance('sample_id'),
-              args,
+              args['out_dir'],
               trim
             ),
         )
@@ -119,11 +136,11 @@ def main():
             mgd.TempInputFile('fastq_trim_2.fastq.gz', 'sample_id', 'lane'),
             mgd.TempOutputFile('aligned_per_cell_per_lane.sorted.bam', 'sample_id', 'lane'),
             mgd.InputFile(config['ref_genome']),
+            library_id,
             mgd.InputInstance('lane'),
             mgd.InputInstance('sample_id'),
             config,
-            args,
-            desc
+            args['out_dir'],
         ),
     )
 
@@ -137,7 +154,7 @@ def main():
             mgd.TempOutputFile('merged_lanes.bam', 'sample_id'),
             mgd.TempOutputFile('merged_lanes.bam.bai', 'sample_id'),
             config,
-            args['lanes']
+            lanes,
         ),
     )
 
@@ -149,7 +166,8 @@ def main():
             mgd.TempInputFile('merged_lanes.bam', 'sample_id'),
             mgd.TempOutputFile('merged_realign.bam', 'sample_id', axes_origin=[]),
             config,
-            args,
+            args['out_dir'],
+            args['realign'],
             sample_ids
         ),
     )
@@ -169,11 +187,9 @@ def main():
             mgd.TempOutputFile('merge_metrics_summary_template', 'sample_id'),
             mgd.TempOutputFile('merge_metrics_gcmatrix_template', 'sample_id'),
             mgd.InputInstance('sample_id'),
-            mgd.InputFile(args['samplesheet']),
             config,
-            args,
-            desc,
-            args['lanes']
+            args['out_dir'],
+            lanes,
         ),
     )
     
@@ -191,7 +207,7 @@ def main():
             mgd.TempOutputFile('cnmatrix_template', 'sample_id'),
             mgd.InputInstance('sample_id'),
             config,
-            args
+            args['out_dir'],
         ),
     )
      
@@ -200,6 +216,7 @@ def main():
         name='summary_workflow',
         func=singlecell_summary.create_summary_workflow,
         args=(
+            mgd.InputFile(args['sample_info']),
             mgd.TempInputFile('hmmcopy_segments_template', 'sample_id'),
             mgd.TempInputFile('hmmcopy_reads_template', 'sample_id'),
             mgd.TempInputFile('hmmcopy_hmm_metrics_template', 'sample_id'),
@@ -207,7 +224,7 @@ def main():
             mgd.TempInputFile('merge_metrics_gcmatrix_template', 'sample_id'),
             mgd.TempInputFile('cnmatrix_template', 'sample_id'),
             config,
-            args,
+            args['out_dir'],
             sample_ids
         ),
     )
@@ -224,10 +241,8 @@ def main():
                     mgd.OutputFile(pseudo_wgs_bai),
                     mgd.InputFile(config['ref_genome']),
                     sample_ids,
-                    mgd.InputFile(args['samplesheet']),
                     config,
-                    args,
-                    desc,
+                    args['out_dir'],
             )
         )
    
@@ -246,7 +261,7 @@ def main():
                       mgd.OutputFile(museq_vcf),
                       mgd.OutputFile(museq_csv),
                       config,
-                      args
+                      args['out_dir'],
                 ),
             )
  
@@ -274,7 +289,7 @@ def main():
                                    mgd.OutputFile(countdata),
                                    sample_ids,
                                    config,
-                                   args
+                                   args['out_dir'],
                                    )
                              )
 

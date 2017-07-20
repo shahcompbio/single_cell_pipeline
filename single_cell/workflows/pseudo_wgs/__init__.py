@@ -23,11 +23,10 @@ def create_wgs_workflow(
     bam_index_filename,
     ref_genome,
     sample_ids,
-    samplesheet,
     config,
-    args, desc):
+    out_dir):
  
-    metrics_dir = os.path.join(args['out_dir'], 'pseudo_wgs')
+    metrics_dir = os.path.join(out_dir, 'pseudo_wgs')
     markdups_metrics_filename = os.path.join(metrics_dir, 'markdups_metrics', 'markdups_metrics.txt')
     flagstat_metrics_filename = os.path.join(metrics_dir, 'flagstat_metrics', 'flagstat_metrics.txt')
     wgs_metrics_filename = os.path.join(metrics_dir, 'wgs_metrics', 'wgs_metrics.txt')
@@ -36,7 +35,7 @@ def create_wgs_workflow(
     gc_chart_filename = os.path.join(metrics_dir, 'gc_metrics', 'gc_metrics.pdf')
     insert_metrics_filename = os.path.join(metrics_dir, 'insert_metrics', 'insert_metrics.txt')
     insert_histogram_filename = os.path.join(metrics_dir, 'insert_metrics', 'insert_metrics.pdf')
-    metrics_summary_filename = os.path.join(args['out_dir'], 'pseudo_wgs', 'summary.csv')
+    metrics_summary_filename = os.path.join(out_dir, 'pseudo_wgs', 'summary.csv')
 
 
     workflow = pypeliner.workflow.Workflow()
@@ -150,7 +149,6 @@ def create_wgs_workflow(
             mgd.InputFile(markdups_metrics_filename),
             mgd.InputFile(insert_metrics_filename),
             mgd.InputFile(wgs_metrics_filename),
-            mgd.InputFile(samplesheet),
             mgd.OutputFile(metrics_summary_filename),
             None
         ),

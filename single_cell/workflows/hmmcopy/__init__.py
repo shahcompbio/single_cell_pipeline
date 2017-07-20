@@ -12,11 +12,11 @@ import tasks
 
 def create_hmmcopy_workflow(bam_file, corrected_reads_file,
                             segments_file, hmm_metrics_file,
-                            cnmatrix_file, sample_id, config, args):
+                            cnmatrix_file, sample_id, config, out_dir):
 
     chromosomes = config['chromosomes']
 
-    hmmcopy_directory = os.path.join(args['out_dir'], 'hmmcopy', 'intermediates')
+    hmmcopy_directory = os.path.join(out_dir, 'hmmcopy', 'intermediates')
     posterior_marginals_filename = os.path.join(hmmcopy_directory, '{}_posteriors.csv'.format(sample_id))
  
     params_filename = os.path.join(hmmcopy_directory, '{}_parameters.csv'.format(sample_id))
