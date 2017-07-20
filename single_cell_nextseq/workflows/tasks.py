@@ -7,15 +7,26 @@ import warnings
             
 def gatk_realign(inputs, outputs, targets, ref_genome, config, tempdir):
 
+
     if not os.path.exists(tempdir):
         os.makedirs(tempdir)
+
+
+    new_inputs= {}    
+    for key,bamfile in inputs.iteritems():
+        new_bam = os.path.join(tempdir, key+'.bam')
+        new_bai = os.path.join(tempdir, key+'.bam.bai')
+
+        os.symlink(bamfile, new_bam)
+        os.symlink(bamfile+'.bai', new_bai)
+        new_inputs[key] = new_bam
 
     mapfile = os.path.join(tempdir, 'realignment_mapping.map')
 
     with open(mapfile, 'w') as map_outfile:
-        for _,val in inputs.iteritems():
+        for _,val in new_inputs.iteritems():
             val = os.path.basename(val)
-            outpath = os.path.join(tempdir,val)
+            outpath = os.path.join(tempdir,val+'.realigned.bam')
             map_outfile.write(val+"\t"+outpath+"\n")
 
     
@@ -26,7 +37,7 @@ def gatk_realign(inputs, outputs, targets, ref_genome, config, tempdir):
            '--nWayOut', mapfile
             ]
 
-    for _,bamfile in inputs.iteritems():
+    for _,bamfile in new_inputs.iteritems():
         cmd.extend(['-I',bamfile])
     
     pypeliner.commandline.execute(*cmd)
@@ -305,7 +316,6 @@ def run_trimgalore(fastq1_filename, fastq2_filename, trim1_filename, trim2_filen
                     fqrep1_filename, fqrep2_filename, zip1_filename, zip2_filename,
                     rep1_filename, rep2_filename, trim_temp, config):
     pypeliner.commandline.execute(
-        # 'export PATH=/shahlab/pipelines/apps_centos6/jdk1.8.0_51/bin/:$PATH;'
         config['python'], os.path.join(scripts_directory, 'run_trimgalore.py'),
         fastq1_filename,
         fastq2_filename,

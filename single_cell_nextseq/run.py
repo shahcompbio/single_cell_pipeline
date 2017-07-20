@@ -66,35 +66,20 @@ def main():
 
     workflow = pypeliner.workflow.Workflow()
 
-    perlane_dir = os.path.join(args['out_dir'], 'lanes')
-
-    trimgalore_results_template_r1 = os.path.join(perlane_dir, '{lane}', 'trim', '{sample_id}_R1.fastq.gz')
-    trimgalore_results_template_r2 = os.path.join(perlane_dir, '{lane}', 'trim', '{sample_id}_R2.fastq.gz')
-
-    bam_template = os.path.join(perlane_dir, '{lane}', 'bams', '{sample_id}.bam')
-
-    merge_directory = os.path.join(args['out_dir'], 'merge')
-    merge_template = os.path.join(merge_directory, '{sample_id}.merged.bam')
-
-    realn_directory = os.path.join(args['out_dir'], 'realignment')
-    realn_template = os.path.join(realn_directory, '{sample_id}.bam')
+    fastq_dir = os.path.join(args['out_dir'], 'trimmed_fastq')
+    trimgalore_results_template_r1 = os.path.join(fastq_dir, '{lane}', 'trim', '{sample_id}_R1.fastq.gz')
+    trimgalore_results_template_r2 = os.path.join(fastq_dir, '{lane}', 'trim', '{sample_id}_R2.fastq.gz')
 
     bam_directory = os.path.join(args['out_dir'], 'bams')
-    final_template = os.path.join(bam_directory, '{sample_id}.bam')
-    final_index_template = os.path.join(bam_directory, '{sample_id}.bam.bai')
-
-    metrics_directory = os.path.join(args['out_dir'], 'metrics')
-    merge_metrics_summary_template = os.path.join(metrics_directory, 'summary', '{sample_id}_summary_all_lanes.csv')
-    merge_metrics_gcmatrix_template = os.path.join(metrics_directory, 'summary', '{sample_id}_gcmatrix_all_lanes.csv')
-
-    hmmcopy_directory = os.path.join(args['out_dir'], 'hmmcopy')
-    hmmcopy_reads_template = os.path.join(hmmcopy_directory, '{sample_id}_reads.csv')
-    hmmcopy_segments_template = os.path.join(hmmcopy_directory, '{sample_id}_segments.csv')
-    hmmcopy_hmm_metrics_template = os.path.join(hmmcopy_directory, '{sample_id}_hmm_metrics.csv')
-    cnmatrix_template = os.path.join(hmmcopy_directory, '{sample_id}_cnmatrix.csv')
+    bam_template = os.path.join(bam_directory, '{sample_id}.bam')
+    bam_index_template = os.path.join(bam_directory, '{sample_id}.bam.bai')
 
     pseudo_wgs_bam = os.path.join(args['out_dir'], 'pseudo_wgs', 'merged.sorted.markdups.bam')
     pseudo_wgs_bai = os.path.join(args['out_dir'], 'pseudo_wgs', 'merged.sorted.markdups.bam.bai')
+
+    snv = os.path.join(args['out_dir'], 'pseudo_wgs', 'variant_calling', 'overlapping_calls.csv')
+    countdata = os.path.join(args['out_dir'], 'pseudo_wgs', 'counts', 'counts.csv')
+
 
     vals = [(sample,lane) for lane in args['lanes'] for sample in sample_ids]
     
@@ -104,6 +89,7 @@ def main():
     )
 
 
+    #run fastqc and trim galore on fastq files (per lane per 
     workflow.subworkflow(
         name='fastqc_workflow',
         axes=('sample_id', 'lane',),
@@ -128,7 +114,7 @@ def main():
         args=(
             mgd.InputFile('fastq_trim_1', 'sample_id', 'lane', template=trimgalore_results_template_r1),
             mgd.InputFile('fastq_trim_2', 'sample_id', 'lane', template=trimgalore_results_template_r2),
-            mgd.OutputFile('bam', 'sample_id', 'lane', template=bam_template),
+            mgd.TempOutputFile('aligned_per_cell_per_lane.sorted.bam', 'sample_id', 'lane'),
             mgd.InputFile(config['ref_genome']),
             mgd.InputInstance('lane'),
             mgd.InputInstance('sample_id'),
@@ -144,40 +130,41 @@ def main():
         axes=('sample_id',),
         func=merge_workflow.create_merge_workflow,
         args=(
-            mgd.InputFile('bam', 'sample_id', 'lane', template=bam_template),
-            mgd.OutputFile('bam', 'sample_id', template=merge_template),
+            mgd.TempInputFile('aligned_per_cell_per_lane.sorted.bam', 'sample_id', 'lane'),
+            mgd.TempOutputFile('merged_lanes.bam', 'sample_id'),
+            mgd.TempOutputFile('merged_lanes.bam.bai', 'sample_id'),
             config,
             args['lanes']
         ),
     )
 
-
+ 
     workflow.subworkflow(
         name='realignment_workflow',
         func=realignment_workflow.create_realignment_workflow,
         args=(
-            mgd.InputFile('bam', 'sample_id', template=merge_template),
-            mgd.OutputFile('bam_realn', 'sample_id', template=realn_template, axes_origin=[]),
+            mgd.TempInputFile('merged_lanes.bam', 'sample_id'),
+            mgd.TempOutputFile('merged_realign.bam', 'sample_id', axes_origin=[]),
             config,
             args,
             sample_ids
         ),
     )
-
-
-
+  
+  
+  
     #merge bams per sample for all lanes
     workflow.subworkflow(
         name='bam_postprocess_workflow',
         axes=('sample_id',),
         func=bam_postprocessing_workflow.create_bam_post_workflow,
         args=(
-            mgd.InputFile('bam_realn', 'sample_id', template=realn_template),
-            mgd.OutputFile('bam_markdups', 'sample_id', template=final_template),
-            mgd.OutputFile('bam_markdups_index', 'sample_id', template=final_index_template),
+            mgd.TempInputFile('merged_realign.bam', 'sample_id'),
+            mgd.OutputFile('bam_markdups', 'sample_id', template=bam_template),
+            mgd.OutputFile('bam_markdups_index', 'sample_id', template=bam_index_template),
             mgd.InputFile(config['ref_genome']),
-            mgd.OutputFile(merge_metrics_summary_template, 'sample_id'),
-            mgd.OutputFile(merge_metrics_gcmatrix_template, 'sample_id'),
+            mgd.TempOutputFile('merge_metrics_summary_template', 'sample_id'),
+            mgd.TempOutputFile('merge_metrics_gcmatrix_template', 'sample_id'),
             mgd.InputInstance('sample_id'),
             mgd.InputFile(args['samplesheet']),
             config,
@@ -186,50 +173,50 @@ def main():
             args['lanes']
         ),
     )
- 
- 
- 
+   
+   
+   
     workflow.subworkflow(
         name='hmmcopy_workflow',
         axes=('sample_id',),
         func=hmmcopy_workflow.create_hmmcopy_workflow,
         args=(
-            mgd.InputFile('bam_markdups', 'sample_id', template=final_template),
-            mgd.OutputFile(hmmcopy_reads_template, 'sample_id'),
-            mgd.OutputFile(hmmcopy_segments_template, 'sample_id'),
-            mgd.OutputFile(hmmcopy_hmm_metrics_template, 'sample_id'),
-            mgd.OutputFile(cnmatrix_template, 'sample_id'),
+            mgd.InputFile('bam_markdups', 'sample_id', template=bam_template),
+            mgd.TempOutputFile('hmmcopy_reads_template', 'sample_id'),
+            mgd.TempOutputFile('hmmcopy_segments_template', 'sample_id'),
+            mgd.TempOutputFile('hmmcopy_hmm_metrics_template', 'sample_id'),
+            mgd.TempOutputFile('cnmatrix_template', 'sample_id'),
             mgd.InputInstance('sample_id'),
             config,
             args
         ),
     )
-  
+    
     # merge all samples per lane together
     workflow.subworkflow(
         name='summary_workflow',
         func=summary_workflow.create_summary_workflow,
         args=(
-            mgd.InputFile(hmmcopy_segments_template, 'sample_id'),
-            mgd.InputFile(hmmcopy_reads_template, 'sample_id'),
-            mgd.InputFile(hmmcopy_hmm_metrics_template, 'sample_id'),
-            mgd.InputFile(merge_metrics_summary_template, 'sample_id'),
-            mgd.InputFile(merge_metrics_gcmatrix_template, 'sample_id'),
-            mgd.InputFile(cnmatrix_template, 'sample_id'),
+            mgd.TempInputFile('hmmcopy_segments_template', 'sample_id'),
+            mgd.TempInputFile('hmmcopy_reads_template', 'sample_id'),
+            mgd.TempInputFile('hmmcopy_hmm_metrics_template', 'sample_id'),
+            mgd.TempInputFile('merge_metrics_summary_template', 'sample_id'),
+            mgd.TempInputFile('merge_metrics_gcmatrix_template', 'sample_id'),
+            mgd.TempInputFile('cnmatrix_template', 'sample_id'),
             config,
             args,
             sample_ids
         ),
     )
- 
- 
+   
+   
     if args['generate_pseudo_wgs']:
- 
+   
         workflow.subworkflow(
             name='wgs_workflow',
             func=wgs_workflow.create_wgs_workflow,
             args = (
-                    mgd.InputFile('bam', 'sample_id', template=merge_template),
+                    mgd.InputFile('bam_markdups', 'sample_id', template=bam_template),
                     mgd.OutputFile(pseudo_wgs_bam),
                     mgd.OutputFile(pseudo_wgs_bai),
                     mgd.InputFile(config['ref_genome']),
@@ -240,11 +227,10 @@ def main():
                     desc,
             )
         )
-
-
+  
+  
     if args['matched_normal']:
-        snv = os.path.join(args['out_dir'], 'pseudo_wgs', 'variant_calling', 'overlapping_calls.csv')
-      
+        
         workflow.subworkflow(
                 name='varcalls',
                 func=variant_calling_workflow.create_varcall_workflow,
@@ -257,13 +243,12 @@ def main():
                       args
                 ),
             )
-      
-        countdata = os.path.join(args['out_dir'], 'pseudo_wgs', 'counts', 'counts.csv')
+        
         workflow.subworkflow(
                              name='postprocessing',
                              func=snv_postprocessing.create_snv_postprocessing_workflow,
                              args=(
-                                   mgd.InputFile('bam', 'sample_id', template=merge_template),
+                                   mgd.InputFile('bam_markdups', 'sample_id', template=bam_template),
                                    mgd.InputFile(snv),
                                    mgd.OutputFile(countdata),
                                    sample_ids,

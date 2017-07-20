@@ -22,8 +22,6 @@ def create_wgs_workflow(
     bam_filename,
     bam_index_filename,
     ref_genome,
-#     metrics_summary_filename,
-#     gc_matrix_filename,
     sample_ids,
     samplesheet,
     config,

@@ -39,7 +39,6 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
     bias_plot_filename_mad = os.path.join(results_dir, 'plots', 'bias_mad_0.2.pdf')
     segs_plot_filename_mad = os.path.join(results_dir, 'plots', 'segments_mad_0.2.pdf')
 
-    plot_heatmap_all_output = os.path.join(results_dir, 'plots', 'plot_heatmap_all.pdf')
     order_data_all_output = os.path.join(results_dir, 'plots', 'plot_heatmap_all.csv')
 
 

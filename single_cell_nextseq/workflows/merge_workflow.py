@@ -19,6 +19,7 @@ import tasks
 def create_merge_workflow(
     bam,
     bam_filename,
+    bam_index_filename,
     config,
     lanes):
  
@@ -40,6 +41,17 @@ def create_merge_workflow(
             config
         ),
     )
+
+    workflow.commandline(
+        name='bam_index',
+        ctx={'mem': config['low_mem']},
+        args=(
+            config['samtools'], 'index',
+            mgd.InputFile(bam_filename),
+            mgd.OutputFile(bam_index_filename),
+        ),
+    )
+
 
 
     return workflow

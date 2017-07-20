@@ -14,7 +14,6 @@ def create_alignment_workflow(
     fastq_1_filename,
     fastq_2_filename,
     bam_filename,
-#     bam_index_filename,
     ref_genome,
     lane_id,
     sample_id,
@@ -82,16 +81,6 @@ def create_alignment_workflow(
             config
         ),
     )
-
-#     workflow.commandline(
-#         name='bam_index',
-#         ctx={'mem': config['low_mem']},
-#         args=(
-#             config['samtools'], 'index',
-#             mgd.InputFile(bam_filename),
-#             mgd.OutputFile(bam_index_filename),
-#         ),
-#     )
 
     workflow.commandline(
         name='bam_flagstat',

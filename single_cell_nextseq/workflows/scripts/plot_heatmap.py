@@ -20,6 +20,7 @@ from matplotlib.colors import rgb2hex
 from matplotlib.colors import ListedColormap
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.patches import Patch
+import warnings
 
 sys.setrecursionlimit(2000)
 
@@ -355,6 +356,16 @@ class PlotHeatmap(object):
         """
         generate and save plot to output
         """
+        def genplot(data, samples):
+            pltdata = data.loc[samples]
+
+            title = self.args.plot_title + \
+                ' (%s) n=%s/%s' % (sep, len(samples), num_samples)
+
+            self.plot_heatmap(pltdata, chr_idxs, cmap, vmax,
+                              colordata, title, pdfout)
+
+        
         if not self.args.output:
             return
 
@@ -376,14 +387,19 @@ class PlotHeatmap(object):
             if len(samples) < 2:
                 continue
 
-            pltdata = data.loc[samples]
+            if len(samples) > 1000 and not self.args.high_memory:
+                warnings.warn('The output file will only plot 1000 cells per page,'\
+                              ' add --high_memory to override')
 
-            title = self.args.plot_title + \
-                ' (%s) n=%s/%s' % (sep, len(samples), num_samples)
+                samples = sorted(samples)
+                #plot in groups of 1000
+                sample_sets =  [samples[x:x+1000] for x in range(0, len(data), 1000)]
+                for samples in sample_sets:
 
-            print pltdata.shape
-            self.plot_heatmap(pltdata, chr_idxs, cmap, vmax,
-                              colordata, title, pdfout)
+                    genplot(data, samples)
+            else:
+                genplot(data, samples)
+
 
         pdfout.close()
 
@@ -466,6 +482,13 @@ def parse_args():
     parser.add_argument('--color_by_col',
                         default='cell_call',
                          help='''column name to use for coloring the side bar in heatmap''')
+
+    parser.add_argument('--high_memory',
+                        action='store_true',
+                         help='set this flag to override the default limit of 1000 cells'\
+                         ' per plot. The code will use more memory and the pdf file size'\
+                         ' will depend on number of cells')
+
 
     args = parser.parse_args()
 
