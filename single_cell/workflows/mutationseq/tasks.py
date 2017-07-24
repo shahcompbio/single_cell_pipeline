@@ -1,0 +1,65 @@
+'''
+Created on Jul 24, 2017
+
+@author: dgrewal
+'''
+import os
+import pypeliner
+import warnings
+
+def run_museq(tumour, normal, reference, museq_dir, out, log, interval, config):
+    script = os.path.join(museq_dir, 'classify.py')
+    model = os.path.join(museq_dir, 'model_v4.1.2_anaconda_sk_0.13.1.npz')
+
+    conf = os.path.join(museq_dir, 'metadata.config')
+
+    pypeliner.commandline.execute(config['python'],
+                                  script,
+                                   'normal:'+ normal,
+                                   'tumour:'+ tumour,
+                                   'reference:'+ reference,
+                                   'model:'+ model,
+                                   '--out', out,
+                                   '--log', log,
+                                   '--interval', interval,
+                                   '--config', conf
+                                  )
+
+def concatenate_vcf(infiles, outfile):
+    def get_header(infile):
+        '''
+        extract header from the file
+        '''
+        header = []
+        for line in infile:
+            if line.startswith('##'):
+                header.append(line)
+            elif line.startswith('#'):
+                header.append(line)
+                return header
+            else:
+                raise Exception('invalid header: missing #CHROM line')
+
+        warnings.warn("One of the input files is empty")
+        return []
+
+    with open(outfile, 'w') as ofile:
+        header = None
+
+        for _,ifile in infiles.iteritems():
+
+            with open(ifile) as f:
+
+                if not header:
+                    header = get_header(f)
+
+                    for line in header:
+                        ofile.write(line)
+                else:
+                    if not get_header(f) == header:
+                        warnings.warn(
+                            'merging vcf files with mismatching headers')
+
+                for l in f:
+                    print >> ofile, l,
+

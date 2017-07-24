@@ -1,11 +1,4 @@
 '''
-Created on Jul 11, 2017
-
-@author: dgrewal
-'''
-
-
-'''
 Created on Jul 6, 2017
 
 @author: dgrewal

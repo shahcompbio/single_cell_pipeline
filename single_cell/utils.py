@@ -31,15 +31,16 @@ def read_samplesheet_nextseq(args, fastq_directory):
             sample_id = sample_id.replace('-', '_')
             r1_basename = '{0}_S{1}_R1_001'.format(sample_id, str(i+1))
             r2_basename = '{0}_S{1}_R2_001'.format(sample_id, str(i+1))
-            fastq_1_filenames[sample_id] = os.path.join(fastq_directory, r1_basename + '.fastq.gz')
-            fastq_2_filenames[sample_id] = os.path.join(fastq_directory, r2_basename + '.fastq.gz')
+            fastq_1_filenames[sample_id] = os.path.join(fastq_directory,
+                                                        r1_basename + '.fastq.gz')
+            fastq_2_filenames[sample_id] = os.path.join(fastq_directory,
+                                                        r2_basename + '.fastq.gz')
             sample_ids.append(sample_id)
 
     except IOError:
         print 'Unable to open file \'SampleSheet.csv\' in directory: {0}'.format(args['nextseq_dir'])
 
     return run_id, library_id, sample_ids, fastq_1_filenames, fastq_2_filenames
-
 
 def read_samplesheet_hiseq(args):
 
@@ -82,6 +83,3 @@ def read_samplesheet_hiseq(args):
                     fastq_2_filenames[(sampid,lane)] = fq2                
 
     return desc, sample_ids, fastq_1_filenames, fastq_2_filenames
-
-def getpath(vals):
-    return os.path.join(*vals)

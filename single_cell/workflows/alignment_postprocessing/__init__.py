@@ -13,9 +13,7 @@ Created on Jul 6, 2017
 import os
 import pypeliner
 import pypeliner.managed as mgd
-
 import tasks
-
 
 def create_bam_post_workflow(
     bam,
@@ -81,7 +79,7 @@ def create_bam_post_workflow(
         args=(
             config['samtools'], 'index',
             mgd.InputFile(bam_filename),
-#             mgd.OutputFile(bam_index_filename),
+            mgd.OutputFile(bam_index_filename),
         ),
     )
    
@@ -135,34 +133,32 @@ def create_bam_post_workflow(
         ),
     )
        
-    workflow.commandline(
+    workflow.transform(
         name='collect_metrics',
         ctx={'mem': config['low_mem']},
+        func=tasks.collect_metrics,
         args=(
-            config['python'],
-            collect_metrics_script,
             mgd.InputFile(flagstat_metrics_filename),
             mgd.InputFile(markdups_metrics_filename),
             mgd.InputFile(insert_metrics_filename),
             mgd.InputFile(wgs_metrics_filename),
-            mgd.OutputFile(metrics_summary_filename),
             mgd.InputFile(samplesheet),
-            '--sample_id',sample_id,
+            mgd.OutputFile(metrics_summary_filename),
+            sample_id,
         ),
     )
    
-    workflow.commandline(
+    workflow.transform(
         name='collect_gc_metrics',
         ctx={'mem': config['low_mem']},
+        func = tasks.collect_gc_metrics,
         args=(
-            config['python'],
-            gc_metrics_script,
-            '--separator', 'comma',
-            '--input', mgd.InputFile(gc_metrics_filename),
-            '--output', mgd.OutputFile(gc_matrix_filename),
-            '--sample_id', sample_id,
-            '--type', 'gcbias', 
-            '--column_name', 'NORMALIZED_COVERAGE'
+            mgd.InputFile(gc_metrics_filename),
+            mgd.OutputFile(gc_matrix_filename),
+            ',',
+            'NORMALIZED_COVERAGE',
+            sample_id,
+            'gcbias'
         ),
     )
 

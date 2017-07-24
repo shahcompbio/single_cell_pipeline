@@ -29,7 +29,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
     hmmcopy_hmm_segs_filt_filename = os.path.join(results_dir, 'filtered_segs.csv')
     all_metrics_heatmap_filename = os.path.join(results_dir, 'all_metrics_summary_hmap.csv')
     gc_metrics_filename = os.path.join(results_dir, 'gc_metrics_summary.csv')
-    cn_matrix_filename = os.path.join(results_dir, 'summary', 'cn_matrix.csv')
+    cn_matrix_filename = os.path.join(results_dir, 'cn_matrix.csv')
 
     reads_plot_filename = os.path.join(results_dir, 'plots', 'corrected_reads.pdf')
     bias_plot_filename = os.path.join(results_dir, 'plots', 'bias.pdf')
@@ -40,8 +40,6 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
     segs_plot_filename_mad = os.path.join(results_dir, 'plots', 'segments_mad_0.2.pdf')
 
     order_data_all_output = os.path.join(results_dir, 'plots', 'plot_heatmap_all.csv')
-
-
 
     plot_heatmap_ec_output = os.path.join(results_dir, 'plots', 'plot_heatmap_ec.pdf')
     plot_heatmap_ec_mad_output = os.path.join(results_dir, 'plots', 'plot_heatmap_ec_mad.pdf')

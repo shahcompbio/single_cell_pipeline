@@ -90,7 +90,7 @@ def create_wgs_workflow(
         args=(
             config['samtools'], 'index',
             mgd.InputFile(bam_filename),
-#             mgd.OutputFile(bam_index_filename),
+            mgd.OutputFile(bam_index_filename),
         ),
     )
   

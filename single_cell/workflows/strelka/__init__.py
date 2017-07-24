@@ -9,6 +9,7 @@ from utils import default_chromosomes
 import utils
 import vcf_tasks
 import tasks
+import os
 
 
 def create_strelka_workflow(
@@ -17,6 +18,8 @@ def create_strelka_workflow(
         ref_genome_fasta_file,
         indel_vcf_file,
         snv_vcf_file,
+        parsed_snv_csv,
+        parsed_indel_csv,
         chromosomes=default_chromosomes,
         split_size=int(1e7),
         use_depth_thresholds=True):
@@ -172,6 +175,44 @@ def create_strelka_workflow(
             pypeliner.managed.OutputFile(snv_vcf_file)
         )
     )
+
+    scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
+    strelka_parse_script_path = os.path.join(scripts_directory, 'parse_strelka.py')
+    workflow.commandline(
+                         name='parse_strelka_snv',
+                         ctx={'mem': 10},
+                         args=(
+                               'python',
+                               strelka_parse_script_path,
+                               '--infile',
+                               pypeliner.managed.InputFile(snv_vcf_file),
+                               '--output',
+                               pypeliner.managed.OutputFile(parsed_snv_csv),
+                               '--tumour_id', 'NA',
+                               '--normal_id', 'NA',
+                               '--keep_dbsnp','--keep_1000gen',
+                               '--remove_duplicates'
+                               )
+                         )
+
+    workflow.commandline(
+                         name='parse_strelka_indel',
+                         ctx={'mem': 10},
+                         args=(
+                               'python',
+                               strelka_parse_script_path,
+                               '--infile',
+                               pypeliner.managed.InputFile(indel_vcf_file),
+                               '--output',
+                               pypeliner.managed.OutputFile(parsed_indel_csv),
+                               '--tumour_id', 'NA',
+                               '--normal_id', 'NA',
+                               '--keep_dbsnp','--keep_1000gen',
+                               '--remove_duplicates'
+                               )
+                         )
+
+
 
     return workflow
 

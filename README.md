@@ -24,7 +24,7 @@ Activate the environment:
 source activate singlecellpipeline
 ```
 
-Add the single cell nextseq pipeline into the current site packages:
+Add the single cell pipeline into the current site packages:
 
 ```
 python setup.py develop
@@ -85,7 +85,7 @@ The remaining arguments are for controlling execution using [pypeliner](http://p
 For example, run the pipeline as follows:
 
 ```
-single_cell_nextseq \
+single_cell \
   /genesis/shahlab/dgrewal/test_andrew_sc/data/hiseq/PX0577/ \
   /genesis/shahlab/dgrewal/test_andrew_sc/data/hiseq/SampleSheet_CB643ANXX_3.csv \
   /genesis/shahlab/dgrewal/test_andrew_sc/test_output \

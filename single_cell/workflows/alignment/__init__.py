@@ -22,8 +22,8 @@ def create_alignment_workflow(
 
     read_group = tasks.get_readgroup(desc, lane_id, config, sample_id)
 
-    metrics_dir = os.path.join(args['out_dir'], 'lanes', lane_id, 'metrics')
-    flagstat_metrics_filename = os.path.join(metrics_dir,'flagstat_metrics',  '{}.flagstat_metrics.txt'.format(sample_id))
+    metrics_dir = os.path.join(args['out_dir'], 'metrics_per_lane', lane_id,)
+    flagstat_metrics_filename = os.path.join(metrics_dir, '{}.flagstat_metrics.txt'.format(sample_id))
 
     workflow = pypeliner.workflow.Workflow()
 
