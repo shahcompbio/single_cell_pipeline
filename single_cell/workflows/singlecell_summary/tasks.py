@@ -4,8 +4,13 @@ Created on Jul 24, 2017
 @author: dgrewal
 '''
 import pandas as pd
-
-
+from scripts import SummaryMetrics
+from scripts import PlotKernelDensity
+from scripts import FilterHmmData
+from scripts import MergeFiles
+from scripts import PlotHeatmap
+from scripts import GenHmmPlots
+from scripts import PlotMetrics
 
 def concatenate_csv(in_filenames, out_filename, nan_val = 'NA'):
     data = []
@@ -56,3 +61,37 @@ def merge_frames(frames, how, on):
                                         how=how,
                                         on=on)
         return merged_frame
+
+def get_summary_metrics(infile, output):
+    summ = SummaryMetrics(infile, output)
+    summ.main()
+
+def plot_kernel_density(infile, output,  sep, colname, plot_title):
+    plot = PlotKernelDensity(infile, output,  sep, colname, plot_title)
+    plot.main()
+
+def filter_hmm_data(quality_metrics, segments, reads, mad_threshold, reads_out, segments_out):
+    filter_hmm = FilterHmmData(quality_metrics, segments, reads, mad_threshold, reads_out, segments_out)
+    filter_hmm.main()
+    
+def merge_tables(infile, output, typ, sep,
+              merge_type, key_cols, nan_val):
+    
+    m = MergeFiles(infile, output, typ, sep,
+              merge_type, key_cols, nan_val)
+    m.main()
+
+def plot_metrics(metrics, output, plot_title, gcbias_matrix, gc_content):
+    plot = PlotMetrics(metrics, output, plot_title, gcbias_matrix, gc_content)
+    plot.main()
+
+def plot_heatmap(infile, metrics, order_data, output, kwargs):
+    plot = PlotHeatmap(infile, metrics, order_data, output, kwargs)
+    plot.main()
+    
+    
+def plot_hmmcopy(reads, segments, metrics, ref_genome, reads_out, segs_out, bias_out, kwargs):
+    plot = GenHmmPlots(reads, segments, metrics, ref_genome, reads_out, segs_out, bias_out, kwargs)
+    plot.main()
+
+

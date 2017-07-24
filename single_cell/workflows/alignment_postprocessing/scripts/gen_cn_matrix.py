@@ -63,12 +63,12 @@ class GenerateCNMatrix(object):
         """
         column_name = self.column_name
 
-        data = open(self.infile).readlines()
+        data = open(self.input).readlines()
         skiprows = [i for i,v in enumerate(data) if v[0] == '#' or v=='\n']
 
         #If the file is empty (only header no data) then return 0s (dummy data)
         try:
-            data = pd.read_csv(self.infile, sep='\t', skiprows=skiprows)
+            data = pd.read_csv(self.input, sep='\t', skiprows=skiprows)
         except pd.io.common.EmptyDataError:
             warnings.warn('No data in the GCBias output')
             #If the file is empty (only header no data) then return 0s (dummy data)

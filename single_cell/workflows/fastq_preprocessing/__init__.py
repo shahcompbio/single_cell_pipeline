@@ -58,28 +58,27 @@ def create_fastq_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, sa
     )
 
     if trim:
-        workflow.commandline(
+        workflow.transform(
             name='run_trimgalore',
             ctx={'mem': config['low_mem']},
+            func=tasks.run_trimgalore,
             args=(
-              config['python'],
-              os.path.join(scripts_directory, 'run_trimgalore.py'),
-                mgd.InputFile(fastq_r1),
-                mgd.InputFile(fastq_r2),
-                mgd.OutputFile(trim_r1),
-                mgd.OutputFile(trim_r2),
-                mgd.OutputFile(qc_report_r1),
-                mgd.OutputFile(qc_report_r2),
-                mgd.OutputFile(zip_r1),
-                mgd.OutputFile(zip_r2),
-                mgd.OutputFile(report_r1),
-                mgd.OutputFile(report_r2),
-                mgd.TempSpace('trim_temp'),
-                '--adapter', config['adapter'],
-                '--adapter2', config['adapter2'],
-                '--trimgalore_path', config['trimgalore'],
-                '--cutadapt_path', config['cutadapt'],
-              )
+                  mgd.InputFile(fastq_r1),
+                  mgd.InputFile(fastq_r2),
+                  mgd.OutputFile(trim_r1),
+                  mgd.OutputFile(trim_r2),
+                  config['trimgalore'],
+                  config['cutadapt'],
+                  mgd.TempSpace('trim_temp'),
+                  config['adapter'],
+                  config['adapter2'],
+                  mgd.OutputFile(report_r1),
+                  mgd.OutputFile(report_r2),
+                  mgd.OutputFile(qc_report_r1),
+                  mgd.OutputFile(qc_report_r2),
+                  mgd.OutputFile(zip_r1),
+                  mgd.OutputFile(zip_r2),
+                  )
             )
     else:
         workflow.transform(

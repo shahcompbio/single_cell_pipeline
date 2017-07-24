@@ -86,9 +86,28 @@ class GenHmmPlots(object):
     """
     generate the reads, bias and segment plots
     """ 
-    def __init__(self, args):
-        self.args = args
-        self.reads_pdf, self.segs_pdf, self.bias_pdf = self.get_pdf_handles()
+    def __init__(self, reads, segments, metrics, ref_genome, reads_out, segs_out, bias_out, **kwargs):
+        
+        self.reads = reads
+        self.segments = segments
+        self.metrics = metrics
+        self.ref_genome = ref_genome
+        
+        self.num_states = kwargs.get('num_states')
+        if not self.num_states:
+            self.num_states = 7
+        
+        self.mad_threshold = kwargs.get('mad_threshold')
+        if not self.mad_threshold:
+            self.mad_threshold = 0
+
+        self.plot_title = kwargs.get('plot_title')
+        if not self.plot_title:
+            self.plot_title = ''
+
+        self.samples = kwargs.get('samples')
+        
+        self.reads_pdf, self.segs_pdf, self.bias_pdf = self.get_pdf_handles(reads_out, bias_out, segs_out)
 
 
 
@@ -109,7 +128,7 @@ class GenHmmPlots(object):
         
         """
         
-        df = self.load_data_pandas(self.args.quality_metrics)
+        df = self.load_data_pandas(self.metrics)
         
         return df
 
@@ -119,7 +138,7 @@ class GenHmmPlots(object):
         
         """
         
-        df = self.load_data_pandas(self.args.corrected_reads)
+        df = self.load_data_pandas(self.reads)
         
         return df
     
@@ -128,7 +147,7 @@ class GenHmmPlots(object):
         
         """
         
-        df = self.load_data_pandas(self.args.segments)
+        df = self.load_data_pandas(self.segments)
         
         return df
 
@@ -151,14 +170,14 @@ class GenHmmPlots(object):
         
         return sams
 
-    def get_pdf_handles(self):
+    def get_pdf_handles(self, reads_out, bias_out, segs_out):
         """
         
         """
         
-        reads_pdf = PdfPages(self.args.reads_output)
-        bias_pdf = PdfPages(self.args.bias_output)
-        segs_pdf = PdfPages(self.args.segs_output)
+        reads_pdf = PdfPages(reads_out)
+        bias_pdf = PdfPages(bias_out)
+        segs_pdf = PdfPages(segs_out)
 
 
         return reads_pdf, segs_pdf, bias_pdf
@@ -192,7 +211,7 @@ class GenHmmPlots(object):
                       cond, ', sample_type', st, ' neutral MAD ', mad, ', MSRSI Non Integerness ',
                       ni, ')']
 
-        title_str = ' '.join(title_str) + self.args.plot_title 
+        title_str = ' '.join(title_str) + self.plot_title 
         return title_str
 
     def get_mad_score(self, sample_id, metrics):
@@ -206,7 +225,7 @@ class GenHmmPlots(object):
 
         col = '#595959'
 
-        ax = utl.create_chromosome_plot_axes(ax, self.args.ref_genome)
+        ax = utl.create_chromosome_plot_axes(ax, self.ref_genome)
 
         #only attempt to plot if data is available
         if df is not None:
@@ -298,7 +317,7 @@ class GenHmmPlots(object):
         fig = plt.figure(figsize=(15,4))
         ax = fig.gca()
     
-        ax = utl.create_chromosome_plot_axes(ax, self.args.ref_genome)
+        ax = utl.create_chromosome_plot_axes(ax, self.ref_genome)
         ax.set_title(plot_title)
         ax.set_ylabel('Copy number')
         
@@ -341,7 +360,7 @@ class GenHmmPlots(object):
         df = df.get_group(sample)
         if norm:
             df = utl.normalize_reads(df)
-        df = utl.compute_chromosome_coordinates(df, self.args.ref_genome)
+        df = utl.compute_chromosome_coordinates(df, self.ref_genome)
 
         return df
 
@@ -354,11 +373,11 @@ class GenHmmPlots(object):
 
         # if mad_threshold is set to nonzero.
         #zero is defaults and means mad_threshold is not set. so no filtering
-        if self.args.mad_threshold:
+        if self.mad_threshold:
             if math.isnan(mad):
                 return False
 
-            if mad > self.args.mad_threshold:
+            if mad > self.mad_threshold:
                 return False
         return True
 
@@ -372,8 +391,8 @@ class GenHmmPlots(object):
         reads = self.read_corrected_reads()
         segs = self.read_segments()
 
-        if self.args.samples:
-            samples = self.args.samples
+        if self.samples:
+            samples = self.samples
         else:
             samples = self.get_sample_ids(reads, metrics)
 
@@ -393,7 +412,7 @@ class GenHmmPlots(object):
             self.plot_bias(reads_samp, sample, plot_title)
             
             self.plot_segments(reads_samp, segs_samp, plot_title,
-                               num_states=self.args.num_states)
+                               num_states=self.num_states)
 
         self.reads_pdf.close()
         self.bias_pdf.close()
@@ -402,6 +421,7 @@ class GenHmmPlots(object):
 if __name__ == '__main__':
     args = parse_args()
     
-    genhmm = GenHmmPlots(args)
+    genhmm = GenHmmPlots(args.corrected_reads, args.segments, args.quality_metrics, args.ref_genome, 
+                         args.reads_output, args.segs_output, args.bias_output, vars(args))
 
     genhmm.main()

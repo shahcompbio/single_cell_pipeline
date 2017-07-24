@@ -4,7 +4,6 @@ Created on Jan 4, 2017
 @author: dgrewal
 '''
 
-import argparse
 from subprocess import Popen
 import os
 import warnings
@@ -14,14 +13,27 @@ class RunTrimGalore(object):
     Trim fastq files with trimgalore
     """
 
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt, tempdir,
+                adapter, adapter2, report_r1, report_r2, qc_report_r1,
+                qc_report_r2, qc_zip_r1, qc_zip_r2):
+        self.seq1 = seq1
+        self.seq2 = seq2
+        self.trimgalore_path = trimgalore
+        self.cutadapt_path = cutadapt
+        self.tempdir = tempdir
+        self.adapter = adapter
+        self.adapter2 = adapter2
+        self.fastqc_report_r1 = qc_report_r1
+        self.fastqc_report_r2 = qc_report_r2
+        self.fastqc_zip_r1 = qc_zip_r2
+        self.fastqc_zip_r2 = qc_zip_r2
+        self.fastq_r1 = fq_r1
+        self.fastq_r2 = fq_r2
 
         self.check_inputs()
 
-        if not os.path.exists(self.args.tempdir):
-            os.makedirs(self.args.tempdir)
-
+        if not os.path.exists(self.tempdir):
+            os.makedirs(self.tempdir)
 
     @classmethod
     def run_cmd(cls, cmd):
@@ -62,8 +74,8 @@ class RunTrimGalore(object):
         * are they gzipped
         """
 
-        ext1 = self.check_file(self.args.seq1)
-        ext2 = self.check_file(self.args.seq2)
+        ext1 = self.check_file(self.seq1)
+        ext2 = self.check_file(self.seq2)
 
         assert ext1 == ext2, "input fastqfiles should have the same extension"
 
@@ -71,20 +83,20 @@ class RunTrimGalore(object):
         """
         launch trimgalore
         """
-        cmd = [self.args.trimgalore_path,
+        cmd = [self.trimgalore_path,
                '--fastqc',
                '--paired',
-               '--path_to_cutadapt', self.args.cutadapt_path,
-               '--output_dir', self.args.tempdir + '/',
+               '--path_to_cutadapt', self.cutadapt_path,
+               '--output_dir', self.tempdir + '/',
                ]
 
-        if self.args.adapter:
-            cmd.extend(['--adapter', self.args.adapter])
+        if self.adapter:
+            cmd.extend(['--adapter', self.adapter])
 
-        if self.args.adapter2:
-            cmd.extend(['--adapter2', self.args.adapter2])
+        if self.adapter2:
+            cmd.extend(['--adapter2', self.adapter2])
 
-        cmd.extend([self.args.seq1, self.args.seq2, ])
+        cmd.extend([self.seq1, self.seq2, ])
 
         self.run_cmd(cmd)
 
@@ -92,7 +104,7 @@ class RunTrimGalore(object):
         """
         move files from from temp dir to the expected path
         """
-        path = os.path.join(self.args.tempdir, fname)
+        path = os.path.join(self.tempdir, fname)
         os.rename(path, outpath)
         assert os.path.isfile(outpath)
 
@@ -104,13 +116,13 @@ class RunTrimGalore(object):
         """
         find the file in outdir and rename to r1_out and r2_out
         """
-        outfiles = os.listdir(self.args.tempdir)
+        outfiles = os.listdir(self.tempdir)
 
         reps = [v for v in outfiles if ext in v]
         assert reps != [], "Couldn't move %s files" % ext
 
-        seq1 = os.path.basename(self.args.seq1)
-        seq2 = os.path.basename(self.args.seq2)
+        seq1 = os.path.basename(self.seq1)
+        seq2 = os.path.basename(self.seq2)
 
         if trimreport:
             for rep in reps:
@@ -136,88 +148,19 @@ class RunTrimGalore(object):
         """
         # trimming reports
         self.get_file(
-            self.args.report_r1,
-            self.args.report_r2,
+            self.report_r1,
+            self.report_r2,
             "_trimming_report.txt",
             trimreport=True)
 
         # fastqc html files
         self.get_file(
-            self.args.fastqc_report_r1,
-            self.args.fastqc_report_r2,
+            self.fastqc_report_r1,
+            self.fastqc_report_r2,
             ".html")
 
         # fastqc zip files
-        self.get_file(self.args.fastqc_zip_r1, self.args.fastqc_zip_r2, ".zip")
+        self.get_file(self.fastqc_zip_r1, self.fastqc_zip_r2, ".zip")
 
         # trimmed fastq files
-        self.get_file(self.args.fastq_r1, self.args.fastq_r2, ".fq.gz")
-
-
-def parse_args():
-    """
-    parse cmd line params
-    """
-    #=========================================================================
-    # make a UI
-    #=========================================================================
-    parser = argparse.ArgumentParser(prog='run_trim_galore',
-                                     description="""This script runs trim_galore with options --paired --nextera""")
-
-    parser.add_argument('seq1',
-                        help='FASTQ file for read 1')
-
-    parser.add_argument('seq2',
-                        help='FASTQ file for read 2')
-
-    parser.add_argument('fastq_r1',
-                        help="Path to output file (R1)")
-
-    parser.add_argument('fastq_r2',
-                        help="Path to output file (R2)")
-
-    parser.add_argument('fastqc_report_r1',
-                        help="Path to fastqc_report (R1)")
-
-    parser.add_argument('fastqc_report_r2',
-                        help="Path to fastqc_report (R2)")
-
-    parser.add_argument('fastqc_zip_r1',
-                        help="Path to fastqc_zip (R1)")
-
-    parser.add_argument('fastqc_zip_r2',
-                        help="Path to fastqc_zip (R2)")
-
-    parser.add_argument('report_r1',
-                        help="Path to report (R1)")
-
-    parser.add_argument('report_r2',
-                        help="Path to report (R2)")
-
-    parser.add_argument('tempdir',
-                        help="Path to output directory (for metrics)")
-
-    parser.add_argument('--adapter',
-                        help="specify adapter for R1")
-
-    parser.add_argument('--adapter2',
-                        help="specify adapter for R2")
-
-    parser.add_argument('--trimgalore_path',
-                        default='trimgalore',
-                        help="specify path to trimgalore")
-
-    parser.add_argument('--cutadapt_path',
-                        default='cutadapt',
-                        help="specify path to cutadapt")
-
-    args = parser.parse_args()
-
-    return args
-
-if __name__ == "__main__":
-
-    args = parse_args()
-    run_tg = RunTrimGalore(args)
-    run_tg.run_trimgalore()
-    run_tg.gather_outputs()
+        self.get_file(self.fastq_r1, self.fastq_r2, ".fq.gz")

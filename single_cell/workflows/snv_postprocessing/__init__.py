@@ -25,11 +25,6 @@ def create_snv_postprocessing_workflow(
 
     countdata = os.path.join(args['out_dir'], 'pseudo_wgs', 'counts', '{sample_id}_counts.csv')
 
-    scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
-    merge_tables_script = os.path.join(scripts_directory, 'merge.py')
-
-
-
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
@@ -37,33 +32,28 @@ def create_snv_postprocessing_workflow(
         value=sample_ids,
     )
 
-
-
-    workflow.commandline(
+    workflow.transform(
                        name='overlap_var_calls',
                        ctx={'mem': config['med_mem']},
-                       args=(
-                            config['python'],
-                            merge_tables_script,
-                            '--merge_type', 'inner',
-                            '--nan_value', 'NA',
-                            '--input', mgd.InputFile(museq_parsed), mgd.InputFile(strelka_parsed),
-                            '--key_cols', 'case_id', 'chromosome', 'start', 'stop', 'ref', 'alt',
-                            '--separator', 'tab',
-                            '--type', 'merge',
-                            '--output', mgd.TempOutputFile("overlapping_calls.csv"),
+                       func=tasks.merge_tables,
+                       args=([mgd.InputFile(museq_parsed), mgd.InputFile(strelka_parsed)],
+                             mgd.TempOutputFile("overlapping_calls.csv"),
+                             'merge',
+                             '\t',
+                             'inner',
+                             ['case_id', 'chromosome', 'start', 'stop', 'ref', 'alt'],
+                             'NA'
                              )
                        )
 
 
 
-    workflow.commandline(
+    workflow.transform(
         name='count_reads',
         axes=('sample_id',),
         ctx={'mem': config['low_mem']},
+        func=tasks.get_counts,
         args=(
-              config['python'],
-              script_path,
               mgd.InputFile('bam', 'sample_id', fnames=bam_file),
               mgd.TempInputFile("overlapping_calls.csv"),
               mgd.OutputFile(countdata, 'sample_id'),

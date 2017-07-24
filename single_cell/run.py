@@ -6,7 +6,7 @@ import pypeliner.managed as mgd
 from workflows import fastq_preprocessing, alignment, hmmcopy, strelka
 from workflows import singlecell_summary, merge_bams, pseudo_wgs, snv_postprocessing
 from workflows import realignment, alignment_postprocessing
-from single_cell_pipeline.single_cell.workflows import mutationseq
+from workflows import mutationseq
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)

@@ -12,15 +12,6 @@ import tasks
 def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summary, gc_matrix, cn_matrix, config, args, sample_ids):
 
 
-    scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
-    plot_hmmcopy_script = os.path.join(scripts_directory, 'plot_hmmcopy.py')
-    plot_heatmap_script = os.path.join(scripts_directory, 'plot_heatmap.py')
-    merge_tables_script = os.path.join(scripts_directory, 'merge.py')
-    filter_hmmcopy_script = os.path.join(scripts_directory, 'filter_data.py')
-    plot_metrics_script = os.path.join(scripts_directory, 'plot_metrics.py')
-    plot_kernel_density_script = os.path.join(scripts_directory, 'plot_kernel_density.py')
-    summary_metrics_script = os.path.join(scripts_directory, 'summary_metrics.py')
-
     results_dir = os.path.join(args['out_dir'], 'results')
 
     hmmcopy_segments_filename = os.path.join(results_dir, 'segments.csv')
@@ -44,10 +35,6 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
     plot_heatmap_ec_output = os.path.join(results_dir, 'plots', 'plot_heatmap_ec.pdf')
     plot_heatmap_ec_mad_output = os.path.join(results_dir, 'plots', 'plot_heatmap_ec_mad.pdf')
     plot_heatmap_ec_numreads_output = os.path.join(results_dir, 'plots', 'plot_heatmap_ec_numreads.pdf')
-
-    plot_heatmap_st_output = os.path.join(results_dir, 'plots', 'plot_heatmap_st.pdf')
-    plot_heatmap_st_mad_output = os.path.join(results_dir, 'plots', 'plot_heatmap_st_mad.pdf')
-    plot_heatmap_st_numreads_output = os.path.join(results_dir, 'plots', 'plot_heatmap_st_numreads.pdf')
 
 
     plot_metrics_output = os.path.join(results_dir, 'plots', 'plot_metrics.pdf')
@@ -126,253 +113,188 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
         ),
     )
 
-    workflow.commandline(
+    workflow.transform(
         name='filter_hmmcopy_results',
         ctx={'mem': config['high_mem']},
+        func=tasks.filter_hmm_data,
         args=(
-            config['python'],
-            filter_hmmcopy_script,
-            '--corrected_reads', mgd.InputFile(hmmcopy_reads_filename),
-            '--segments', mgd.InputFile(hmmcopy_segments_filename),
-            '--quality_metrics', mgd.TempInputFile('hmmcopy_hmm_metrics.csv'),
-            '--reads_output', mgd.OutputFile(hmmcopy_hmm_reads_filt_filename),
-            '--segs_output', mgd.OutputFile(hmmcopy_hmm_segs_filt_filename),
-            '--mad_threshold', '0.2'
+            mgd.TempInputFile('hmmcopy_hmm_metrics.csv'),
+            mgd.InputFile(hmmcopy_segments_filename),
+            mgd.InputFile(hmmcopy_reads_filename),
+            0.2,
+            mgd.OutputFile(hmmcopy_hmm_reads_filt_filename),
+            mgd.OutputFile(hmmcopy_hmm_segs_filt_filename),
             )
         )
 
-
-
-    workflow.commandline(
+    workflow.transform(
         name='merge_all_metrics',
         ctx={'mem': config['low_mem']},
+        func=tasks.merge_tables,
         args=(
-            config['python'],
-            merge_tables_script,
-            '--merge_type', 'outer',
-            '--nan_value', 'NA',
-            '--input', mgd.TempInputFile('metrics_summary.csv'), mgd.TempInputFile('hmmcopy_hmm_metrics.csv'),
-            '--key_cols', 'cell_id',
-            '--separator', 'comma',
-            '--type', 'merge',
-            '--output', mgd.TempOutputFile('all_metrics.csv'),
+            [mgd.TempInputFile('metrics_summary.csv'), mgd.TempInputFile('hmmcopy_hmm_metrics.csv')],
+            mgd.TempOutputFile('all_metrics.csv'),
+            'merge', ',', 'outer', 'cell_id', 'NA'
             )
         )
 
-    workflow.commandline(
+    workflow.transform(
         name='plot_heatmap_all',
         ctx={'mem': config['high_mem']},
+        func=tasks.plot_heatmap,
         args=(
-            config['python'],
-            plot_heatmap_script,
-            '--metrics', mgd.TempInputFile('all_metrics.csv'),
-            '--separator', 'comma',
-            '--plot_title', 'QC pipeline metrics',
-            '--input', mgd.InputFile(hmmcopy_reads_filename),
-            '--order_data', mgd.OutputFile(order_data_all_output),
-            '--column_name', 'integer_copy_number'
-            )
+             mgd.InputFile(hmmcopy_reads_filename),
+             mgd.TempInputFile('all_metrics.csv'),
+             mgd.OutputFile(order_data_all_output),
+             None,
+            ),
+            kwargs={
+                    'plot_title':'QC pipeline metrics',
+                    'colname':'integer_copy_number',
+                    }
+
         )
 
-    workflow.commandline(
+    workflow.transform(
         name='merge_all_metrics_heatmap',
         ctx={'mem': config['high_mem']},
+        func=tasks.merge_tables,
         args=(
-            config['python'],
-            merge_tables_script,
-            '--merge_type', 'outer',
-            '--nan_value', 'NA',
-            '--input', mgd.TempInputFile('all_metrics.csv'), mgd.InputFile(order_data_all_output),
-            '--key_cols', 'cell_id',
-            '--separator', 'comma',
-            '--type', 'merge',
-            '--output', mgd.OutputFile(all_metrics_heatmap_filename),
+              [mgd.TempInputFile('all_metrics.csv'), mgd.InputFile(order_data_all_output)],
+              mgd.OutputFile(all_metrics_heatmap_filename),
+              'merge', ',', 'outer', 'cell_id', 'NA'
             )
         )
 
-    workflow.commandline(
+    workflow.transform(
         name='plot_hmm_copy',
         ctx={'mem': config['high_mem']},
+        func=tasks.plot_hmmcopy,
         args=(
-            config['python'],
-            plot_hmmcopy_script,
-            '--corrected_reads', mgd.InputFile(hmmcopy_reads_filename),
-            '--segments', mgd.InputFile(hmmcopy_segments_filename),
-            '--quality_metrics', mgd.InputFile(all_metrics_heatmap_filename),
-            '--ref_genome', mgd.InputFile(config['ref_genome']),
-            '--num_states', config['num_states'],
-            '--reads_output', mgd.OutputFile(reads_plot_filename),
-            '--bias_output', mgd.OutputFile(bias_plot_filename),
-            '--segs_output', mgd.OutputFile(segs_plot_filename),
-            '--plot_title', 'QC pipeline metrics',
+            mgd.InputFile(hmmcopy_reads_filename),
+            mgd.InputFile(hmmcopy_segments_filename),
+            mgd.InputFile(all_metrics_heatmap_filename),
+            mgd.InputFile(config['ref_genome']),
+            mgd.OutputFile(reads_plot_filename),
+            mgd.OutputFile(segs_plot_filename),
+            mgd.OutputFile(bias_plot_filename),
         ),
+        kwargs = {
+                  'num_states':config['num_states'],
+                  'plot_title':'QC pipeline metrics',
+                  }
+
     )
 
-    workflow.commandline(
+    workflow.transform(
         name='plot_hmm_copy_mad',
         ctx={'mem': config['high_mem']},
+        func=tasks.plot_hmmcopy,
         args=(
-            config['python'],
-            plot_hmmcopy_script,
-            '--corrected_reads', mgd.InputFile(hmmcopy_reads_filename),
-            '--segments', mgd.InputFile(hmmcopy_segments_filename),
-            '--quality_metrics', mgd.InputFile(all_metrics_heatmap_filename),
-            '--ref_genome', mgd.InputFile(config['ref_genome']),
-            '--num_states', config['num_states'],
-            '--reads_output', mgd.OutputFile(reads_plot_filename_mad),
-            '--bias_output', mgd.OutputFile(bias_plot_filename_mad),
-            '--segs_output', mgd.OutputFile(segs_plot_filename_mad),
-            '--plot_title', 'QC pipeline metrics',
-            '--mad_threshold', config['hmmcopy_plot_mad_threshold'],
+            mgd.InputFile(hmmcopy_reads_filename),
+            mgd.InputFile(hmmcopy_segments_filename),
+            mgd.InputFile(all_metrics_heatmap_filename),
+            mgd.InputFile(config['ref_genome']),
+            mgd.OutputFile(reads_plot_filename_mad),
+            mgd.OutputFile(segs_plot_filename_mad),
+            mgd.OutputFile(bias_plot_filename_mad),
         ),
+        kwargs = {
+                  'num_states':config['num_states'],
+                  'plot_title':'QC pipeline metrics',
+                  'mad_threshold':config['hmmcopy_plot_mad_threshold'],
+                  }
     )
 
 
-
-    workflow.commandline(
+    workflow.transform(
         name='plot_metrics',
         ctx={'mem': config['high_mem']},
+        func=tasks.plot_metrics,
         args=(
-            config['python'],
-            plot_metrics_script,
             mgd.InputFile(all_metrics_heatmap_filename),
             mgd.OutputFile(plot_metrics_output),
-            '--plot_title', 'QC pipeline metrics',
-            '--gcbias_matrix', mgd.InputFile(gc_metrics_filename),
-            '--gc_content_data', mgd.InputFile(config['gc_windows'])
+            'QC pipeline metrics',
+            mgd.InputFile(gc_metrics_filename),
+            mgd.InputFile(config['gc_windows'])
             )
         )
 
-    workflow.commandline(
+    workflow.transform(
         name='plot_kernel_density',
         ctx={'mem': config['high_mem']},
+        func=tasks.plot_kernel_density,
         args=(
-            config['python'],
-            plot_kernel_density_script,
-            '--separator', 'comma',
-            '--input', mgd.InputFile(all_metrics_heatmap_filename),
-            '--plot_title', 'QC pipeline metrics',
-            '--output', mgd.OutputFile(plot_kernel_density_output),
-            '--column_name', 'mad_neutral_state'
+            mgd.InputFile(all_metrics_heatmap_filename),
+            mgd.OutputFile(plot_kernel_density_output),
+            ',',
+            'mad_neutral_state'
+            'QC pipeline metrics'
             )
         )
 
-    workflow.commandline(
+    workflow.transform(
         name='summary_metrics',
         ctx={'mem': config['low_mem']},
+        func=tasks.get_summary_metrics,
         args=(
-            config['python'],
-            summary_metrics_script,
-            '--input', mgd.InputFile(all_metrics_heatmap_filename),
-            '--summary_metrics', mgd.OutputFile(summary_metrics_output),
+            mgd.InputFile(all_metrics_heatmap_filename),
+            mgd.OutputFile(summary_metrics_output),
             )
         )
 
-    workflow.commandline(
+    workflow.transform(
         name='plot_heatmap_ec',
         ctx={'mem': config['high_mem']},
+        func=tasks.plot_heatmap,
         args=(
-            config['python'],
-            plot_heatmap_script,
-            '--output', mgd.OutputFile(plot_heatmap_ec_output),
-            '--metrics', mgd.InputFile(all_metrics_heatmap_filename),
-            '--separator', 'comma',
-            '--plot_title', 'QC pipeline metrics',
-            '--input', mgd.InputFile(hmmcopy_reads_filename),
-            '--column_name', 'integer_copy_number',
-            '--plot_by_col','experimental_condition',
-            )
+             mgd.InputFile(hmmcopy_reads_filename),
+             mgd.InputFile(all_metrics_heatmap_filename),
+             None,
+             mgd.OutputFile(plot_heatmap_ec_output),
+            ),
+            kwargs={
+                    'plot_title':'QC pipeline metrics',
+                    'colname':'integer_copy_number',
+                    'plot_by_col':'experimental_condition',
+                    }
         )
 
-    workflow.commandline(
+    workflow.transform(
         name='plot_heatmap_ec_mad',
         ctx={'mem': config['high_mem']},
+        func=tasks.plot_heatmap,
         args=(
-            config['python'],
-            plot_heatmap_script,
-            '--output', mgd.OutputFile(plot_heatmap_ec_mad_output),
-            '--metrics', mgd.InputFile(all_metrics_heatmap_filename),
-            '--separator', 'comma',
-            '--plot_title', 'QC pipeline metrics',
-            '--input', mgd.InputFile(hmmcopy_reads_filename),
-            '--column_name', 'integer_copy_number',
-            '--plot_by_col','experimental_condition',
-            '--mad_threshold', config['heatmap_plot_mad_threshold']
-            )
+             mgd.InputFile(hmmcopy_reads_filename),
+             mgd.InputFile(all_metrics_heatmap_filename),
+             None,
+             mgd.OutputFile(plot_heatmap_ec_mad_output),
+            ),
+            kwargs={
+                    'plot_title':'QC pipeline metrics',
+                    'colname':'integer_copy_number',
+                    'plot_by_col':'experimental_condition',
+                    'mad_threshold':config['heatmap_plot_mad_threshold'],
+                    }
         )
 
 
-    workflow.commandline(
+    workflow.transform(
         name='plot_heatmap_ec_nreads',
         ctx={'mem': config['high_mem']},
         args=(
-            config['python'],
-            plot_heatmap_script,
-            '--output', mgd.OutputFile(plot_heatmap_ec_numreads_output),
-            '--metrics', mgd.InputFile(all_metrics_heatmap_filename),
-            '--separator', 'comma',
-            '--plot_title', 'QC pipeline metrics',
-            '--input', mgd.InputFile(hmmcopy_reads_filename),
-            '--column_name', 'integer_copy_number',
-            '--plot_by_col','experimental_condition',
-            '--numreads_threshold', config['heatmap_plot_numreads_threshold']
-            )
+             mgd.InputFile(hmmcopy_reads_filename),
+             mgd.InputFile(all_metrics_heatmap_filename),
+             None,
+             mgd.OutputFile(plot_heatmap_ec_numreads_output),
+            ),
+            kwargs={
+                    'plot_title':'QC pipeline metrics',
+                    'colname':'integer_copy_number',
+                    'plot_by_col':'experimental_condition',
+                    'numreads_threshold':config['heatmap_plot_numreads_threshold']
+                    }
         )
-
-
-
-    workflow.commandline(
-        name='plot_heatmap_st',
-        ctx={'mem': config['high_mem']},
-        args=(
-            config['python'],
-            plot_heatmap_script,
-            '--output', mgd.OutputFile(plot_heatmap_st_output),
-            '--metrics', mgd.InputFile(all_metrics_heatmap_filename),
-            '--separator', 'comma',
-            '--plot_title', 'QC pipeline metrics',
-            '--input', mgd.InputFile(hmmcopy_reads_filename),
-            '--column_name', 'integer_copy_number',
-            '--plot_by_col','sample_type',
-            )
-        )
-
-    workflow.commandline(
-        name='plot_heatmap_st_mad',
-        ctx={'mem': config['high_mem']},
-        args=(
-            config['python'],
-            plot_heatmap_script,
-            '--output', mgd.OutputFile(plot_heatmap_st_mad_output),
-            '--metrics', mgd.InputFile(all_metrics_heatmap_filename),
-            '--separator', 'comma',
-            '--plot_title', 'QC pipeline metrics',
-            '--input', mgd.InputFile(hmmcopy_reads_filename),
-            '--column_name', 'integer_copy_number',
-            '--plot_by_col','sample_type',
-            '--mad_threshold', config['heatmap_plot_mad_threshold']
-            )
-        )
-
-
-    workflow.commandline(
-        name='plot_heatmap_st_nreads',
-        ctx={'mem': config['high_mem']},
-        args=(
-            config['python'],
-            plot_heatmap_script,
-            '--output', mgd.OutputFile(plot_heatmap_st_numreads_output),
-            '--metrics', mgd.InputFile(all_metrics_heatmap_filename),
-            '--separator', 'comma',
-            '--plot_title', 'QC pipeline metrics',
-            '--input', mgd.InputFile(hmmcopy_reads_filename),
-            '--column_name', 'integer_copy_number',
-            '--plot_by_col','sample_type',
-            '--numreads_threshold', config['heatmap_plot_numreads_threshold']
-            )
-        )
-
-
     return workflow
 
 

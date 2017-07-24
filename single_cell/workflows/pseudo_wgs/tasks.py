@@ -5,6 +5,7 @@ Created on Jul 24, 2017
 '''
 
 import pypeliner
+from scripts import CollectMetrics
 
 def merge_bams(inputs, output, config):
     filenames = inputs.values()
@@ -102,3 +103,12 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_
         'HISTOGRAM_FILE=' + histogram_filename,
         'ASSUME_SORTED=True',
         'VALIDATION_STRINGENCY=LENIENT')
+
+
+
+def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
+                    wgs_metrics, samplesheet, output, sample_id):
+
+    collmet = CollectMetrics(wgs_metrics, insert_metrics, flagstat_metrics,
+                             markdups_metrics, output, samplesheet, sample_id)
+    collmet.main()

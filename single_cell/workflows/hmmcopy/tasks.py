@@ -5,6 +5,9 @@ Created on Jul 24, 2017
 '''
 import os
 import pypeliner
+from scripts import ExtractHmmMetrics
+from scripts import GenerateCNMatrix
+
 
 scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
 run_hmmcopy_rscript = os.path.join(scripts_directory, 'hmmcopy.R')
@@ -36,3 +39,13 @@ def run_hmmcopy(
         '--param_e=' + str(config['parameters']['e']),
         '--param_s=' + str(config['parameters']['s']),
         '--sample_id=' + sample_id)
+
+
+def extract_hmm_metrics(params, reads, segments, output, sample_id):
+    metrics = ExtractHmmMetrics(params, reads, segments, output, sample_id)
+    metrics.main()
+
+
+def collect_cn_metrics(infile, output, sep, colname, sample_id, typ):
+    gen_gc = GenerateCNMatrix(infile, output, sep, colname, sample_id, typ)
+    gen_gc.main()

@@ -14,8 +14,9 @@ class SummaryMetrics(object):
     indices. use N/A for missing.
     '''
 
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, infile, output):
+        self.infile = self.infile
+        self.output = self.output
 
 
     def read_csv(self, path):
@@ -162,8 +163,8 @@ class SummaryMetrics(object):
         main function
         '''
         
-        df = self.read_csv(self.args.input)
-        outfile = open(self.args.summary_metrics, 'w')
+        df = self.read_csv(self.infile)
+        outfile = open(self.output, 'w')
 
         # library summary
         self.get_lib_summary(df, outfile)
@@ -178,29 +179,3 @@ class SummaryMetrics(object):
         self.get_cn_summary(df, outfile)
 
         outfile.close()
-
-
-def parse_args():
-    '''
-    specify and parse args
-    '''
-
-    parser = argparse.ArgumentParser(description='''qc analysis for filesizes etc''')
-
-    parser.add_argument('--input',
-                        required=True,
-                        help='''directory with the fastq filesz''')
-
-    parser.add_argument('--summary_metrics',
-                        required=True,
-                        help='''path to output file''')
-    
-    args = parser.parse_args()
-
-    return args
-
-
-if __name__ == '__main__':
-    ARGS = parse_args()
-    m = SummaryMetrics(ARGS)
-    m.main()

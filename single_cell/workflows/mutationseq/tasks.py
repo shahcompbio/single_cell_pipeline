@@ -7,6 +7,9 @@ import os
 import pypeliner
 import warnings
 
+from scripts import ParseMuseq
+
+
 def run_museq(tumour, normal, reference, museq_dir, out, log, interval, config):
     script = os.path.join(museq_dir, 'classify.py')
     model = os.path.join(museq_dir, 'model_v4.1.2_anaconda_sk_0.13.1.npz')
@@ -63,3 +66,9 @@ def concatenate_vcf(infiles, outfile):
                 for l in f:
                     print >> ofile, l,
 
+def parse_museq(infile, output):
+    parser = ParseMuseq(infile=infile, tid='NA', nid='NA', output=output,
+                        keep_dbsnp=True,keep_1000gen=True,
+                        remove_duplicates=True)
+    
+    parser.main()

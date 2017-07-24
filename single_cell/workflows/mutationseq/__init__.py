@@ -61,18 +61,13 @@ def create_museq_workflow(tumour_bam, normal_bam, ref_genome, snv_vcf, snv_csv,
                        )
 
 
-    workflow.commandline(
+    workflow.transform(
                          name='parse_museq',
                          ctx={'mem': config['med_mem']},
+                         func=tasks.parse_museq,
                          args=(
-                               config['python'],
-                               museq_parse_script_path,
-                               '--infile', mgd.InputFile(museq_out_path_merged),
-                               '--output', mgd.OutputFile(snv_csv),
-                               '--tumour_id', 'NA',
-                               '--normal_id', 'NA',
-                               '--keep_dbsnp','--keep_1000gen',
-                               '--remove_duplicates'
+                               mgd.InputFile(museq_out_path_merged),
+                               mgd.OutputFile(snv_csv),
                                )
                          )
 

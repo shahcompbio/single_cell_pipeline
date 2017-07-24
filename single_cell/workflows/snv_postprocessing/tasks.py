@@ -4,7 +4,8 @@ Created on Jul 24, 2017
 @author: dgrewal
 '''
 import pandas as pd
-
+from scripts import MergeFiles
+from scripts import GetCounts
 
 def merge_csv(in_filenames, out_filename, how, on, nan_val = 'NA'):
     data = []
@@ -42,3 +43,14 @@ def merge_frames(frames, how, on):
                                         how=how,
                                         on=on)
         return merged_frame
+
+def merge_tables(infile, output, typ, sep,
+              merge_type, key_cols, nan_val):
+    
+    m = MergeFiles(infile, output, typ, sep,
+              merge_type, key_cols, nan_val)
+    m.main()
+    
+def get_counts(bam, positions, output, sample_id):
+    counts = GetCounts(bam, positions, output, sample_id)
+    counts.main()

@@ -27,9 +27,6 @@ def create_wgs_workflow(
     config,
     args, desc):
  
-    scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
-    collect_metrics_script = os.path.join(scripts_directory, 'collect_metrics.py')
-
     metrics_dir = os.path.join(args['out_dir'], 'pseudo_wgs')
     markdups_metrics_filename = os.path.join(metrics_dir, 'markdups_metrics', 'markdups_metrics.txt')
     flagstat_metrics_filename = os.path.join(metrics_dir, 'flagstat_metrics', 'flagstat_metrics.txt')
@@ -144,18 +141,18 @@ def create_wgs_workflow(
         ),
     )
       
-    workflow.commandline(
+    workflow.transform(
         name='collect_metrics',
         ctx={'mem': config['low_mem']},
+        func=tasks.collect_metrics,
         args=(
-            config['python'],
-            collect_metrics_script,
             mgd.InputFile(flagstat_metrics_filename),
             mgd.InputFile(markdups_metrics_filename),
             mgd.InputFile(insert_metrics_filename),
             mgd.InputFile(wgs_metrics_filename),
-            mgd.OutputFile(metrics_summary_filename),
             mgd.InputFile(samplesheet),
+            mgd.OutputFile(metrics_summary_filename),
+            None
         ),
     )
 

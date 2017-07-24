@@ -32,12 +32,37 @@ class PlotHeatmap(object):
     indices. use N/A for missing.
     '''
 
-    def __init__(self, args):
-        self.args = args
-
-        self.sep = ',' if self.args.separator == 'comma' else '\t'
+    def __init__(self, infile, metrics, order_data, output, **kwargs):
+        if kwargs:
+            raise Exception(kwargs)
+        self.input = infile
+        self.metrics = metrics
+        self.order_data = order_data
+        self.output = output
 
         self.chromosomes = [str(v) for v in range(1, 23)] + ['X', 'Y']
+
+        self.sep = kwargs.get('sep')
+        self.column_name = kwargs.get('colname')
+        self.cell_calls = kwargs.get('cellcalls')
+        self.mad_thres = kwargs.get('mad_thres')
+        self.reads_thres = kwargs.get('reads_thres')
+        self.high_memory = kwargs.get('high_memory')
+        self.plot_title = kwargs.get('plot_title')
+
+
+        self.color_by_col = kwargs.get('color_by_col')
+        self.plot_by_col = kwargs.get('plot_by_col')
+
+        if not self.color_by_col:
+            self.color_by_col = 'cell_call'
+
+        if not self.plot_by_col:
+            self.plot_by_col = 'all'
+            
+        if not self.sep:
+            self.sep = ','
+
 
     def build_label_indices(self, header):
         '''
@@ -497,5 +522,5 @@ def parse_args():
 
 if __name__ == '__main__':
     ARGS = parse_args()
-    m = PlotHeatmap(ARGS)
+    m = PlotHeatmap(ARGS.input, ARGS.metrics, ARGS.order_data, ARGS.output, vars(ARGS))
     m.main()

@@ -28,10 +28,6 @@ def create_bam_post_workflow(
     args, desc, 
     lanes):
  
-    scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
-    collect_metrics_script = os.path.join(scripts_directory, 'collect_metrics.py')
-    gc_metrics_script = os.path.join(scripts_directory, 'gen_cn_matrix.py')
-
     metrics_dir = os.path.join(args['out_dir'], 'metrics')
     markdups_metrics_filename = os.path.join(metrics_dir, 'markdups_metrics', '{}.markdups_metrics.txt'.format(sample_id))
     flagstat_metrics_filename = os.path.join(metrics_dir, 'flagstat_metrics', '{}.flagstat_metrics.txt'.format(sample_id))

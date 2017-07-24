@@ -5,6 +5,10 @@ Created on Jul 24, 2017
 '''
 import os
 import pypeliner
+import shutil
+
+def copy_files(in_r1,out_r1):
+    shutil.copy(in_r1, out_r1)
 
 
 def gatk_realign(inputs, outputs, targets, ref_genome, config, tempdir):

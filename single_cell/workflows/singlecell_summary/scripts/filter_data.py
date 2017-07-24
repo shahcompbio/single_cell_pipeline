@@ -48,8 +48,18 @@ class FilterHmmData(object):
     """
     generate the reads, bias and segment plots
     """ 
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, quality_metrics, segments, reads, mad_threshold, reads_out, segments_out):
+
+        self.quality_metrics = quality_metrics
+        self.segments = segments
+        self.reads = reads
+        self.mad_threshold = mad_threshold
+        self.reads_out = reads_out
+        self.segments_out = segments_out
+
+        if not self.mad_threshold:
+            self.mad_threshold = 0
+
 
     def load_data_pandas(self, infile):
         """
@@ -68,7 +78,7 @@ class FilterHmmData(object):
         
         """
         
-        df = self.load_data_pandas(self.args.quality_metrics)
+        df = self.load_data_pandas(self.quality_metrics)
         
         return df
 
@@ -78,7 +88,7 @@ class FilterHmmData(object):
         
         """
         
-        df = self.load_data_pandas(self.args.corrected_reads)
+        df = self.load_data_pandas(self.reads)
         
         return df
     
@@ -87,7 +97,7 @@ class FilterHmmData(object):
         
         """
         
-        df = self.load_data_pandas(self.args.segments)
+        df = self.load_data_pandas(self.segments)
         
         return df
 
@@ -156,14 +166,16 @@ class FilterHmmData(object):
         metrics = self.read_quality_metrics()
 
         df = self.read_corrected_reads()
-        self.filter_write(df, metrics, self.args.reads_output)
+        self.filter_write(df, metrics, self.reads_out)
 
         df = self.read_segments()
-        self.filter_write(df, metrics, self.args.segs_output)
+        self.filter_write(df, metrics, self.segs_out)
 
 if __name__ == '__main__':
     args = parse_args()
     
-    genhmm = FilterHmmData(args)
+    genhmm = FilterHmmData(args.quality_metrics, args.segments,
+                           args.corrected_reads, args.mad_threshold,
+                           args.reads_output, args.segments_output)
 
     genhmm.main()
