@@ -25,7 +25,7 @@ def merge_bams(inputs, output, config):
 
 def merge_realignment(indir, output, config, sample_id):
 
-    bams = [os.path.join(v, sample_id+'.bam') for v in indir.values()]
+    bams = [os.path.join(v, sample_id+'.bam.realigned.bam') for v in indir.values()]
 
     merge_bams(bams, output, config)
 
