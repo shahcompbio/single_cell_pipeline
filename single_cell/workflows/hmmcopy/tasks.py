@@ -22,8 +22,8 @@ def run_hmmcopy(
     sample_id,
     config):
 
-    pypeliner.commandline.execute(
-        config['Rscript'], run_hmmcopy_rscript,
+
+    cmd = [config['Rscript'], run_hmmcopy_rscript,
         '--tumour_file=' + readcount_wig_filename,
         '--gc_file=' + config['gc_wig_file'],
         '--map_file=' + config['map_wig_file'],
@@ -31,15 +31,30 @@ def run_hmmcopy(
         '--segs_output=' + segments_filename,
         '--params_output=' + parameters_filename,
         '--post_marginals_output=' + posterior_marginals_filename,
-        '--map_cutoff=' + str(config['map_cutoff']),
-        '--num_states=' + str(config['num_states']),
-        '--param_mu=' + str(config['parameters']['mu']),
-        '--param_m=' + str(config['parameters']['m']),
-        '--param_k=' + str(config['parameters']['kappa']),
-        '--param_e=' + str(config['parameters']['e']),
-        '--param_s=' + str(config['parameters']['s']),
-        '--sample_id=' + sample_id)
+        '--sample_id=' + sample_id]
 
+    if config['map_cutoff']:
+        cmd.append('--map_cutoff=' + str(config['map_cutoff']))
+
+    if config['num_states']:
+        cmd.append('--num_states=' + str(config['num_states']))
+
+    if config['parameters']['mu']:
+        cmd.append('--param_mu=' + str(config['parameters']['mu']))
+
+    if config['parameters']['m']:
+        cmd.append('--param_m=' + str(config['parameters']['m']))
+
+    if config['parameters']['kappa']:
+        cmd.append('--param_k=' + str(config['parameters']['kappa']))
+
+    if config['parameters']['e']:
+        cmd.append('--param_e=' + str(config['parameters']['e']))
+
+    if config['parameters']['s']:
+        cmd.append('--param_s=' + str(config['parameters']['s']))
+
+    pypeliner.commandline.execute(*cmd)
 
 def extract_hmm_metrics(params, reads, segments, output, sample_id):
     metrics = ExtractHmmMetrics(params, reads, segments, output, sample_id)

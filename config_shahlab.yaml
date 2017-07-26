@@ -42,9 +42,9 @@ parameters:
 
     kappa: 25,100,700,100,25,25,25
 
-    e: 0.995
+    e: None
 
-    s: 35
+    s: None
 
 # Binned GC content file
 gc_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.gc.ws_500000.wig
