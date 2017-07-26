@@ -11,8 +11,6 @@ import tasks
 
 def create_fastq_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, sample_id, args, trim):
 
-    scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
-
     fastqc_dir = os.path.join(args['out_dir'], 'fastqc')
     html_r1 = os.path.join(fastqc_dir, lane, '{}_R1.html'.format(sample_id))
     html_r2 = os.path.join(fastqc_dir, lane, '{}_R2.html'.format(sample_id))

@@ -29,6 +29,8 @@ class RunTrimGalore(object):
         self.fastqc_zip_r2 = qc_zip_r2
         self.fastq_r1 = fq_r1
         self.fastq_r2 = fq_r2
+        self.report_r1 = report_r1
+        self.report_r2 = report_r2
 
         self.check_inputs()
 
