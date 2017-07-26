@@ -126,11 +126,11 @@ class FilterHmmData(object):
 
         # if mad_threshold is set to nonzero.
         #zero is defaults and means mad_threshold is not set. so no filtering
-        if self.args.mad_threshold:
+        if self.mad_threshold:
             if math.isnan(mad):
                 return False
 
-            if mad > self.args.mad_threshold:
+            if mad > self.mad_threshold:
                 return False
         return True
 
@@ -169,7 +169,7 @@ class FilterHmmData(object):
         self.filter_write(df, metrics, self.reads_out)
 
         df = self.read_segments()
-        self.filter_write(df, metrics, self.segs_out)
+        self.filter_write(df, metrics, self.segments_out)
 
 if __name__ == '__main__':
     args = parse_args()

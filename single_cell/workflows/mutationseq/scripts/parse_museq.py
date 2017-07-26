@@ -35,6 +35,10 @@ class ParseMuseq(object):
         self.remove_duplicates = kwargs.get('rm_dups')
         self.pr_threshold = kwargs.get('pr_thres')
 
+        self.keep_dbsnp = kwargs.get('keep_dbsnp')
+        self.keep_1000gen = kwargs.get('keep_1000gen')
+
+
     def main(self):
         '''
         loop through files, load, filter and print

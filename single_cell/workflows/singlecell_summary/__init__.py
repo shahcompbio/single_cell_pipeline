@@ -228,7 +228,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
             mgd.InputFile(all_metrics_heatmap_filename),
             mgd.OutputFile(plot_kernel_density_output),
             ',',
-            'mad_neutral_state'
+            'mad_neutral_state',
             'QC pipeline metrics'
             )
         )
@@ -282,6 +282,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
     workflow.transform(
         name='plot_heatmap_ec_nreads',
         ctx={'mem': config['high_mem']},
+        func=tasks.plot_heatmap,
         args=(
              mgd.InputFile(hmmcopy_reads_filename),
              mgd.InputFile(all_metrics_heatmap_filename),

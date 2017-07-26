@@ -70,8 +70,10 @@ def plot_kernel_density(infile, output,  sep, colname, plot_title):
     plot = PlotKernelDensity(infile, output,  sep, colname, plot_title)
     plot.main()
 
-def filter_hmm_data(quality_metrics, segments, reads, mad_threshold, reads_out, segments_out):
-    filter_hmm = FilterHmmData(quality_metrics, segments, reads, mad_threshold, reads_out, segments_out)
+def filter_hmm_data(quality_metrics, segments, reads, mad_threshold,
+                    reads_out, segments_out):
+    filter_hmm = FilterHmmData(quality_metrics, segments, reads,
+                               mad_threshold, reads_out, segments_out)
     filter_hmm.main()
     
 def merge_tables(infile, output, typ, sep,
@@ -85,13 +87,21 @@ def plot_metrics(metrics, output, plot_title, gcbias_matrix, gc_content):
     plot = PlotMetrics(metrics, output, plot_title, gcbias_matrix, gc_content)
     plot.main()
 
-def plot_heatmap(infile, metrics, order_data, output, kwargs):
-    plot = PlotHeatmap(infile, metrics, order_data, output, kwargs)
-    plot.main()
-    
-    
-def plot_hmmcopy(reads, segments, metrics, ref_genome, reads_out, segs_out, bias_out, kwargs):
-    plot = GenHmmPlots(reads, segments, metrics, ref_genome, reads_out, segs_out, bias_out, kwargs)
-    plot.main()
+def plot_heatmap(infile, metrics, order_data, output, plot_title=None,
+                 colname=None, plot_by_col=None, numreads_threshold=None,
+                 mad_threshold=None):
 
+    plot = PlotHeatmap(infile, metrics, order_data, output, plot_title=plot_title,
+                 colname=colname, plot_by_col=plot_by_col,
+                 numreads_threshold=numreads_threshold,
+                 mad_threshold=mad_threshold)
+    plot.main()
+    
+    
+def plot_hmmcopy(reads, segments, metrics, ref_genome, reads_out, segs_out,
+                 bias_out, num_states=7, plot_title=None, mad_threshold=None):
+    plot = GenHmmPlots(reads, segments, metrics, ref_genome, reads_out, segs_out,
+                       bias_out, num_states=num_states, plot_title=plot_title,
+                       mad_threshold=mad_threshold)
+    plot.main()
 

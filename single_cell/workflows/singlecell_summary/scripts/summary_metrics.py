@@ -3,7 +3,6 @@ Created on Sep 8, 2015
 
 @author: dgrewal
 '''
-import argparse
 import pandas as pd
 
 
@@ -15,8 +14,8 @@ class SummaryMetrics(object):
     '''
 
     def __init__(self, infile, output):
-        self.infile = self.infile
-        self.output = self.output
+        self.infile = infile
+        self.output = output
 
 
     def read_csv(self, path):

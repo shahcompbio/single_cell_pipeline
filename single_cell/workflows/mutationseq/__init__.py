@@ -13,16 +13,8 @@ def create_museq_workflow(tumour_bam, normal_bam, ref_genome, snv_vcf, snv_csv,
     
     workflow = pypeliner.workflow.Workflow()
 
-    scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
-
-    museq_parse_script_path = os.path.join(scripts_directory, 'parse_museq.py')
-
-
     museq_out_path = os.path.join(args['out_dir'],'pseudo_wgs',
                                   'variant_calling', '{chrom}.mutationseq.vcf')
-
-    museq_out_path_merged = os.path.join(args['out_dir'],'pseudo_wgs',
-                                  'variant_calling', 'mutationseq.vcf')
 
     museq_log_path = os.path.join(args['out_dir'],'pseudo_wgs',
                                   'variant_calling', '{chrom}.mutationseq.log')
@@ -66,7 +58,7 @@ def create_museq_workflow(tumour_bam, normal_bam, ref_genome, snv_vcf, snv_csv,
                          ctx={'mem': config['med_mem']},
                          func=tasks.parse_museq,
                          args=(
-                               mgd.InputFile(museq_out_path_merged),
+                               mgd.InputFile(snv_vcf),
                                mgd.OutputFile(snv_csv),
                                )
                          )

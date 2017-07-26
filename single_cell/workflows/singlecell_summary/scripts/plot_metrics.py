@@ -17,31 +17,34 @@ from matplotlib.patches import Rectangle
 from matplotlib.backends.backend_pdf import PdfPages
 matplotlib.rcParams['pdf.fonttype'] = 42
 
-#=========================================================================
-# Read Command Line Input
-#=========================================================================
-parser = argparse.ArgumentParser()
 
-parser.add_argument('metric_table',
-                    help='''Path to metric table for the run.''')
+def parse_args():
+    #=========================================================================
+    # Read Command Line Input
+    #=========================================================================
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument('metric_table',
+                        help='''Path to metric table for the run.''')
+    
+    parser.add_argument('out_file',
+                        help='Path to output file where .pdf'
+                        ' plots will be written.')
+    
+    parser.add_argument('--plot_title',
+                        help='plot title to differentiate'
+                        ' QC runs from full runs.')
+    
+    parser.add_argument('--gcbias_matrix',
+                        help='gcbias matrix file')
+    
+    parser.add_argument('--gc_content_data',
+                        help='gcbias matrix file')
+    
+    
+    args = parser.parse_args()
 
-parser.add_argument('out_file',
-                    help='Path to output file where .pdf'
-                    ' plots will be written.')
-
-parser.add_argument('--plot_title',
-                    help='plot title to differentiate'
-                    ' QC runs from full runs.')
-
-parser.add_argument('--gcbias_matrix',
-                    help='gcbias matrix file')
-
-parser.add_argument('--gc_content_data',
-                    help='gcbias matrix file')
-
-
-args = parser.parse_args()
-
+    return args
 #=========================================================================
 # Functions
 #=========================================================================
@@ -654,37 +657,37 @@ class PlotMetrics(object):
         df = self.sort_samples(df)
     
         with PdfPages(self.output) as pdf:
-            self.self.plot_metric_fraction_total(df, 'total_mapped_reads', 'Mapped', pdf,
+            self.plot_metric_fraction_total(df, 'total_mapped_reads', 'Mapped', pdf,
                                        self.plot_title, from_top=False)
-            self.self.plot_metric_fraction_total(df, 'total_duplicate_reads', 'Duplicates', pdf,
+            self.plot_metric_fraction_total(df, 'total_duplicate_reads', 'Duplicates', pdf,
                                        self.plot_title, from_top=True)
-            self.self.plot_metric_fraction_total(df, 'total_properly_paired', 'Properly paired', pdf,
+            self.plot_metric_fraction_total(df, 'total_properly_paired', 'Properly paired', pdf,
                                        self.plot_title, from_top=False)
     
-            self.self.plot_metric_fraction(df, 'total_mapped_reads', 'total_reads', 'Fraction mapped of total',
+            self.plot_metric_fraction(df, 'total_mapped_reads', 'total_reads', 'Fraction mapped of total',
                                  pdf, self.plot_title,)
-            self.self.plot_metric_fraction(df, 'total_duplicate_reads', 'total_mapped_reads', 'Fraction duplicates of mapped',
+            self.plot_metric_fraction(df, 'total_duplicate_reads', 'total_mapped_reads', 'Fraction duplicates of mapped',
                                  pdf, self.plot_title,)
-            self.self.plot_metric_fraction(df, 'total_properly_paired', 'total_mapped_reads',
+            self.plot_metric_fraction(df, 'total_properly_paired', 'total_mapped_reads',
                                  'Fraction properly paired of mapped', pdf, self.plot_title,)
     
-            self.self.plot_metric(df, 'coverage_depth', 'Coverage depth', 0.0015,
+            self.plot_metric(df, 'coverage_depth', 'Coverage depth', 0.0015,
                         pdf, self.plot_title,)
-            self.self.plot_metric(df, 'coverage_breadth', 'Coverage breadth', 0.0015,
+            self.plot_metric(df, 'coverage_breadth', 'Coverage breadth', 0.0015,
                         pdf, self.plot_title,)
-            self.self.plot_metric(df, 'mean_insert_size', 'Mean insert size', 0.05,
+            self.plot_metric(df, 'mean_insert_size', 'Mean insert size', 0.05,
                         pdf, self.plot_title,)
-            self.self.plot_metric(df, 'median_insert_size', 'Median insert size', 0.05,
+            self.plot_metric(df, 'median_insert_size', 'Median insert size', 0.05,
                         pdf, self.plot_title,)
-            self.self.plot_metric(df, 'log_likelihood', 'Log Likelihood', 500,
+            self.plot_metric(df, 'log_likelihood', 'Log Likelihood', 500,
                         pdf, self.plot_title,)
-            self.self.plot_metric(df, 'mad_neutral_state', 'Mad Neutral State', 0.01,
+            self.plot_metric(df, 'mad_neutral_state', 'Mad Neutral State', 0.01,
                         pdf, self.plot_title,)
-            self.self.plot_metric(df, 'MSRSI_non_integerness', 'MSRSI Non Integerness', 0.01,
+            self.plot_metric(df, 'MSRSI_non_integerness', 'MSRSI Non Integerness', 0.01,
                         pdf, self.plot_title,)
-            self.self.plot_metric(df, 'MBRSI_dispersion_non_integerness', 'MBRSI Dispersion Non Integerness', 0.01,
+            self.plot_metric(df, 'MBRSI_dispersion_non_integerness', 'MBRSI Dispersion Non Integerness', 0.01,
                         pdf, self.plot_title,)
-            self.self.plot_metric(df, 'MBRSM_dispersion', 'MBRSM Dispersion', 0.01,
+            self.plot_metric(df, 'MBRSM_dispersion', 'MBRSM Dispersion', 0.01,
                         pdf, self.plot_title,)
     
             self.plot_metric_heatmap(df, 'total_reads', 'Total reads',
@@ -747,5 +750,7 @@ class PlotMetrics(object):
                                      df, gcdata)
 
 if __name__ == '__main__':
+    args = parse_args()
+    
     plotter = PlotMetrics(args.metric_table, args.out_file, args.plot_title, args.gcbias_matrix, args.gc_content_data)
     plotter.main()

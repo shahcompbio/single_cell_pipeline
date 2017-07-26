@@ -72,7 +72,7 @@ class PlotKernelDensity(object):
     def generate_plots(self):
 
         pdfout = PdfPages(self.output)
-        data = self.load(self.infile)
+        data = self.load(self.input)
 
         #plot all data
         mad_scores = data[self.column_name]

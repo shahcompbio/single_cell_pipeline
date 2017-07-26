@@ -67,10 +67,6 @@ def main():
 
     workflow = pypeliner.workflow.Workflow()
 
-    fastq_dir = os.path.join(args['out_dir'], 'trimmed_fastq')
-    trim_results_r1 = os.path.join(fastq_dir, '{lane}', 'trim', '{sample_id}_R1.fastq.gz')
-    trim_results_r2 = os.path.join(fastq_dir, '{lane}', 'trim', '{sample_id}_R2.fastq.gz')
-
     bam_directory = os.path.join(args['out_dir'], 'bams')
     bam_template = os.path.join(bam_directory, '{sample_id}.bam')
     bam_index_template = os.path.join(bam_directory, '{sample_id}.bam.bai')
@@ -97,7 +93,6 @@ def main():
         value=vals,
     )
 
-
     workflow.subworkflow(
         name='fastqc_workflow',
         axes=('sample_id', 'lane',),
@@ -105,8 +100,8 @@ def main():
         args=(
               mgd.InputFile('fastq_1', 'sample_id', 'lane', fnames=fastq_1_filenames),
               mgd.InputFile('fastq_2', 'sample_id', 'lane', fnames=fastq_2_filenames),
-              mgd.OutputFile('fastq_trim_1', 'sample_id', 'lane', template=trim_results_r1),
-              mgd.OutputFile('fastq_trim_2', 'sample_id', 'lane', template=trim_results_r2),
+              mgd.TempOutputFile('fastq_trim_1.fastq.gz', 'sample_id', 'lane'),
+              mgd.TempOutputFile('fastq_trim_2.fastq.gz', 'sample_id', 'lane'),
               config,
               mgd.InputInstance('lane'),
               mgd.InputInstance('sample_id'),
@@ -115,14 +110,13 @@ def main():
             ),
         )
 
-
     workflow.subworkflow(
         name='alignment_workflow',
         axes=('sample_id', 'lane',),
         func=alignment.create_alignment_workflow,
         args=(
-            mgd.InputFile('fastq_trim_1', 'sample_id', 'lane', template=trim_results_r1),
-            mgd.InputFile('fastq_trim_2', 'sample_id', 'lane', template=trim_results_r2),
+            mgd.TempInputFile('fastq_trim_1.fastq.gz', 'sample_id', 'lane'),
+            mgd.TempInputFile('fastq_trim_2.fastq.gz', 'sample_id', 'lane'),
             mgd.TempOutputFile('aligned_per_cell_per_lane.sorted.bam', 'sample_id', 'lane'),
             mgd.InputFile(config['ref_genome']),
             mgd.InputInstance('lane'),

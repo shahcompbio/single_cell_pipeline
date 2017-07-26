@@ -33,8 +33,6 @@ class PlotHeatmap(object):
     '''
 
     def __init__(self, infile, metrics, order_data, output, **kwargs):
-        if kwargs:
-            raise Exception(kwargs)
         self.input = infile
         self.metrics = metrics
         self.order_data = order_data
@@ -44,7 +42,7 @@ class PlotHeatmap(object):
 
         self.sep = kwargs.get('sep')
         self.column_name = kwargs.get('colname')
-        self.cell_calls = kwargs.get('cellcalls')
+        self.cellcalls = kwargs.get('cellcalls')
         self.mad_thres = kwargs.get('mad_thres')
         self.reads_thres = kwargs.get('reads_thres')
         self.high_memory = kwargs.get('high_memory')
@@ -84,7 +82,7 @@ class PlotHeatmap(object):
 
         bins = {}
 
-        freader = open(self.args.input)
+        freader = open(self.input)
 
         header = freader.readline()
         idxs = self.build_label_indices(header)
@@ -94,7 +92,7 @@ class PlotHeatmap(object):
 
             sample_id = line[idxs['cell_id']]
 
-            val = line[idxs[self.args.column_name]]
+            val = line[idxs[self.column_name]]
 
             val = float('nan') if val == "NA" else float(val)
 
@@ -133,13 +131,13 @@ class PlotHeatmap(object):
         sepdata = defaultdict(list)
         colordata = {}
 
-        freader = open(self.args.metrics)
+        freader = open(self.metrics)
 
         header = freader.readline()
         idxs = self.build_label_indices(header)
 
-        color_col = self.args.color_by_col
-        sep_col = self.args.plot_by_col
+        color_col = self.color_by_col
+        sep_col = self.plot_by_col
 
         for line in freader:
             line = line.strip().split(self.sep)
@@ -160,7 +158,7 @@ class PlotHeatmap(object):
 
             numreads = int(line[idxs['total_mapped_reads']])
 
-            if self.args.cellcalls and cc not in self.args.cellcalls:
+            if self.cellcalls and cc not in self.cellcalls:
                 continue
 
             numread_data[sample_id] = numreads
@@ -239,7 +237,7 @@ class PlotHeatmap(object):
         """
         generating a custom heatmap 2:gray 0: blue 2+: reds
         """
-        if self.args.column_name != 'integer_copy_number':
+        if self.column_name != 'integer_copy_number':
             return matplotlib.cm.coolwarm
 
         # all colors 2 and up are red with increasing intensity
@@ -262,8 +260,8 @@ class PlotHeatmap(object):
         generate row colors based on the cell call column of
         the metrics dataframe.
         """
-        if self.args.cellcalls:
-            ccs = self.args.cellcalls
+        if self.cellcalls:
+            ccs = self.cellcalls
         else:
             ccs = list(set(ccdata.values()))
         colmap = sns.color_palette("RdBu_d", len(ccs))
@@ -294,20 +292,20 @@ class PlotHeatmap(object):
 
         samples = data.index
 
-        if self.args.cellcalls:
+        if self.cellcalls:
             samples = [samp for samp in samples
-                       if ccdata[samp] in self.args.cellcalls]
+                       if ccdata[samp] in self.cellcalls]
 
         # remove samples over mad threshold
-        if self.args.mad_thres:
+        if self.mad_thres:
             samples = [samp for samp in samples
                        if not math.isnan(mad_scores[samp])
-                       and mad_scores[samp] <= self.args.mad_thres]
+                       and mad_scores[samp] <= self.mad_thres]
 
         # remove samples that have low num reads
-        if self.args.reads_thres:
+        if self.reads_thres:
             samples = [samp for samp in samples
-                       if numreads_data[samp] >= self.args.reads_thres]
+                       if numreads_data[samp] >= self.reads_thres]
 
         if len(samples) < 2:
             raise Exception('no data to plot')
@@ -322,12 +320,12 @@ class PlotHeatmap(object):
         dump order to file
         """
  
-        if not self.args.order_data:
+        if not self.order_data:
             return
 
-        outfile = open(self.args.order_data, 'w')
+        outfile = open(self.order_data, 'w')
         
-        outfile.write('cell_id,%s_heatmap_order\n' %self.args.plot_by_col)
+        outfile.write('cell_id,%s_heatmap_order\n' %self.plot_by_col)
 
         for _, samples in sepdata.iteritems():
             samples = set(samples).intersection(set(data.index))
@@ -384,20 +382,20 @@ class PlotHeatmap(object):
         def genplot(data, samples):
             pltdata = data.loc[samples]
 
-            title = self.args.plot_title + \
+            title = self.plot_title + \
                 ' (%s) n=%s/%s' % (sep, len(samples), num_samples)
 
             self.plot_heatmap(pltdata, chr_idxs, cmap, vmax,
                               colordata, title, pdfout)
 
         
-        if not self.args.output:
+        if not self.output:
             return
 
         sns.set_style('whitegrid')
         sns.set(font_scale=1.5)
 
-        pdfout = PdfPages(self.args.output)
+        pdfout = PdfPages(self.output)
 
         cmap = self.generate_colormap(np.nanmax(data.values))
 
@@ -412,7 +410,7 @@ class PlotHeatmap(object):
             if len(samples) < 2:
                 continue
 
-            if len(samples) > 1000 and not self.args.high_memory:
+            if len(samples) > 1000 and not self.high_memory:
                 warnings.warn('The output file will only plot 1000 cells per page,'\
                               ' add --high_memory to override')
 
