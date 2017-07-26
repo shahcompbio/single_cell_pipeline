@@ -7,19 +7,44 @@ import os
 import pypeliner
 import shutil
 
+def merge_bams(inputs, output, config):
+    
+    cmd = [config['picard'], '-Xmx12G',
+           'MergeSamFiles',
+           'OUTPUT=' + output,
+           'SORT_ORDER=coordinate',
+           'ASSUME_SORTED=true',
+           'VALIDATION_STRINGENCY=LENIENT',
+           ]
+    for bamfile in inputs:
+        cmd.append('I='+bamfile)
+    
+    pypeliner.commandline.execute(*cmd)
+
+
+
+def merge_realignment(indir, output, config, sample_id):
+
+    bams = [os.path.join(v, sample_id+'.bam') for v in indir.values()]
+
+    merge_bams(bams, output, config)
+
+
+
 def copy_files(in_r1,out_r1):
     shutil.copy(in_r1, out_r1)
 
+def realign(input_bams, tempdir, config, interval):
 
-def gatk_realign(inputs, outputs, targets, ref_genome, config, tempdir):
-
-
+    #make the dir
     if not os.path.exists(tempdir):
         os.makedirs(tempdir)
 
-
+    #symlink inputs to tempdir, inputs have same filename but they should be
+    #different for mapping file nwayout to work
+    #realign
     new_inputs= {}    
-    for key,bamfile in inputs.iteritems():
+    for key,bamfile in input_bams.iteritems():
         new_bam = os.path.join(tempdir, key+'.bam')
         new_bai = os.path.join(tempdir, key+'.bam.bai')
 
@@ -27,6 +52,7 @@ def gatk_realign(inputs, outputs, targets, ref_genome, config, tempdir):
         os.symlink(bamfile+'.bai', new_bai)
         new_inputs[key] = new_bam
 
+    #create mapping file for realign output
     mapfile = os.path.join(tempdir, 'realignment_mapping.map')
 
     with open(mapfile, 'w') as map_outfile:
@@ -35,12 +61,26 @@ def gatk_realign(inputs, outputs, targets, ref_genome, config, tempdir):
             outpath = os.path.join(tempdir,val+'.realigned.bam')
             map_outfile.write(val+"\t"+outpath+"\n")
 
+    #save intervals file in tempdir
+    intervals = os.path.join(tempdir, 'realn_positions.intervals')
+
+    #generate positions    
+    cmd = [config['gatk'], '-Xmx12G',
+           '-T', 'RealignerTargetCreator',
+           '-R', config['ref_genome'],
+            '-o', intervals, '-L', interval
+            ]
+
+    for _,bamfile in input_bams.iteritems():
+        cmd.extend(['-I', bamfile])
     
+    pypeliner.commandline.execute(*cmd)
+
     cmd = [config['gatk'], '-Xmx12G',
            '-T', 'IndelRealigner',
-           '-R', ref_genome,
-           '-targetIntervals', targets,
-           '--nWayOut', mapfile
+           '-R', config['ref_genome'],
+           '-targetIntervals', intervals,
+           '--nWayOut', mapfile, '-L', interval
             ]
 
     for _,bamfile in new_inputs.iteritems():
@@ -48,25 +88,3 @@ def gatk_realign(inputs, outputs, targets, ref_genome, config, tempdir):
     
     pypeliner.commandline.execute(*cmd)
 
-    with open(mapfile) as filemapping:
-        for line in filemapping:
-            line = line.strip().split()
-            
-            sample_id = line[0].strip().split('.')[0]
-            bampath = line[1]
-            target_path = outputs[sample_id]
-            os.rename(bampath, target_path)
-
-
-def realigner_target_creator(input_bams, output, ref, config):
-
-    cmd = [config['gatk'], '-Xmx12G',
-           '-T', 'RealignerTargetCreator',
-           '-R', config['ref_genome'],
-            '-o', output
-            ]
-
-    for _,bamfile in input_bams.iteritems():
-        cmd.extend(['-I', bamfile])
-    
-    pypeliner.commandline.execute(*cmd)

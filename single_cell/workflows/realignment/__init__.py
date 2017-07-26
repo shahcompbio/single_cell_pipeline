@@ -24,34 +24,41 @@ def create_realignment_workflow(input_bams, output_bams, config, args, sample_id
         value=sample_ids,
     )
 
-
     if args['realign']:
+
+        chromosomes = map(str, range(1,22)) + ['X', 'Y']
+    
+        workflow.setobj(
+            obj=mgd.OutputChunks('chrom'),
+            value=chromosomes,
+        )
+
         workflow.transform(
             name='realignment_targets',
+            axes=('chrom',),
             ctx={'mem': config['high_mem']},
-            func=tasks.realigner_target_creator,
+            func=tasks.realign,
             args=(
                 mgd.InputFile('bam', 'sample_id', fnames=input_bams),
-                mgd.OutputFile(targets),
-                mgd.InputFile(config['ref_genome']),
-                config
+                mgd.TempOutputFile('realignment_temp', 'chrom'),
+                config,
+                mgd.InputInstance('chrom')
             )
         )
-    
-        workflow.transform(
-            name='gatk_realign',
-            ctx={'mem': config['high_mem']},
-            func=tasks.gatk_realign,
-            args=(
-                mgd.InputFile('bam', 'sample_id', fnames=input_bams),
-                mgd.OutputFile('bam_realn','sample_id', fnames=output_bams, axes_origin=[]),
-                mgd.InputFile(targets),
-                mgd.InputFile(config['ref_genome']),
-                config,
-                mgd.TempSpace('realignment_temp'),
-            ),
-        )
 
+
+        workflow.transform(
+            name='merge_realignment',
+            ctx={'mem': config['high_mem']},
+            axes=('sample_id',),
+            func=tasks.merge_realignment,
+            args=(
+                  mgd.TempInputFile('realignment_temp', 'chrom'),
+                  mgd.OutputFile('bam_realn','sample_id', fnames=output_bams),
+                  config,
+                  mgd.InputInstance('sample_id')
+                  )
+        )
 
     else:
         workflow.transform(

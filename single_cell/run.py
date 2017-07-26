@@ -155,7 +155,7 @@ def main():
     )
   
   
-  
+   
     #merge bams per sample for all lanes
     workflow.subworkflow(
         name='bam_postprocess_workflow',
@@ -176,9 +176,9 @@ def main():
             args['lanes']
         ),
     )
-   
-   
-   
+    
+    
+    
     workflow.subworkflow(
         name='hmmcopy_workflow',
         axes=('sample_id',),
@@ -194,7 +194,7 @@ def main():
             args
         ),
     )
-    
+     
     # merge all samples per lane together
     workflow.subworkflow(
         name='summary_workflow',
@@ -211,10 +211,10 @@ def main():
             sample_ids
         ),
     )
-   
-   
+    
+    
     if args['generate_pseudo_wgs']:
-   
+    
         workflow.subworkflow(
             name='wgs_workflow',
             func=pseudo_wgs.create_wgs_workflow,
@@ -230,12 +230,12 @@ def main():
                     desc,
             )
         )
-  
-  
-
+   
+   
+ 
     if args['matched_normal']:
-
-
+ 
+ 
         workflow.subworkflow(
                 name='museq',
                 func=mutationseq.create_museq_workflow,
@@ -249,7 +249,7 @@ def main():
                       args
                 ),
             )
-
+ 
         workflow.subworkflow(
                 name='strelka',
                 func=strelka.create_strelka_workflow,
@@ -263,7 +263,7 @@ def main():
                       mgd.OutputFile(strelka_snv_csv),
                 ),
             )
-        
+         
         workflow.subworkflow(
                              name='postprocessing',
                              func=snv_postprocessing.create_snv_postprocessing_workflow,
