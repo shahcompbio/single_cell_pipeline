@@ -111,55 +111,57 @@ single_cell \
 Run the following in an instance:
 
 ```
-sudo mkdir /mnt/software
-sudo chown shahlab:shahlab /mnt/software
-cd /mnt/software/
+sudo mkdir /datadrive/software
+sudo chown shahlab:shahlab /datadrive/software
+cd /datadrive/software/
 wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
-bash Miniconda2-latest-Linux-x86_64.sh -b -p /mnt/software/miniconda2
-
+bash Miniconda2-latest-Linux-x86_64.sh -b -p /datadrive/software/miniconda2
+echo "export PATH=/datadrive/software/miniconda2/bin:\$PATH" >> ~/.bashrc
+echo "export GIT_SSL_NO_VERIFY=1" >> ~/.bashrc
 source ~/.bashrc
 
-# conda environment
+# Conda setup
 conda config --add channels https://conda.anaconda.org/dranew
 conda config --add channels 'bioconda'
 conda config --add channels 'r'
 
+# Setup environment
+cd /datadrive/software/
+git clone https://amcpherson@svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git
+cd single_cell_pipeline/
+conda create --name singlecellpipeline --file conda_packages.txt --yes
 source activate singlecellpipeline
+python setup.py develop
 
 # Install GATK
 wget -O GATK.tar.bz2 https://software.broadinstitute.org/gatk/download/auth?package=GATK
 tar -jxvf GATK.tar.bz2
 gatk-register GenomeAnalysisTK.jar
 
-git clone https://amcpherson@svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git
-cd single_cell_pipeline/
-conda create --name singlecellpipeline --file conda_packages.txt --yes
-python setup.py develop
-
 # Download reference genome
-sudo mkdir /mnt/refdata
-sudo chown shahlab:shahlab /mnt/refdata
-cd /mnt/refdata/
+sudo mkdir /datadrive/refdata
+sudo chown shahlab:shahlab /datadrive/refdata
+cd /datadrive/refdata/
 wget ftp://ftp.bcgsc.ca/public/shahlab/singlecellpipeline/*
-picard CreateSequenceDictionary R= /mnt/refdata/GRCh37-lite.fa O= /mnt/refdata/GRCh37-lite.dict
+picard CreateSequenceDictionary R= /datadrive/refdata/GRCh37-lite.fa O= /datadrive/refdata/GRCh37-lite.dict
 
 # Create analysis space
-sudo mkdir /mnt/analysis
-sudo chown shahlab:shahlab /mnt/analysis
+sudo mkdir /datadrive/analysis
+sudo chown shahlab:shahlab /datadrive/analysis
 ```
 
 Copy the fastq files.  Run the following on thost:
 
 ```
-scp -r /genesis/shahlab/dgrewal/test_andrew_sc/data/hiseq/PX0577/ sccompute:/mnt/analysis/
-scp -r /genesis/shahlab/amcpherson/single_cell_test/*.csv sccompute:/mnt/analysis/
+scp -r /genesis/shahlab/dgrewal/test_andrew_sc/data/hiseq/PX0577/ sccompute1:/datadrive/analysis/
+scp -r /genesis/shahlab/amcpherson/single_cell_test/*.csv sccompute1:/datadrive/analysis/
 ```
 
 Reformat the fastq list:
 
 ```
-cd /mnt/analysis
-sed 's#/genesis/shahlab/dgrewal/test_andrew_sc/data/hiseq#/mnt/analysis#g' < A90696ABC_fastqs.csv > A90696ABC_fastqs_local.csv
+cd /datadrive/analysis
+sed 's#/genesis/shahlab/dgrewal/test_andrew_sc/data/hiseq#/datadrive/analysis#g' < A90696ABC_fastqs.csv > A90696ABC_fastqs_local.csv
 ```
 
 Subset:
@@ -175,11 +177,11 @@ Run the pipeline:
 
 ```
 single_cell_nextseq \
-  /mnt/analysis/A90696ABC_sample_info_subset.csv \
-  /mnt/analysis/A90696ABC_fastqs_local_subset.csv \
+  /datadrive/analysis/A90696ABC_sample_info_subset.csv \
+  /datadrive/analysis/A90696ABC_fastqs_local_subset.csv \
   A90696ABC \
-  /mnt/analysis/results/ \
-  /mnt/software/single_cell_pipeline/config_cloud.yaml \
+  /datadrive/analysis/results/ \
+  /datadrive/software/single_cell_pipeline/config_cloud.yaml \
   --loglevel DEBUG \
   --submit local \
   --maxjobs 32 \
