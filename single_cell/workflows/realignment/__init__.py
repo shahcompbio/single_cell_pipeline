@@ -40,8 +40,8 @@ def create_realignment_workflow(input_bams, output_bams, config, out_dir, realig
             func=tasks.realign,
             args=(
                 mgd.InputFile('bam', 'sample_id', fnames=input_bams),
-                mgd.TempOutputFile('bam_realn', 'chrom', 'sample_id'),
-                mgd.TempSpace('realignment_temp', 'chrom'),
+                mgd.TempOutputFile('realigned.bam', 'chrom', 'sample_id'),
+                mgd.TempSpace('realignment_temp', 'chrom', cleanup='before'),
                 config,
                 mgd.InputInstance('chrom')
             )
@@ -54,7 +54,7 @@ def create_realignment_workflow(input_bams, output_bams, config, out_dir, realig
             axes=('sample_id',),
             func=tasks.merge_realignment,
             args=(
-                  mgd.TempInputFile('realignment_temp', 'chrom'),
+                  mgd.TempInputFile('realigned.bam', 'chrom', 'sample_id'),
                   mgd.OutputFile('bam_realn','sample_id', fnames=output_bams),
                   config,
                   mgd.InputInstance('sample_id')

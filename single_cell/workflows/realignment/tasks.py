@@ -22,13 +22,14 @@ def merge_bams(inputs, output, config):
     pypeliner.commandline.execute(*cmd)
 
 
+def merge_realignment(input_filenames, output_filename, config, input_sample_id):
+    merge_filenames = []
+    for (chromosome, sample_id), filename in input_filenames.iteritems():
+        if input_sample_id != sample_id:
+            continue
+        merge_filenames.append(filename)
 
-def merge_realignment(indir, output, config, sample_id):
-
-    bams = [os.path.join(v, sample_id+'.bam.realigned.bam') for v in indir.values()]
-
-    merge_bams(bams, output, config)
-
+    merge_bams(merge_filenames, output_filename, config)
 
 
 def copy_files(in_r1,out_r1):
@@ -53,15 +54,6 @@ def realign(input_bams, output_bams, tempdir, config, interval):
         os.symlink(bamfile+'.bai', new_bai)
         new_inputs[key] = new_bam
 
-    #create mapping file for realign output
-    mapfile = os.path.join(tempdir, 'realignment_mapping.map')
-
-    with open(mapfile, 'w') as map_outfile:
-        for _,val in new_inputs.iteritems():
-            val = os.path.basename(val)
-            outpath = os.path.join(tempdir,val+'.realigned.bam')
-            map_outfile.write(val+"\t"+outpath+"\n")
-
     #save intervals file in tempdir
     intervals = os.path.join(tempdir, 'realn_positions.intervals')
 
@@ -74,17 +66,34 @@ def realign(input_bams, output_bams, tempdir, config, interval):
 
     for _,bamfile in input_bams.iteritems():
         cmd.extend(['-I', bamfile])
-    
+
+    print ' '.join(cmd)
     pypeliner.commandline.execute(*cmd)
 
     cmd = [config['gatk'], '-Xmx12G',
            '-T', 'IndelRealigner',
            '-R', config['ref_genome'],
            '-targetIntervals', intervals,
-           '--nWayOut', mapfile, '-L', interval
+           '--nWayOut', '_indel_realigned.bam', '-L', interval
             ]
 
     for _,bamfile in new_inputs.iteritems():
         cmd.extend(['-I',bamfile])
     
+    os.chdir(tempdir)
+
+    print ' '.join(cmd)
     pypeliner.commandline.execute(*cmd)
+
+    print os.listdir(tempdir)
+    for key in input_bams.keys():
+        realigned_bam = os.path.join(tempdir, key+'_indel_realigned.bam')
+        realigned_bai = os.path.join(tempdir, key+'_indel_realigned.bai')
+        output_bam_filename = output_bams[key]
+        output_bai_filename = output_bam_filename + '.bai'
+        print realigned_bai, output_bai_filename
+        os.rename(realigned_bam, output_bam_filename)
+        os.rename(realigned_bai, output_bai_filename)
+
+
+

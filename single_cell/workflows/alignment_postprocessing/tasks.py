@@ -86,10 +86,10 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_
         'VALIDATION_STRINGENCY=LENIENT')
 
 def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
-                    wgs_metrics, samplesheet, output, sample_id):
+                    wgs_metrics, output, sample_id):
 
     collmet = CollectMetrics(wgs_metrics, insert_metrics, flagstat_metrics,
-                             markdups_metrics, output, samplesheet, sample_id)
+                             markdups_metrics, output, sample_id)
     collmet.main()
 
 
