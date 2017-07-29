@@ -25,7 +25,7 @@ class RunTrimGalore(object):
         self.adapter2 = adapter2
         self.fastqc_report_r1 = qc_report_r1
         self.fastqc_report_r2 = qc_report_r2
-        self.fastqc_zip_r1 = qc_zip_r2
+        self.fastqc_zip_r1 = qc_zip_r1
         self.fastqc_zip_r2 = qc_zip_r2
         self.fastq_r1 = fq_r1
         self.fastq_r2 = fq_r2
