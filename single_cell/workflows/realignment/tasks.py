@@ -34,7 +34,8 @@ def merge_realignment(indir, output, config, sample_id):
 def copy_files(in_r1,out_r1):
     shutil.copy(in_r1, out_r1)
 
-def realign(input_bams, tempdir, config, interval):
+
+def realign(input_bams, output_bams, tempdir, config, interval):
 
     #make the dir
     if not os.path.exists(tempdir):
@@ -87,4 +88,3 @@ def realign(input_bams, tempdir, config, interval):
         cmd.extend(['-I',bamfile])
     
     pypeliner.commandline.execute(*cmd)
-

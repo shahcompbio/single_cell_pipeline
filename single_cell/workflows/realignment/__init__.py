@@ -40,7 +40,8 @@ def create_realignment_workflow(input_bams, output_bams, config, out_dir, realig
             func=tasks.realign,
             args=(
                 mgd.InputFile('bam', 'sample_id', fnames=input_bams),
-                mgd.TempOutputFile('realignment_temp', 'chrom'),
+                mgd.TempOutputFile('bam_realn', 'chrom', 'sample_id'),
+                mgd.TempSpace('realignment_temp', 'chrom'),
                 config,
                 mgd.InputInstance('chrom')
             )
