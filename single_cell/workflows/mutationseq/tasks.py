@@ -16,7 +16,7 @@ def run_museq(tumour, normal, reference, museq_dir, out, log, interval, config):
 
     conf = os.path.join(museq_dir, 'metadata.config')
 
-    pypeliner.commandline.execute(config['python'],
+    pypeliner.commandline.execute('python',
                                   script,
                                    'normal:'+ normal,
                                    'tumour:'+ tumour,

@@ -25,7 +25,7 @@ def get_readgroup(run_id, sample_id, args, config):
 
 def bam_sort(bam_filename, sorted_bam_filename, config):
     pypeliner.commandline.execute(
-        config['picard'], '-Xmx12G',
+        'picard', '-Xmx12G',
         'SortSam',
         'INPUT=' + bam_filename,
         'OUTPUT=' + sorted_bam_filename,
@@ -47,7 +47,7 @@ def align_paired_end(fastq1, fastq2, output, tempdir,
 
 
     pypeliner.commandline.execute(
-            config['bwa'],
+            'bwa',
             'aln',
             reference,
             fastq1,
@@ -57,7 +57,7 @@ def align_paired_end(fastq1, fastq2, output, tempdir,
       )
 
     pypeliner.commandline.execute(
-            config['bwa'],
+            'bwa',
             'aln',
             reference,
             fastq2,
@@ -67,7 +67,7 @@ def align_paired_end(fastq1, fastq2, output, tempdir,
       )
 
     pypeliner.commandline.execute(
-            config['bwa'], 'sampe',
+            'bwa', 'sampe',
             '-r', readgroup,
             reference,
             read_1_sai,
@@ -75,7 +75,7 @@ def align_paired_end(fastq1, fastq2, output, tempdir,
             fastq1,
             fastq2,
             '|',
-            config['samtools'], 'view',
+            'samtools', 'view',
             '-bSh', '-',
             '>',
             output,

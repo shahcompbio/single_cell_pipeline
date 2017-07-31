@@ -84,7 +84,7 @@ def create_wgs_workflow(
         name='bam_index',
         ctx={'mem': config['low_mem']},
         args=(
-            config['samtools'], 'index',
+            'samtools', 'index',
             mgd.InputFile(bam_filename),
             mgd.OutputFile(bam_index_filename),
         ),
@@ -94,7 +94,7 @@ def create_wgs_workflow(
         name='bam_flagstat',
         ctx={'mem': config['low_mem']},
         args=(
-            config['samtools'], 'flagstat',
+            'samtools', 'flagstat',
             mgd.InputFile(bam_filename),
             '>',
             mgd.OutputFile(flagstat_metrics_filename),
@@ -153,6 +153,5 @@ def create_wgs_workflow(
             None
         ),
     )
-
 
     return workflow

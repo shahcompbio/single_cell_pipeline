@@ -38,7 +38,7 @@ def create_fastq_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, sa
             mgd.OutputFile(html_r1),
             mgd.OutputFile(plots_r1),
             mgd.TempSpace('fastqc_1_temp'),
-            config['fastqc']
+            'fastqc'
         ),
     )
 
@@ -51,7 +51,7 @@ def create_fastq_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, sa
             mgd.OutputFile(html_r2),
             mgd.OutputFile(plots_r2),
             mgd.TempSpace('fastqc_2_temp'),
-            config['fastqc']
+            'fastqc'
         ),
     )
 
@@ -65,8 +65,8 @@ def create_fastq_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, sa
                   mgd.InputFile(fastq_r2),
                   mgd.OutputFile(trim_r1),
                   mgd.OutputFile(trim_r2),
-                  config['trimgalore'],
-                  config['cutadapt'],
+                  'trimgalore',
+                  'cutadapt',
                   mgd.TempSpace('trim_temp'),
                   config['adapter'],
                   config['adapter2'],

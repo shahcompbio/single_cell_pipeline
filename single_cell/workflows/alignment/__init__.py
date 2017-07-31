@@ -55,7 +55,7 @@ def create_alignment_workflow(
         name='bam_flagstat',
         ctx={'mem': config['low_mem']},
         args=(
-            config['samtools'], 'flagstat',
+            'samtools', 'flagstat',
             mgd.InputFile(bam_filename),
             '>',
             mgd.OutputFile(flagstat_metrics_filename),

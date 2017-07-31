@@ -9,7 +9,7 @@ from scripts import CollectMetrics
 
 def bam_sort(bam_filename, sorted_bam_filename, config):
     pypeliner.commandline.execute(
-        config['picard'], '-Xmx12G',
+        'picard', '-Xmx12G',
         'SortSam',
         'INPUT=' + bam_filename,
         'OUTPUT=' + sorted_bam_filename,
@@ -20,7 +20,7 @@ def bam_sort(bam_filename, sorted_bam_filename, config):
 
 def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, config):
     pypeliner.commandline.execute(
-        config['picard'], '-Xmx12G',
+        'picard', '-Xmx12G',
         'MarkDuplicates',
         'INPUT=' + bam_filename,
         'OUTPUT=' + markduped_bam_filename,
@@ -32,7 +32,7 @@ def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, config)
 
 def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config):
     pypeliner.commandline.execute(
-        config['picard'], '-Xmx12G',
+        'picard', '-Xmx12G',
         'CollectWgsMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
@@ -46,7 +46,7 @@ def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config):
 
 def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, config):
     pypeliner.commandline.execute(
-        config['picard'], '-Xmx12G',
+        'picard', '-Xmx12G',
         'CollectGcBiasMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
@@ -77,7 +77,7 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_
         return
 
     pypeliner.commandline.execute(
-        config['picard'], '-Xmx12G',
+        'picard', '-Xmx12G',
         'CollectInsertSizeMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,

@@ -52,19 +52,7 @@ map_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.map.ws
 adapter: 'CTGTCTCTTATACACATCTCCGAGCCCACGAGAC'
 adapter2: 'CTGTCTCTTATACACATCTGACGCTGCCGACGA'
 
-trimgalore: 'trim_galore'
-cutadapt: 'cutadapt'
-bcl2fastq: 'bcl2fastq'
-fastqc: 'fastqc'
-bwa: 'bwa'
-samtools: 'samtools'
-python: 'python'
-picard: 'picard'
-java: 'java'
-readcounter: 'readCounter'
-Rscript: 'Rscript'
 mutationseq: /shahlab/pipelines/apps_centos6/mutationSeq_4.3.7_anaconda/
-gatk: 'gatk'
 
 hmmcopy_plot_mad_threshold: 0.2
 heatmap_plot_mad_threshold: 0.2

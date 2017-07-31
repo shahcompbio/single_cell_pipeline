@@ -6,11 +6,11 @@ Created on Jul 24, 2017
 import pypeliner
 
 
-def merge_bams(inputs, output, config):
+def merge_bams(inputs, output):
     filenames = inputs.values()
     
     
-    cmd = [config['picard'], '-Xmx12G',
+    cmd = ['picard', '-Xmx12G',
            'MergeSamFiles',
            'OUTPUT=' + output,
            'SORT_ORDER=coordinate',
