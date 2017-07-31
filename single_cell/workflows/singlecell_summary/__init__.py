@@ -9,38 +9,43 @@ import pypeliner.managed as mgd
 import tasks
 
 
-def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics, metrics_summary, gc_matrix, cn_matrix, config, out_dir, sample_ids):
-
+def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
+                            metrics_summary, gc_matrix, cn_matrix, config,
+                            out_dir, sample_ids):
 
     results_dir = os.path.join(out_dir, 'results')
 
-    hmmcopy_segments_filename = os.path.join(results_dir, 'segments.csv')
-    hmmcopy_reads_filename = os.path.join(results_dir, 'reads.csv')
-    hmmcopy_hmm_reads_filt_filename = os.path.join(results_dir, 'filtered_reads.csv')
-    hmmcopy_hmm_segs_filt_filename = os.path.join(results_dir, 'filtered_segs.csv')
-    all_metrics_heatmap_filename = os.path.join(results_dir, 'all_metrics_summary_hmap.csv')
-    gc_metrics_filename = os.path.join(results_dir, 'gc_metrics_summary.csv')
-    cn_matrix_filename = os.path.join(results_dir, 'cn_matrix.csv')
+    segs_filename = os.path.join(results_dir, 'segments.csv')
+    reads_filename = os.path.join(results_dir, 'reads.csv')
+    reads_filt_filename = os.path.join(results_dir, 'filtered_reads.csv')
+    segs_filt_filename = os.path.join(results_dir, 'filtered_segs.csv')
 
-    reads_plot_filename = os.path.join(results_dir, 'plots', 'corrected_reads.pdf')
-    bias_plot_filename = os.path.join(results_dir, 'plots', 'bias.pdf')
-    segs_plot_filename = os.path.join(results_dir, 'plots', 'segments.pdf')
+    all_metrics_file = os.path.join(results_dir, 'all_metrics_summary.csv')
+    gc_metrics_file = os.path.join(results_dir, 'gc_metrics_summary.csv')
+    cn_matrix_file = os.path.join(results_dir, 'cn_matrix.csv')
 
-    reads_plot_filename_mad = os.path.join(results_dir, 'plots', 'corrected_reads_mad_0.2.pdf')
-    bias_plot_filename_mad = os.path.join(results_dir, 'plots', 'bias_mad_0.2.pdf')
-    segs_plot_filename_mad = os.path.join(results_dir, 'plots', 'segments_mad_0.2.pdf')
+    plots_dir = os.path.join(results_dir, 'plots')
+    reads_plot_filename = os.path.join(plots_dir, 'corrected_reads.pdf')
+    bias_plot_filename = os.path.join(plots_dir, 'bias.pdf')
+    segs_plot_filename = os.path.join(plots_dir, 'segments.pdf')
 
-    order_data_all_output = os.path.join(results_dir, 'plots', 'plot_heatmap_all.csv')
+    reads_plot_filename_mad = os.path.join(plots_dir,
+                                           'corrected_reads_mad_0.2.pdf')
+    bias_plot_filename_mad = os.path.join(plots_dir, 'bias_mad_0.2.pdf')
+    segs_plot_filename_mad = os.path.join(plots_dir, 'segments_mad_0.2.pdf')
 
-    plot_heatmap_ec_output = os.path.join(results_dir, 'plots', 'plot_heatmap_ec.pdf')
-    plot_heatmap_ec_mad_output = os.path.join(results_dir, 'plots', 'plot_heatmap_ec_mad.pdf')
-    plot_heatmap_ec_numreads_output = os.path.join(results_dir, 'plots', 'plot_heatmap_ec_numreads.pdf')
+    order_data_all_output = os.path.join(plots_dir, 'plot_heatmap_all.csv')
 
+    plot_heatmap_ec_output = os.path.join(plots_dir, 'plot_heatmap_ec.pdf')
+    plot_heatmap_ec_mad_output = os.path.join(plots_dir,
+                                              'plot_heatmap_ec_mad.pdf')
+    plot_heatmap_ec_numreads_output = os.path.join(plots_dir,
+                                                   'plot_heatmap_ec_numreads.pdf')
 
-    plot_metrics_output = os.path.join(results_dir, 'plots', 'plot_metrics.pdf')
-    plot_kernel_density_output = os.path.join(results_dir, 'plots', 'plot_kernel_density.pdf')
-    summary_metrics_output = os.path.join(results_dir, 'plots', 'summary_metrics.txt')
-
+    plot_metrics_output = os.path.join(plots_dir, 'plot_metrics.pdf')
+    plot_kernel_density_output = os.path.join(plots_dir,
+                                              'plot_kernel_density.pdf')
+    summary_metrics_output = os.path.join(plots_dir, 'summary_metrics.txt')
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -48,14 +53,14 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics, m
         obj=mgd.OutputChunks('sample_id'),
         value=sample_ids,
     )
-    
+
     workflow.transform(
         name='merge_tables',
         ctx={'mem': config['med_mem']},
         func=tasks.concatenate_csv,
         args=(
             mgd.InputFile('hmm_segments', 'sample_id', fnames=hmm_segments),
-            mgd.OutputFile(hmmcopy_segments_filename),
+            mgd.OutputFile(segs_filename),
         ),
     )
 
@@ -65,7 +70,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics, m
         func=tasks.concatenate_csv,
         args=(
             mgd.InputFile('hmm_reads', 'sample_id', fnames=hmm_reads),
-            mgd.OutputFile(hmmcopy_reads_filename),
+            mgd.OutputFile(reads_filename),
         ),
     )
 
@@ -84,7 +89,8 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics, m
         ctx={'mem': config['low_mem']},
         func=tasks.concatenate_csv,
         args=(
-            mgd.InputFile('metrics_summary', 'sample_id', fnames=metrics_summary),
+            mgd.InputFile('metrics_summary', 'sample_id',
+                          fnames=metrics_summary),
             mgd.TempOutputFile('metrics_summary.csv'),
         ),
     )
@@ -95,7 +101,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics, m
         func=tasks.merge_csv,
         args=(
             mgd.InputFile('gc_matrix', 'sample_id', fnames=gc_matrix),
-            mgd.OutputFile(gc_metrics_filename),
+            mgd.OutputFile(gc_metrics_file),
             'outer',
             'gc'
         ),
@@ -107,7 +113,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics, m
         func=tasks.merge_csv,
         args=(
             mgd.InputFile('cn_matrix', 'sample_id', fnames=cn_matrix),
-            mgd.OutputFile(cn_matrix_filename),
+            mgd.OutputFile(cn_matrix_file),
             'outer',
             'chr,start,end,width'
         ),
@@ -119,13 +125,13 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics, m
         func=tasks.filter_hmm_data,
         args=(
             mgd.TempInputFile('hmmcopy_hmm_metrics.csv'),
-            mgd.InputFile(hmmcopy_segments_filename),
-            mgd.InputFile(hmmcopy_reads_filename),
+            mgd.InputFile(segs_filename),
+            mgd.InputFile(reads_filename),
             0.2,
-            mgd.OutputFile(hmmcopy_hmm_reads_filt_filename),
-            mgd.OutputFile(hmmcopy_hmm_segs_filt_filename),
-            )
+            mgd.OutputFile(reads_filt_filename),
+            mgd.OutputFile(segs_filt_filename),
         )
+    )
 
     workflow.transform(
         name='merge_all_metrics',
@@ -137,55 +143,55 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics, m
              mgd.InputFile(sample_info)],
             mgd.TempOutputFile('all_metrics.csv'),
             'merge', ',', 'outer', 'cell_id', 'NA'
-            )
         )
+    )
 
     workflow.transform(
         name='plot_heatmap_all',
         ctx={'mem': config['high_mem']},
         func=tasks.plot_heatmap,
         args=(
-             mgd.InputFile(hmmcopy_reads_filename),
-             mgd.TempInputFile('all_metrics.csv'),
-             mgd.OutputFile(order_data_all_output),
-             None,
-            ),
-            kwargs={
-                    'plot_title':'QC pipeline metrics',
-                    'colname':'integer_copy_number',
-                    }
+            mgd.InputFile(reads_filename),
+            mgd.TempInputFile('all_metrics.csv'),
+            mgd.OutputFile(order_data_all_output),
+            None,
+        ),
+        kwargs={
+            'plot_title': 'QC pipeline metrics',
+            'colname': 'integer_copy_number',
+        }
 
-        )
+    )
 
     workflow.transform(
         name='merge_all_metrics_heatmap',
         ctx={'mem': config['high_mem']},
         func=tasks.merge_tables,
         args=(
-              [mgd.TempInputFile('all_metrics.csv'),
-               mgd.InputFile(order_data_all_output)],
-              mgd.OutputFile(all_metrics_heatmap_filename),
-              'merge', ',', 'outer', 'cell_id', 'NA'
-            )
+            [mgd.TempInputFile('all_metrics.csv'),
+             mgd.InputFile(order_data_all_output)],
+            mgd.OutputFile(all_metrics_file),
+            'merge', ',', 'outer', 'cell_id', 'NA'
         )
+    )
 
     workflow.transform(
         name='plot_hmm_copy',
         ctx={'mem': config['high_mem']},
         func=tasks.plot_hmmcopy,
         args=(
-            mgd.InputFile(hmmcopy_reads_filename),
-            mgd.InputFile(hmmcopy_segments_filename),
-            mgd.InputFile(all_metrics_heatmap_filename),
+            mgd.InputFile(reads_filename),
+            mgd.InputFile(segs_filename),
+            mgd.InputFile(all_metrics_file),
             mgd.InputFile(config['ref_genome']),
             mgd.OutputFile(reads_plot_filename),
             mgd.OutputFile(segs_plot_filename),
             mgd.OutputFile(bias_plot_filename),
         ),
-        kwargs = {
-                  'num_states':config['num_states'],
-                  'plot_title':'QC pipeline metrics',
-                  }
+        kwargs={
+            'num_states': config['num_states'],
+            'plot_title': 'QC pipeline metrics',
+        }
 
     )
 
@@ -194,112 +200,107 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics, m
         ctx={'mem': config['high_mem']},
         func=tasks.plot_hmmcopy,
         args=(
-            mgd.InputFile(hmmcopy_reads_filename),
-            mgd.InputFile(hmmcopy_segments_filename),
-            mgd.InputFile(all_metrics_heatmap_filename),
+            mgd.InputFile(reads_filename),
+            mgd.InputFile(segs_filename),
+            mgd.InputFile(all_metrics_file),
             mgd.InputFile(config['ref_genome']),
             mgd.OutputFile(reads_plot_filename_mad),
             mgd.OutputFile(segs_plot_filename_mad),
             mgd.OutputFile(bias_plot_filename_mad),
         ),
-        kwargs = {
-                  'num_states':config['num_states'],
-                  'plot_title':'QC pipeline metrics',
-                  'mad_threshold':config['hmmcopy_plot_mad_threshold'],
-                  }
+        kwargs={
+            'num_states': config['num_states'],
+            'plot_title': 'QC pipeline metrics',
+            'mad_threshold': config['hmmcopy_plot_mad_threshold'],
+        }
     )
-
 
     workflow.transform(
         name='plot_metrics',
         ctx={'mem': config['high_mem']},
         func=tasks.plot_metrics,
         args=(
-            mgd.InputFile(all_metrics_heatmap_filename),
+            mgd.InputFile(all_metrics_file),
             mgd.OutputFile(plot_metrics_output),
             'QC pipeline metrics',
-            mgd.InputFile(gc_metrics_filename),
+            mgd.InputFile(gc_metrics_file),
             mgd.InputFile(config['gc_windows'])
-            )
         )
+    )
 
     workflow.transform(
         name='plot_kernel_density',
         ctx={'mem': config['high_mem']},
         func=tasks.plot_kernel_density,
         args=(
-            mgd.InputFile(all_metrics_heatmap_filename),
+            mgd.InputFile(all_metrics_file),
             mgd.OutputFile(plot_kernel_density_output),
             ',',
             'mad_neutral_state',
             'QC pipeline metrics'
-            )
         )
+    )
 
     workflow.transform(
         name='summary_metrics',
         ctx={'mem': config['low_mem']},
         func=tasks.get_summary_metrics,
         args=(
-            mgd.InputFile(all_metrics_heatmap_filename),
+            mgd.InputFile(all_metrics_file),
             mgd.OutputFile(summary_metrics_output),
-            )
         )
+    )
 
     workflow.transform(
         name='plot_heatmap_ec',
         ctx={'mem': config['high_mem']},
         func=tasks.plot_heatmap,
         args=(
-             mgd.InputFile(hmmcopy_reads_filename),
-             mgd.InputFile(all_metrics_heatmap_filename),
-             None,
-             mgd.OutputFile(plot_heatmap_ec_output),
-            ),
-            kwargs={
-                    'plot_title':'QC pipeline metrics',
-                    'colname':'integer_copy_number',
-                    'plot_by_col':'experimental_condition',
-                    }
-        )
+            mgd.InputFile(reads_filename),
+            mgd.InputFile(all_metrics_file),
+            None,
+            mgd.OutputFile(plot_heatmap_ec_output),
+        ),
+        kwargs={
+            'plot_title': 'QC pipeline metrics',
+            'colname': 'integer_copy_number',
+            'plot_by_col': 'experimental_condition',
+        }
+    )
 
     workflow.transform(
         name='plot_heatmap_ec_mad',
         ctx={'mem': config['high_mem']},
         func=tasks.plot_heatmap,
         args=(
-             mgd.InputFile(hmmcopy_reads_filename),
-             mgd.InputFile(all_metrics_heatmap_filename),
-             None,
-             mgd.OutputFile(plot_heatmap_ec_mad_output),
-            ),
-            kwargs={
-                    'plot_title':'QC pipeline metrics',
-                    'colname':'integer_copy_number',
-                    'plot_by_col':'experimental_condition',
-                    'mad_threshold':config['heatmap_plot_mad_threshold'],
-                    }
-        )
-
+            mgd.InputFile(reads_filename),
+            mgd.InputFile(all_metrics_file),
+            None,
+            mgd.OutputFile(plot_heatmap_ec_mad_output),
+        ),
+        kwargs={
+            'plot_title': 'QC pipeline metrics',
+            'colname': 'integer_copy_number',
+            'plot_by_col': 'experimental_condition',
+            'mad_threshold': config['heatmap_plot_mad_threshold'],
+        }
+    )
 
     workflow.transform(
         name='plot_heatmap_ec_nreads',
         ctx={'mem': config['high_mem']},
         func=tasks.plot_heatmap,
         args=(
-             mgd.InputFile(hmmcopy_reads_filename),
-             mgd.InputFile(all_metrics_heatmap_filename),
-             None,
-             mgd.OutputFile(plot_heatmap_ec_numreads_output),
-            ),
-            kwargs={
-                    'plot_title':'QC pipeline metrics',
-                    'colname':'integer_copy_number',
-                    'plot_by_col':'experimental_condition',
-                    'numreads_threshold':config['heatmap_plot_numreads_threshold']
-                    }
-        )
+            mgd.InputFile(reads_filename),
+            mgd.InputFile(all_metrics_file),
+            None,
+            mgd.OutputFile(plot_heatmap_ec_numreads_output),
+        ),
+        kwargs={
+            'plot_title': 'QC pipeline metrics',
+            'colname': 'integer_copy_number',
+            'plot_by_col': 'experimental_condition',
+            'numreads_threshold': config['heatmap_plot_numreads_threshold']
+        }
+    )
     return workflow
-
-
-

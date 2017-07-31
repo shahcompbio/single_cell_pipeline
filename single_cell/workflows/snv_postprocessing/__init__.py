@@ -11,17 +11,19 @@ import tasks
 import pypeliner
 import pypeliner.managed as mgd
 
-def create_snv_postprocessing_workflow(
-                                       bam_file,
-                                       museq_parsed,
-                                       strelka_parsed,
-                                       output,
-                                       sample_ids,
-                                       config,
-                                       out_dir
-                                       ):
 
-    countdata = os.path.join(out_dir, 'pseudo_wgs', 'counts', '{sample_id}_counts.csv')
+def create_snv_postprocessing_workflow(
+    bam_file,
+    museq_parsed,
+    strelka_parsed,
+    output,
+    sample_ids,
+    config,
+    out_dir
+):
+
+    countdata = os.path.join(out_dir, 'pseudo_wgs', 'counts',
+                             '{sample_id}_counts.csv')
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -31,20 +33,19 @@ def create_snv_postprocessing_workflow(
     )
 
     workflow.transform(
-                       name='overlap_var_calls',
-                       ctx={'mem': config['med_mem']},
-                       func=tasks.merge_tables,
-                       args=([mgd.InputFile(museq_parsed), mgd.InputFile(strelka_parsed)],
-                             mgd.TempOutputFile("overlapping_calls.csv"),
-                             'merge',
-                             '\t',
-                             'inner',
-                             ['case_id', 'chromosome', 'start', 'stop', 'ref', 'alt'],
-                             'NA'
-                             )
-                       )
-
-
+        name='overlap_var_calls',
+        ctx={'mem': config['med_mem']},
+        func=tasks.merge_tables,
+        args=([mgd.InputFile(museq_parsed),
+               mgd.InputFile(strelka_parsed)],
+              mgd.TempOutputFile("overlapping_calls.csv"),
+              'merge',
+              '\t',
+              'inner',
+              ['case_id', 'chromosome', 'start', 'stop', 'ref', 'alt'],
+              'NA'
+              )
+    )
 
     workflow.transform(
         name='count_reads',
@@ -52,10 +53,10 @@ def create_snv_postprocessing_workflow(
         ctx={'mem': config['low_mem']},
         func=tasks.get_counts,
         args=(
-              mgd.InputFile('bam', 'sample_id', fnames=bam_file),
-              mgd.TempInputFile("overlapping_calls.csv"),
-              mgd.OutputFile(countdata, 'sample_id'),
-              mgd.InputInstance('sample_id')
+            mgd.InputFile('bam', 'sample_id', fnames=bam_file),
+            mgd.TempInputFile("overlapping_calls.csv"),
+            mgd.OutputFile(countdata, 'sample_id'),
+            mgd.InputInstance('sample_id')
         ),
     )
 
@@ -64,13 +65,11 @@ def create_snv_postprocessing_workflow(
         ctx={'mem': config['low_mem']},
         func=tasks.merge_csv,
         args=(
-              mgd.InputFile(countdata, 'sample_id'),
-              mgd.OutputFile(output),
-              'outer',
-              'chrom,coord,ref_base,var_base'
+            mgd.InputFile(countdata, 'sample_id'),
+            mgd.OutputFile(output),
+            'outer',
+            'chrom,coord,ref_base,var_base'
         ),
     )
-
-
 
     return workflow

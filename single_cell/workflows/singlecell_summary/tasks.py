@@ -12,7 +12,8 @@ from scripts import PlotHeatmap
 from scripts import GenHmmPlots
 from scripts import PlotMetrics
 
-def concatenate_csv(in_filenames, out_filename, nan_val = 'NA'):
+
+def concatenate_csv(in_filenames, out_filename, nan_val='NA'):
     data = []
     for _, in_filename in in_filenames.iteritems():
         with open(in_filename) as f:
@@ -25,14 +26,13 @@ def concatenate_csv(in_filenames, out_filename, nan_val = 'NA'):
     data.to_csv(out_filename, index=False)
 
 
-def merge_csv(in_filenames, out_filename, how, on, nan_val = 'NA'):
+def merge_csv(in_filenames, out_filename, how, on, nan_val='NA'):
     data = []
     for _, in_filename in in_filenames.iteritems():
         with open(in_filename) as f:
             first_line = f.readline()
             if len(first_line) == 0:
                 continue
-        print in_filename
         data.append(pd.read_csv(in_filename, dtype=str))
 
     data = merge_frames(data, how, on)
@@ -54,54 +54,59 @@ def merge_frames(frames, how, on):
         left = frames[0]
         right = frames[1]
         merged_frame = pd.merge(left, right,
-                                    how=how,
-                                    on=on)
+                                how=how,
+                                on=on)
         for frame in frames[2:]:
             merged_frame = pd.merge(merged_frame, frame,
-                                        how=how,
-                                        on=on)
+                                    how=how,
+                                    on=on)
         return merged_frame
+
 
 def get_summary_metrics(infile, output):
     summ = SummaryMetrics(infile, output)
     summ.main()
 
-def plot_kernel_density(infile, output,  sep, colname, plot_title):
-    plot = PlotKernelDensity(infile, output,  sep, colname, plot_title)
+
+def plot_kernel_density(infile, output, sep, colname, plot_title):
+    plot = PlotKernelDensity(infile, output, sep, colname, plot_title)
     plot.main()
+
 
 def filter_hmm_data(quality_metrics, segments, reads, mad_threshold,
                     reads_out, segments_out):
     filter_hmm = FilterHmmData(quality_metrics, segments, reads,
                                mad_threshold, reads_out, segments_out)
     filter_hmm.main()
-    
+
+
 def merge_tables(infile, output, typ, sep,
-              merge_type, key_cols, nan_val):
-    
+                 merge_type, key_cols, nan_val):
+
     m = MergeFiles(infile, output, typ, sep,
-              merge_type, key_cols, nan_val)
+                   merge_type, key_cols, nan_val)
     m.main()
+
 
 def plot_metrics(metrics, output, plot_title, gcbias_matrix, gc_content):
     plot = PlotMetrics(metrics, output, plot_title, gcbias_matrix, gc_content)
     plot.main()
+
 
 def plot_heatmap(infile, metrics, order_data, output, plot_title=None,
                  colname=None, plot_by_col=None, numreads_threshold=None,
                  mad_threshold=None):
 
     plot = PlotHeatmap(infile, metrics, order_data, output, plot_title=plot_title,
-                 colname=colname, plot_by_col=plot_by_col,
-                 numreads_threshold=numreads_threshold,
-                 mad_threshold=mad_threshold)
+                       colname=colname, plot_by_col=plot_by_col,
+                       numreads_threshold=numreads_threshold,
+                       mad_threshold=mad_threshold)
     plot.main()
-    
-    
+
+
 def plot_hmmcopy(reads, segments, metrics, ref_genome, reads_out, segs_out,
                  bias_out, num_states=7, plot_title=None, mad_threshold=None):
     plot = GenHmmPlots(reads, segments, metrics, ref_genome, reads_out, segs_out,
                        bias_out, num_states=num_states, plot_title=plot_title,
                        mad_threshold=mad_threshold)
     plot.main()
-

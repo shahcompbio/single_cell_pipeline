@@ -10,9 +10,11 @@ import pypeliner.managed as mgd
 import tasks
 
 
-def create_realignment_workflow(input_bams, output_bams, config, out_dir, realign, sample_ids):
+def create_realignment_workflow(input_bams, output_bams, config,
+                                out_dir, realign, sample_ids):
 
-    output_bams = dict([(sampid, output_bams[sampid]) for sampid in sample_ids])
+    output_bams = dict([(sampid, output_bams[sampid])
+                        for sampid in sample_ids])
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -23,8 +25,8 @@ def create_realignment_workflow(input_bams, output_bams, config, out_dir, realig
 
     if realign:
 
-        chromosomes = map(str, range(1,23)) + ['X', 'Y']
-    
+        chromosomes = map(str, range(1, 23)) + ['X', 'Y']
+
         workflow.setobj(
             obj=mgd.OutputChunks('chrom'),
             value=chromosomes,
@@ -44,29 +46,30 @@ def create_realignment_workflow(input_bams, output_bams, config, out_dir, realig
             )
         )
 
-
         workflow.transform(
             name='merge_realignment',
             ctx={'mem': config['high_mem']},
             axes=('sample_id',),
             func=tasks.merge_realignment,
             args=(
-                  mgd.TempInputFile('realigned.bam', 'chrom', 'sample_id'),
-                  mgd.OutputFile('bam_realn','sample_id', fnames=output_bams),
-                  config,
-                  mgd.InputInstance('sample_id')
-                  )
+                mgd.TempInputFile('realigned.bam', 'chrom', 'sample_id'),
+                mgd.OutputFile('bam_realn', 'sample_id', fnames=output_bams),
+                config,
+                mgd.InputInstance('sample_id')
+            )
         )
 
     else:
         workflow.transform(
-                           name='copy_realign',
-                           axes=('sample_id',),
-                           func = tasks.copy_files,
-                           args = (               
-                                   mgd.InputFile('bam', 'sample_id', fnames=input_bams),
-                                   mgd.OutputFile('bam_copy', 'sample_id', fnames=output_bams),
-                                   )
-                           )
-    
+            name='copy_realign',
+            axes=('sample_id',),
+            func=tasks.copy_files,
+            args=(
+                mgd.InputFile('bam', 'sample_id',
+                              fnames=input_bams),
+                mgd.OutputFile('bam_copy', 'sample_id',
+                               fnames=output_bams),
+            )
+        )
+
     return workflow
