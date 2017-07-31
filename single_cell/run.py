@@ -16,7 +16,8 @@ from workflows import fastq_preprocessing
 from workflows import alignment_postprocessing
 
 def parse_args():
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(
+                    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     pypeliner.app.add_arguments(parser)
 
@@ -60,7 +61,8 @@ def parse_args():
     args['trim'] = False if args['nextseq'] else True
     
     if args['matched_normal'] and not args['generate_pseudo_wgs']:
-        raise Exception('generate_pseudo_wgs must be set if matched_normal is provided')
+        raise Exception('generate_pseudo_wgs must be'
+                        ' set if matched_normal is provided')
     
     return args
 
@@ -129,7 +131,6 @@ def main():
         ),
     )
 
- 
     workflow.subworkflow(
         name='realignment_workflow',
         func=realignment.create_realignment_workflow,
@@ -142,7 +143,6 @@ def main():
             sample_ids
         ),
     )
-  
   
     bam_directory = os.path.join(args['out_dir'], 'bams')
     bam_template = os.path.join(bam_directory, '{sample_id}.bam')
@@ -165,8 +165,6 @@ def main():
             lanes,
         ),
     )
-    
-    
     
     workflow.subworkflow(
         name='hmmcopy_workflow',
@@ -201,7 +199,6 @@ def main():
             sample_ids
         ),
     )
-    
     
     if args['generate_pseudo_wgs']:
 
