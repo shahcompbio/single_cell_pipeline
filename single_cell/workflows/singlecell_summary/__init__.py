@@ -9,7 +9,7 @@ import pypeliner.managed as mgd
 import tasks
 
 
-def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summary, gc_matrix, cn_matrix, config, args, sample_ids):
+def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics, metrics_summary, gc_matrix, cn_matrix, config, args, sample_ids):
 
 
     results_dir = os.path.join(args['out_dir'], 'results')
@@ -132,7 +132,7 @@ def create_summary_workflow(hmm_segments, hmm_reads, hmm_metrics, metrics_summar
         ctx={'mem': config['low_mem']},
         func=tasks.merge_tables,
         args=(
-            [mgd.TempInputFile('metrics_summary.csv'), mgd.TempInputFile('hmmcopy_hmm_metrics.csv')],
+            [mgd.TempInputFile('metrics_summary.csv'), mgd.TempInputFile('hmmcopy_hmm_metrics.csv'), mgd.InputFile(sample_info)],
             mgd.TempOutputFile('all_metrics.csv'),
             'merge', ',', 'outer', 'cell_id', 'NA'
             )
