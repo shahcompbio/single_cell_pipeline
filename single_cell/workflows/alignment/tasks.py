@@ -1,7 +1,7 @@
 import pypeliner.commandline
 import os
 
-def get_readgroup(library_id, run_id, sample_id, args, config):
+def get_readgroup(run_id, sample_id, args, config):
     platform = 'illumina'
     centre = 'UBCBRC' if args.nextseq else 'BCCAGSC'
 
@@ -11,6 +11,7 @@ def get_readgroup(library_id, run_id, sample_id, args, config):
         if config['read_group']['CN']:
             centre = str(config['read_group']['CN'])
     
+    library_id = args['library_id']
     read_group_template = (
         '@RG\tID:' + str(library_id) + '_' + sample_id + '_' + str(run_id) +
         '\tPL:' + platform +

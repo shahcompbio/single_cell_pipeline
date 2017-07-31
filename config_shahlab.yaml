@@ -22,9 +22,6 @@ min_mqual: 20
 # Count unpaired reads for wgs metrics
 count_unpaired: false
 
-# Identifier for analysis
-analysis_id: test
-
 # Bin size
 bin_size: 500000
 
@@ -40,9 +37,9 @@ parameters:
 
     s: None
 
-	num_states: 7
+  	num_states: 7
 
-	map_cutoff: 0.9
+	  map_cutoff: 0.9
 
 
 # Binned GC content file

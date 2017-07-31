@@ -4,10 +4,9 @@ Created on Jul 6, 2017
 @author: dgrewal
 '''
 import os
+import tasks
 import pypeliner
 import pypeliner.managed as mgd
-
-import tasks
 
 
 def create_alignment_workflow(
@@ -15,13 +14,12 @@ def create_alignment_workflow(
     fastq_2_filename,
     bam_filename,
     ref_genome,
-    library_id,
     lane_id,
     sample_id,
     config,
     args):
 
-    read_group = tasks.get_readgroup(library_id, lane_id, sample_id, args, config)
+    read_group = tasks.get_readgroup(lane_id, sample_id, args, config)
 
     metrics_dir = os.path.join(args['out_dir'], 'metrics_per_lane', lane_id,)
     flagstat_metrics_filename = os.path.join(metrics_dir, '{}.flagstat_metrics.txt'.format(sample_id))

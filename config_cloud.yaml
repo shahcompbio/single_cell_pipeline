@@ -25,11 +25,6 @@ count_unpaired: false
 # Bin size
 bin_size: 500000
 
-# Optional mappability cutoff
-map_cutoff: 0.9
-
-# Number of states
-num_states: 7
 
 # HMMcopy parameters
 parameters:
@@ -42,6 +37,12 @@ parameters:
     e: 0.995
 
     s: 35
+
+	# Optional mappability cutoff
+	map_cutoff: 0.9
+
+	# Number of states
+	num_states: 7
 
 # Binned GC content file
 gc_wig_file: /datadrive/refdata/GRCh37-lite.gc.ws_500000.wig

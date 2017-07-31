@@ -132,7 +132,9 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics, m
         ctx={'mem': config['low_mem']},
         func=tasks.merge_tables,
         args=(
-            [mgd.TempInputFile('metrics_summary.csv'), mgd.TempInputFile('hmmcopy_hmm_metrics.csv'), mgd.InputFile(sample_info)],
+            [mgd.TempInputFile('metrics_summary.csv'),
+             mgd.TempInputFile('hmmcopy_hmm_metrics.csv'),
+             mgd.InputFile(sample_info)],
             mgd.TempOutputFile('all_metrics.csv'),
             'merge', ',', 'outer', 'cell_id', 'NA'
             )
@@ -160,7 +162,8 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics, m
         ctx={'mem': config['high_mem']},
         func=tasks.merge_tables,
         args=(
-              [mgd.TempInputFile('all_metrics.csv'), mgd.InputFile(order_data_all_output)],
+              [mgd.TempInputFile('all_metrics.csv'),
+               mgd.InputFile(order_data_all_output)],
               mgd.OutputFile(all_metrics_heatmap_filename),
               'merge', ',', 'outer', 'cell_id', 'NA'
             )

@@ -48,10 +48,10 @@ def run_hmmcopy(bam_file,
         '--post_marginals_output=' + posterior_marginals_filename,
         '--sample_id=' + sample_id]
 
-    if config['map_cutoff']:
+    if config['parameters']['map_cutoff']:
         cmd.append('--map_cutoff=' + str(config['parameters']['map_cutoff']))
 
-    if config['num_states']:
+    if config['parameters']['num_states']:
         cmd.append('--num_states=' + str(config['parameters']['num_states']))
 
     if config['parameters']['mu']:

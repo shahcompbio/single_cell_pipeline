@@ -1,13 +1,19 @@
 import os
 import argparse
 import utils
-import pandas as pd
 import pypeliner
 import pypeliner.managed as mgd
-from workflows import fastq_preprocessing, alignment, hmmcopy, strelka
-from workflows import singlecell_summary, merge_bams, pseudo_wgs, snv_postprocessing
-from workflows import realignment, alignment_postprocessing
+from workflows import hmmcopy
+from workflows import strelka
+from workflows import alignment
+from workflows import merge_bams
+from workflows import pseudo_wgs
+from workflows import realignment
 from workflows import mutationseq
+from workflows import singlecell_summary
+from workflows import snv_postprocessing
+from workflows import fastq_preprocessing
+from workflows import alignment_postprocessing
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -51,6 +57,7 @@ def parse_args():
 
     args = vars(parser.parse_args())
     args['tmpdir'] = os.path.join(args['out_dir'], 'tmp')
+    args['trim'] = False if args['nextseq'] else True
     
     if args['matched_normal'] and not args['generate_pseudo_wgs']:
         raise Exception('generate_pseudo_wgs must be set if matched_normal is provided')
@@ -62,52 +69,17 @@ def main():
 
     args = parse_args()
 
-    trim = False if args['nextseq'] else True
-
     pyp = pypeliner.app.Pypeline(config=args)
 
     config = utils.load_config(args)
 
-    library_id = args['library_id']
-
-    fastqs = pd.read_csv(args['fastqs_file'], dtype=str)
-
-    for column in ('sample_id', 'lane_id', 'fastq_1', 'fastq_2',):
-        if column not in fastqs.columns:
-            raise Exception('input fastqs_file should contain {}'.format(column))
-
-    sample_ids = list(sorted(fastqs['sample_id'].unique()))
-    lanes = list(sorted(fastqs['lane_id'].unique()))
-
-    fastq_1_filenames = dict()
-    fastq_2_filenames = dict()
-    for _, row in fastqs.iterrows():
-        fastq_1_filenames[(row['sample_id'], row['lane_id'])] = row['fastq_1']
-        fastq_2_filenames[(row['sample_id'], row['lane_id'])] = row['fastq_2']
+    fastq1_files, fastq2_files, sample_ids, lanes = utils.read_fastqs_file(args)
 
     workflow = pypeliner.workflow.Workflow()
 
-    bam_directory = os.path.join(args['out_dir'], 'bams')
-    bam_template = os.path.join(bam_directory, '{sample_id}.bam')
-    bam_index_template = os.path.join(bam_directory, '{sample_id}.bam.bai')
-
-    pseudo_wgs_bam = os.path.join(args['out_dir'], 'pseudo_wgs', 'merged.sorted.markdups.bam')
-    pseudo_wgs_bai = os.path.join(args['out_dir'], 'pseudo_wgs', 'merged.sorted.markdups.bam.bai')
-
-    strelka_snv_vcf = os.path.join(args['out_dir'], 'pseudo_wgs', 'variant_calling', 'strelka_snv.vcf')
-    strelka_indel_vcf = os.path.join(args['out_dir'], 'pseudo_wgs', 'variant_calling', 'strelka_indel.vcf')
-    strelka_snv_csv = os.path.join(args['out_dir'], 'pseudo_wgs', 'variant_calling', 'strelka_snv.csv')
-    strelka_indel_csv = os.path.join(args['out_dir'], 'pseudo_wgs', 'variant_calling', 'strelka_indel.csv')
-
-    museq_vcf = os.path.join(args['out_dir'], 'pseudo_wgs', 'variant_calling', 'museq_snv.vcf')
-    museq_csv = os.path.join(args['out_dir'], 'pseudo_wgs', 'variant_calling', 'museq_snv.csv')
-
-
-    countdata = os.path.join(args['out_dir'], 'pseudo_wgs', 'counts', 'counts.csv')
-    
     workflow.setobj(
         obj=mgd.OutputChunks('sample_id', 'lane'),
-        value=fastq_1_filenames.keys(),
+        value=fastq1_files.keys(),
     )
 
     workflow.subworkflow(
@@ -115,15 +87,15 @@ def main():
         axes=('sample_id', 'lane',),
         func=fastq_preprocessing.create_fastq_workflow,
         args=(
-              mgd.InputFile('fastq_1', 'sample_id', 'lane', fnames=fastq_1_filenames),
-              mgd.InputFile('fastq_2', 'sample_id', 'lane', fnames=fastq_2_filenames),
+              mgd.InputFile('fastq_1', 'sample_id', 'lane', fnames=fastq1_files),
+              mgd.InputFile('fastq_2', 'sample_id', 'lane', fnames=fastq2_files),
               mgd.TempOutputFile('fastq_trim_1.fastq.gz', 'sample_id', 'lane'),
               mgd.TempOutputFile('fastq_trim_2.fastq.gz', 'sample_id', 'lane'),
               config,
               mgd.InputInstance('lane'),
               mgd.InputInstance('sample_id'),
               args['out_dir'],
-              trim
+              args['trim']
             ),
         )
 
@@ -136,7 +108,6 @@ def main():
             mgd.TempInputFile('fastq_trim_2.fastq.gz', 'sample_id', 'lane'),
             mgd.TempOutputFile('aligned_per_cell_per_lane.sorted.bam', 'sample_id', 'lane'),
             mgd.InputFile(config['ref_genome']),
-            library_id,
             mgd.InputInstance('lane'),
             mgd.InputInstance('sample_id'),
             config,
@@ -173,7 +144,9 @@ def main():
     )
   
   
-   
+    bam_directory = os.path.join(args['out_dir'], 'bams')
+    bam_template = os.path.join(bam_directory, '{sample_id}.bam')
+    bam_index_template = os.path.join(bam_directory, '{sample_id}.bam.bai')   
     #merge bams per sample for all lanes
     workflow.subworkflow(
         name='bam_postprocess_workflow',
@@ -231,7 +204,9 @@ def main():
     
     
     if args['generate_pseudo_wgs']:
-    
+
+        pseudo_wgs_bam = os.path.join(args['out_dir'], 'pseudo_wgs', 'merged.sorted.markdups.bam')
+        pseudo_wgs_bai = os.path.join(args['out_dir'], 'pseudo_wgs', 'merged.sorted.markdups.bam.bai')    
         workflow.subworkflow(
             name='wgs_workflow',
             func=pseudo_wgs.create_wgs_workflow,
@@ -249,8 +224,9 @@ def main():
    
  
     if args['matched_normal']:
- 
- 
+        varcalls_dir = os.path.join(args['out_dir'], 'pseudo_wgs', 'variant_calling',)
+        museq_vcf = os.path.join(varcalls_dir, 'museq_snv.vcf')
+        museq_csv = os.path.join(varcalls_dir, 'museq_snv.csv')
         workflow.subworkflow(
                 name='museq',
                 func=mutationseq.create_museq_workflow,
@@ -265,6 +241,10 @@ def main():
                 ),
             )
  
+        strelka_snv_vcf = os.path.join(varcalls_dir, 'strelka_snv.vcf')
+        strelka_indel_vcf = os.path.join(varcalls_dir, 'strelka_indel.vcf')
+        strelka_snv_csv = os.path.join(varcalls_dir, 'strelka_snv.csv')
+        strelka_indel_csv = os.path.join(varcalls_dir, 'strelka_indel.csv')
         workflow.subworkflow(
                 name='strelka',
                 func=strelka.create_strelka_workflow,
@@ -278,7 +258,9 @@ def main():
                       mgd.OutputFile(strelka_snv_csv),
                 ),
             )
-         
+
+        countdata = os.path.join(args['out_dir'], 'pseudo_wgs',
+                                 'counts', 'counts.csv')
         workflow.subworkflow(
                 name='postprocessing',
                 func=snv_postprocessing.create_snv_postprocessing_workflow,
