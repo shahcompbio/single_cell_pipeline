@@ -9,7 +9,7 @@ import pypeliner.managed as mgd
 import tasks
 
 
-def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics, metrics_summary, gc_matrix, cn_matrix, config, args, sample_ids):
+def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics, metrics_summary, gc_matrix, cn_matrix, config, out_dir, sample_ids):
 
 
     results_dir = os.path.join(args['out_dir'], 'results')
