@@ -12,7 +12,7 @@ import tasks
 def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics, metrics_summary, gc_matrix, cn_matrix, config, out_dir, sample_ids):
 
 
-    results_dir = os.path.join(args['out_dir'], 'results')
+    results_dir = os.path.join(out_dir, 'results')
 
     hmmcopy_segments_filename = os.path.join(results_dir, 'segments.csv')
     hmmcopy_reads_filename = os.path.join(results_dir, 'reads.csv')
