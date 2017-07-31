@@ -55,11 +55,11 @@ def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config):
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
         'REFERENCE_SEQUENCE=' + ref_genome,
-        'MINIMUM_BASE_QUALITY=' + str(config['min_bqual']),
-        'MINIMUM_MAPPING_QUALITY=' + str(config['min_mqual']),
+        'MINIMUM_BASE_QUALITY=' + str(config['picard_wgs_params']['min_bqual']),
+        'MINIMUM_MAPPING_QUALITY=' + str(config['picard_wgs_params']['min_mqual']),
         'COVERAGE_CAP=500',
         'VALIDATION_STRINGENCY=LENIENT',
-        'COUNT_UNPAIRED=' + ('True' if config['count_unpaired'] else 'False'))
+        'COUNT_UNPAIRED=' + ('True' if config['picard_wgs_params']['count_unpaired'] else 'False'))
 
 
 def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, config):

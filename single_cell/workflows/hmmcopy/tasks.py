@@ -28,8 +28,8 @@ def run_hmmcopy(bam_file,
     readcount_wig = os.path.join(tempdir, 'readcounter.wig')
     pypeliner.commandline.execute(
             'readcounter',
-            '-w', str(config['bin_size']),
-            '-q', str(config['min_mqual']),
+            '-w', str(config['hmmcopy_params']['bin_size']),
+            '-q', str(config['hmmcopy_params']['min_mqual']),
             '-c', ','.join(config['chromosomes']),
             bam_file,
             '>',
@@ -48,26 +48,26 @@ def run_hmmcopy(bam_file,
         '--post_marginals_output=' + posterior_marginals_filename,
         '--sample_id=' + sample_id]
 
-    if config['parameters']['map_cutoff']:
-        cmd.append('--map_cutoff=' + str(config['parameters']['map_cutoff']))
+    if config['hmmcopy_params']['map_cutoff']:
+        cmd.append('--map_cutoff=' + str(config['hmmcopy_params']['map_cutoff']))
 
-    if config['parameters']['num_states']:
-        cmd.append('--num_states=' + str(config['parameters']['num_states']))
+    if config['hmmcopy_params']['num_states']:
+        cmd.append('--num_states=' + str(config['hmmcopy_params']['num_states']))
 
-    if config['parameters']['mu']:
-        cmd.append('--param_mu=' + str(config['parameters']['mu']))
+    if config['hmmcopy_params']['mu']:
+        cmd.append('--param_mu=' + str(config['hmmcopy_params']['mu']))
 
-    if config['parameters']['m']:
-        cmd.append('--param_m=' + str(config['parameters']['m']))
+    if config['hmmcopy_params']['m']:
+        cmd.append('--param_m=' + str(config['hmmcopy_params']['m']))
 
-    if config['parameters']['kappa']:
-        cmd.append('--param_k=' + str(config['parameters']['kappa']))
+    if config['hmmcopy_params']['kappa']:
+        cmd.append('--param_k=' + str(config['hmmcopy_params']['kappa']))
 
-    if config['parameters']['e']:
-        cmd.append('--param_e=' + str(config['parameters']['e']))
+    if config['hmmcopy_params']['e']:
+        cmd.append('--param_e=' + str(config['hmmcopy_params']['e']))
 
-    if config['parameters']['s']:
-        cmd.append('--param_s=' + str(config['parameters']['s']))
+    if config['hmmcopy_params']['s']:
+        cmd.append('--param_s=' + str(config['hmmcopy_params']['s']))
 
     pypeliner.commandline.execute(*cmd)
 

@@ -23,7 +23,7 @@ def create_realignment_workflow(input_bams, output_bams, config, out_dir, realig
 
     if realign:
 
-        chromosomes = map(str, range(1,22)) + ['X', 'Y']
+        chromosomes = map(str, range(1,23)) + ['X', 'Y']
     
         workflow.setobj(
             obj=mgd.OutputChunks('chrom'),
