@@ -12,9 +12,6 @@ import tasks
 
 def create_realignment_workflow(input_bams, output_bams, config, out_dir, realign, sample_ids):
 
-    realn_dir = os.path.join(out_dir, 'realignment')
-    targets = os.path.join(realn_dir, 'realignment_targets.intervals')
-
     output_bams = dict([(sampid, output_bams[sampid]) for sampid in sample_ids])
 
     workflow = pypeliner.workflow.Workflow()

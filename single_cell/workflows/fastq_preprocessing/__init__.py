@@ -80,22 +80,16 @@ def create_fastq_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, sa
             )
     else:
         workflow.transform(
-            name='copy_files_r1',
+            name='copy_files',
             func=tasks.copy_files,
             args=(
-                mgd.InputFile(fastq_r1),
-                mgd.OutputFile(trim_r1),
+                  [mgd.InputFile(fastq_r1),
+                   mgd.InputFile(fastq_r2),
+                  ],
+                  [mgd.OutputFile(trim_r1),
+                   mgd.OutputFile(trim_r2),
+                  ]
             ),
         )
-
-        workflow.transform(
-            name='copy_files_r2',
-            func=tasks.copy_files,
-            args=(
-                mgd.InputFile(fastq_r2),
-                mgd.OutputFile(trim_r2),
-            ),
-        )
-
     return workflow
 

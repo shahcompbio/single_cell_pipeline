@@ -1,6 +1,6 @@
 import pypeliner.commandline
 import warnings
-
+import os
 
 def get_readgroup(library_id, run_id, config, sample_id):
     if 'read_group' in config.keys():
@@ -29,3 +29,53 @@ def bam_sort(bam_filename, sorted_bam_filename, config):
         'SORT_ORDER=coordinate',
         'VALIDATION_STRINGENCY=LENIENT',
         'MAX_RECORDS_IN_RAM=5000000')
+
+
+def align_paired_end(fastq1, fastq2, output, tempdir,
+                     reference, config, readgroup):
+    """
+    run bwa aln on both fastq files,
+    bwa sampe to align, and convert to bam with samtools view
+    """
+
+    read_1_sai = os.path.join(tempdir, 'read_1.sai')
+    read_2_sai = os.path.join(tempdir, 'read_2.sai')
+
+
+
+    pypeliner.commandline.execute(
+            config['bwa'],
+            'aln',
+            reference,
+            fastq1,
+            '>',
+            read_1_sai,
+                                  
+      )
+
+    pypeliner.commandline.execute(
+            config['bwa'],
+            'aln',
+            reference,
+            fastq2,
+            '>',
+            read_2_sai,
+                                  
+      )
+
+    pypeliner.commandline.execute(
+            config['bwa'], 'sampe',
+            '-r', readgroup,
+            reference,
+            read_1_sai,
+            read_2_sai,
+            fastq1,
+            fastq2,
+            '|',
+            config['samtools'], 'view',
+            '-bSh', '-',
+            '>',
+            output,
+        )
+
+    

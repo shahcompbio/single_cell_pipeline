@@ -29,48 +29,18 @@ def create_alignment_workflow(
     workflow = pypeliner.workflow.Workflow()
 
     workflow.commandline(
-        name='aln_read_1',
+        name='bwa_align',
         ctx={'mem': config['med_mem']},
         args=(
-            config['bwa'],
-            'aln',
-            mgd.InputFile(ref_genome),
-            mgd.InputFile(fastq_1_filename),
-            '>',
-            mgd.TempOutputFile('read_1.sai'),
-        ),
-    )
-
-    workflow.commandline(
-        name='aln_read_2',
-        ctx={'mem': config['med_mem']},
-        args=(
-            config['bwa'], 'aln',
-            mgd.InputFile(ref_genome),
-            mgd.InputFile(fastq_2_filename),
-            '>',
-            mgd.TempOutputFile('read_2.sai'),
-        ),
-    )
-
-    workflow.commandline(
-        name='sampe',
-        ctx={'mem': config['med_mem']},
-        args=(
-            config['bwa'], 'sampe',
-            '-r', read_group,
-            mgd.InputFile(ref_genome),
-            mgd.TempInputFile('read_1.sai'),
-            mgd.TempInputFile('read_2.sai'),
             mgd.InputFile(fastq_1_filename),
             mgd.InputFile(fastq_2_filename),
-            '|',
-            config['samtools'], 'view',
-            '-bSh', '-',
-            '>',
             mgd.TempOutputFile('aligned.bam'),
-        ),
-    )
+            mgd.TempSpace('alignment_temp'),
+            mgd.InputFile(ref_genome),
+            config,
+            read_group
+            )
+        )
 
     workflow.transform(
         name='bam_sort',

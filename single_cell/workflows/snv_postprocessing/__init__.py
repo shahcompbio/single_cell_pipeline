@@ -20,8 +20,6 @@ def create_snv_postprocessing_workflow(
                                        config,
                                        out_dir
                                        ):
-    script_path = os.path.join(os.path.realpath(os.path.dirname(__file__)),
-                               'scripts', 'get_cell_counts.py')
 
     countdata = os.path.join(out_dir, 'pseudo_wgs', 'counts', '{sample_id}_counts.csv')
 
