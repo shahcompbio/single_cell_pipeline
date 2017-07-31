@@ -81,7 +81,7 @@ def main():
 
     fastq_1_filenames = dict()
     fastq_2_filenames = dict()
-    for idx, row in fastqs.iterrows():
+    for _, row in fastqs.iterrows():
         fastq_1_filenames[(row['sample_id'], row['lane_id'])] = row['fastq_1']
         fastq_2_filenames[(row['sample_id'], row['lane_id'])] = row['fastq_2']
 
@@ -140,7 +140,7 @@ def main():
             mgd.InputInstance('lane'),
             mgd.InputInstance('sample_id'),
             config,
-            args['out_dir'],
+            args,
         ),
     )
 
@@ -280,18 +280,18 @@ def main():
             )
          
         workflow.subworkflow(
-                             name='postprocessing',
-                             func=snv_postprocessing.create_snv_postprocessing_workflow,
-                             args=(
-                                   mgd.InputFile('bam_markdups', 'sample_id', template=bam_template),
-                                   mgd.InputFile(museq_csv),
-                                   mgd.InputFile(strelka_snv_csv),
-                                   mgd.OutputFile(countdata),
-                                   sample_ids,
-                                   config,
-                                   args['out_dir'],
-                                   )
-                             )
+                name='postprocessing',
+                func=snv_postprocessing.create_snv_postprocessing_workflow,
+                args=(
+                      mgd.InputFile('bam_markdups', 'sample_id', template=bam_template),
+                      mgd.InputFile(museq_csv),
+                      mgd.InputFile(strelka_snv_csv),
+                      mgd.OutputFile(countdata),
+                      sample_ids,
+                      config,
+                      args['out_dir'],
+                      )
+            )
 
     pyp.run(workflow)
 

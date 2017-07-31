@@ -3,7 +3,7 @@
 read_group:  
   # Platform
   PL: illumina
-  
+
   # Sequencing centre identifier (either BCCAGSC or UBCBRC)
   CN: UBCBRC
 

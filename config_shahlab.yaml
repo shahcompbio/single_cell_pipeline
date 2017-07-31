@@ -2,10 +2,10 @@
 # Read group information (PU and LB are read from the NextSeq SampleSheet.csv file)
 read_group:  
   # Platform
-  PL: illumina
+  PL: None
 
   # Sequencing centre identifier (either BCCAGSC or UBCBRC)
-  CN: UBCBRC
+  CN: None
 
 # Reference genome to align to in fasta format. Should be indexed by aligner and samtools
 ref_genome: /shahlab/pipelines/reference/GRCh37-lite.fa
@@ -28,12 +28,6 @@ analysis_id: test
 # Bin size
 bin_size: 500000
 
-# Optional mappability cutoff
-map_cutoff: 0.9
-
-# Number of states
-num_states: 7
-
 # HMMcopy parameters
 parameters:
     mu: 0,0.5,1.0,1.5,2.0,2.5,3.0
@@ -45,6 +39,11 @@ parameters:
     e: None
 
     s: None
+
+	num_states: 7
+
+	map_cutoff: 0.9
+
 
 # Binned GC content file
 gc_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.gc.ws_500000.wig
