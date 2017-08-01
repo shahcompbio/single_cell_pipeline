@@ -36,6 +36,16 @@ def create_bam_post_workflow(
     insert_metrics_filename = os.path.join(metrics_dir, 'insert_metrics', '{sample_id}.insert_metrics.txt')
     insert_histogram_filename = os.path.join(metrics_dir, 'insert_metrics', '{sample_id}.insert_metrics.pdf')
 
+
+
+    bam_filename = dict([(sampid, bam_filename[sampid])
+                         for sampid in sample_ids])
+
+    bam_index_filename = dict([(sampid, bam_index_filename[sampid])
+                         for sampid in sample_ids])
+
+
+
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
@@ -59,6 +69,7 @@ def create_bam_post_workflow(
     workflow.transform(
         name='bam_markdups',
         ctx={'mem': config['high_mem']},
+        axes=('sample_id',),
         func=tasks.bam_markdups,
         args=(
             mgd.TempInputFile('sorted.bam', 'sample_id'),
@@ -78,7 +89,7 @@ def create_bam_post_workflow(
             mgd.OutputFile('sorted_markdups_index', 'sample_id', fnames=bam_index_filename),
         ),
     )
-   
+    
     workflow.commandline(
         name='bam_flagstat',
         ctx={'mem': config['low_mem']},
@@ -90,20 +101,20 @@ def create_bam_post_workflow(
             mgd.OutputFile(flagstat_metrics_filename, 'sample_id'),
         ),
     )
-   
+    
     workflow.transform(
         name='bam_collect_wgs_metrics',
         ctx={'mem': config['high_mem']},
         func=tasks.bam_collect_wgs_metrics,
         axes=('sample_id',),
         args=(
-            mgd.InputFile(bam_filename),
+            mgd.InputFile('sorted_markdups', 'sample_id', fnames=bam_filename),
             mgd.InputFile(ref_genome),
             mgd.OutputFile(wgs_metrics_filename, 'sample_id'),
             config,
         ),
     )
-   
+    
     workflow.transform(
         name='bam_collect_gc_metrics',
         ctx={'mem': config['high_mem']},
@@ -118,7 +129,7 @@ def create_bam_post_workflow(
             config
         ),
     )
-   
+    
     workflow.transform(
         name='bam_collect_insert_metrics',
         ctx={'mem': config['high_mem']},
@@ -132,7 +143,7 @@ def create_bam_post_workflow(
             config
         ),
     )
-       
+        
     workflow.transform(
         name='collect_metrics',
         ctx={'mem': config['low_mem']},
@@ -147,7 +158,7 @@ def create_bam_post_workflow(
             mgd.InputInstance('sample_id'),
         ),
     )
-   
+    
     workflow.transform(
         name='collect_gc_metrics',
         ctx={'mem': config['low_mem']},
@@ -162,8 +173,8 @@ def create_bam_post_workflow(
             'gcbias'
         ),
     )
-
-
+ 
+ 
     workflow.transform(
         name='merge_summary_metrics',
         ctx={'mem': config['low_mem']},
@@ -173,7 +184,7 @@ def create_bam_post_workflow(
             mgd.OutputFile(alignment_metrics),
         ),
     )
-
+ 
     workflow.transform(
         name='merge_gc_metrics',
         ctx={'mem': config['low_mem']},

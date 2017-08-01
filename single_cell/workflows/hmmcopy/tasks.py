@@ -28,7 +28,7 @@ def run_hmmcopy(bam_file,
     os.makedirs(tempdir)
     readcount_wig = os.path.join(tempdir, 'readcounter.wig')
     pypeliner.commandline.execute(
-            'readcounter',
+            'readCounter',
             '-w', str(config['hmmcopy_params']['bin_size']),
             '-q', str(config['hmmcopy_params']['min_mqual']),
             '-c', ','.join(config['chromosomes']),
@@ -36,7 +36,6 @@ def run_hmmcopy(bam_file,
             '>',
             readcount_wig,
         )
-
 
     #run hmmcopy
     cmd = ['Rscript', run_hmmcopy_rscript,

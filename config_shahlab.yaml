@@ -2,10 +2,10 @@
 # Read group information (PU and LB are read from the NextSeq SampleSheet.csv file)
 read_group:  
   # Platform
-  PL: None
+  PL: null
 
   # Sequencing centre identifier (either BCCAGSC or UBCBRC)
-  CN: None
+  CN: null
 
 picard_wgs_params:
   # Minimum base quality to count a read
@@ -25,9 +25,9 @@ hmmcopy_params:
 
   kappa: 25,100,700,100,25,25,25
 
-  e: None
+  e: null
 
-  s: None
+  s: null
 
   # Optional mappability cutoff
   map_cutoff: 0.9

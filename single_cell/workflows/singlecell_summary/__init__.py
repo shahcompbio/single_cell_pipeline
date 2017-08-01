@@ -28,8 +28,6 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
     bias_plot_filename_mad = os.path.join(plots_dir, 'bias_mad_0.2.pdf')
     segs_plot_filename_mad = os.path.join(plots_dir, 'segments_mad_0.2.pdf')
 
-    order_data_all_output = os.path.join(plots_dir, 'plot_heatmap_all.csv')
-
     plot_heatmap_ec_output = os.path.join(plots_dir, 'plot_heatmap_ec.pdf')
     plot_heatmap_ec_mad_output = os.path.join(plots_dir,
                                               'plot_heatmap_ec_mad.pdf')
@@ -48,27 +46,15 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
         value=sample_ids,
     )
 
-    workflow.transform(
-        name='merge_all_metrics',
-        ctx={'mem': config['low_mem']},
-        func=tasks.merge_tables,
-        args=(
-            [mgd.InputFile(metrics_summary),
-             mgd.InputFile(hmm_metrics),
-             mgd.InputFile(sample_info)],
-            mgd.TempOutputFile('all_metrics.csv'),
-            'merge', ',', 'outer', 'cell_id', 'NA'
-        )
-    )
-
+    #calculate cell ordering in hierarchical clustering
     workflow.transform(
         name='plot_heatmap_all',
         ctx={'mem': config['high_mem']},
         func=tasks.plot_heatmap,
         args=(
             mgd.InputFile(hmm_reads),
-            mgd.TempInputFile('all_metrics.csv'),
-            mgd.OutputFile(order_data_all_output),
+            None,
+            mgd.TempOutputFile('order_data.csv'),
             None,
         ),
         kwargs={
@@ -79,12 +65,14 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
     )
 
     workflow.transform(
-        name='merge_all_metrics_heatmap',
-        ctx={'mem': config['high_mem']},
+        name='merge_all_metrics',
+        ctx={'mem': config['low_mem']},
         func=tasks.merge_tables,
         args=(
-            [mgd.TempInputFile('all_metrics.csv'),
-             mgd.InputFile(order_data_all_output)],
+            [mgd.InputFile(metrics_summary),
+             mgd.InputFile(hmm_metrics),
+             mgd.InputFile(sample_info),
+             mgd.TempInputFile('order_data.csv')],
             mgd.OutputFile(all_metrics_file),
             'merge', ',', 'outer', 'cell_id', 'NA'
         )
@@ -104,7 +92,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
             mgd.OutputFile(bias_plot_filename),
         ),
         kwargs={
-            'num_states': config['num_states'],
+            'num_states': config['hmmcopy_params']['num_states'],
             'plot_title': 'QC pipeline metrics',
         }
 
@@ -124,7 +112,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
             mgd.OutputFile(bias_plot_filename_mad),
         ),
         kwargs={
-            'num_states': config['num_states'],
+            'num_states': config['hmmcopy_params']['num_states'],
             'plot_title': 'QC pipeline metrics',
             'mad_threshold': config['hmmcopy_plot_mad_threshold'],
         }

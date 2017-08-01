@@ -26,9 +26,10 @@ def create_alignment_workflow(
 
     workflow = pypeliner.workflow.Workflow()
 
-    workflow.commandline(
+    workflow.transform(
         name='bwa_align',
         ctx={'mem': config['med_mem']},
+        func=tasks.align_paired_end,
         args=(
             mgd.InputFile(fastq_1_filename),
             mgd.InputFile(fastq_2_filename),

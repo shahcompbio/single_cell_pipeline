@@ -3,7 +3,7 @@ import os
 
 def get_readgroup(run_id, sample_id, args, config):
     platform = 'illumina'
-    centre = 'UBCBRC' if args.nextseq else 'BCCAGSC'
+    centre = 'UBCBRC' if args['nextseq'] else 'BCCAGSC'
 
     if 'read_group' in config:
         if config['read_group']['PL']:
@@ -40,6 +40,8 @@ def align_paired_end(fastq1, fastq2, output, tempdir,
     run bwa aln on both fastq files,
     bwa sampe to align, and convert to bam with samtools view
     """
+    if not os.path.exists(tempdir):
+        os.makedirs(tempdir)
 
     read_1_sai = os.path.join(tempdir, 'read_1.sai')
     read_2_sai = os.path.join(tempdir, 'read_2.sai')
@@ -52,9 +54,10 @@ def align_paired_end(fastq1, fastq2, output, tempdir,
             reference,
             fastq1,
             '>',
-            read_1_sai,
-                                  
+            read_1_sai                                  
       )
+
+
 
     pypeliner.commandline.execute(
             'bwa',

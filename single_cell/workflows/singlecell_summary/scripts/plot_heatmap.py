@@ -313,7 +313,7 @@ class PlotHeatmap(object):
         data = data.loc[samples]
         return data
 
-    def get_cluster_order(self, data, sepdata, colordata):
+    def get_cluster_order(self, data):
         """
         calculate distance matrix for clustering,
         get the ordering of the cells in the clustering
@@ -322,6 +322,14 @@ class PlotHeatmap(object):
  
         if not self.order_data:
             return
+
+        if all((self.cellcalls, self.mad_thres, self.reads_thres)):
+            mad_scores, sepdata, colordata, numread_data = self.read_metrics(data)
+            data = self.filter_data(data, colordata, mad_scores, numread_data)
+        else:
+            samples = list(set(data.index))
+            sepdata = {'all':samples}
+
 
         outfile = open(self.order_data, 'w')
         
@@ -337,8 +345,6 @@ class PlotHeatmap(object):
             self.write_cluster_order(outfile, order)
 
         outfile.close()
-
-
 
     def plot_heatmap(self, data, chr_idxs, cmap, vmax, ccdata, title, pdfout):
         """
@@ -438,13 +444,13 @@ class PlotHeatmap(object):
         data = self.get_pandas_dataframe(data, bins)
         chr_idxs = self.get_chr_idxs(bins)
 
-        mad_scores, sepdata, colordata, numread_data = self.read_metrics(data)
+        self.get_cluster_order(data)
 
-        data = self.filter_data(data, colordata, mad_scores, numread_data)
+        if self.output:
+            mad_scores, sepdata, colordata, numread_data = self.read_metrics(data)
+            data = self.filter_data(data, colordata, mad_scores, numread_data)
 
-        self.get_cluster_order(data, sepdata, colordata)
-
-        self.plot_heatmap_by_sep(data, chr_idxs, sepdata, colordata)
+            self.plot_heatmap_by_sep(data, chr_idxs, sepdata, colordata)
 
 
 def parse_args():

@@ -52,7 +52,7 @@ def generate_targets(input_bams, config, intervals, interval):
     pypeliner.commandline.execute(*cmd)
 
 
-def gatk_realigner(inputs, config, targets, interval):
+def gatk_realigner(inputs, config, targets, interval, tempdir):
     cmd = ['gatk', '-Xmx12G',
            '-T', 'IndelRealigner',
            '-R', config['ref_genome'],
@@ -62,6 +62,8 @@ def gatk_realigner(inputs, config, targets, interval):
 
     for _, bamfile in inputs.iteritems():
         cmd.extend(['-I', bamfile])
+
+    os.chdir(tempdir)
 
     pypeliner.commandline.execute(*cmd)
 
@@ -89,7 +91,7 @@ def realign(input_bams, output_bams, tempdir, config, interval):
     generate_targets(input_bams, config, targets, interval)
 
     # run gatk realigner
-    gatk_realigner(new_inputs, config, targets, interval)
+    gatk_realigner(new_inputs, config, targets, interval, tempdir)
 
     # copy generated files in temp dir to the specified output paths
     for key in input_bams.keys():

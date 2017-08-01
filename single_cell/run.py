@@ -155,30 +155,26 @@ def main():
     # merge bams per sample for all lanes
     workflow.subworkflow(
         name='bam_postprocess_workflow',
-        axes=('sample_id',),
         func=alignment_postprocessing.create_bam_post_workflow,
         args=(
             mgd.TempInputFile('merged_realign.bam', 'sample_id'),
-            mgd.OutputFile('bam_markdups', 'sample_id', template=bam_template),
+            mgd.OutputFile('bam_markdups', 'sample_id', template=bam_template, axes_origin=[]),
             mgd.OutputFile('bam_markdups_index', 'sample_id',
-                           template=bam_index_template),
+                           template=bam_index_template, axes_origin=[]),
             mgd.InputFile(config['ref_genome']),
             mgd.TempOutputFile('alignment_metrics.csv'),
             mgd.OutputFile(gc_metrics),
-            mgd.InputInstance('sample_id'),
+            sampleids,
             config,
             args['out_dir'],
-            lanes,
         ),
     )
-
 
     results_dir = os.path.join(args['out_dir'], 'results')
     segs_filename = os.path.join(results_dir, 'segments.csv')
     reads_filename = os.path.join(results_dir, 'reads.csv')
     workflow.subworkflow(
         name='hmmcopy_workflow',
-        axes=('sample_id',),
         func=hmmcopy.create_hmmcopy_workflow,
         args=(
             mgd.InputFile('bam_markdups', 'sample_id', template=bam_template),
@@ -190,7 +186,7 @@ def main():
             args
         ),
     )
-
+ 
     # merge all samples per lane together
     workflow.subworkflow(
         name='summary_workflow',
@@ -207,9 +203,9 @@ def main():
             sampleids
         ),
     )
-
+ 
     if args['generate_pseudo_wgs']:
-
+ 
         pseudo_wgs_bam = os.path.join(args['out_dir'], 'pseudo_wgs',
                                       'merged.sorted.markdups.bam')
         pseudo_wgs_bai = os.path.join(args['out_dir'], 'pseudo_wgs',
@@ -228,7 +224,7 @@ def main():
                 args['out_dir'],
             )
         )
-
+ 
     if args['matched_normal']:
         varcalls_dir = os.path.join(args['out_dir'], 'pseudo_wgs',
                                     'variant_calling')
@@ -247,7 +243,7 @@ def main():
                 args['out_dir'],
             ),
         )
-
+ 
         strelka_snv_vcf = os.path.join(varcalls_dir, 'strelka_snv.vcf')
         strelka_indel_vcf = os.path.join(varcalls_dir, 'strelka_indel.vcf')
         strelka_snv_csv = os.path.join(varcalls_dir, 'strelka_snv.csv')
@@ -265,7 +261,7 @@ def main():
                 mgd.OutputFile(strelka_snv_csv),
             ),
         )
-
+ 
         countdata = os.path.join(args['out_dir'], 'pseudo_wgs',
                                  'counts', 'counts.csv')
         workflow.subworkflow(

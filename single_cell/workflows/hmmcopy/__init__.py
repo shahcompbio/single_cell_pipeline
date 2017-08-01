@@ -41,7 +41,7 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
             mgd.TempOutputFile('hmm_metrics.csv', 'sample_id'),
             mgd.InputInstance('sample_id'),
             config,
-            mgd.TempSpace('hmmcopy_temp')
+            mgd.TempSpace('hmmcopy_temp', 'sample_id')
         ),
     )
 
