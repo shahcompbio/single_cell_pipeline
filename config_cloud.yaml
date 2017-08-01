@@ -8,38 +8,38 @@ read_group:
   CN: None
 
 picard_wgs_params:
-    # Minimum base quality to count a read
-    min_bqual: 20
+  # Minimum base quality to count a read
+  min_bqual: 20
 
-    # Minimum mapping quality to count a read
-    min_mqual: 20
+  # Minimum mapping quality to count a read
+  min_mqual: 20
 
-    # Count unpaired reads for wgs metrics
-    count_unpaired: false
+  # Count unpaired reads for wgs metrics
+  count_unpaired: false
 
 # HMMcopy parameters
 parameters:
-    mu: 0,0.5,1.0,1.5,2.0,2.5,3.0
+  mu: 0,0.5,1.0,1.5,2.0,2.5,3.0
 
-    m: 0,0.5,1.0,1.5,2.0,2.5,3.0
+  m: 0,0.5,1.0,1.5,2.0,2.5,3.0
 
-    kappa: 25,100,700,100,25,25,25
+  kappa: 25,100,700,100,25,25,25
 
-    e: 0.995
+  e: 0.995
 
-    s: 35
+  s: 35
 
-  	# Optional mappability cutoff
-  	map_cutoff: 0.9
+ 	# Optional mappability cutoff
+  map_cutoff: 0.9
 
-  	# Number of states
-  	num_states: 7
+  # Number of states
+  num_states: 7
 
-    # Minimum mapping quality to count a read
-    min_mqual: 20
+  # Minimum mapping quality to count a read
+  min_mqual: 20
 
-    # Bin size
-    bin_size: 500000
+  # Bin size
+  bin_size: 500000
 
 # Reference genome to align to in fasta format. Should be indexed by aligner and samtools
 ref_genome: /datadrive/refdata/GRCh37-lite.fa

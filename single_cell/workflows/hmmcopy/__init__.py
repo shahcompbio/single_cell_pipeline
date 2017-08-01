@@ -12,47 +12,95 @@ import tasks
 
 def create_hmmcopy_workflow(bam_file, corrected_reads_file,
                             segments_file, hmm_metrics_file,
-                            cnmatrix_file, sample_id, config, out_dir):
+                            sample_ids, config, args):
 
-    hmmcopy_directory = os.path.join(out_dir, 'hmmcopy', 'intermediates')
+    results_dir = os.path.join(args['out_dir'], 'results')
+    reads_filt_filename = os.path.join(results_dir, 'filtered_reads.csv')
+    segs_filt_filename = os.path.join(results_dir, 'filtered_segs.csv')
+    cn_matrix_file = os.path.join(results_dir, 'cn_matrix.csv')
 
-    posterior_marginals_filename = os.path.join(hmmcopy_directory, '{}_posteriors.csv'.format(sample_id))
- 
-    params_filename = os.path.join(hmmcopy_directory, '{}_parameters.csv'.format(sample_id))
-
-    wig_file =  os.path.join(hmmcopy_directory, '{}_readcounter.wig'.format(sample_id))
 
     workflow = pypeliner.workflow.Workflow()
+
+    workflow.setobj(
+        obj=mgd.OutputChunks('sample_id'),
+        value=sample_ids,
+    )
 
     workflow.transform(
         name='run_hmmcopy',
         ctx={'mem': config['low_mem']},
         func=tasks.run_hmmcopy,
+        axes=('sample_id',),
         args=(
-            mgd.InputFile(wig_file),
-            mgd.OutputFile(corrected_reads_file),
-            mgd.OutputFile(segments_file),
-            mgd.OutputFile(params_filename),
-            mgd.OutputFile(posterior_marginals_filename),
-            mgd.OutputFile(hmm_metrics_file),
-            sample_id,
+            mgd.InputFile('bam_markdups', 'sample_id', fnames=bam_file),
+            mgd.TempOutputFile('reads.csv', 'sample_id'),
+            mgd.TempOutputFile('segs.csv', 'sample_id'),
+            mgd.TempOutputFile('params.csv', 'sample_id'),
+            mgd.TempOutputFile('posteriors.csv', 'sample_id'),
+            mgd.TempOutputFile('hmm_metrics.csv', 'sample_id'),
+            mgd.InputInstance('sample_id'),
             config,
             mgd.TempSpace('hmmcopy_temp')
         ),
     )
- 
+
     workflow.transform(
-        name='collect_cn_metrics',
+        name='generate_cn_matrix',
         ctx={'mem': config['low_mem']},
         func=tasks.generate_cn_matrix,
         args=(
-            mgd.InputFile(corrected_reads_file),
-            mgd.OutputFile(cnmatrix_file),
-            ',',
-            'integer_copy_number',
-            sample_id,
-            'hmmcopy_corrected_reads',
+            mgd.TempInputFile('reads.csv', 'sample_id'),
+            mgd.OutputFile(cn_matrix_file),
+            mgd.TempSpace('cnmatrix_temp')
         ),
     )
+
+    workflow.transform(
+        name='merge_tables',
+        ctx={'mem': config['med_mem']},
+        func=tasks.concatenate_csv,
+        args=(
+            mgd.TempInputFile('segs.csv', 'sample_id'),
+            mgd.OutputFile(segments_file),
+        ),
+    )
+
+    workflow.transform(
+        name='merge_reads',
+        ctx={'mem': config['high_mem']},
+        func=tasks.concatenate_csv,
+        args=(
+            mgd.TempInputFile('reads.csv', 'sample_id'),
+            mgd.OutputFile(corrected_reads_file),
+        ),
+    )
+
+    workflow.transform(
+        name='merge_hmm_metrics',
+        ctx={'mem': config['low_mem']},
+        func=tasks.concatenate_csv,
+        args=(
+            mgd.TempInputFile('hmm_metrics.csv', 'sample_id'),
+            mgd.OutputFile(hmm_metrics_file),
+        ),
+    )
+
+    workflow.transform(
+        name='filter_hmmcopy_results',
+        ctx={'mem': config['high_mem']},
+        func=tasks.filter_hmm_data,
+        args=(
+            mgd.InputFile(hmm_metrics_file),
+            mgd.InputFile(segments_file),
+            mgd.InputFile(corrected_reads_file),
+            0.2,
+            mgd.OutputFile(reads_filt_filename),
+            mgd.OutputFile(segs_filt_filename),
+        )
+    )
+
+
+
 
     return workflow

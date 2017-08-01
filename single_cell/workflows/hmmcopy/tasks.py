@@ -7,7 +7,8 @@ import os
 import pypeliner
 from scripts import ExtractHmmMetrics
 from scripts import GenerateCNMatrix
-
+from scripts import FilterHmmData
+import pandas as pd
 
 scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
 run_hmmcopy_rscript = os.path.join(scripts_directory, 'hmmcopy.R')
@@ -77,6 +78,82 @@ def run_hmmcopy(bam_file,
     metrics.main()
 
 
-def generate_cn_matrix(infile, output, sep, colname, sample_id, typ):
-    gen_gc = GenerateCNMatrix(infile, output, sep, colname, sample_id, typ)
-    gen_gc.main()
+def merge_frames(frames, how, on):
+    '''
+    annotates input_df using ref_df
+    '''
+
+    if ',' in on:
+        on = on.split(',')
+
+    if len(frames) == 1:
+        return frames[0]
+    else:
+        left = frames[0]
+        right = frames[1]
+        merged_frame = pd.merge(left, right,
+                                how=how,
+                                on=on)
+        for frame in frames[2:]:
+            merged_frame = pd.merge(merged_frame, frame,
+                                    how=how,
+                                    on=on)
+        return merged_frame
+
+def merge_csv(in_filenames, out_filename, how, on, nan_val='NA'):
+    data = []
+
+    if isinstance(in_filenames, dict):
+        in_filenames = in_filenames.values()
+    
+    for in_filename in in_filenames:
+        with open(in_filename) as f:
+            first_line = f.readline()
+            if len(first_line) == 0:
+                continue
+        data.append(pd.read_csv(in_filename, dtype=str))
+
+    data = merge_frames(data, how, on)
+    data = data.fillna(nan_val)
+    data.to_csv(out_filename, index=False)
+
+def concatenate_csv(in_filenames, out_filename, nan_val='NA'):
+    data = []
+    for _, in_filename in in_filenames.iteritems():
+        with open(in_filename) as f:
+            first_line = f.readline()
+            if len(first_line) == 0:
+                continue
+        data.append(pd.read_csv(in_filename, dtype=str))
+    data = pd.concat(data, ignore_index=True)
+    data = data.fillna(nan_val)
+    data.to_csv(out_filename, index=False)
+
+
+
+def generate_cn_matrix(infiles, output, tempdir):
+    """
+    generate cn matrix per cell
+    merge all matrices and dump to output
+    """
+    
+    if not os.path.exists(tempdir):
+        os.mkdir(tempdir)
+    
+    for sample_id, infile in infiles.iteritems():
+        outfile= os.path.join(tempdir, sample_id+'_matrix.csv')
+        gen_gc = GenerateCNMatrix(infile, outfile, ',', 'integer_copy_number',
+                                  sample_id, 'hmmcopy_corrected_reads')
+        gen_gc.main()
+
+    
+    matrix_files = os.listdir(tempdir)
+    
+    merge_csv(matrix_files, output, 'outer', 'chr,start,end,width')
+    
+    
+def filter_hmm_data(quality_metrics, segments, reads, mad_threshold,
+                    reads_out, segments_out):
+    filter_hmm = FilterHmmData(quality_metrics, segments, reads,
+                               mad_threshold, reads_out, segments_out)
+    filter_hmm.main()

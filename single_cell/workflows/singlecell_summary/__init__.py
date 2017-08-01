@@ -10,19 +10,13 @@ import tasks
 
 
 def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
-                            metrics_summary, gc_matrix, cn_matrix, config,
+                            metrics_summary, gc_matrix, config,
                             out_dir, sample_ids):
 
     results_dir = os.path.join(out_dir, 'results')
 
-    segs_filename = os.path.join(results_dir, 'segments.csv')
-    reads_filename = os.path.join(results_dir, 'reads.csv')
-    reads_filt_filename = os.path.join(results_dir, 'filtered_reads.csv')
-    segs_filt_filename = os.path.join(results_dir, 'filtered_segs.csv')
 
     all_metrics_file = os.path.join(results_dir, 'all_metrics_summary.csv')
-    gc_metrics_file = os.path.join(results_dir, 'gc_metrics_summary.csv')
-    cn_matrix_file = os.path.join(results_dir, 'cn_matrix.csv')
 
     plots_dir = os.path.join(results_dir, 'plots')
     reads_plot_filename = os.path.join(plots_dir, 'corrected_reads.pdf')
@@ -55,91 +49,12 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
     )
 
     workflow.transform(
-        name='merge_tables',
-        ctx={'mem': config['med_mem']},
-        func=tasks.concatenate_csv,
-        args=(
-            mgd.InputFile('hmm_segments', 'sample_id', fnames=hmm_segments),
-            mgd.OutputFile(segs_filename),
-        ),
-    )
-
-    workflow.transform(
-        name='merge_reads',
-        ctx={'mem': config['high_mem']},
-        func=tasks.concatenate_csv,
-        args=(
-            mgd.InputFile('hmm_reads', 'sample_id', fnames=hmm_reads),
-            mgd.OutputFile(reads_filename),
-        ),
-    )
-
-    workflow.transform(
-        name='merge_hmm_metrics',
-        ctx={'mem': config['low_mem']},
-        func=tasks.concatenate_csv,
-        args=(
-            mgd.InputFile('hmm_metrics', 'sample_id', fnames=hmm_metrics),
-            mgd.TempOutputFile('hmmcopy_hmm_metrics.csv'),
-        ),
-    )
-
-    workflow.transform(
-        name='merge_summary_metrics',
-        ctx={'mem': config['low_mem']},
-        func=tasks.concatenate_csv,
-        args=(
-            mgd.InputFile('metrics_summary', 'sample_id',
-                          fnames=metrics_summary),
-            mgd.TempOutputFile('metrics_summary.csv'),
-        ),
-    )
-
-    workflow.transform(
-        name='merge_gc_metrics',
-        ctx={'mem': config['low_mem']},
-        func=tasks.merge_csv,
-        args=(
-            mgd.InputFile('gc_matrix', 'sample_id', fnames=gc_matrix),
-            mgd.OutputFile(gc_metrics_file),
-            'outer',
-            'gc'
-        ),
-    )
-
-    workflow.transform(
-        name='merge_cn_metrics',
-        ctx={'mem': config['low_mem']},
-        func=tasks.merge_csv,
-        args=(
-            mgd.InputFile('cn_matrix', 'sample_id', fnames=cn_matrix),
-            mgd.OutputFile(cn_matrix_file),
-            'outer',
-            'chr,start,end,width'
-        ),
-    )
-
-    workflow.transform(
-        name='filter_hmmcopy_results',
-        ctx={'mem': config['high_mem']},
-        func=tasks.filter_hmm_data,
-        args=(
-            mgd.TempInputFile('hmmcopy_hmm_metrics.csv'),
-            mgd.InputFile(segs_filename),
-            mgd.InputFile(reads_filename),
-            0.2,
-            mgd.OutputFile(reads_filt_filename),
-            mgd.OutputFile(segs_filt_filename),
-        )
-    )
-
-    workflow.transform(
         name='merge_all_metrics',
         ctx={'mem': config['low_mem']},
         func=tasks.merge_tables,
         args=(
-            [mgd.TempInputFile('metrics_summary.csv'),
-             mgd.TempInputFile('hmmcopy_hmm_metrics.csv'),
+            [mgd.InputFile(metrics_summary),
+             mgd.InputFile(hmm_metrics),
              mgd.InputFile(sample_info)],
             mgd.TempOutputFile('all_metrics.csv'),
             'merge', ',', 'outer', 'cell_id', 'NA'
@@ -151,7 +66,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
         ctx={'mem': config['high_mem']},
         func=tasks.plot_heatmap,
         args=(
-            mgd.InputFile(reads_filename),
+            mgd.InputFile(hmm_reads),
             mgd.TempInputFile('all_metrics.csv'),
             mgd.OutputFile(order_data_all_output),
             None,
@@ -180,8 +95,8 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
         ctx={'mem': config['high_mem']},
         func=tasks.plot_hmmcopy,
         args=(
-            mgd.InputFile(reads_filename),
-            mgd.InputFile(segs_filename),
+            mgd.InputFile(hmm_reads),
+            mgd.InputFile(hmm_segments),
             mgd.InputFile(all_metrics_file),
             mgd.InputFile(config['ref_genome']),
             mgd.OutputFile(reads_plot_filename),
@@ -200,8 +115,8 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
         ctx={'mem': config['high_mem']},
         func=tasks.plot_hmmcopy,
         args=(
-            mgd.InputFile(reads_filename),
-            mgd.InputFile(segs_filename),
+            mgd.InputFile(hmm_reads),
+            mgd.InputFile(hmm_segments),
             mgd.InputFile(all_metrics_file),
             mgd.InputFile(config['ref_genome']),
             mgd.OutputFile(reads_plot_filename_mad),
@@ -223,7 +138,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
             mgd.InputFile(all_metrics_file),
             mgd.OutputFile(plot_metrics_output),
             'QC pipeline metrics',
-            mgd.InputFile(gc_metrics_file),
+            mgd.InputFile(gc_matrix),
             mgd.InputFile(config['gc_windows'])
         )
     )
@@ -256,7 +171,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
         ctx={'mem': config['high_mem']},
         func=tasks.plot_heatmap,
         args=(
-            mgd.InputFile(reads_filename),
+            mgd.InputFile(hmm_reads),
             mgd.InputFile(all_metrics_file),
             None,
             mgd.OutputFile(plot_heatmap_ec_output),
@@ -273,7 +188,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
         ctx={'mem': config['high_mem']},
         func=tasks.plot_heatmap,
         args=(
-            mgd.InputFile(reads_filename),
+            mgd.InputFile(hmm_reads),
             mgd.InputFile(all_metrics_file),
             None,
             mgd.OutputFile(plot_heatmap_ec_mad_output),
@@ -291,7 +206,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
         ctx={'mem': config['high_mem']},
         func=tasks.plot_heatmap,
         args=(
-            mgd.InputFile(reads_filename),
+            mgd.InputFile(hmm_reads),
             mgd.InputFile(all_metrics_file),
             None,
             mgd.OutputFile(plot_heatmap_ec_numreads_output),

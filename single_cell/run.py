@@ -150,6 +150,8 @@ def main():
     bam_directory = os.path.join(args['out_dir'], 'bams')
     bam_template = os.path.join(bam_directory, '{sample_id}.bam')
     bam_index_template = os.path.join(bam_directory, '{sample_id}.bam.bai')
+    results_dir = os.path.join(args['out_dir'], 'results')
+    gc_metrics = os.path.join(results_dir, 'gc_metrics.csv')
     # merge bams per sample for all lanes
     workflow.subworkflow(
         name='bam_postprocess_workflow',
@@ -161,8 +163,8 @@ def main():
             mgd.OutputFile('bam_markdups_index', 'sample_id',
                            template=bam_index_template),
             mgd.InputFile(config['ref_genome']),
-            mgd.TempOutputFile('merge_metrics_summary_template', 'sample_id'),
-            mgd.TempOutputFile('merge_metrics_gcmatrix_template', 'sample_id'),
+            mgd.TempOutputFile('alignment_metrics.csv'),
+            mgd.OutputFile(gc_metrics),
             mgd.InputInstance('sample_id'),
             config,
             args['out_dir'],
@@ -170,19 +172,22 @@ def main():
         ),
     )
 
+
+    results_dir = os.path.join(args['out_dir'], 'results')
+    segs_filename = os.path.join(results_dir, 'segments.csv')
+    reads_filename = os.path.join(results_dir, 'reads.csv')
     workflow.subworkflow(
         name='hmmcopy_workflow',
         axes=('sample_id',),
         func=hmmcopy.create_hmmcopy_workflow,
         args=(
             mgd.InputFile('bam_markdups', 'sample_id', template=bam_template),
-            mgd.TempOutputFile('hmmcopy_reads_template', 'sample_id'),
-            mgd.TempOutputFile('hmmcopy_segments_template', 'sample_id'),
-            mgd.TempOutputFile('hmmcopy_hmm_metrics_template', 'sample_id'),
-            mgd.TempOutputFile('cnmatrix_template', 'sample_id'),
-            mgd.InputInstance('sample_id'),
+            mgd.OutputFile(reads_filename),
+            mgd.OutputFile(segs_filename),
+            mgd.TempOutputFile('hmmcopy_hmm_metrics.csv'),
+            sampleids,
             config,
-            args['out_dir'],
+            args
         ),
     )
 
@@ -192,12 +197,11 @@ def main():
         func=singlecell_summary.create_summary_workflow,
         args=(
             mgd.InputFile(args['sample_info']),
-            mgd.TempInputFile('hmmcopy_segments_template', 'sample_id'),
-            mgd.TempInputFile('hmmcopy_reads_template', 'sample_id'),
-            mgd.TempInputFile('hmmcopy_hmm_metrics_template', 'sample_id'),
-            mgd.TempInputFile('merge_metrics_summary_template', 'sample_id'),
-            mgd.TempInputFile('merge_metrics_gcmatrix_template', 'sample_id'),
-            mgd.TempInputFile('cnmatrix_template', 'sample_id'),
+            mgd.InputFile(segs_filename),
+            mgd.InputFile(reads_filename),
+            mgd.TempInputFile('hmmcopy_hmm_metrics.csv'),
+            mgd.TempInputFile('alignment_metrics.csv'),
+            mgd.InputFile(gc_metrics),
             config,
             args['out_dir'],
             sampleids

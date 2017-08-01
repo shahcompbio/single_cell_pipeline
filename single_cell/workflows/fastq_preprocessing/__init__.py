@@ -65,7 +65,7 @@ def create_fastq_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, sa
                   mgd.InputFile(fastq_r2),
                   mgd.OutputFile(trim_r1),
                   mgd.OutputFile(trim_r2),
-                  'trimgalore',
+                  'trim_galore',
                   'cutadapt',
                   mgd.TempSpace('trim_temp'),
                   config['adapter'],

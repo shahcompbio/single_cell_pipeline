@@ -6,7 +6,6 @@ Created on Jul 24, 2017
 import pandas as pd
 from scripts import SummaryMetrics
 from scripts import PlotKernelDensity
-from scripts import FilterHmmData
 from scripts import MergeFiles
 from scripts import PlotHeatmap
 from scripts import GenHmmPlots
@@ -72,14 +71,6 @@ def plot_kernel_density(infile, output, sep, colname, plot_title):
     plot = PlotKernelDensity(infile, output, sep, colname, plot_title)
     plot.main()
 
-
-def filter_hmm_data(quality_metrics, segments, reads, mad_threshold,
-                    reads_out, segments_out):
-    filter_hmm = FilterHmmData(quality_metrics, segments, reads,
-                               mad_threshold, reads_out, segments_out)
-    filter_hmm.main()
-
-
 def merge_tables(infile, output, typ, sep,
                  merge_type, key_cols, nan_val):
 
@@ -110,3 +101,4 @@ def plot_hmmcopy(reads, segments, metrics, ref_genome, reads_out, segs_out,
                        bias_out, num_states=num_states, plot_title=plot_title,
                        mad_threshold=mad_threshold)
     plot.main()
+
