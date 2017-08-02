@@ -149,6 +149,7 @@ def create_wgs_workflow(
             mgd.InputFile(markdups_metrics_filename),
             mgd.InputFile(insert_metrics_filename),
             mgd.InputFile(wgs_metrics_filename),
+            None,
             mgd.OutputFile(metrics_summary_filename),
             None
         ),

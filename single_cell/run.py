@@ -240,7 +240,7 @@ def main():
                 mgd.OutputFile(museq_vcf),
                 mgd.OutputFile(museq_csv),
                 config,
-                args['out_dir'],
+                args,
             ),
         )
  
