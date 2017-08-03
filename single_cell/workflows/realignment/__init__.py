@@ -33,7 +33,7 @@ def create_realignment_workflow(input_bams, output_bams, config,
         )
 
         workflow.transform(
-            name='realignment_targets',
+            name='realignment',
             axes=('chrom',),
             ctx={'mem': config['high_mem']},
             func=tasks.realign,

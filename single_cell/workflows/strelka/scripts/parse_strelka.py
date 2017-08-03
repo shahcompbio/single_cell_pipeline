@@ -28,7 +28,7 @@ class ParseStrelka(object):
         self.index = {0: 'A', 1: 'C', 2: 'G', 3: 'T'}
 
         self.output = kwargs.get('output')
-        self.output = kwargs.get('project')
+        self.project = kwargs.get('project')
 
         self.genes = pau.read_file_to_list(kwargs.get('genes'))
         self.snpeff_keywords = kwargs.get('snpeff_keywords')
@@ -79,7 +79,7 @@ class ParseStrelka(object):
                 strelka = Vcf(tumour_id = tum_samp,
                                   normal_id = ref_samp,
                                   case_id = case,
-                                  project = self.args.project,
+                                  project = self.project,
                                   infile = fname,
                                   snpeff_keywords = self.snpeff_keywords,
                                   keep_dbsnp = self.keep_dbsnp,

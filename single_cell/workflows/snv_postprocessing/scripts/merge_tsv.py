@@ -117,6 +117,6 @@ class MergeFiles(object):
 
         out_df = self.merge(frames)
 
-        out_df = self.replace_missing_vals(out_df, nan_val=self.nan_value)
+        out_df = self.replace_missing_vals(out_df, nan_val=self.nan_val)
 
         self.write(out_df)

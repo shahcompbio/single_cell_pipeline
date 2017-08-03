@@ -567,9 +567,6 @@ def convert_vcf_to_hdf5(in_file, out_file, data_type='snv', table_name=None):
 
 #parse strelka vcf into csv format
 def parse_strelka(infile, output):
-    
-    raise Exception((infile, output))
-    
     parser = ParseStrelka(infile=infile, tid='NA', nid='NA', output=output,
                         keep_dbsnp=True,keep_1000gen=True,
                         remove_duplicates=True)

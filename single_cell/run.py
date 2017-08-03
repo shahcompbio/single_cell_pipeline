@@ -40,10 +40,6 @@ def parse_args():
     parser.add_argument('--matched_normal',
                         help='''Path to matched wgs normal.''')
 
-    parser.add_argument('--lanes',
-                        nargs='*',
-                        help='''Lanes to analyze.''')
-
     parser.add_argument('--nextseq',
                         action='store_true',
                         help='''Lanes to analyze.''')

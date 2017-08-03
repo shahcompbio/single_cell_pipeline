@@ -12,11 +12,12 @@ import gzip
 
 
 class GetCounts(object):
-    def __init__(self, bam, output, positions, sample_id, **kwargs):
+    def __init__(self, bam, positions, output, sample_id, **kwargs):
         self.sample_id = sample_id
         self.bam = bam
         self.positions = positions
-        
+        self.output = output
+
         self.max_pileup_depth = kwargs.get('max_pileup_depth')
         self.min_bqual = kwargs.get('min_bqual')
         self.min_mqual = kwargs.get('min_mqual')
