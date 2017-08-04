@@ -1,5 +1,7 @@
 # Single Cell Pipeline
 
+
+![build](https://www.bcgsc.ca/bamboo/plugins/servlet/wittified/build-status/SC-SCP)
 ## Setup and installation
 
 Set up conda with the required packages.
