@@ -139,15 +139,14 @@ def generate_cn_matrix(infiles, output, tempdir):
     if not os.path.exists(tempdir):
         os.mkdir(tempdir)
     
+    matrix_files = []
     for sample_id, infile in infiles.iteritems():
         outfile= os.path.join(tempdir, sample_id+'_matrix.csv')
         gen_gc = GenerateCNMatrix(infile, outfile, ',', 'integer_copy_number',
                                   sample_id, 'hmmcopy_corrected_reads')
         gen_gc.main()
+        matrix_files.append(outfile)
 
-    
-    matrix_files = os.listdir(tempdir)
-    
     merge_csv(matrix_files, output, 'outer', 'chr,start,end,width')
     
     
