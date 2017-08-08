@@ -61,7 +61,7 @@ The input sample info table provides meta data per cell.  The columns should be:
 - cell_id
 - cell_call
 - experimental_condition
-- sample_type
+- sample_type # No longer necessary
 - sample_well
 - sample_plate
 - i5_barcode
