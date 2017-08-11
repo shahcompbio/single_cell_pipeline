@@ -15,6 +15,8 @@ conda config --add channels 'bioconda'
 conda config --add channels 'r'
 ```
 
+### From Source
+
 Then create an environment with the required packages:
 
 ```
@@ -35,6 +37,14 @@ python setup.py develop
 
 Use develop mode to allow for modifying of the code during the debugging phase.
 Later versions will be released through conda.
+
+### From anaconda.org
+
+To install the latest production version from anaconda.org:
+
+```
+conda install single_cell_pipeline
+```
 
 ## Run the pipeline
 
