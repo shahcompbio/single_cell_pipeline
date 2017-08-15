@@ -139,7 +139,12 @@ class FilterHmmData(object):
         """
         head = False
         samples = self.get_sample_ids(df)
-        
+
+        #If the check_mad returns false: filter it
+        samples = [samp for samp in samples  if self.check_mad_score]
+        if len(samples)==0:
+            open(outfile, 'w').close()
+
         for sample in samples:
             #If the check_mad returns false: filter it
             if not self.check_mad_score(sample, metrics):
