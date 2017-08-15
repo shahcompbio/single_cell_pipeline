@@ -182,7 +182,7 @@ def main():
             args
         ),
     )
- 
+  
     # merge all samples per lane together
     workflow.subworkflow(
         name='summary_workflow',
@@ -199,9 +199,9 @@ def main():
             sampleids
         ),
     )
- 
+  
     if args['generate_pseudo_wgs']:
- 
+  
         pseudo_wgs_bam = os.path.join(args['out_dir'], 'pseudo_wgs',
                                       'merged.sorted.markdups.bam')
         pseudo_wgs_bai = os.path.join(args['out_dir'], 'pseudo_wgs',
@@ -220,7 +220,7 @@ def main():
                 args['out_dir'],
             )
         )
- 
+  
     if args['matched_normal']:
         varcalls_dir = os.path.join(args['out_dir'], 'pseudo_wgs',
                                     'variant_calling')
@@ -239,7 +239,7 @@ def main():
                 args,
             ),
         )
- 
+  
         strelka_snv_vcf = os.path.join(varcalls_dir, 'strelka_snv.vcf')
         strelka_indel_vcf = os.path.join(varcalls_dir, 'strelka_indel.vcf')
         strelka_snv_csv = os.path.join(varcalls_dir, 'strelka_snv.csv')
@@ -257,7 +257,7 @@ def main():
                 mgd.OutputFile(strelka_snv_csv),
             ),
         )
- 
+  
         countdata = os.path.join(args['out_dir'], 'pseudo_wgs',
                                  'counts', 'counts.csv')
         workflow.subworkflow(
@@ -274,7 +274,7 @@ def main():
                 args['out_dir'],
             )
         )
-
+ 
     pyp.run(workflow)
 
 if __name__ == '__main__':

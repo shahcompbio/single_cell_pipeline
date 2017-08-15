@@ -8,7 +8,6 @@ from scripts import SummaryMetrics
 from scripts import PlotKernelDensity
 from scripts import MergeFiles
 from scripts import PlotHeatmap
-from scripts import GenHmmPlots
 from scripts import PlotMetrics
 
 
@@ -94,11 +93,4 @@ def plot_heatmap(infile, metrics, order_data, output, plot_title=None,
                        mad_threshold=mad_threshold)
     plot.main()
 
-
-def plot_hmmcopy(reads, segments, metrics, ref_genome, reads_out, segs_out,
-                 bias_out, num_states=7, plot_title=None, mad_threshold=None):
-    plot = GenHmmPlots(reads, segments, metrics, ref_genome, reads_out, segs_out,
-                       bias_out, num_states=num_states, plot_title=plot_title,
-                       mad_threshold=mad_threshold)
-    plot.main()
 

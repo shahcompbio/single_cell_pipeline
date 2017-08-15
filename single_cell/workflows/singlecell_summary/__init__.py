@@ -19,14 +19,6 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
     all_metrics_file = os.path.join(results_dir, 'all_metrics_summary.csv')
 
     plots_dir = os.path.join(results_dir, 'plots')
-    reads_plot_filename = os.path.join(plots_dir, 'corrected_reads.pdf')
-    bias_plot_filename = os.path.join(plots_dir, 'bias.pdf')
-    segs_plot_filename = os.path.join(plots_dir, 'segments.pdf')
-
-    reads_plot_filename_mad = os.path.join(plots_dir,
-                                           'corrected_reads_mad_0.2.pdf')
-    bias_plot_filename_mad = os.path.join(plots_dir, 'bias_mad_0.2.pdf')
-    segs_plot_filename_mad = os.path.join(plots_dir, 'segments_mad_0.2.pdf')
 
     plot_heatmap_ec_output = os.path.join(plots_dir, 'plot_heatmap_ec.pdf')
     plot_heatmap_ec_mad_output = os.path.join(plots_dir,
@@ -76,46 +68,6 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
             mgd.OutputFile(all_metrics_file),
             'merge', ',', 'outer', 'cell_id', 'NA'
         )
-    )
-
-    workflow.transform(
-        name='plot_hmm_copy',
-        ctx={'mem': config['high_mem']},
-        func=tasks.plot_hmmcopy,
-        args=(
-            mgd.InputFile(hmm_reads),
-            mgd.InputFile(hmm_segments),
-            mgd.InputFile(all_metrics_file),
-            mgd.InputFile(config['ref_genome']),
-            mgd.OutputFile(reads_plot_filename),
-            mgd.OutputFile(segs_plot_filename),
-            mgd.OutputFile(bias_plot_filename),
-        ),
-        kwargs={
-            'num_states': config['hmmcopy_params']['num_states'],
-            'plot_title': 'QC pipeline metrics',
-        }
-
-    )
-
-    workflow.transform(
-        name='plot_hmm_copy_mad',
-        ctx={'mem': config['high_mem']},
-        func=tasks.plot_hmmcopy,
-        args=(
-            mgd.InputFile(hmm_reads),
-            mgd.InputFile(hmm_segments),
-            mgd.InputFile(all_metrics_file),
-            mgd.InputFile(config['ref_genome']),
-            mgd.OutputFile(reads_plot_filename_mad),
-            mgd.OutputFile(segs_plot_filename_mad),
-            mgd.OutputFile(bias_plot_filename_mad),
-        ),
-        kwargs={
-            'num_states': config['hmmcopy_params']['num_states'],
-            'plot_title': 'QC pipeline metrics',
-            'mad_threshold': config['hmmcopy_plot_mad_threshold'],
-        }
     )
 
     workflow.transform(
