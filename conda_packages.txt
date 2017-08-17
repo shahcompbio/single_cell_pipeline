@@ -26,3 +26,4 @@ matplotlib
 seaborn
 gatk
 strelka
+pypdf2
