@@ -52,8 +52,11 @@ def compute_chromosome_coordinates(df, ref_genome):
     return(df)
 
 def normalize_reads(df):
-    df['norm'] = df['reads']/np.median(df['reads'])
-    df['norm'] = df['norm'].where(df['valid'] == True)
+    if 'valid' not in df.columns.values:
+        df['norm'] = float('nan')
+    else:
+        df['norm'] = df['reads']/np.median(df['reads'])
+        df['norm'] = df['norm'].where(df['valid'] == True)
     return(df)
 
 def get_sample_id(out_file):

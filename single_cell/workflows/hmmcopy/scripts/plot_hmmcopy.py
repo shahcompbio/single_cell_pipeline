@@ -235,22 +235,22 @@ class GenHmmPlots(object):
         
         """
         fig = plt.figure(figsize=(15,12))
-        
+
         plt.subplot(3, 1, 1)
         ax = fig.gca()
         self.gen_reads_plot(df, ax, typ='norm')
         ax.set_title(title)
         ax.set_xlabel('')
-    
+
         plt.subplot(3, 1, 2)
         ax = fig.gca()
         self.gen_reads_plot(df, ax, typ='cor_gc')
         ax.set_xlabel('')
-        
+
         plt.subplot(3, 1, 3)
         ax = fig.gca()
         self.gen_reads_plot(df, ax, typ='cor_map')
-        
+
         sns.despine(offset=10, trim=True)
         plt.tight_layout()
         self.reads_pdf.savefig(fig, pad_inches=0.2)
