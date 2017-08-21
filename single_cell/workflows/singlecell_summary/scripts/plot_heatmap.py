@@ -215,6 +215,9 @@ class PlotHeatmap(object):
         df = df.T
         df.columns = bins
 
+
+        #remove cells that dont have any data
+        df = df.dropna()
         return df
 
     def get_chr_idxs(self, bins):
