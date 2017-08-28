@@ -147,6 +147,10 @@ class CollectMetrics(object):
         # if inputs don't have sufficient read count
         if not os.path.isfile(self.insert_metrics):
             return 0, 0, 0
+
+        #if the insert metrics fails due to low coverage
+        if open(self.insert_metrics).readline().startswith("## FAILED"):
+            return 0, 0, 0
     
         mfile = open(self.insert_metrics)
         
