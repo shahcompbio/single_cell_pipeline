@@ -1,9 +1,9 @@
 import pypeliner.commandline
 import os
 
-def get_readgroup(run_id, sample_id, args, config):
+def get_readgroup(run_id, sample_id, args, config, seqinfo):
     platform = 'illumina'
-    centre = 'UBCBRC' if args['nextseq'] else 'BCCAGSC'
+    centre = 'UBCBRC' if seqinfo[sample_id] == 'nextseq' else 'BCCAGSC'
 
     if 'read_group' in config:
         if config['read_group']['PL']:

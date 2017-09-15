@@ -40,10 +40,6 @@ def parse_args():
     parser.add_argument('--matched_normal',
                         help='''Path to matched wgs normal.''')
 
-    parser.add_argument('--nextseq',
-                        action='store_true',
-                        help='''Lanes to analyze.''')
-
     parser.add_argument('--realign',
                         action='store_true',
                         help='''Lanes to analyze.''')
@@ -54,7 +50,6 @@ def parse_args():
 
     args = vars(parser.parse_args())
     args['tmpdir'] = os.path.join(args['out_dir'], 'tmp')
-    args['trim'] = False if args['nextseq'] else True
 
     if args['matched_normal'] and not args['generate_pseudo_wgs']:
         raise Exception('generate_pseudo_wgs must be'
@@ -71,7 +66,7 @@ def main():
 
     config = utils.load_config(args)
 
-    fastq1_files, fastq2_files, sampleids, lanes = utils.read_fastqs_file(args)
+    fastq1_files, fastq2_files, sampleids, lanes, seqinfo = utils.read_fastqs_file(args)
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -93,7 +88,7 @@ def main():
             mgd.InputInstance('lane'),
             mgd.InputInstance('sample_id'),
             args['out_dir'],
-            args['trim']
+            seqinfo,
         ),
     )
 
@@ -111,6 +106,7 @@ def main():
             mgd.InputInstance('sample_id'),
             config,
             args,
+            seqinfo
         ),
     )
 
@@ -147,7 +143,7 @@ def main():
     bam_template = os.path.join(bam_directory, '{sample_id}.bam')
     bam_index_template = os.path.join(bam_directory, '{sample_id}.bam.bai')
     results_dir = os.path.join(args['out_dir'], 'results')
-    gc_metrics = os.path.join(results_dir, 'gc_metrics.csv')
+    gc_metrics = os.path.join(results_dir, '{}_gc_metrics.csv'.format(args['library_id']))
     # merge bams per sample for all lanes
     workflow.subworkflow(
         name='bam_postprocess_workflow',
@@ -167,8 +163,8 @@ def main():
     )
 
     results_dir = os.path.join(args['out_dir'], 'results')
-    segs_filename = os.path.join(results_dir, 'segments.csv')
-    reads_filename = os.path.join(results_dir, 'reads.csv')
+    segs_filename = os.path.join(results_dir, '{}_segments.csv'.format(args['library_id']))
+    reads_filename = os.path.join(results_dir, '{}_reads.csv'.format(args['library_id']))
     workflow.subworkflow(
         name='hmmcopy_workflow',
         func=hmmcopy.create_hmmcopy_workflow,
@@ -195,7 +191,7 @@ def main():
             mgd.TempInputFile('alignment_metrics.csv'),
             mgd.InputFile(gc_metrics),
             config,
-            args['out_dir'],
+            args,
             sampleids
         ),
     )

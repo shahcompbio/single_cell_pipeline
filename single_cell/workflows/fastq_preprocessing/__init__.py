@@ -9,7 +9,7 @@ import pypeliner
 import pypeliner.managed as mgd
 import tasks
 
-def create_fastq_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, sample_id, out_dir, trim):
+def create_fastq_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, sample_id, out_dir, seqinfo):
 
     fastqc_dir = os.path.join(out_dir, 'fastqc')
     html_r1 = os.path.join(fastqc_dir, lane, '{}_R1.html'.format(sample_id))
@@ -55,7 +55,9 @@ def create_fastq_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, sa
         ),
     )
 
-    if trim:
+    if seqinfo[sample_id] == 'hiseq':
+        #reports and zips are not generated when inputs are very small
+        #so don't use OutputFile as that'll stop pipeline
         workflow.transform(
             name='run_trimgalore',
             ctx={'mem': config['low_mem']},
@@ -70,12 +72,12 @@ def create_fastq_workflow(fastq_r1, fastq_r2, trim_r1, trim_r2, config, lane, sa
                   mgd.TempSpace('trim_temp'),
                   config['adapter'],
                   config['adapter2'],
-                  mgd.OutputFile(report_r1),
-                  mgd.OutputFile(report_r2),
-                  mgd.OutputFile(qc_report_r1),
-                  mgd.OutputFile(qc_report_r2),
-                  mgd.OutputFile(zip_r1),
-                  mgd.OutputFile(zip_r2),
+                  report_r1,
+                  report_r2,
+                  qc_report_r1,
+                  qc_report_r2,
+                  zip_r1,
+                  zip_r2,
                   )
             )
     else:

@@ -11,25 +11,28 @@ import tasks
 
 def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
                             metrics_summary, gc_matrix, config,
-                            out_dir, sample_ids):
+                            args, sample_ids):
+
+
+    out_dir = args['out_dir']
+    lib = args['library_id']
 
     results_dir = os.path.join(out_dir, 'results')
 
-
-    all_metrics_file = os.path.join(results_dir, 'all_metrics_summary.csv')
+    all_metrics_file = os.path.join(results_dir, '{}_all_metrics_summary.csv'.format(lib))
 
     plots_dir = os.path.join(results_dir, 'plots')
 
-    plot_heatmap_ec_output = os.path.join(plots_dir, 'plot_heatmap_ec.pdf')
+    plot_heatmap_ec_output = os.path.join(plots_dir, '{}_plot_heatmap_ec.pdf'.format(lib))
     plot_heatmap_ec_mad_output = os.path.join(plots_dir,
-                                              'plot_heatmap_ec_mad.pdf')
+                                              '{}_plot_heatmap_ec_mad.pdf'.format(lib))
     plot_heatmap_ec_numreads_output = os.path.join(plots_dir,
-                                                   'plot_heatmap_ec_numreads.pdf')
+                                                   '{}_plot_heatmap_ec_numreads.pdf'.format(lib))
 
-    plot_metrics_output = os.path.join(plots_dir, 'plot_metrics.pdf')
+    plot_metrics_output = os.path.join(plots_dir, '{}_plot_metrics.pdf'.format(lib))
     plot_kernel_density_output = os.path.join(plots_dir,
-                                              'plot_kernel_density.pdf')
-    summary_metrics_output = os.path.join(plots_dir, 'summary_metrics.txt')
+                                              '{}_plot_kernel_density.pdf'.format(lib))
+    summary_metrics_output = os.path.join(plots_dir, '{}_summary_metrics.txt'.format(lib))
 
     workflow = pypeliner.workflow.Workflow()
 

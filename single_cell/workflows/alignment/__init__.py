@@ -17,9 +17,10 @@ def create_alignment_workflow(
     lane_id,
     sample_id,
     config,
-    args):
+    args,
+    seqinfo):
 
-    read_group = tasks.get_readgroup(lane_id, sample_id, args, config)
+    read_group = tasks.get_readgroup(lane_id, sample_id, args, config, seqinfo)
 
     metrics_dir = os.path.join(args['out_dir'], 'metrics_per_lane', lane_id,)
     flagstat_metrics_filename = os.path.join(metrics_dir, '{}.flagstat_metrics.txt'.format(sample_id))
