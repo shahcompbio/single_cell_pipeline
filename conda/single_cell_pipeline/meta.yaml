@@ -1,10 +1,10 @@
 package:
   name: single_cell_pipeline
-  version: '0.0.1'
+  version: '0.0.2'
 
 source:
   git_url: https://svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git
-  git_rev: v0.0.1
+  git_rev: v0.0.2
 
 requirements:
   build:
