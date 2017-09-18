@@ -12,7 +12,6 @@ from workflows import realignment
 from workflows import mutationseq
 from workflows import singlecell_summary
 from workflows import snv_postprocessing
-from workflows import fastq_preprocessing
 from workflows import alignment_postprocessing
 
 
@@ -76,29 +75,12 @@ def main():
     )
 
     workflow.subworkflow(
-        name='fastqc_workflow',
-        axes=('sample_id', 'lane',),
-        func=fastq_preprocessing.create_fastq_workflow,
-        args=(
-            mgd.InputFile('fastq_1', 'sample_id', 'lane', fnames=fastq1_files),
-            mgd.InputFile('fastq_2', 'sample_id', 'lane', fnames=fastq2_files),
-            mgd.TempOutputFile('fastq_trim_1.fastq.gz', 'sample_id', 'lane'),
-            mgd.TempOutputFile('fastq_trim_2.fastq.gz', 'sample_id', 'lane'),
-            config,
-            mgd.InputInstance('lane'),
-            mgd.InputInstance('sample_id'),
-            args['out_dir'],
-            seqinfo,
-        ),
-    )
-
-    workflow.subworkflow(
         name='alignment_workflow',
         axes=('sample_id', 'lane',),
         func=alignment.create_alignment_workflow,
         args=(
-            mgd.TempInputFile('fastq_trim_1.fastq.gz', 'sample_id', 'lane'),
-            mgd.TempInputFile('fastq_trim_2.fastq.gz', 'sample_id', 'lane'),
+            mgd.InputFile('fastq_1', 'sample_id', 'lane', fnames=fastq1_files),
+            mgd.InputFile('fastq_2', 'sample_id', 'lane', fnames=fastq2_files),
             mgd.TempOutputFile('aligned_per_cell_per_lane.sorted.bam',
                                'sample_id', 'lane'),
             mgd.InputFile(config['ref_genome']),

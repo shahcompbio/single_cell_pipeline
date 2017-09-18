@@ -48,27 +48,6 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
 
 
     workflow.transform(
-        name='plot_hmm_copy',
-        ctx={'mem': config['high_mem']},
-        func=tasks.plot_hmmcopy,
-        axes=('sample_id',),
-        args=(
-            mgd.TempInputFile('reads.csv', 'sample_id'),
-            mgd.TempInputFile('segs.csv', 'sample_id'),
-            mgd.TempInputFile('hmm_metrics.csv', 'sample_id'),
-            mgd.InputFile(config['ref_genome']),
-            mgd.TempOutputFile('reads.pdf', 'sample_id'),
-            mgd.TempOutputFile('segs.pdf', 'sample_id'),
-            mgd.TempOutputFile('bias.pdf', 'sample_id'),
-            mgd.InputInstance('sample_id')
-        ),
-        kwargs={
-            'num_states': config['hmmcopy_params']['num_states'],
-            'plot_title': 'QC pipeline metrics',
-        }
-    )
-
-    workflow.transform(
         name='generate_cn_matrix',
         ctx={'mem': config['low_mem']},
         func=tasks.generate_cn_matrix,
@@ -121,6 +100,27 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
             mgd.OutputFile(reads_filt_filename),
             mgd.OutputFile(segs_filt_filename),
         )
+    )
+
+    workflow.transform(
+        name='plot_hmm_copy',
+        ctx={'mem': config['high_mem']},
+        func=tasks.plot_hmmcopy,
+        axes=('sample_id',),
+        args=(
+            mgd.TempInputFile('reads.csv', 'sample_id'),
+            mgd.TempInputFile('segs.csv', 'sample_id'),
+            mgd.TempInputFile('hmm_metrics.csv', 'sample_id'),
+            mgd.InputFile(config['ref_genome']),
+            mgd.TempOutputFile('reads.pdf', 'sample_id'),
+            mgd.TempOutputFile('segs.pdf', 'sample_id'),
+            mgd.TempOutputFile('bias.pdf', 'sample_id'),
+            mgd.InputInstance('sample_id')
+        ),
+        kwargs={
+            'num_states': config['hmmcopy_params']['num_states'],
+            'plot_title': 'QC pipeline metrics',
+        }
     )
 
     reads_pdf_output = os.path.join(results_dir, 'plots', '{}_reads.pdf'.format(lib))

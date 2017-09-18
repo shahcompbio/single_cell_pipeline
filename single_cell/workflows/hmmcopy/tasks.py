@@ -188,4 +188,3 @@ def merge_pdf(in_filenames, out_filename, metrics, mad_threshold):
         
         with open(out_file, 'wb') as fout:
             merger.write(fout)
-    
