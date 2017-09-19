@@ -215,6 +215,8 @@ class PlotHeatmap(object):
         df = df.T
         df.columns = bins
 
+        #remove cells that dont have any data
+        df = df.dropna()
         return df
 
     def get_chr_idxs(self, bins):
@@ -368,17 +370,20 @@ class PlotHeatmap(object):
         ax_hmap.set(xticks=chr_idxs)
         ax_hmap.set(xticklabels=self.chromosomes)
 
+        for val in chr_idxs:
+            ax_hmap.plot([val,val], [len(samples),0], ':', linewidth=0.5, color='black', )
+
         ax_hmap.set(title=title)
 
         plt.setp(ax_hmap.yaxis.get_majorticklabels(),
                  rotation=0)
-
+ 
         # Plot the legend
         lgnd_patches = [Patch(color=rowclr[k], label=k)
                         for k in list(set(ccdata.values()))]
         ax_hmap.legend(handles=lgnd_patches,
                        bbox_to_anchor=(1, 1.2))
-
+ 
         pdfout.savefig(pad_inches=0.2)
 
     def plot_heatmap_by_sep(self, data, chr_idxs, sepdata, colordata):
@@ -526,5 +531,8 @@ def parse_args():
 
 if __name__ == '__main__':
     ARGS = parse_args()
-    m = PlotHeatmap(ARGS.input, ARGS.metrics, ARGS.order_data, ARGS.output, vars(ARGS))
+    m = PlotHeatmap(ARGS.input, ARGS.metrics, ARGS.order_data, ARGS.output, colname=ARGS.column_name,
+                    cellcalls=ARGS.cellcalls, mad_thres=ARGS.mad_thres, reads_thres=ARGS.reads_thres,
+                    high_memory=ARGS.high_memory, plot_title=ARGS.plot_title, color_by_col=ARGS.color_by_col,
+                    plot_by_col=ARGS.plot_by_col)
     m.main()

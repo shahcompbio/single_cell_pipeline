@@ -8,7 +8,10 @@ import pypeliner
 from scripts import ExtractHmmMetrics
 from scripts import GenerateCNMatrix
 from scripts import FilterHmmData
+from scripts import GenHmmPlots
 import pandas as pd
+from PyPDF2 import PdfFileMerger
+
 
 scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
 run_hmmcopy_rscript = os.path.join(scripts_directory, 'hmmcopy.R')
@@ -155,3 +158,33 @@ def filter_hmm_data(quality_metrics, segments, reads, mad_threshold,
     filter_hmm = FilterHmmData(quality_metrics, segments, reads,
                                mad_threshold, reads_out, segments_out)
     filter_hmm.main()
+
+def plot_hmmcopy(reads, segments, metrics, ref_genome, reads_out, segs_out,
+                 bias_out, sample_id, num_states=7, plot_title=None, mad_threshold=None):
+    plot = GenHmmPlots(reads, segments, metrics, ref_genome, reads_out, segs_out,
+                       bias_out, sample_id, num_states=num_states, plot_title=plot_title,
+                       mad_threshold=mad_threshold)
+    plot.main()
+
+
+def merge_pdf(in_filenames, out_filename, metrics, mad_threshold):
+
+    metrics = pd.read_csv(metrics, sep=',')
+    
+    for in_files, out_file in zip(in_filenames, out_filename):
+
+        merger = PdfFileMerger()
+
+
+
+        for samp, infile in in_files.iteritems():
+            #filter by mad if mad_threshold is specified
+            if mad_threshold:
+                mad = metrics[metrics['cell_id'] == samp]['mad_neutral_state'].iloc[0]
+                if mad>mad_threshold:
+                    continue
+            
+            merger.append(open(infile, 'rb'))
+        
+        with open(out_file, 'wb') as fout:
+            merger.write(fout)

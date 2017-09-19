@@ -149,7 +149,7 @@ class ExtractHmmMetrics(object):
         MBRSM: This measures "dispersion", but not "integerness".
         '''
         residuals = []
-        
+
         for seg_index in range(len(df_seg)):
             seg_chr = df_seg['chr'][seg_index]
             
@@ -178,8 +178,11 @@ class ExtractHmmMetrics(object):
         MSRSI: This measures "integerness", but not "dispersion".
         '''
         residuals = np.abs(df_seg['integer_median']-df_seg['integer_copy_number'])
-        
-        median_seg_residuals_integer = np.median(residuals)
+
+        if len(residuals):
+            median_seg_residuals_integer = np.median(residuals)
+        else:
+            median_seg_residuals_integer = float('nan')
         
         return median_seg_residuals_integer
     

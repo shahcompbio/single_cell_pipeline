@@ -7,6 +7,7 @@ Created on Jan 4, 2017
 from subprocess import Popen
 import os
 import warnings
+import argparse
 
 class RunTrimGalore(object):
     """
@@ -106,13 +107,14 @@ class RunTrimGalore(object):
         """
         move files from from temp dir to the expected path
         """
+        dir = os.path.dirname(outpath)
+        
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+        
         path = os.path.join(self.tempdir, fname)
         os.rename(path, outpath)
         assert os.path.isfile(outpath)
-
-        print outpath
-        print os.stat(outpath)
-
 
     def get_file(self, r1_out, r2_out, ext, trimreport=False):
         """
@@ -121,7 +123,9 @@ class RunTrimGalore(object):
         outfiles = os.listdir(self.tempdir)
 
         reps = [v for v in outfiles if ext in v]
-        assert reps != [], "Couldn't move %s files" % ext
+
+        if ext == '.fq.gz':
+            assert reps != [], "Couldn't move %s files" % ext
 
         seq1 = os.path.basename(self.seq1)
         seq2 = os.path.basename(self.seq2)
@@ -133,7 +137,10 @@ class RunTrimGalore(object):
                 elif seq2 in rep:
                     self.move_files(rep, r2_out)
                 else:
-                    raise Exception("Couldn't move %s files" % ext)
+                    if ext == '.fq.gz':
+                        raise Exception("Couldn't move %s files" % ext)
+                    else:
+                        raise Exception("Couldn't move %s files" % ext)
             return
 
         for rep in reps:
@@ -142,7 +149,10 @@ class RunTrimGalore(object):
             elif "val_2" in rep:
                 self.move_files(rep, r2_out)
             else:
-                raise Exception("Couldn't move %s files" % ext)
+                if ext == '.fq.gz':
+                    raise Exception("Couldn't move %s files" % ext)
+                else:
+                    raise Exception("Couldn't move %s files" % ext)
 
     def gather_outputs(self):
         """
@@ -166,3 +176,77 @@ class RunTrimGalore(object):
 
         # trimmed fastq files
         self.get_file(self.fastq_r1, self.fastq_r2, ".fq.gz")
+
+
+def parse_args():
+    """
+    parse cmd line params
+    """
+    #=========================================================================
+    # make a UI
+    #=========================================================================
+    parser = argparse.ArgumentParser(prog='run_trim_galore',
+                                     description="""This script runs trim_galore with options --paired --nextera""")
+
+    parser.add_argument('seq1',
+                        help='FASTQ file for read 1')
+
+    parser.add_argument('seq2',
+                        help='FASTQ file for read 2')
+
+    parser.add_argument('fastq_r1',
+                        help="Path to output file (R1)")
+
+    parser.add_argument('fastq_r2',
+                        help="Path to output file (R2)")
+
+    parser.add_argument('fastqc_report_r1',
+                        help="Path to fastqc_report (R1)")
+
+    parser.add_argument('fastqc_report_r2',
+                        help="Path to fastqc_report (R2)")
+
+    parser.add_argument('fastqc_zip_r1',
+                        help="Path to fastqc_zip (R1)")
+
+    parser.add_argument('fastqc_zip_r2',
+                        help="Path to fastqc_zip (R2)")
+
+    parser.add_argument('report_r1',
+                        help="Path to report (R1)")
+
+    parser.add_argument('report_r2',
+                        help="Path to report (R2)")
+
+    parser.add_argument('tempdir',
+                        help="Path to output directory (for metrics)")
+
+    parser.add_argument('--adapter',
+                        help="specify adapter for R1")
+
+    parser.add_argument('--adapter2',
+                        help="specify adapter for R2")
+
+    parser.add_argument('--trimgalore_path',
+                        default='trimgalore',
+                        help="specify path to trimgalore")
+
+    parser.add_argument('--cutadapt_path',
+                        default='cutadapt',
+                        help="specify path to cutadapt")
+
+    args = parser.parse_args()
+
+    return args
+
+if __name__ == "__main__":
+
+    args = parse_args()
+    run_tg = RunTrimGalore(args.seq1,args.seq2,args.fastq_r1,args.fastq_r2,
+                           args.trimgalore_path,args.cutadapt_path,
+                           args.tempdir,args.adapter,args.adapter2,
+                           args.report_r1, args.report_r2,
+                           args.fastqc_report_r1, args.fastqc_report_r2,
+                           args.fastqc_zip_r1, args.fastqc_zip_r2,)
+    run_tg.run_trimgalore()
+    run_tg.gather_outputs()

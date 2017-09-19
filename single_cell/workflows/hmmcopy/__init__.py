@@ -14,10 +14,11 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
                             segments_file, hmm_metrics_file,
                             sample_ids, config, args):
 
+    lib = args['library_id']
     results_dir = os.path.join(args['out_dir'], 'results')
-    reads_filt_filename = os.path.join(results_dir, 'filtered_reads.csv')
-    segs_filt_filename = os.path.join(results_dir, 'filtered_segs.csv')
-    cn_matrix_file = os.path.join(results_dir, 'cn_matrix.csv')
+    reads_filt_filename = os.path.join(results_dir, '{}_filtered_reads.csv'.format(lib))
+    segs_filt_filename = os.path.join(results_dir, '{}_filtered_segs.csv'.format(lib))
+    cn_matrix_file = os.path.join(results_dir, '{}_cn_matrix.csv'.format(lib))
 
 
     workflow = pypeliner.workflow.Workflow()
@@ -44,6 +45,7 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
             mgd.TempSpace('hmmcopy_temp', 'sample_id')
         ),
     )
+
 
     workflow.transform(
         name='generate_cn_matrix',
@@ -100,7 +102,65 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
         )
     )
 
+    workflow.transform(
+        name='plot_hmm_copy',
+        ctx={'mem': config['high_mem']},
+        func=tasks.plot_hmmcopy,
+        axes=('sample_id',),
+        args=(
+            mgd.TempInputFile('reads.csv', 'sample_id'),
+            mgd.TempInputFile('segs.csv', 'sample_id'),
+            mgd.TempInputFile('hmm_metrics.csv', 'sample_id'),
+            mgd.InputFile(config['ref_genome']),
+            mgd.TempOutputFile('reads.pdf', 'sample_id'),
+            mgd.TempOutputFile('segs.pdf', 'sample_id'),
+            mgd.TempOutputFile('bias.pdf', 'sample_id'),
+            mgd.InputInstance('sample_id')
+        ),
+        kwargs={
+            'num_states': config['hmmcopy_params']['num_states'],
+            'plot_title': 'QC pipeline metrics',
+        }
+    )
 
+    reads_pdf_output = os.path.join(results_dir, 'plots', '{}_reads.pdf'.format(lib))
+    segs_pdf_output = os.path.join(results_dir, 'plots', '{}_segs.pdf'.format(lib))
+    bias_pdf_output = os.path.join(results_dir, 'plots', '{}_bias.pdf'.format(lib))
+    workflow.transform(
+        name='merge_hmm_copy',
+        ctx={'mem': config['high_mem']},
+        func=tasks.merge_pdf,
+        args=(
+              [mgd.TempInputFile('reads.pdf', 'sample_id'),
+              mgd.TempInputFile('segs.pdf', 'sample_id'),
+              mgd.TempInputFile('bias.pdf', 'sample_id')],
+              [reads_pdf_output,
+              segs_pdf_output,
+              bias_pdf_output],
+              mgd.InputFile(hmm_metrics_file),
+              None
+            )
+    )
+
+
+    reads_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_reads_mad.pdf'.format(lib))
+    segs_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_segs_mad.pdf'.format(lib))
+    bias_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_bias_mad.pdf'.format(lib))
+    workflow.transform(
+        name='merge_hmm_copy_mad',
+        ctx={'mem': config['high_mem']},
+        func=tasks.merge_pdf,
+        args=(
+              [mgd.TempInputFile('reads.pdf', 'sample_id'),
+              mgd.TempInputFile('segs.pdf', 'sample_id'),
+              mgd.TempInputFile('bias.pdf', 'sample_id')],
+              [mgd.OutputFile(reads_mad_pdf_output),
+              mgd.OutputFile(segs_mad_pdf_output),
+              mgd.OutputFile(bias_mad_pdf_output)],
+              mgd.InputFile(hmm_metrics_file),
+              0.2
+            )
+    )
 
 
     return workflow

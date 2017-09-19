@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import warnings
+import re
 
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle
@@ -252,25 +253,10 @@ class PlotMetrics(object):
         if df['sample_plate'].unique()[0] == ['R1-C1'] and \
                 len(df['sample_plate'].unique()) == 1:
             return
+
         matrix = np.empty((size, size,))
         matrix[:] = np.nan
-    
-        well_labels = np.empty((size, size,))
-        well_labels[:] = np.nan
-    
-        df['int_cell_call'] = [0 if x == 'NTC' else x.replace('C', '')
-                               for x in df['cell_call']]
-    
-        for i in range(len(df)):
-            row_idx = int(df.ix[i, 'sample_plate'].split('_')[0].replace('R', ''))
-            col_idx = int(df.ix[i, 'sample_plate'].split('_')[1].replace('C', ''))
-    
-            matrix_value = float(df.ix[i, metric])
-            matrix[row_idx - 1, col_idx - 1] = matrix_value
-    
-            label_value = int(df.ix[i, 'int_cell_call'])
-            well_labels[row_idx - 1, col_idx - 1] = label_value
-    
+
         sns.set(context='talk',
                 style='darkgrid',
                 font='Helvetica',
@@ -283,23 +269,46 @@ class PlotMetrics(object):
         _ = plt.figure(figsize=(15, 12))
     
         tick_labels = [x + 1 for x in range(size)]
+
+        #if the cell call matches the C[1-9]+ format then add cell calls to the plot
+        if all([re.match("C[0-9]+$|NTC", cc) for cc in df['cell_call']]):
+            well_labels = np.empty((size, size,))
+            well_labels[:] = np.nan
     
-        # cheat to get well labels that are different from the colour value
-        ax = sns.heatmap(well_labels,
-                         linewidths=0.6,
-                         square=True,
-                         annot=True,
-                         cmap=None,
-                         xticklabels=False,
-                         yticklabels=False,
-                         cbar=False,
-                         annot_kws={'size': 6},
-                         alpha=0,
-                         fmt='.3g')
+            for i in range(len(df)):
+                row_idx = int(df.ix[i, 'sample_plate'].split('_')[0].replace('R', ''))
+                col_idx = int(df.ix[i, 'sample_plate'].split('_')[1].replace('C', ''))
+
+                label_value = df.ix[i]["cell_call"]
+                label_value = 0 if label_value == 'NTC' else int(label_value.replace('C', ''))
+                well_labels[row_idx - 1, col_idx - 1] = label_value
     
-        for text in ax.texts:
-            text.set_color('black')
     
+            # cheat to get well labels that are different from the colour value
+            ax = sns.heatmap(well_labels,
+                             linewidths=0.6,
+                            square=True,
+                            annot=True,
+                            cmap=None,
+                            cbar=False,
+                            annot_kws={'size': 6},
+                            alpha=0,
+                            fmt='.3g')
+        
+            ax.get_xaxis().set_visible(False)
+            ax.get_yaxis().set_visible(False)
+        
+            for text in ax.texts:
+                text.set_color('black')
+    
+
+        for i in range(len(df)):
+            row_idx = int(df.ix[i, 'sample_plate'].split('_')[0].replace('R', ''))
+            col_idx = int(df.ix[i, 'sample_plate'].split('_')[1].replace('C', ''))
+            matrix_value = float(df.ix[i, metric])
+            matrix[row_idx - 1, col_idx - 1] = matrix_value
+
+        
         sns.heatmap(matrix,
                     xticklabels=tick_labels,
                     yticklabels=tick_labels,
@@ -663,14 +672,14 @@ class PlotMetrics(object):
                                        self.plot_title, from_top=True)
             self.plot_metric_fraction_total(df, 'total_properly_paired', 'Properly paired', pdf,
                                        self.plot_title, from_top=False)
-    
+
             self.plot_metric_fraction(df, 'total_mapped_reads', 'total_reads', 'Fraction mapped of total',
                                  pdf, self.plot_title,)
             self.plot_metric_fraction(df, 'total_duplicate_reads', 'total_mapped_reads', 'Fraction duplicates of mapped',
                                  pdf, self.plot_title,)
             self.plot_metric_fraction(df, 'total_properly_paired', 'total_mapped_reads',
                                  'Fraction properly paired of mapped', pdf, self.plot_title,)
-    
+
             self.plot_metric(df, 'coverage_depth', 'Coverage depth', 0.0015,
                         pdf, self.plot_title,)
             self.plot_metric(df, 'coverage_breadth', 'Coverage breadth', 0.0015,
@@ -689,7 +698,7 @@ class PlotMetrics(object):
                         pdf, self.plot_title,)
             self.plot_metric(df, 'MBRSM_dispersion', 'MBRSM Dispersion', 0.01,
                         pdf, self.plot_title,)
-    
+
             self.plot_metric_heatmap(df, 'total_reads', 'Total reads',
                                 pdf, self.plot_title)
             self.plot_metric_heatmap(df, 'percent_duplicate_reads', 'Percent duplicate reads',
@@ -708,7 +717,7 @@ class PlotMetrics(object):
                                 pdf, self.plot_title)
             self.plot_metric_heatmap(df, 'MBRSM_dispersion', 'MBRSM Dispersion',
                                 pdf, self.plot_title)
-    
+
             self.plot_metric_factorplot(df, 'total_reads', 'Total reads',
                                    pdf, self.plot_title)
             self.plot_metric_factorplot(df, 'total_mapped_reads', 'Total mapped reads',
@@ -739,7 +748,7 @@ class PlotMetrics(object):
                              pdf, self.plot_title)
             self.plot_by_barcodes(df, 'total_reads', 'Total Reads', 'i7_barcode',
                              pdf, self.plot_title)
-    
+
             if self.gcbias_matrix:
                 gcdata = self.read_gc_content()
                 self.plot_gcbias_all(self.gcbias_matrix, pdf, self.plot_title,

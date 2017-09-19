@@ -139,13 +139,13 @@ class FilterHmmData(object):
         """
         head = False
         samples = self.get_sample_ids(df)
-        
-        for sample in samples:
-            #If the check_mad returns false: filter it
-            if not self.check_mad_score(sample, metrics):
-                continue
 
-            
+        #If the check_mad returns false: filter it
+        samples = [samp for samp in samples  if not self.check_mad_score]
+        if len(samples)==0:
+            open(outfile, 'w').close()
+
+        for sample in samples:
             #write data
             df_samp = df.get_group(sample)
             
@@ -176,6 +176,6 @@ if __name__ == '__main__':
     
     genhmm = FilterHmmData(args.quality_metrics, args.segments,
                            args.corrected_reads, args.mad_threshold,
-                           args.reads_output, args.segments_output)
+                           args.reads_output, args.segs_output)
 
     genhmm.main()

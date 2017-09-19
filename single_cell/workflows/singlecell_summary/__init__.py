@@ -11,33 +11,28 @@ import tasks
 
 def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
                             metrics_summary, gc_matrix, config,
-                            out_dir, sample_ids):
+                            args, sample_ids):
+
+
+    out_dir = args['out_dir']
+    lib = args['library_id']
 
     results_dir = os.path.join(out_dir, 'results')
 
-
-    all_metrics_file = os.path.join(results_dir, 'all_metrics_summary.csv')
+    all_metrics_file = os.path.join(results_dir, '{}_all_metrics_summary.csv'.format(lib))
 
     plots_dir = os.path.join(results_dir, 'plots')
-    reads_plot_filename = os.path.join(plots_dir, 'corrected_reads.pdf')
-    bias_plot_filename = os.path.join(plots_dir, 'bias.pdf')
-    segs_plot_filename = os.path.join(plots_dir, 'segments.pdf')
 
-    reads_plot_filename_mad = os.path.join(plots_dir,
-                                           'corrected_reads_mad_0.2.pdf')
-    bias_plot_filename_mad = os.path.join(plots_dir, 'bias_mad_0.2.pdf')
-    segs_plot_filename_mad = os.path.join(plots_dir, 'segments_mad_0.2.pdf')
-
-    plot_heatmap_ec_output = os.path.join(plots_dir, 'plot_heatmap_ec.pdf')
+    plot_heatmap_ec_output = os.path.join(plots_dir, '{}_plot_heatmap_ec.pdf'.format(lib))
     plot_heatmap_ec_mad_output = os.path.join(plots_dir,
-                                              'plot_heatmap_ec_mad.pdf')
+                                              '{}_plot_heatmap_ec_mad.pdf'.format(lib))
     plot_heatmap_ec_numreads_output = os.path.join(plots_dir,
-                                                   'plot_heatmap_ec_numreads.pdf')
+                                                   '{}_plot_heatmap_ec_numreads.pdf'.format(lib))
 
-    plot_metrics_output = os.path.join(plots_dir, 'plot_metrics.pdf')
+    plot_metrics_output = os.path.join(plots_dir, '{}_plot_metrics.pdf'.format(lib))
     plot_kernel_density_output = os.path.join(plots_dir,
-                                              'plot_kernel_density.pdf')
-    summary_metrics_output = os.path.join(plots_dir, 'summary_metrics.txt')
+                                              '{}_plot_kernel_density.pdf'.format(lib))
+    summary_metrics_output = os.path.join(plots_dir, '{}_summary_metrics.txt'.format(lib))
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -76,46 +71,6 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
             mgd.OutputFile(all_metrics_file),
             'merge', ',', 'outer', 'cell_id', 'NA'
         )
-    )
-
-    workflow.transform(
-        name='plot_hmm_copy',
-        ctx={'mem': config['high_mem']},
-        func=tasks.plot_hmmcopy,
-        args=(
-            mgd.InputFile(hmm_reads),
-            mgd.InputFile(hmm_segments),
-            mgd.InputFile(all_metrics_file),
-            mgd.InputFile(config['ref_genome']),
-            mgd.OutputFile(reads_plot_filename),
-            mgd.OutputFile(segs_plot_filename),
-            mgd.OutputFile(bias_plot_filename),
-        ),
-        kwargs={
-            'num_states': config['hmmcopy_params']['num_states'],
-            'plot_title': 'QC pipeline metrics',
-        }
-
-    )
-
-    workflow.transform(
-        name='plot_hmm_copy_mad',
-        ctx={'mem': config['high_mem']},
-        func=tasks.plot_hmmcopy,
-        args=(
-            mgd.InputFile(hmm_reads),
-            mgd.InputFile(hmm_segments),
-            mgd.InputFile(all_metrics_file),
-            mgd.InputFile(config['ref_genome']),
-            mgd.OutputFile(reads_plot_filename_mad),
-            mgd.OutputFile(segs_plot_filename_mad),
-            mgd.OutputFile(bias_plot_filename_mad),
-        ),
-        kwargs={
-            'num_states': config['hmmcopy_params']['num_states'],
-            'plot_title': 'QC pipeline metrics',
-            'mad_threshold': config['hmmcopy_plot_mad_threshold'],
-        }
     )
 
     workflow.transform(

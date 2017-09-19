@@ -86,12 +86,13 @@ class GenHmmPlots(object):
     """
     generate the reads, bias and segment plots
     """ 
-    def __init__(self, reads, segments, metrics, ref_genome, reads_out, segs_out, bias_out, **kwargs):
+    def __init__(self, reads, segments, metrics, ref_genome, reads_out, segs_out, bias_out, sample_id, **kwargs):
         
         self.reads = reads
         self.segments = segments
         self.metrics = metrics
         self.ref_genome = ref_genome
+        self.sample_id = sample_id
         
         self.num_states = kwargs.get('num_states')
         if not self.num_states:
@@ -105,8 +106,6 @@ class GenHmmPlots(object):
         if not self.plot_title:
             self.plot_title = ''
 
-        self.samples = kwargs.get('samples')
-        
         self.reads_pdf, self.segs_pdf, self.bias_pdf = self.get_pdf_handles(reads_out, bias_out, segs_out)
 
 
@@ -118,8 +117,6 @@ class GenHmmPlots(object):
         data = pd.read_csv(infile,
                            sep=',')
 
-        data = data.groupby('cell_id')
-        
         return data
 
 
@@ -140,6 +137,9 @@ class GenHmmPlots(object):
         
         df = self.load_data_pandas(self.reads)
         
+        df = utl.normalize_reads(df)
+        df = utl.compute_chromosome_coordinates(df, self.ref_genome)
+        
         return df
     
     def read_segments(self):
@@ -148,27 +148,10 @@ class GenHmmPlots(object):
         """
         
         df = self.load_data_pandas(self.segments)
+        df = utl.compute_chromosome_coordinates(df, self.ref_genome)
+
         
         return df
-
-    def get_sample_ids(self, df, metrics):
-        """
-        
-        """
-        samples = df.groups.keys()
-
-        samdata = defaultdict(list)
-        for samp in samples:
-            ec = metrics.get_group(samp)['experimental_condition'].iloc[0]
-        
-            samdata[ec].append(samp)
-        
-        sams = []
-        
-        for ec in sorted(samdata.keys()):
-            sams.extend(sorted(samdata[ec]))
-        
-        return sams
 
     def get_pdf_handles(self, reads_out, bias_out, segs_out):
         """
@@ -182,29 +165,33 @@ class GenHmmPlots(object):
 
         return reads_pdf, segs_pdf, bias_pdf
 
+
+
+
+
     def get_plot_title(self, sample_id, metrics):
         """
         
         """
-        if 'cell_call' in metrics.get_group(sample_id):
-            cellcall = metrics.get_group(sample_id)['cell_call'].iloc[0]
+        if 'cell_call' in metrics:
+            cellcall = metrics['cell_call'].iloc[0]
         else:
             cellcall='NA'
 
-        if 'experimental_condition' in metrics.get_group(sample_id):
-            cond = metrics.get_group(sample_id)['experimental_condition'].iloc[0]
+        if 'experimental_condition' in metrics:
+            cond = metrics['experimental_condition'].iloc[0]
         else:
             cond='NA'
 
-        if 'sample_type' in metrics.get_group(sample_id):
-            st = metrics.get_group(sample_id)['sample_type'].iloc[0]
+        if 'sample_type' in metrics:
+            st = metrics['sample_type'].iloc[0]
             st = str(st)
         else:
             st = 'NA'
 
-        mad = metrics.get_group(sample_id)['mad_neutral_state'].iloc[0]
+        mad = metrics['mad_neutral_state'].iloc[0]
         mad = str('%.3f' % mad)
-        ni = metrics.get_group(sample_id)['MSRSI_non_integerness'].iloc[0]
+        ni = metrics['MSRSI_non_integerness'].iloc[0]
         ni = str('%.3f' % ni)
 
         title_str = [sample_id , '(cell call', cellcall, ', condition',
@@ -217,7 +204,7 @@ class GenHmmPlots(object):
     def get_mad_score(self, sample_id, metrics):
         """
         """
-        mad = metrics.get_group(sample_id)['mad_neutral_state'].iloc[0]
+        mad = metrics['mad_neutral_state'].iloc[0]
         return mad
 
 
@@ -248,22 +235,22 @@ class GenHmmPlots(object):
         
         """
         fig = plt.figure(figsize=(15,12))
-        
+
         plt.subplot(3, 1, 1)
         ax = fig.gca()
         self.gen_reads_plot(df, ax, typ='norm')
         ax.set_title(title)
         ax.set_xlabel('')
-    
+
         plt.subplot(3, 1, 2)
         ax = fig.gca()
         self.gen_reads_plot(df, ax, typ='cor_gc')
         ax.set_xlabel('')
-        
+
         plt.subplot(3, 1, 3)
         ax = fig.gca()
         self.gen_reads_plot(df, ax, typ='cor_map')
-        
+
         sns.despine(offset=10, trim=True)
         plt.tight_layout()
         self.reads_pdf.savefig(fig, pad_inches=0.2)
@@ -391,28 +378,23 @@ class GenHmmPlots(object):
         reads = self.read_corrected_reads()
         segs = self.read_segments()
 
-        if self.samples:
-            samples = self.samples
-        else:
-            samples = self.get_sample_ids(reads, metrics)
 
-        for sample in samples:
-            plot_title = self.get_plot_title(sample, metrics)
+        plot_title = self.get_plot_title(self.sample_id, metrics)
 
-            #If the check_mad returns false: filter it
-            if not self.check_mad_score(sample, metrics):
-                continue
-            
-            #extract the data for the sample we're plotting
-            reads_samp = self.get_sample_data(reads, sample, norm=True)
-            segs_samp = self.get_sample_data(segs, sample)
+        #If the check_mad returns false: filter it
+        if not self.check_mad_score(self.sample_id, metrics):
+            return
+        
+        #extract the data for the sample we're plotting
+#         reads_samp = self.get_sample_data(reads, self.sample_id, norm=True)
+#         segs_samp = self.get_sample_data(segs, self.sample_id)
 
-            self.plot_corrected_reads(reads_samp, sample, plot_title)
-            
-            self.plot_bias(reads_samp, sample, plot_title)
-            
-            self.plot_segments(reads_samp, segs_samp, plot_title,
-                               num_states=self.num_states)
+        self.plot_corrected_reads(reads, self.sample_id, plot_title)
+        
+        self.plot_bias(reads, self.sample_id, plot_title)
+        
+        self.plot_segments(reads, segs, plot_title,
+                           num_states=self.num_states)
 
         self.reads_pdf.close()
         self.bias_pdf.close()

@@ -224,10 +224,21 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 	
 	uncorrected.table <- format_read_count_table(samp.uncorrected, chromosomes)
         uncorrected.table$cell_id <- opt$sample_id
-	
+
+    uncorrected.table["cor_gc"] <- NA
+    uncorrected.table["cor_map"] <- NA
+    uncorrected.table["ideal"] <- NA
+    uncorrected.table["valid"] <- NA
+    uncorrected.table["state"] <- NA
+    uncorrected.table["copy"] <- NA
+    uncorrected.table["integer_copy_number"] <- NA
+    uncorrected.table["integer_copy_scale"] <- NA
 	write.table(format(uncorrected.table, scientific=F, trim=T), file=out_reads, quote=F, sep=",", col.names=T, row.names=F)
 	
-	file.create(out_segs)
+	#write colnames to the seg file
+	segs <- c("chr","start","end","state","median","integer_median","integer_copy_number")
+	cat(segs, "\n", file=out_segs, sep=",")
+
 	file.create(out_params)
 	file.create(out_post_marginals)
 	

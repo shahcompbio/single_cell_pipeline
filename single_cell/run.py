@@ -12,7 +12,6 @@ from workflows import realignment
 from workflows import mutationseq
 from workflows import singlecell_summary
 from workflows import snv_postprocessing
-from workflows import fastq_preprocessing
 from workflows import alignment_postprocessing
 
 
@@ -40,10 +39,6 @@ def parse_args():
     parser.add_argument('--matched_normal',
                         help='''Path to matched wgs normal.''')
 
-    parser.add_argument('--nextseq',
-                        action='store_true',
-                        help='''Lanes to analyze.''')
-
     parser.add_argument('--realign',
                         action='store_true',
                         help='''Lanes to analyze.''')
@@ -54,7 +49,6 @@ def parse_args():
 
     args = vars(parser.parse_args())
     args['tmpdir'] = os.path.join(args['out_dir'], 'tmp')
-    args['trim'] = False if args['nextseq'] else True
 
     if args['matched_normal'] and not args['generate_pseudo_wgs']:
         raise Exception('generate_pseudo_wgs must be'
@@ -71,7 +65,7 @@ def main():
 
     config = utils.load_config(args)
 
-    fastq1_files, fastq2_files, sampleids, lanes = utils.read_fastqs_file(args)
+    fastq1_files, fastq2_files, sampleids, lanes, seqinfo = utils.read_fastqs_file(args)
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -81,29 +75,12 @@ def main():
     )
 
     workflow.subworkflow(
-        name='fastqc_workflow',
-        axes=('sample_id', 'lane',),
-        func=fastq_preprocessing.create_fastq_workflow,
-        args=(
-            mgd.InputFile('fastq_1', 'sample_id', 'lane', fnames=fastq1_files),
-            mgd.InputFile('fastq_2', 'sample_id', 'lane', fnames=fastq2_files),
-            mgd.TempOutputFile('fastq_trim_1.fastq.gz', 'sample_id', 'lane'),
-            mgd.TempOutputFile('fastq_trim_2.fastq.gz', 'sample_id', 'lane'),
-            config,
-            mgd.InputInstance('lane'),
-            mgd.InputInstance('sample_id'),
-            args['out_dir'],
-            args['trim']
-        ),
-    )
-
-    workflow.subworkflow(
         name='alignment_workflow',
         axes=('sample_id', 'lane',),
         func=alignment.create_alignment_workflow,
         args=(
-            mgd.TempInputFile('fastq_trim_1.fastq.gz', 'sample_id', 'lane'),
-            mgd.TempInputFile('fastq_trim_2.fastq.gz', 'sample_id', 'lane'),
+            mgd.InputFile('fastq_1', 'sample_id', 'lane', fnames=fastq1_files),
+            mgd.InputFile('fastq_2', 'sample_id', 'lane', fnames=fastq2_files),
             mgd.TempOutputFile('aligned_per_cell_per_lane.sorted.bam',
                                'sample_id', 'lane'),
             mgd.InputFile(config['ref_genome']),
@@ -111,6 +88,7 @@ def main():
             mgd.InputInstance('sample_id'),
             config,
             args,
+            seqinfo
         ),
     )
 
@@ -147,7 +125,7 @@ def main():
     bam_template = os.path.join(bam_directory, '{sample_id}.bam')
     bam_index_template = os.path.join(bam_directory, '{sample_id}.bam.bai')
     results_dir = os.path.join(args['out_dir'], 'results')
-    gc_metrics = os.path.join(results_dir, 'gc_metrics.csv')
+    gc_metrics = os.path.join(results_dir, '{}_gc_metrics.csv'.format(args['library_id']))
     # merge bams per sample for all lanes
     workflow.subworkflow(
         name='bam_postprocess_workflow',
@@ -167,8 +145,8 @@ def main():
     )
 
     results_dir = os.path.join(args['out_dir'], 'results')
-    segs_filename = os.path.join(results_dir, 'segments.csv')
-    reads_filename = os.path.join(results_dir, 'reads.csv')
+    segs_filename = os.path.join(results_dir, '{}_segments.csv'.format(args['library_id']))
+    reads_filename = os.path.join(results_dir, '{}_reads.csv'.format(args['library_id']))
     workflow.subworkflow(
         name='hmmcopy_workflow',
         func=hmmcopy.create_hmmcopy_workflow,
@@ -182,7 +160,7 @@ def main():
             args
         ),
     )
- 
+  
     # merge all samples per lane together
     workflow.subworkflow(
         name='summary_workflow',
@@ -195,13 +173,13 @@ def main():
             mgd.TempInputFile('alignment_metrics.csv'),
             mgd.InputFile(gc_metrics),
             config,
-            args['out_dir'],
+            args,
             sampleids
         ),
     )
- 
+  
     if args['generate_pseudo_wgs']:
- 
+  
         pseudo_wgs_bam = os.path.join(args['out_dir'], 'pseudo_wgs',
                                       'merged.sorted.markdups.bam')
         pseudo_wgs_bai = os.path.join(args['out_dir'], 'pseudo_wgs',
@@ -220,7 +198,7 @@ def main():
                 args['out_dir'],
             )
         )
- 
+  
     if args['matched_normal']:
         varcalls_dir = os.path.join(args['out_dir'], 'pseudo_wgs',
                                     'variant_calling')
@@ -239,7 +217,7 @@ def main():
                 args,
             ),
         )
- 
+  
         strelka_snv_vcf = os.path.join(varcalls_dir, 'strelka_snv.vcf')
         strelka_indel_vcf = os.path.join(varcalls_dir, 'strelka_indel.vcf')
         strelka_snv_csv = os.path.join(varcalls_dir, 'strelka_snv.csv')
@@ -257,7 +235,7 @@ def main():
                 mgd.OutputFile(strelka_snv_csv),
             ),
         )
- 
+  
         countdata = os.path.join(args['out_dir'], 'pseudo_wgs',
                                  'counts', 'counts.csv')
         workflow.subworkflow(
@@ -274,7 +252,7 @@ def main():
                 args['out_dir'],
             )
         )
-
+ 
     pyp.run(workflow)
 
 if __name__ == '__main__':

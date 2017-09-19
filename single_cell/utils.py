@@ -6,7 +6,7 @@ def read_fastqs_file(args):
 
     fastqs = pd.read_csv(args['fastqs_file'], dtype=str)
 
-    for column in ('sample_id', 'lane_id', 'fastq_1', 'fastq_2',):
+    for column in ('sample_id', 'lane_id', 'fastq_1', 'fastq_2', 'source',):
         if column not in fastqs.columns:
             raise Exception(
                 'input fastqs_file should contain {}'.format(column))
@@ -20,7 +20,10 @@ def read_fastqs_file(args):
         fastq_1_filenames[(row['sample_id'], row['lane_id'])] = row['fastq_1']
         fastq_2_filenames[(row['sample_id'], row['lane_id'])] = row['fastq_2']
 
-    return fastq_1_filenames, fastq_2_filenames, sample_ids, lanes
+
+    seqinfo = {row["sample_id"]:row["source"] for _,row in fastqs.iterrows()}
+
+    return fastq_1_filenames, fastq_2_filenames, sample_ids, lanes, seqinfo
 
 
 def load_config(args):

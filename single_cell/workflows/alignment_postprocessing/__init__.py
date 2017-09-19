@@ -55,38 +55,17 @@ def create_bam_post_workflow(
 
 
     workflow.transform(
-        name='bam_sort',
+        name='postprocess_bam',
         ctx={'mem': config['high_mem']},
         axes=('sample_id',),
-        func=tasks.bam_sort,
+        func=tasks.postprocess_bam,
         args=(
             mgd.InputFile('merged_realign.bam', 'sample_id', fnames=bam),
-            mgd.TempOutputFile('sorted.bam', 'sample_id'),
-            config
-        ),
-    )
-   
-    workflow.transform(
-        name='bam_markdups',
-        ctx={'mem': config['high_mem']},
-        axes=('sample_id',),
-        func=tasks.bam_markdups,
-        args=(
-            mgd.TempInputFile('sorted.bam', 'sample_id'),
             mgd.OutputFile('sorted_markdups', 'sample_id', fnames=bam_filename),
-            mgd.OutputFile(markdups_metrics_filename, 'sample_id'),
-            config
-        ),
-    )
-   
-    workflow.commandline(
-        name='bam_index',
-        ctx={'mem': config['low_mem']},
-        axes=('sample_id',),
-        args=(
-            'samtools', 'index',
-            mgd.InputFile('sorted_markdups', 'sample_id', fnames=bam_filename),
             mgd.OutputFile('sorted_markdups_index', 'sample_id', fnames=bam_index_filename),
+            mgd.TempSpace('tempdir', 'sample_id'),
+            config,
+            mgd.OutputFile(markdups_metrics_filename, 'sample_id'),
         ),
     )
     

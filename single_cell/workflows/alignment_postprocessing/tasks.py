@@ -7,7 +7,40 @@ import pypeliner
 from scripts import GenerateCNMatrix
 from scripts import CollectMetrics
 import pandas as pd
+import os
+import errno
 
+
+
+def makedirs(directory):
+    try:
+        os.makedirs(directory)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+
+
+def postprocess_bam(infile, outfile, outfile_index, tempdir,
+                    config, markdups_metrics):
+    
+    if not os.path.exists(tempdir):
+        makedirs(tempdir)
+    
+    sorted_bam = os.path.join(tempdir, 'sorted.bam')
+    
+    bam_sort(infile, sorted_bam, config)
+
+    bam_markdups(sorted_bam, outfile, markdups_metrics, config)
+
+    bam_index(outfile, outfile_index)
+    
+
+def bam_index(infile, outfile):
+    pypeliner.commandline.execute(
+        'samtools', 'index',
+        infile,
+        outfile
+        )
 
 def bam_sort(bam_filename, sorted_bam_filename, config):
     pypeliner.commandline.execute(
