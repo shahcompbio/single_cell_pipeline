@@ -1,6 +1,7 @@
 import os
 import argparse
 import utils
+import itertools
 import pypeliner
 import pypeliner.managed as mgd
 from workflows import hmmcopy
@@ -13,6 +14,8 @@ from workflows import mutationseq
 from workflows import singlecell_summary
 from workflows import snv_postprocessing
 from workflows import alignment_postprocessing
+
+import pypeliner.storage
 
 
 def parse_args():
@@ -58,6 +61,8 @@ def parse_args():
 
 
 def main():
+    
+    storage = pypeliner.storage.AzureBlobStorage()
 
     args = parse_args()
 
@@ -66,6 +71,19 @@ def main():
     config = utils.load_config(args)
 
     fastq1_files, fastq2_files, sampleids, lanes, seqinfo = utils.read_fastqs_file(args)
+
+    for fileset in (fastq1_files, fastq2_files):
+        for (cell_id, lane_id), filename in fileset.iteritems():
+            blob_name = filename.replace('/Users/amcphers/Scratch/single_cell_test/', '')
+            assert 'Users' not in blob_name
+            store = storage.create_store(blob_name)
+            if not store.get_exists():
+                print 'uploading', blob_name
+                store.allocated_filename = filename
+                store.push()
+            else:
+                print 'exists', blob_name
+            fileset[(cell_id, lane_id)] = blob_name
 
     workflow = pypeliner.workflow.Workflow()
 
