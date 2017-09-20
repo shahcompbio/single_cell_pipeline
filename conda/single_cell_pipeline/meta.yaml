@@ -3,8 +3,11 @@ package:
   version: '0.0.3'
 
 source:
-  git_url: https://svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git
+  git_url: https://amcpherson@svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git
   git_rev: v0.0.3
+
+build:
+  number: 4
 
 requirements:
   build:
@@ -12,33 +15,16 @@ requirements:
 
   run:
     - python
-    - hmmcopy_utils
-    - samtools
-    - bwa
-    - fastqc
-    - picard
-    - cutadapt
-    - trim-galore
-    - pypeliner
-    - bioconductor-hmmcopy
-    - r-plyr
-    - r-getopt
+    - intervaltree
     - matplotlib
+    - pypdf2
+    - pypeliner
+    - pysam
+    - python-dateutil
+    - pyvcf
+    - pyyaml
     - seaborn
     - statsmodels
-    - pyyaml
-    - pyvcf
-    - samtools
-    - vcftools
-    - tabix
-    - bcftools
-    - scikit-learn
-    - intervaltree
-    - pysam
-    - matplotlib
-    - seaborn
-    - gatk
-    - strelka
 
 about:
   home: http://shahlab.ca
