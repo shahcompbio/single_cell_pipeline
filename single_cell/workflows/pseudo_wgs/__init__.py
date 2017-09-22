@@ -107,7 +107,7 @@ def create_wgs_workflow(
         func=tasks.bam_collect_wgs_metrics,
         args=(
             mgd.InputFile(bam_filename),
-            mgd.InputFile(ref_genome),
+            ref_genome,
             mgd.OutputFile(wgs_metrics_filename),
             config,
         ),
@@ -119,7 +119,7 @@ def create_wgs_workflow(
         func=tasks.bam_collect_gc_metrics,
         args=(
             mgd.InputFile(bam_filename),
-            mgd.InputFile(ref_genome),
+            ref_genome,
             mgd.OutputFile(gc_metrics_filename),
             mgd.OutputFile(gc_summary_filename),
             mgd.OutputFile(gc_chart_filename),

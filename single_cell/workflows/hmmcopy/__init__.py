@@ -10,7 +10,7 @@ import pypeliner.managed as mgd
 import tasks
 
 
-def create_hmmcopy_workflow(bam_file, corrected_reads_file,
+def create_hmmcopy_workflow(bam_file, bai_file, corrected_reads_file,
                             segments_file, hmm_metrics_file,
                             sample_ids, config, args):
 
@@ -35,6 +35,7 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
         axes=('sample_id',),
         args=(
             mgd.InputFile('bam_markdups', 'sample_id', fnames=bam_file),
+            mgd.InputFile('bai_markdups', 'sample_id', fnames=bai_file),
             mgd.TempOutputFile('reads.csv', 'sample_id'),
             mgd.TempOutputFile('segs.csv', 'sample_id'),
             mgd.TempOutputFile('params.csv', 'sample_id'),
@@ -111,7 +112,7 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
             mgd.TempInputFile('reads.csv', 'sample_id'),
             mgd.TempInputFile('segs.csv', 'sample_id'),
             mgd.TempInputFile('hmm_metrics.csv', 'sample_id'),
-            mgd.InputFile(config['ref_genome']),
+            config['ref_genome'],
             mgd.TempOutputFile('reads.pdf', 'sample_id'),
             mgd.TempOutputFile('segs.pdf', 'sample_id'),
             mgd.TempOutputFile('bias.pdf', 'sample_id'),

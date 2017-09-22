@@ -88,7 +88,7 @@ def create_bam_post_workflow(
         axes=('sample_id',),
         args=(
             mgd.InputFile('sorted_markdups', 'sample_id', fnames=bam_filename),
-            mgd.InputFile(ref_genome),
+            ref_genome,
             mgd.OutputFile(wgs_metrics_filename, 'sample_id'),
             config,
         ),
@@ -101,7 +101,7 @@ def create_bam_post_workflow(
         axes=('sample_id',),
         args=(
             mgd.InputFile('sorted_markdups', 'sample_id', fnames=bam_filename),
-            mgd.InputFile(ref_genome),
+            ref_genome,
             mgd.OutputFile(gc_metrics_filename, 'sample_id'),
             mgd.OutputFile(gc_summary_filename, 'sample_id'),
             mgd.OutputFile(gc_chart_filename, 'sample_id'),
