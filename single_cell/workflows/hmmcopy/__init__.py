@@ -17,6 +17,7 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
     results_dir = os.path.join(args['out_dir'], 'results')
     reads_filt_filename = os.path.join(results_dir, 'filtered_reads.csv')
     segs_filt_filename = os.path.join(results_dir, 'filtered_segs.csv')
+    output_seg_filename = os.path.join(results_dir, 'output.seg')
     cn_matrix_file = os.path.join(results_dir, 'cn_matrix.csv')
 
 
@@ -100,6 +101,16 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
         )
     )
 
+    workflow.transform(
+        name='convert_csv_seg'.
+        ctx={'mem': config['low_mem']}.
+        func=tasks.convert_csv_to_seg,
+        args=(
+            mgd.InputFile(segs_filt_filename),
+            mgd.InputFile(reads_filt_filename),
+            mgd.OutputFile(output_seg_filename),
+        )
+    )
 
 
 

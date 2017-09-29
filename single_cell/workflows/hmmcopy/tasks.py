@@ -8,6 +8,7 @@ import pypeliner
 from scripts import ExtractHmmMetrics
 from scripts import GenerateCNMatrix
 from scripts import FilterHmmData
+from scripts import ConvertCSVToSEG
 import pandas as pd
 
 scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
@@ -155,3 +156,7 @@ def filter_hmm_data(quality_metrics, segments, reads, mad_threshold,
     filter_hmm = FilterHmmData(quality_metrics, segments, reads,
                                mad_threshold, reads_out, segments_out)
     filter_hmm.main()
+
+def convert_csv_to_seg(filtered_segs, filtered_reads, output_seg):
+    converter = ConvertCSVToSEG(filtered_segs, filtered_reads, output_seg)
+    converter.main()
