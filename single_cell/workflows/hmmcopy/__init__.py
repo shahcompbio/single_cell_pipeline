@@ -19,6 +19,7 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
     reads_filt_filename = os.path.join(results_dir, '{}_filtered_reads.csv'.format(lib))
     segs_filt_filename = os.path.join(results_dir, '{}_filtered_segs.csv'.format(lib))
     cn_matrix_file = os.path.join(results_dir, '{}_cn_matrix.csv'.format(lib))
+    output_seg_filename = os.path.join(results_dir, '{}_igv_segments.seg'.format(lib))
 
 
     workflow = pypeliner.workflow.Workflow()
@@ -142,6 +143,16 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
             )
     )
 
+    workflow.transform(
+        name='convert_csv_seg'.
+        ctx={'mem': config['low_mem']}.
+        func=tasks.convert_csv_to_seg,
+        args=(
+            mgd.InputFile(segs_filt_filename),
+            mgd.InputFile(reads_filt_filename),
+            mgd.OutputFile(output_seg_filename),
+        )
+    )
 
     reads_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_reads_mad.pdf'.format(lib))
     segs_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_segs_mad.pdf'.format(lib))

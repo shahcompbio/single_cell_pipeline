@@ -9,6 +9,7 @@ from scripts import ExtractHmmMetrics
 from scripts import GenerateCNMatrix
 from scripts import FilterHmmData
 from scripts import GenHmmPlots
+from scripts import ConvertCSVToSEG
 import pandas as pd
 from PyPDF2 import PdfFileMerger
 
@@ -188,3 +189,7 @@ def merge_pdf(in_filenames, out_filename, metrics, mad_threshold):
         
         with open(out_file, 'wb') as fout:
             merger.write(fout)
+
+def convert_csv_to_seg(filtered_segs, filtered_reads, output_seg):
+    converter = ConvertCSVToSEG(filtered_segs, filtered_reads, output_seg)
+    converter.main()
