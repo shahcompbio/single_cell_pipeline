@@ -145,7 +145,7 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
 
     workflow.transform(
         name='convert_csv_seg',
-        ctx={'mem': config['low_mem']}.
+        ctx={'mem': config['low_mem']},
         func=tasks.convert_csv_to_seg,
         args=(
             mgd.InputFile(segs_filt_filename),
