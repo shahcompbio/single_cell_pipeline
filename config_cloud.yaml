@@ -29,7 +29,7 @@ parameters:
 
   s: null
 
- 	# Optional mappability cutoff
+  # Optional mappability cutoff
   map_cutoff: 0.9
 
   # Number of states
