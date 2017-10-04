@@ -10,7 +10,7 @@ import seaborn as sns
 
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-
+import warnings
 
 class PlotKernelDensity(object):
     '''
@@ -84,6 +84,11 @@ class PlotKernelDensity(object):
         for expcond in exp_conds:
             mad_scores = data[data["experimental_condition"] == expcond]\
                              [self.column_name]
+
+            if mad_scores.isnull().all():
+                warnings.warn("all mad states in condition %s are NaN" %expcond)
+                continue
+
             fig = self.plot_kernel_density(pdfout, mad_scores, exp_cond=expcond)
 
         plt.suptitle(self.plot_title, fontsize=12)
