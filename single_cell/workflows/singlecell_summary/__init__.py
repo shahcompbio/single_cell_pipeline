@@ -82,7 +82,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
             mgd.OutputFile(plot_metrics_output),
             'QC pipeline metrics',
             mgd.InputFile(gc_matrix),
-            mgd.InputFile(config['gc_windows'])
+            config['gc_windows'],
         )
     )
 

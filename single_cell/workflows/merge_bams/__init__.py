@@ -20,8 +20,9 @@ def create_merge_workflow(
     bam,
     bam_filename,
     bam_index_filename,
-    config,
-    lanes):
+    config):
+
+    lanes = bam.keys()
  
     workflow = pypeliner.workflow.Workflow()
 
@@ -29,7 +30,6 @@ def create_merge_workflow(
         obj=mgd.OutputChunks('lane'),
         value=lanes,
     )
-
 
     workflow.transform(
         name='merge_bams',
