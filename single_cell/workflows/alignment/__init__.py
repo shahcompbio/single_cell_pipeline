@@ -57,7 +57,7 @@ def create_alignment_workflow(
             mgd.OutputFile(bam_filename),
             mgd.OutputFile(flagstat_metrics_filename),
             mgd.TempSpace('alignment_temp'),
-            mgd.InputFile(ref_genome),
+            ref_genome,
             config,
             read_group
         )

@@ -10,7 +10,7 @@ import pypeliner.managed as mgd
 import tasks
 
 
-def create_realignment_workflow(input_bams, output_bams, config,
+def create_realignment_workflow(input_bams, input_bais, output_bams, config,
                                 out_dir, realign, sample_ids):
 
     output_bams = dict([(sampid, output_bams[sampid])
@@ -39,6 +39,7 @@ def create_realignment_workflow(input_bams, output_bams, config,
             func=tasks.realign,
             args=(
                 mgd.InputFile('bam', 'sample_id', fnames=input_bams),
+                mgd.InputFile('bai', 'sample_id', fnames=input_bais),
                 mgd.TempOutputFile('realigned.bam', 'chrom', 'sample_id'),
                 mgd.TempSpace('realignment_temp', 'chrom', cleanup='before'),
                 config,
