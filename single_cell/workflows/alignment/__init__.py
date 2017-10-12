@@ -49,7 +49,7 @@ def create_alignment_workflow(
 
     workflow.transform(
         name='align_reads',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.align_pe,
         args=(
             mgd.TempInputFile('trim_r1.fastq.gz'),

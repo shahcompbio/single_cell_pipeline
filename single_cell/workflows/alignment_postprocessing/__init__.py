@@ -56,7 +56,7 @@ def create_bam_post_workflow(
 
     workflow.transform(
         name='postprocess_bam',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         axes=('sample_id',),
         func=tasks.postprocess_bam,
         args=(
@@ -83,7 +83,7 @@ def create_bam_post_workflow(
     
     workflow.transform(
         name='bam_collect_wgs_metrics',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.bam_collect_wgs_metrics,
         axes=('sample_id',),
         args=(
@@ -96,7 +96,7 @@ def create_bam_post_workflow(
     
     workflow.transform(
         name='bam_collect_gc_metrics',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.bam_collect_gc_metrics,
         axes=('sample_id',),
         args=(
@@ -111,7 +111,7 @@ def create_bam_post_workflow(
     
     workflow.transform(
         name='bam_collect_insert_metrics',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.bam_collect_insert_metrics,
         axes=('sample_id',),
         args=(
