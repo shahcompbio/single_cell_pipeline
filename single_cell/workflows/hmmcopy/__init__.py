@@ -159,7 +159,7 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
     bias_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_bias_mad.pdf'.format(lib))
     workflow.transform(
         name='merge_hmm_copy_mad',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.merge_pdf,
         args=(
               [mgd.TempInputFile('reads.pdf', 'sample_id'),
