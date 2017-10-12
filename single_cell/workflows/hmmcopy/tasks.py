@@ -132,7 +132,25 @@ def concatenate_csv(in_filenames, out_filename, nan_val='NA'):
     data = data.fillna(nan_val)
     data.to_csv(out_filename, index=False)
 
+def concatenate_csv_low_mem(in_filenames, out_filename, nan_val = 'NA'):
 
+    header = None
+
+    with open(out_filename) as writer:
+
+        for _, infilename in in_filenames.iteritems():
+
+            with open(infilename) as reader:
+
+                #match headers
+                if not header:
+                    header = reader.readline()
+                else:
+                    assert header == reader.readline(),\
+                        'all files should have same header'
+
+                for line in reader:
+                    writer.write(line)
 
 def generate_cn_matrix(infiles, output, tempdir):
     """
