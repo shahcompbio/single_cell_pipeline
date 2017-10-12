@@ -91,7 +91,7 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
 
     workflow.transform(
         name='filter_hmmcopy_results',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['low_mem']},
         func=tasks.filter_hmm_data,
         args=(
             mgd.InputFile(hmm_metrics_file),
@@ -105,7 +105,7 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
 
     workflow.transform(
         name='plot_hmm_copy',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.plot_hmmcopy,
         axes=('sample_id',),
         args=(
