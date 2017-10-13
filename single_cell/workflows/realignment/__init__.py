@@ -10,7 +10,7 @@ import pypeliner.managed as mgd
 import tasks
 
 
-def create_realignment_workflow(input_bams, output_bams, config,
+def create_realignment_workflow(input_bams, input_bam_bai, output_bams, config,
                                 out_dir, realign, sample_ids):
 
     output_bams = dict([(sampid, output_bams[sampid])
