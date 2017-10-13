@@ -145,6 +145,7 @@ def concatenate_csv_low_mem(in_filenames, out_filename, nan_val = 'NA'):
                 #match headers
                 if not header:
                     header = reader.readline()
+                    writer.write(header)
                 else:
                     assert header == reader.readline(),\
                         'all files should have same header'
