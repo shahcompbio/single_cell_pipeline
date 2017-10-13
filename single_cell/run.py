@@ -112,6 +112,7 @@ def main():
         func=realignment.create_realignment_workflow,
         args=(
             mgd.TempInputFile('merged_lanes.bam', 'sample_id'),
+            mgd.TempInputFile('merged_lanes.bam.bai', 'sample_id'),
             mgd.TempOutputFile('merged_realign.bam', 'sample_id',
                                axes_origin=[]),
             config,
