@@ -44,7 +44,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
     #calculate cell ordering in hierarchical clustering
     workflow.transform(
         name='plot_heatmap_all',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.plot_heatmap,
         args=(
             mgd.InputFile(hmm_reads),
@@ -88,7 +88,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
 
     workflow.transform(
         name='plot_kernel_density',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.plot_kernel_density,
         args=(
             mgd.InputFile(all_metrics_file),

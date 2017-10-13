@@ -33,7 +33,7 @@ def create_merge_workflow(
 
     workflow.transform(
         name='merge_bams',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.merge_bams,
         args=(
             mgd.InputFile('bam', 'lane', fnames=bam),
