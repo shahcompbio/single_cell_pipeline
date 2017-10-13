@@ -108,7 +108,7 @@ class FilterHmmData(object):
         with open(infile) as inp:
             with open(outfile, 'w') as output:
 
-                header = input.readline()
+                header = inp.readline()
                 output.write(header)
                 header = header.strip().split(',')
                 samp_idx = header.index('sample_id')
