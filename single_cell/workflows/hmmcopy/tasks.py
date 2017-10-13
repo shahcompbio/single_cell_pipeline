@@ -136,7 +136,7 @@ def concatenate_csv_low_mem(in_filenames, out_filename, nan_val = 'NA'):
 
     header = None
 
-    with open(out_filename) as writer:
+    with open(out_filename, 'w') as writer:
 
         for _, infilename in in_filenames.iteritems():
 
