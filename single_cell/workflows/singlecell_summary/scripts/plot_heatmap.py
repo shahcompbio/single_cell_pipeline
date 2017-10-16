@@ -3,8 +3,6 @@ Created on Sep 8, 2015
 
 @author: dgrewal
 '''
-
-import resource
 import sys
 import math
 import argparse
@@ -537,6 +535,4 @@ if __name__ == '__main__':
                     high_memory=ARGS.high_memory, plot_title=ARGS.plot_title, color_by_col=ARGS.color_by_col,
                     plot_by_col=ARGS.plot_by_col)
     m.main()
-
-    print float(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)/1000000
 
