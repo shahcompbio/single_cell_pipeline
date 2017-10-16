@@ -111,12 +111,12 @@ class FilterHmmData(object):
                 header = inp.readline()
                 output.write(header)
                 header = header.strip().split(',')
-                samp_idx = header.index('sample_id')
+                samp_idx = header.index('cell_id')
 
                 for line in inp:
                     samp = line.strip().split(',')[samp_idx]
                     if self.check_mad_score(samp, metrics):
-                        outfile.write(line)
+                        output.write(line)
 
     def main(self):
         """
