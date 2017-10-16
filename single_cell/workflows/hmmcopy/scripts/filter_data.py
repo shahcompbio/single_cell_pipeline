@@ -116,7 +116,7 @@ class FilterHmmData(object):
                 for line in inp:
                     samp = line.strip().split(',')[samp_idx]
                     if self.check_mad_score(samp, metrics):
-                        outfile.write(line)
+                        output.write(line)
 
     def main(self):
         """
