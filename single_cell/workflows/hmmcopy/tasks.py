@@ -4,6 +4,7 @@ Created on Jul 24, 2017
 @author: dgrewal
 '''
 import os
+import csv
 import pypeliner
 from scripts import ExtractHmmMetrics
 from scripts import GenerateCNMatrix
@@ -120,38 +121,25 @@ def merge_csv(in_filenames, out_filename, how, on, nan_val='NA'):
     data = data.fillna(nan_val)
     data.to_csv(out_filename, index=False)
 
-def concatenate_csv(in_filenames, out_filename, nan_val='NA'):
-    data = []
-    for _, in_filename in in_filenames.iteritems():
-        with open(in_filename) as f:
-            first_line = f.readline()
-            if len(first_line) == 0:
-                continue
-        data.append(pd.read_csv(in_filename, dtype=str))
-    data = pd.concat(data, ignore_index=True)
-    data = data.fillna(nan_val)
-    data.to_csv(out_filename, index=False)
+def concatenate_csv(in_filenames, out_filename):
+    """merge csv files, uses csv module to handle inconsistencies in column
+    indexes, pandas uses a lot of memory
+    :param in_filenames: input file dict
+    :param out_filename: output file
+    """
+    writer = None
+    for _,infile in in_filenames.iteritems():
 
-def concatenate_csv_low_mem(in_filenames, out_filename, nan_val = 'NA'):
+        with open(infile) as inp:
+            reader= csv.DictReader(inp)
 
-    header = None
+            for row in reader:
+                if not writer:
+                    writer = csv.DictWriter(open(out_filename, "w"),
+                                            fieldnames=reader._fieldnames)
+                    writer.writeheader()
 
-    with open(out_filename, 'w') as writer:
-
-        for _, infilename in in_filenames.iteritems():
-
-            with open(infilename) as reader:
-
-                #match headers
-                if not header:
-                    header = reader.readline()
-                    writer.write(header)
-                else:
-                    assert header == reader.readline(),\
-                        'all files should have same header'
-
-                for line in reader:
-                    writer.write(line)
+                writer.writerow(row)
 
 def generate_cn_matrix(infiles, output, tempdir):
     """
