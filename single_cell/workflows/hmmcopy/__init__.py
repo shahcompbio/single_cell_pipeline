@@ -62,7 +62,7 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
     workflow.transform(
         name='merge_tables',
         ctx={'mem': config['low_mem']},
-        func=tasks.concatenate_csv_low_mem,
+        func=tasks.concatenate_csv,
         args=(
             mgd.TempInputFile('segs.csv', 'sample_id'),
             mgd.OutputFile(segments_file),
@@ -72,7 +72,7 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
     workflow.transform(
         name='merge_reads',
         ctx={'mem': config['low_mem']},
-        func=tasks.concatenate_csv_low_mem,
+        func=tasks.concatenate_csv,
         args=(
             mgd.TempInputFile('reads.csv', 'sample_id'),
             mgd.OutputFile(corrected_reads_file),
@@ -82,7 +82,7 @@ def create_hmmcopy_workflow(bam_file, corrected_reads_file,
     workflow.transform(
         name='merge_hmm_metrics',
         ctx={'mem': config['low_mem']},
-        func=tasks.concatenate_csv_low_mem,
+        func=tasks.concatenate_csv,
         args=(
             mgd.TempInputFile('hmm_metrics.csv', 'sample_id'),
             mgd.OutputFile(hmm_metrics_file),
