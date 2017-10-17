@@ -67,8 +67,8 @@ heatmap_plot_numreads_threshold: 100000
 
 gc_windows: '/shahlab/pipelines/reference/gc_windows.txt'
 
-low_mem: 5
+low_mem: 2
 
-med_mem: 15
+med_mem: 5
 
-high_mem: 25
+high_mem: 15

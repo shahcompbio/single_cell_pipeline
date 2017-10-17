@@ -75,7 +75,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
 
     workflow.transform(
         name='plot_metrics',
-        ctx={'mem': config['med_mem']},
+        ctx={'mem': config['high_mem']},
         func=tasks.plot_metrics,
         args=(
             mgd.InputFile(all_metrics_file),
@@ -111,7 +111,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
 
     workflow.transform(
         name='plot_heatmap_ec',
-        ctx={'mem': config['med_mem']},
+        ctx={'mem': config['high_mem']},
         func=tasks.plot_heatmap,
         args=(
             mgd.InputFile(hmm_reads),
@@ -128,7 +128,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
 
     workflow.transform(
         name='plot_heatmap_ec_mad',
-        ctx={'mem': config['med_mem']},
+        ctx={'mem': config['high_mem']},
         func=tasks.plot_heatmap,
         args=(
             mgd.InputFile(hmm_reads),
@@ -146,7 +146,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
 
     workflow.transform(
         name='plot_heatmap_ec_nreads',
-        ctx={'mem': config['med_mem']},
+        ctx={'mem': config['high_mem']},
         func=tasks.plot_heatmap,
         args=(
             mgd.InputFile(hmm_reads),
