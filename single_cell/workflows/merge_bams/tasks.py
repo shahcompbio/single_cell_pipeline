@@ -16,6 +16,7 @@ def merge_bams(inputs, output):
            'SORT_ORDER=coordinate',
            'ASSUME_SORTED=true',
            'VALIDATION_STRINGENCY=LENIENT',
+           'MAX_RECORDS_IN_RAM=1000000'
            ]
     for bamfile in filenames:
         cmd.append('I='+bamfile)
