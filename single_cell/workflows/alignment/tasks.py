@@ -110,7 +110,7 @@ def bam_sort(bam_filename, sorted_bam_filename, config):
         'OUTPUT=' + sorted_bam_filename,
         'SORT_ORDER=coordinate',
         'VALIDATION_STRINGENCY=LENIENT',
-        'MAX_RECORDS_IN_RAM=5000000')
+        'MAX_RECORDS_IN_RAM=1000000')
 
 
 def bwa_align_paired_end(fastq1, fastq2, output, tempdir,
