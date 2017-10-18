@@ -17,7 +17,7 @@ def merge_bams(inputs, output, config):
            'SORT_ORDER=coordinate',
            'ASSUME_SORTED=true',
            'VALIDATION_STRINGENCY=LENIENT',
-           'MAX_RECORDS_IN_RAM=1000000'
+           'MAX_RECORDS_IN_RAM=150000'
            ]
     for bamfile in inputs:
         cmd.append('I=' + bamfile)
@@ -46,7 +46,7 @@ def generate_targets(input_bams, config, intervals, interval):
            '-T', 'RealignerTargetCreator',
            '-R', config['ref_genome'],
            '-o', intervals, '-L', interval,
-           'MAX_RECORDS_IN_RAM=1000000'
+           'MAX_RECORDS_IN_RAM=150000'
            ]
 
     for _, bamfile in input_bams.iteritems():
@@ -61,7 +61,7 @@ def gatk_realigner(inputs, config, targets, interval, tempdir):
            '-R', config['ref_genome'],
            '-targetIntervals', targets,
            '--nWayOut', '_indel_realigned.bam', '-L', interval,
-           'MAX_RECORDS_IN_RAM=1000000'
+           'MAX_RECORDS_IN_RAM=150000'
            ]
 
     for _, bamfile in inputs.iteritems():
