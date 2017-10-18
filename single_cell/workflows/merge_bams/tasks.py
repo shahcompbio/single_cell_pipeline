@@ -10,7 +10,9 @@ def merge_bams(inputs, output):
     filenames = inputs.values()
     
     
-    cmd = ['picard', '-Xmx4G',
+    cmd = ['picard', '-Xmx1024m', '-Xms1024m',
+           '-XX:MaxMetaspaceSize=32m',
+           '-XX:CompressedClassSpaceSize=32m',
            'MergeSamFiles',
            'OUTPUT=' + output,
            'SORT_ORDER=coordinate',
