@@ -12,8 +12,7 @@ def merge_bams(inputs, output, config):
     
     
     cmd = ['picard', '-Xmx1024m', '-Xms1024m',
-           '-XX:MaxMetaspaceSize=32m',
-           '-XX:CompressedClassSpaceSize=32m',
+           '-XX:ParallelGCThreads=1',
            'MergeSamFiles',
            'OUTPUT=' + output,
            'SORT_ORDER=coordinate',
@@ -31,8 +30,7 @@ def merge_bams(inputs, output, config):
 def bam_sort(bam_filename, sorted_bam_filename, config):
     pypeliner.commandline.execute(
         'picard', '-Xmx1024m', '-Xms1024m',
-        '-XX:MaxMetaspaceSize=32m',
-        '-XX:CompressedClassSpaceSize=32m',
+        '-XX:ParallelGCThreads=1',
         'SortSam',
         'INPUT=' + bam_filename,
         'OUTPUT=' + sorted_bam_filename,
@@ -44,8 +42,7 @@ def bam_sort(bam_filename, sorted_bam_filename, config):
 def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, config):
     pypeliner.commandline.execute(
         'picard', '-Xmx1024m', '-Xms1024m',
-        '-XX:MaxMetaspaceSize=32m',
-        '-XX:CompressedClassSpaceSize=32m',
+        '-XX:ParallelGCThreads=1',
         'MarkDuplicates',
         'INPUT=' + bam_filename,
         'OUTPUT=' + markduped_bam_filename,
@@ -59,8 +56,7 @@ def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, config)
 def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config):
     pypeliner.commandline.execute(
         'picard', '-Xmx1024m', '-Xms1024m',
-        '-XX:MaxMetaspaceSize=32m',
-        '-XX:CompressedClassSpaceSize=32m',
+        '-XX:ParallelGCThreads=1',
         'CollectWgsMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
@@ -76,8 +72,7 @@ def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config):
 def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, config):
     pypeliner.commandline.execute(
         'picard', '-Xmx1024m', '-Xms1024m',
-        '-XX:MaxMetaspaceSize=32m',
-        '-XX:CompressedClassSpaceSize=32m',
+        '-XX:ParallelGCThreads=1',
         'CollectGcBiasMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
@@ -111,8 +106,7 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_
 
     pypeliner.commandline.execute(
         'picard', '-Xmx1024m', '-Xms1024m',
-        '-XX:MaxMetaspaceSize=32m',
-        '-XX:CompressedClassSpaceSize=32m',
+        '-XX:ParallelGCThreads=1',
         'CollectInsertSizeMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
