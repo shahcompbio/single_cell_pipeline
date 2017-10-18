@@ -8,6 +8,7 @@ from subprocess import Popen
 import os
 import warnings
 import argparse
+from shutil import copyfile
 
 class RunTrimGalore(object):
     """
@@ -32,11 +33,13 @@ class RunTrimGalore(object):
         self.fastq_r2 = fq_r2
         self.report_r1 = report_r1
         self.report_r2 = report_r2
+        self.empty = False
 
         self.check_inputs()
 
         if not os.path.exists(self.tempdir):
             os.makedirs(self.tempdir)
+
 
     @classmethod
     def run_cmd(cls, cmd):
@@ -49,8 +52,7 @@ class RunTrimGalore(object):
 
         proc.communicate()
 
-    @staticmethod
-    def check_file(path):
+    def check_file(self, path):
         """
         check
         * if they exist or not,
@@ -62,6 +64,10 @@ class RunTrimGalore(object):
 
         if os.path.getsize(path) < 1000:
             warnings.warn("extremely small file detected: %s" % path)
+
+        if not self.empty and os.path.getsize(path) == 0:
+            self.empty = True
+            warnings.warn("empty file: %s, skipping trimming" %path)
 
         ext = os.path.splitext(path)[1][1:]
         # get the last extension
@@ -82,10 +88,23 @@ class RunTrimGalore(object):
 
         assert ext1 == ext2, "input fastqfiles should have the same extension"
 
+    def fake_run(self):
+        #copy files to output and rename to match trimgalore output
+        output_r1 = os.path.join(self.tempdir, "R1_001_val_1.fq.gz")
+        output_r2 = os.path.join(self.tempdir, "R2_001_val_2.fq.gz")
+
+        copyfile(self.seq1, output_r1)
+        copyfile(self.seq2, output_r2)
+
     def run_trimgalore(self):
         """
         launch trimgalore
         """
+
+        if self.empty:
+            self.fake_run()
+            return
+
         cmd = [self.trimgalore_path,
                '--fastqc',
                '--paired',
@@ -140,7 +159,7 @@ class RunTrimGalore(object):
                     if ext == '.fq.gz':
                         raise Exception("Couldn't move %s files" % ext)
                     else:
-                        raise Exception("Couldn't move %s files" % ext)
+                        warnings.warn("Couldn't move %s files" % ext)
             return
 
         for rep in reps:
@@ -152,7 +171,7 @@ class RunTrimGalore(object):
                 if ext == '.fq.gz':
                     raise Exception("Couldn't move %s files" % ext)
                 else:
-                    raise Exception("Couldn't move %s files" % ext)
+                    warnings.warn("Couldn't move %s files" % ext)
 
     def gather_outputs(self):
         """
