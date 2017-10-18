@@ -51,7 +51,7 @@ def bam_sort(bam_filename, sorted_bam_filename, config):
         'OUTPUT=' + sorted_bam_filename,
         'SORT_ORDER=coordinate',
         'VALIDATION_STRINGENCY=LENIENT',
-        'MAX_RECORDS_IN_RAM=1000000')
+        'MAX_RECORDS_IN_RAM=150000')
 
 
 def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, config):
@@ -65,7 +65,7 @@ def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, config)
         'REMOVE_DUPLICATES=False',
         'ASSUME_SORTED=True',
         'VALIDATION_STRINGENCY=LENIENT',
-        'MAX_RECORDS_IN_RAM=1000000')
+        'MAX_RECORDS_IN_RAM=150000')
 
 
 def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config):
@@ -81,7 +81,7 @@ def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config):
         'COVERAGE_CAP=500',
         'VALIDATION_STRINGENCY=LENIENT',
         'COUNT_UNPAIRED=' + ('True' if config['picard_wgs_params']['count_unpaired'] else 'False'),
-        'MAX_RECORDS_IN_RAM=1000000')
+        'MAX_RECORDS_IN_RAM=150000')
 
 
 def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, config):
@@ -95,7 +95,7 @@ def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_f
         'S=' + summary_filename,
         'CHART_OUTPUT=' + chart_filename,
         'VALIDATION_STRINGENCY=LENIENT',
-        'MAX_RECORDS_IN_RAM=1000000')
+        'MAX_RECORDS_IN_RAM=150000')
 
 def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_filename, histogram_filename, config):
     # Check if any paired reads exist
@@ -127,7 +127,7 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_
         'HISTOGRAM_FILE=' + histogram_filename,
         'ASSUME_SORTED=True',
         'VALIDATION_STRINGENCY=LENIENT',
-        'MAX_RECORDS_IN_RAM=1000000')
+        'MAX_RECORDS_IN_RAM=150000')
 
 def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
                     wgs_metrics, output, sample_id):
