@@ -11,8 +11,7 @@ def merge_bams(inputs, output):
     
     
     cmd = ['picard', '-Xmx1024m', '-Xms1024m',
-           '-XX:MaxMetaspaceSize=32m',
-           '-XX:CompressedClassSpaceSize=32m',
+           '-XX:ParallelGCThreads=1',
            'MergeSamFiles',
            'OUTPUT=' + output,
            'SORT_ORDER=coordinate',
