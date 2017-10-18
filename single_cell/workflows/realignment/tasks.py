@@ -71,7 +71,7 @@ def gatk_realigner(inputs, config, targets, interval, tempdir):
     pypeliner.commandline.execute(*cmd)
 
 
-def realign(input_bams, output_bams, tempdir, config, interval):
+def realign(input_bams, input_bais, output_bams, tempdir, config, interval):
 
     # make the dir
     if not os.path.exists(tempdir):

@@ -81,9 +81,8 @@ def main():
         args=(
             mgd.InputFile('fastq_1', 'sample_id', 'lane', fnames=fastq1_files),
             mgd.InputFile('fastq_2', 'sample_id', 'lane', fnames=fastq2_files),
-            mgd.TempOutputFile('aligned_per_cell_per_lane.sorted.bam',
-                               'sample_id', 'lane'),
-            mgd.InputFile(config['ref_genome']),
+            mgd.TempOutputFile('aligned_per_cell_per_lane.sorted.bam', 'sample_id', 'lane'),
+            config['ref_genome'],
             mgd.InputInstance('lane'),
             mgd.InputInstance('sample_id'),
             config,
@@ -98,12 +97,10 @@ def main():
         axes=('sample_id',),
         func=merge_bams.create_merge_workflow,
         args=(
-            mgd.TempInputFile('aligned_per_cell_per_lane.sorted.bam',
-                              'sample_id', 'lane'),
+            mgd.TempInputFile('aligned_per_cell_per_lane.sorted.bam', 'sample_id', 'lane'),
             mgd.TempOutputFile('merged_lanes.bam', 'sample_id'),
             mgd.TempOutputFile('merged_lanes.bam.bai', 'sample_id'),
             config,
-            lanes,
         ),
     )
 
@@ -136,7 +133,7 @@ def main():
             mgd.OutputFile('bam_markdups', 'sample_id', template=bam_template, axes_origin=[]),
             mgd.OutputFile('bam_markdups_index', 'sample_id',
                            template=bam_index_template, axes_origin=[]),
-            mgd.InputFile(config['ref_genome']),
+            config['ref_genome'],
             mgd.TempOutputFile('alignment_metrics.csv'),
             mgd.OutputFile(gc_metrics),
             sampleids,
@@ -153,6 +150,7 @@ def main():
         func=hmmcopy.create_hmmcopy_workflow,
         args=(
             mgd.InputFile('bam_markdups', 'sample_id', template=bam_template),
+            mgd.InputFile('bam_markdups_index', 'sample_id', template=bam_index_template),
             mgd.OutputFile(reads_filename),
             mgd.OutputFile(segs_filename),
             mgd.TempOutputFile('hmmcopy_hmm_metrics.csv'),
@@ -193,7 +191,7 @@ def main():
                               template=bam_template),
                 mgd.OutputFile(pseudo_wgs_bam),
                 mgd.OutputFile(pseudo_wgs_bai),
-                mgd.InputFile(config['ref_genome']),
+                config['ref_genome'],
                 sampleids,
                 config,
                 args['out_dir'],
@@ -211,7 +209,7 @@ def main():
             args=(
                 mgd.InputFile(pseudo_wgs_bam),
                 mgd.InputFile(args['matched_normal']),
-                mgd.InputFile(config['ref_genome']),
+                config['ref_genome'],
                 mgd.OutputFile(museq_vcf),
                 mgd.OutputFile(museq_csv),
                 config,
@@ -229,7 +227,7 @@ def main():
             args=(
                 mgd.InputFile(pseudo_wgs_bam),
                 mgd.InputFile(args['matched_normal']),
-                mgd.InputFile(config['ref_genome']),
+                config['ref_genome'],
                 mgd.OutputFile(strelka_indel_vcf),
                 mgd.OutputFile(strelka_snv_vcf),
                 mgd.OutputFile(strelka_indel_csv),

@@ -19,7 +19,9 @@ scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 's
 run_hmmcopy_rscript = os.path.join(scripts_directory, 'hmmcopy.R')
 
 
-def run_hmmcopy(bam_file,
+def run_hmmcopy(
+    bam_file,
+    bai_file,
     corrected_reads_filename,
     segments_filename,
     parameters_filename,
