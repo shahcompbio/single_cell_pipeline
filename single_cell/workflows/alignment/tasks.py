@@ -3,6 +3,7 @@ import os
 import errno
 import shutil
 import time
+import warnings
 from scripts import RunTrimGalore
 
 
@@ -31,11 +32,17 @@ def trim_fastqs(fastq1, fastq2, trim1, trim2, reports, sample_id, tempdir, sourc
     
     out_html = os.path.join(reports, '{}_fastqc_R1.html'.format(sample_id))
     out_plot = os.path.join(reports, '{}_fastqc_R1.zip'.format(sample_id))
-    produce_fastqc_report(fastq1, out_html, out_plot, tempdir, 'fastqc')
+
+    if not os.path.getsize(fastq1) == 0:
+        warnings.warn("fastq file %s is empty, skipping fastqc" %fastq1)
+        produce_fastqc_report(fastq1, out_html, out_plot, tempdir, 'fastqc')
 
     out_html = os.path.join(reports, '{}_fastqc_R2.html'.format(sample_id))
     out_plot = os.path.join(reports, '{}_fastqc_R2.zip'.format(sample_id))
-    produce_fastqc_report(fastq2, out_html, out_plot, tempdir, 'fastqc')
+
+    if not os.path.getsize(fastq2) == 0:
+        warnings.warn("fastq file %s is empty, skipping fastqc" %fastq2)
+        produce_fastqc_report(fastq2, out_html, out_plot, tempdir, 'fastqc')
 
     if source == 'hiseq':
         rep1 = os.path.join(reports, '{}_trimgalore_R1.html'.format(sample_id))
