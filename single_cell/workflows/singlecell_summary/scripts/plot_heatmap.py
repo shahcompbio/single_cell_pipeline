@@ -385,6 +385,8 @@ class PlotHeatmap(object):
  
         pdfout.savefig(pad_inches=0.2)
 
+        plt.close("all")
+
     def plot_heatmap_by_sep(self, data, chr_idxs, sepdata, colordata):
         """
         generate and save plot to output
