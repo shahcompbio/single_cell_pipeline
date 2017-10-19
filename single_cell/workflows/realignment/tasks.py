@@ -10,7 +10,7 @@ import shutil
 
 def merge_bams(inputs, output, config):
 
-    cmd = ['picard', '-Xmx1024m', '-Xms1024m',
+    cmd = ['picard', '-Xmx2G', '-Xms2G',
            '-XX:ParallelGCThreads=1',
            'MergeSamFiles',
            'OUTPUT=' + output,
@@ -42,7 +42,7 @@ def copy_files(inp, outp):
 
 def generate_targets(input_bams, config, intervals, interval):
     # generate positions
-    cmd = ['gatk', '-Xmx4G',
+    cmd = ['gatk', '-Xmx2G',
            '-T', 'RealignerTargetCreator',
            '-R', config['ref_genome'],
            '-o', intervals, '-L', interval,
@@ -56,7 +56,7 @@ def generate_targets(input_bams, config, intervals, interval):
 
 
 def gatk_realigner(inputs, config, targets, interval, tempdir):
-    cmd = ['gatk', '-Xmx4G',
+    cmd = ['gatk', '-Xmx2G',
            '-T', 'IndelRealigner',
            '-R', config['ref_genome'],
            '-targetIntervals', targets,

@@ -10,7 +10,7 @@ def merge_bams(inputs, output):
     filenames = inputs.values()
     
     
-    cmd = ['picard', '-Xmx1024m', '-Xms1024m',
+    cmd = ['picard', '-Xmx2G', '-Xms2G',
            '-XX:ParallelGCThreads=1',
            'MergeSamFiles',
            'OUTPUT=' + output,

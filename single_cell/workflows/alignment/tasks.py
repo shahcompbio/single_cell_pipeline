@@ -104,7 +104,7 @@ def get_readgroup(run_id, sample_id, args, config, seqinfo):
 
 def bam_sort(bam_filename, sorted_bam_filename, config):
     pypeliner.commandline.execute(
-        'picard', '-Xmx1024m', '-Xms1024m',
+        'picard', '-Xmx2G', '-Xms2G',
         '-XX:ParallelGCThreads=1',
         'SortSam',
         'INPUT=' + bam_filename,

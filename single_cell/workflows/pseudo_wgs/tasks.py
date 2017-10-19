@@ -11,7 +11,7 @@ def merge_bams(inputs, output, config):
     filenames = inputs.values()
     
     
-    cmd = ['picard', '-Xmx1024m', '-Xms1024m',
+    cmd = ['picard', '-Xmx2G', '-Xms2G',
            '-XX:ParallelGCThreads=1',
            'MergeSamFiles',
            'OUTPUT=' + output,
@@ -29,7 +29,7 @@ def merge_bams(inputs, output, config):
 
 def bam_sort(bam_filename, sorted_bam_filename, config):
     pypeliner.commandline.execute(
-        'picard', '-Xmx1024m', '-Xms1024m',
+        'picard', '-Xmx2G', '-Xms2G',
         '-XX:ParallelGCThreads=1',
         'SortSam',
         'INPUT=' + bam_filename,
@@ -41,7 +41,7 @@ def bam_sort(bam_filename, sorted_bam_filename, config):
 
 def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, config):
     pypeliner.commandline.execute(
-        'picard', '-Xmx1024m', '-Xms1024m',
+        'picard', '-Xmx2G', '-Xms2G',
         '-XX:ParallelGCThreads=1',
         'MarkDuplicates',
         'INPUT=' + bam_filename,
@@ -55,7 +55,7 @@ def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, config)
 
 def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config):
     pypeliner.commandline.execute(
-        'picard', '-Xmx1024m', '-Xms1024m',
+        'picard', '-Xmx2G', '-Xms2G',
         '-XX:ParallelGCThreads=1',
         'CollectWgsMetrics',
         'INPUT=' + bam_filename,
@@ -71,7 +71,7 @@ def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config):
 
 def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, config):
     pypeliner.commandline.execute(
-        'picard', '-Xmx1024m', '-Xms1024m',
+        'picard', '-Xmx2G', '-Xms2G',
         '-XX:ParallelGCThreads=1',
         'CollectGcBiasMetrics',
         'INPUT=' + bam_filename,
@@ -105,7 +105,7 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_
         return
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx1024m', '-Xms1024m',
+        'picard', '-Xmx2G', '-Xms2G',
         '-XX:ParallelGCThreads=1',
         'CollectInsertSizeMetrics',
         'INPUT=' + bam_filename,
