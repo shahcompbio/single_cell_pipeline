@@ -75,7 +75,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
 
     workflow.transform(
         name='plot_metrics',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['low_mem']},
         func=tasks.plot_metrics,
         args=(
             mgd.InputFile(all_metrics_file),
