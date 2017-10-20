@@ -11,7 +11,7 @@ import tasks
 
 
 def create_hmmcopy_workflow(bam_file, bai_file, corrected_reads_file,
-                            segments_file, hmm_metrics_file,
+                            segments_file, hmm_metrics_file, sample_info,
                             sample_ids, config, args):
 
     lib = args['library_id']
@@ -113,6 +113,7 @@ def create_hmmcopy_workflow(bam_file, bai_file, corrected_reads_file,
             mgd.TempInputFile('reads.csv', 'sample_id'),
             mgd.TempInputFile('segs.csv', 'sample_id'),
             mgd.TempInputFile('hmm_metrics.csv', 'sample_id'),
+            mgd.InputFile(sample_info),
             config['ref_genome'],
             mgd.TempOutputFile('reads.pdf', 'sample_id'),
             mgd.TempOutputFile('segs.pdf', 'sample_id'),

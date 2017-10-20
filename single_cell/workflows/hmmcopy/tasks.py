@@ -169,9 +169,9 @@ def filter_hmm_data(quality_metrics, segments, reads, mad_threshold,
                                mad_threshold, reads_out, segments_out)
     filter_hmm.main()
 
-def plot_hmmcopy(reads, segments, metrics, ref_genome, reads_out, segs_out,
+def plot_hmmcopy(reads, segments, metrics, sample_info, ref_genome, reads_out, segs_out,
                  bias_out, sample_id, num_states=7, plot_title=None, mad_threshold=None):
-    plot = GenHmmPlots(reads, segments, metrics, ref_genome, reads_out, segs_out,
+    plot = GenHmmPlots(reads, segments, metrics, sample_info, ref_genome, reads_out, segs_out,
                        bias_out, sample_id, num_states=num_states, plot_title=plot_title,
                        mad_threshold=mad_threshold)
     plot.main()

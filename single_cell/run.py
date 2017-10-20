@@ -154,6 +154,7 @@ def main():
             mgd.OutputFile(reads_filename),
             mgd.OutputFile(segs_filename),
             mgd.TempOutputFile('hmmcopy_hmm_metrics.csv'),
+            mgd.InputFile(args['sample_info']),
             sampleids,
             config,
             args
