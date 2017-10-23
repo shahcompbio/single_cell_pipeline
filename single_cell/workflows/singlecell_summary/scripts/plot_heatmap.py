@@ -383,6 +383,8 @@ class PlotHeatmap(object):
         ax_hmap.legend(handles=lgnd_patches,
                        bbox_to_anchor=(1, 1.2))
  
+
+        plt.subplots_adjust(right=0.85)
         pdfout.savefig(pad_inches=0.2)
 
         plt.close("all")
@@ -430,11 +432,9 @@ class PlotHeatmap(object):
                 #plot in groups of 1000
                 sample_sets =  [samples[x:x+1000] for x in range(0, len(data), 1000)]
                 for samples in sample_sets:
-
                     genplot(data, samples)
             else:
                 genplot(data, samples)
-
 
         pdfout.close()
 
