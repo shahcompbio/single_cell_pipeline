@@ -179,17 +179,15 @@ def plot_hmmcopy(reads, segments, metrics, sample_info, ref_genome, reads_out, s
 
 def merge_pdf(in_filenames, out_filename, metrics, mad_threshold):
 
-    outdir = os.path.dirname(out_filename)
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
-
     metrics = pd.read_csv(metrics, sep=',')
     
     for in_files, out_file in zip(in_filenames, out_filename):
 
+        outdir = os.path.dirname(out_file)
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+
         merger = PdfFileMerger()
-
-
 
         for samp, infile in in_files.iteritems():
             #filter by mad if mad_threshold is specified
