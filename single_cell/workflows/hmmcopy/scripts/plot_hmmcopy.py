@@ -25,10 +25,10 @@ sns.set(context='talk',
         style='ticks',
         font='Helvetica',
         rc={'axes.titlesize': 10,
-            'axes.labelsize': 15,
-            'xtick.labelsize': 15,
-            'ytick.labelsize': 15,
-            'legend.fontsize': 15})
+            'axes.labelsize': 12,
+            'xtick.labelsize': 12,
+            'ytick.labelsize': 12,
+            'legend.fontsize': 12})
 
 
 def parse_args():
@@ -192,7 +192,7 @@ class GenHmmPlots(object):
         ni = str('%.3f' % ni)
 
         title_str = [sample_id, '(cell call', cellcall, ', condition',
-                     cond, ', sample_type', st, ' neutral MAD ', mad, ', MSRSI Non Integerness ',
+                     cond, ', sample_type', st, ', neutral MAD ', mad, ', MSRSI NonInt. ',
                      ni, ')']
 
         title_str = ' '.join(title_str) + self.plot_title
@@ -311,7 +311,7 @@ class GenHmmPlots(object):
                 facecolors='none',
                 alpha=0.1)
 
-        fig.suptitle(title)
+        fig.suptitle(title, fontsize=10)
         sns.despine(offset=10, trim=True)
 
         plt.tight_layout(rect=(0, 0, 1, 0.95))
