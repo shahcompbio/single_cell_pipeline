@@ -24,7 +24,7 @@ matplotlib.rcParams['pdf.fonttype'] = 42
 sns.set(context='talk',
         style='ticks',
         font='Helvetica',
-        rc={'axes.titlesize': 12,
+        rc={'axes.titlesize': 10,
             'axes.labelsize': 15,
             'xtick.labelsize': 15,
             'ytick.labelsize': 15,
@@ -77,8 +77,7 @@ def parse_args():
     parser.add_argument('--plot_title',
                         help='''title of the plots''')
 
-    parser.add_argument('--samples',
-                        nargs='*',
+    parser.add_argument('--sample_id',
                         help='''title of the plots''')
 
     args = parser.parse_args()
@@ -413,7 +412,7 @@ class GenHmmPlots(object):
 
         info_cols = ['cell_call', 'experimental_condition', 'sample_type']
 
-        if all(x in metrics.columns.values for x in info_cols):
+        if not all(x in metrics.columns.values for x in info_cols):
             if not self.sample_info:
                 warnings.warn("missing cell information in metrics, "
                               "plot titles might show NA. "
@@ -459,6 +458,6 @@ if __name__ == '__main__':
     args = parse_args()
 
     genhmm = GenHmmPlots(args.corrected_reads, args.segments, args.quality_metrics, args.sample_info, args.ref_genome,
-                         args.reads_output, args.segs_output, args.bias_output, vars(args))
+                         args.reads_output, args.segs_output, args.bias_output, args.sample_id)
 
     genhmm.main()
