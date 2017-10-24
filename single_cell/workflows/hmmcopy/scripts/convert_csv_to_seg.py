@@ -27,8 +27,16 @@ class ConvertCSVToSEG(object):
         if not os.path.exists(path):
             raise IOError("Input file %s missing" % path)
 
-        if os.stat(self.filtered_reads).st_size != 0:
+        if os.stat(path).st_size == 0:
             return True
+
+        with open(path) as infile:
+            # header line
+            _ = infile.readline()
+            # data?
+            data = infile.readline()
+            if not data:
+                return True
 
         return False
 
@@ -98,12 +106,19 @@ class ConvertCSVToSEG(object):
                 outstr = '\t'.join(dataval) + '\n'
                 outfile.write(outstr)
 
+    def write_header(self, path):
+        header = '\'ID\tchrom\tloc.start\tloc.end\tnum.mark\tseg.mean\n'
+
+        with open(path, 'w') as outfile:
+            outfile.write(header)
+
     def main(self):
 
         # if the inputs are empty, then create empty output file
         if self.check_empty_file(self.filtered_reads) or\
                 self.check_empty_file(self.filtered_segs):
-            self.touch_file(self.output_seg)
+            self.write_header(self.output_seg)
+            return
 
         bin_width = self.get_bin_width(self.filtered_reads)
 
