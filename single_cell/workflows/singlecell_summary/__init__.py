@@ -114,7 +114,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
 
     workflow.transform(
         name='plot_pcolor_ec',
-        ctx={'mem': config['low_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.plot_pcolor,
         args=(
             mgd.InputFile(hmm_reads),
