@@ -170,7 +170,7 @@ class ClusterMap(object):
         :param cmap: colormap 
         :param ticklabels: tick labels
         """
-        bounds = range(cmap.N)
+        bounds = range(cmap.N + 1)
         norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
 
         cbar = matplotlib.colorbar.ColorbarBase(axes, cmap=cmap, norm=norm,
