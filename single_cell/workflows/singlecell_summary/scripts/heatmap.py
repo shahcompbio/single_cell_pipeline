@@ -15,7 +15,7 @@ import seaborn as sns
 
 class ClusterMap(object):
 
-    def __init__(self, data, colordata):
+    def __init__(self, data, colordata, vmax):
         """
         :param data pandas dataframe with bins as columns and samples as rows
         :param colordata: dict with samples and their corresponding type
@@ -30,6 +30,8 @@ class ClusterMap(object):
         self.bins = data.columns.values
 
         self.data = data.as_matrix()
+
+        self.vmax = vmax
 
         self.generate_plot()
 
@@ -63,7 +65,7 @@ class ClusterMap(object):
 
         return ListedColormap(cmap), ccs
 
-    def generate_colormap_heatmap(self, maxval):
+    def generate_colormap_heatmap(self, localmax, maxval):
         """generating a custom heatmap 2:gray 0: blue 2+: reds
         :param maxval highest value in the data
         :returns listedcolormap
@@ -78,6 +80,9 @@ class ClusterMap(object):
             # will return rgba, we take only first 3 so we get rgb
             rgb = cmap(i)[:3]
             reds_hex.append(rgb2hex(rgb))
+
+        num_reds = int(localmax-2)
+        reds_hex = reds_hex[:num_reds]
 
         cmap = ListedColormap(['#3498DB', '#85C1E9', '#D3D3D3'] + reds_hex)
 
@@ -138,7 +143,7 @@ class ClusterMap(object):
         axm = fig.add_axes(placement)
 
         vmax = np.nanmax(mat)
-        cmap = self.generate_colormap_heatmap(vmax)
+        cmap = self.generate_colormap_heatmap(vmax, self.vmax)
 
         #sort matrix based on dendrogram order
         leaves = hc.leaves_list(linkage)
