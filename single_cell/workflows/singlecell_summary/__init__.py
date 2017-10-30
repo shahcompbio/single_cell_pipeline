@@ -34,7 +34,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
     plot_metrics_output = os.path.join(plots_dir, '{}_plot_metrics.pdf'.format(lib))
     plot_kernel_density_output = os.path.join(plots_dir,
                                               '{}_plot_kernel_density.pdf'.format(lib))
-    summary_metrics_output = os.path.join(plots_dir, '{}_summary_metrics.txt'.format(lib))
+    summary_metrics_output = os.path.join(results_dir, '{}_summary_metrics.txt'.format(lib))
 
     workflow = pypeliner.workflow.Workflow()
 
