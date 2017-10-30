@@ -295,12 +295,12 @@ class PlotPcolor(object):
 
         outfile.close()
 
-    def plot_heatmap(self, data, ccdata, title, pdfout):
+    def plot_heatmap(self, data, ccdata, title, vmax, pdfout):
         """
         generate heatmap, annotate and save
 
         """
-        ClusterMap(data, ccdata)
+        ClusterMap(data, ccdata, vmax)
 
         plt.suptitle(title)
 
@@ -320,7 +320,7 @@ class PlotPcolor(object):
             title = self.plot_title + \
                 ' (%s) n=%s/%s' % (sep, len(samples), num_samples)
 
-            self.plot_heatmap(pltdata, colordata, title, pdfout)
+            self.plot_heatmap(pltdata, colordata, title, vmax, pdfout)
 
         
         if not self.output:
@@ -330,6 +330,8 @@ class PlotPcolor(object):
         sns.set(font_scale=1.5)
 
         pdfout = PdfPages(self.output)
+
+        vmax = np.nanmax(data.values)
 
 
         for sep, samples in sepdata.iteritems():
@@ -456,4 +458,3 @@ if __name__ == '__main__':
                     high_memory=ARGS.high_memory, plot_title=ARGS.plot_title, color_by_col=ARGS.color_by_col,
                     plot_by_col=ARGS.plot_by_col)
     m.main()
-    print float(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)  / (1000 * 1000)
