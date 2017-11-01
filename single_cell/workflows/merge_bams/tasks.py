@@ -10,12 +10,14 @@ def merge_bams(inputs, output):
     filenames = inputs.values()
     
     
-    cmd = ['picard', '-Xmx12G',
+    cmd = ['picard', '-Xmx2G', '-Xms2G',
+           '-XX:ParallelGCThreads=1',
            'MergeSamFiles',
            'OUTPUT=' + output,
            'SORT_ORDER=coordinate',
            'ASSUME_SORTED=true',
            'VALIDATION_STRINGENCY=LENIENT',
+           'MAX_RECORDS_IN_RAM=150000'
            ]
     for bamfile in filenames:
         cmd.append('I='+bamfile)

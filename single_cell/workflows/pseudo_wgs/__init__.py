@@ -48,7 +48,7 @@ def create_wgs_workflow(
 
     workflow.transform(
         name='merge_bams',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.merge_bams,
         args=(
             mgd.InputFile('bam', 'sample_id', fnames=bam),
@@ -59,7 +59,7 @@ def create_wgs_workflow(
 
     workflow.transform(
         name='bam_sort',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.bam_sort,
         args=(
             mgd.TempInputFile('merged.bam'),
@@ -70,7 +70,7 @@ def create_wgs_workflow(
   
     workflow.transform(
         name='bam_markdups',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.bam_markdups,
         args=(
             mgd.TempInputFile('sorted.bam'),
@@ -103,11 +103,11 @@ def create_wgs_workflow(
   
     workflow.transform(
         name='bam_collect_wgs_metrics',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.bam_collect_wgs_metrics,
         args=(
             mgd.InputFile(bam_filename),
-            mgd.InputFile(ref_genome),
+            ref_genome,
             mgd.OutputFile(wgs_metrics_filename),
             config,
         ),
@@ -115,11 +115,11 @@ def create_wgs_workflow(
   
     workflow.transform(
         name='bam_collect_gc_metrics',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.bam_collect_gc_metrics,
         args=(
             mgd.InputFile(bam_filename),
-            mgd.InputFile(ref_genome),
+            ref_genome,
             mgd.OutputFile(gc_metrics_filename),
             mgd.OutputFile(gc_summary_filename),
             mgd.OutputFile(gc_chart_filename),
@@ -129,7 +129,7 @@ def create_wgs_workflow(
   
     workflow.transform(
         name='bam_collect_insert_metrics',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.bam_collect_insert_metrics,
         args=(
             mgd.InputFile(bam_filename),

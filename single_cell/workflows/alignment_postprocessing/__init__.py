@@ -56,7 +56,7 @@ def create_bam_post_workflow(
 
     workflow.transform(
         name='postprocess_bam',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         axes=('sample_id',),
         func=tasks.postprocess_bam,
         args=(
@@ -83,12 +83,12 @@ def create_bam_post_workflow(
     
     workflow.transform(
         name='bam_collect_wgs_metrics',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.bam_collect_wgs_metrics,
         axes=('sample_id',),
         args=(
             mgd.InputFile('sorted_markdups', 'sample_id', fnames=bam_filename),
-            mgd.InputFile(ref_genome),
+            ref_genome,
             mgd.OutputFile(wgs_metrics_filename, 'sample_id'),
             config,
         ),
@@ -96,12 +96,12 @@ def create_bam_post_workflow(
     
     workflow.transform(
         name='bam_collect_gc_metrics',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.bam_collect_gc_metrics,
         axes=('sample_id',),
         args=(
             mgd.InputFile('sorted_markdups', 'sample_id', fnames=bam_filename),
-            mgd.InputFile(ref_genome),
+            ref_genome,
             mgd.OutputFile(gc_metrics_filename, 'sample_id'),
             mgd.OutputFile(gc_summary_filename, 'sample_id'),
             mgd.OutputFile(gc_chart_filename, 'sample_id'),
@@ -111,7 +111,7 @@ def create_bam_post_workflow(
     
     workflow.transform(
         name='bam_collect_insert_metrics',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.bam_collect_insert_metrics,
         axes=('sample_id',),
         args=(

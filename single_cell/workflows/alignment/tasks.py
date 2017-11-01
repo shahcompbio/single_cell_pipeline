@@ -3,6 +3,7 @@ import os
 import errno
 import shutil
 import time
+import warnings
 from scripts import RunTrimGalore
 
 
@@ -31,11 +32,17 @@ def trim_fastqs(fastq1, fastq2, trim1, trim2, reports, sample_id, tempdir, sourc
     
     out_html = os.path.join(reports, '{}_fastqc_R1.html'.format(sample_id))
     out_plot = os.path.join(reports, '{}_fastqc_R1.zip'.format(sample_id))
-    produce_fastqc_report(fastq1, out_html, out_plot, tempdir, 'fastqc')
+
+    if not os.path.getsize(fastq1) == 0:
+        warnings.warn("fastq file %s is empty, skipping fastqc" %fastq1)
+        produce_fastqc_report(fastq1, out_html, out_plot, tempdir, 'fastqc')
 
     out_html = os.path.join(reports, '{}_fastqc_R2.html'.format(sample_id))
     out_plot = os.path.join(reports, '{}_fastqc_R2.zip'.format(sample_id))
-    produce_fastqc_report(fastq2, out_html, out_plot, tempdir, 'fastqc')
+
+    if not os.path.getsize(fastq2) == 0:
+        warnings.warn("fastq file %s is empty, skipping fastqc" %fastq2)
+        produce_fastqc_report(fastq2, out_html, out_plot, tempdir, 'fastqc')
 
     if source == 'hiseq':
         rep1 = os.path.join(reports, '{}_trimgalore_R1.html'.format(sample_id))
@@ -104,13 +111,14 @@ def get_readgroup(run_id, sample_id, args, config, seqinfo):
 
 def bam_sort(bam_filename, sorted_bam_filename, config):
     pypeliner.commandline.execute(
-        'picard', '-Xmx12G',
+        'picard', '-Xmx2G', '-Xms2G',
+        '-XX:ParallelGCThreads=1',
         'SortSam',
         'INPUT=' + bam_filename,
         'OUTPUT=' + sorted_bam_filename,
         'SORT_ORDER=coordinate',
         'VALIDATION_STRINGENCY=LENIENT',
-        'MAX_RECORDS_IN_RAM=5000000')
+        'MAX_RECORDS_IN_RAM=150000')
 
 
 def bwa_align_paired_end(fastq1, fastq2, output, tempdir,

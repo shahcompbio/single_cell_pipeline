@@ -15,16 +15,17 @@ import scipy.spatial as sp
 import scipy.cluster.hierarchy as hc
 from collections import defaultdict
 from matplotlib import pyplot as plt
-from matplotlib.colors import rgb2hex
-from matplotlib.colors import ListedColormap
 from matplotlib.backends.backend_pdf import PdfPages
-from matplotlib.patches import Patch
 import warnings
+import resource
+
+
+from heatmap import ClusterMap
 
 sys.setrecursionlimit(2000)
 
 
-class PlotHeatmap(object):
+class PlotPcolor(object):
     '''
     merges files. no overlap queries, simple concatenation
     since columns are different, select header and insert values at proper
@@ -218,59 +219,6 @@ class PlotHeatmap(object):
         df = df.dropna()
         return df
 
-    def get_chr_idxs(self, bins):
-        """
-        returns the index where the chromosome changes
-        used for marking chr boundaries on the plot
-        """
-        # chr 1 starts at beginning
-        chr_idxs = [0]
-
-        chrom = '1'
-        for i, bin_v in enumerate(bins):
-            if bin_v[0] != chrom:
-                chr_idxs.append(i)
-                chrom = bin_v[0]
-
-        return chr_idxs
-
-    def generate_colormap(self, maxval):
-        """
-        generating a custom heatmap 2:gray 0: blue 2+: reds
-        """
-        if self.column_name != 'integer_copy_number':
-            return matplotlib.cm.coolwarm
-
-        # all colors 2 and up are red with increasing intensity
-        num_reds = maxval
-
-        cmap = matplotlib.cm.get_cmap('Reds', num_reds)
-
-        reds_hex = []
-        for i in range(2, cmap.N):
-            # will return rgba, we take only first 3 so we get rgb
-            rgb = cmap(i)[:3]
-            reds_hex.append(rgb2hex(rgb))
-
-        cmap = ListedColormap(['#3498DB', '#85C1E9', '#D3D3D3'] + reds_hex)
-
-        return cmap
-
-    def get_colors(self, ccdata):
-        """
-        generate row colors based on the cell call column of
-        the metrics dataframe.
-        """
-        if self.cellcalls:
-            ccs = self.cellcalls
-        else:
-            ccs = list(set(ccdata.values()))
-        colmap = sns.color_palette("RdBu_d", len(ccs))
-
-        colmap = {cc: col for cc, col in zip(ccs, colmap)}
-
-        return colmap
-
     @staticmethod
     def write_cluster_order(outfile, order):
         for i, samp in enumerate(order):
@@ -347,49 +295,22 @@ class PlotHeatmap(object):
 
         outfile.close()
 
-    def plot_heatmap(self, data, chr_idxs, cmap, vmax, ccdata, title, pdfout):
+    def plot_heatmap(self, data, ccdata, title, vmax, pdfout):
         """
         generate heatmap, annotate and save
 
         """
-        rowclr = self.get_colors(ccdata)
+        ClusterMap(data, ccdata, vmax)
 
-        mask = data.isnull()
-        samples = data.index
-        colors = [rowclr[ccdata[samp]] for samp in samples]
-
-        heatmap = sns.clustermap(data, rasterized=True, mask=mask,
-                                 figsize=(30, 50), cmap=cmap,
-                                 vmin=0, vmax=vmax,
-                                 col_cluster=False,
-                                 row_colors=colors)
-
-        ax_hmap = heatmap.ax_heatmap
-
-        ax_hmap.set(xticks=chr_idxs)
-        ax_hmap.set(xticklabels=self.chromosomes)
-
-        for val in chr_idxs:
-            ax_hmap.plot([val,val], [len(samples),0], ':', linewidth=0.5, color='black', )
-
-        ax_hmap.set(title=title)
-
-        plt.setp(ax_hmap.yaxis.get_majorticklabels(),
-                 rotation=0)
- 
-        # Plot the legend
-        lgnd_patches = [Patch(color=rowclr[k], label=k)
-                        for k in list(set(ccdata.values()))]
-        ax_hmap.legend(handles=lgnd_patches,
-                       bbox_to_anchor=(1, 1.2))
- 
+        plt.suptitle(title)
 
         plt.subplots_adjust(right=0.85)
+ 
         pdfout.savefig(pad_inches=0.2)
 
         plt.close("all")
-
-    def plot_heatmap_by_sep(self, data, chr_idxs, sepdata, colordata):
+        
+    def plot_heatmap_by_sep(self, data, sepdata, colordata):
         """
         generate and save plot to output
         """
@@ -399,8 +320,7 @@ class PlotHeatmap(object):
             title = self.plot_title + \
                 ' (%s) n=%s/%s' % (sep, len(samples), num_samples)
 
-            self.plot_heatmap(pltdata, chr_idxs, cmap, vmax,
-                              colordata, title, pdfout)
+            self.plot_heatmap(pltdata, colordata, title, vmax, pdfout)
 
         
         if not self.output:
@@ -411,9 +331,8 @@ class PlotHeatmap(object):
 
         pdfout = PdfPages(self.output)
 
-        cmap = self.generate_colormap(np.nanmax(data.values))
-
         vmax = np.nanmax(data.values)
+
 
         for sep, samples in sepdata.iteritems():
 
@@ -432,9 +351,11 @@ class PlotHeatmap(object):
                 #plot in groups of 1000
                 sample_sets =  [samples[x:x+1000] for x in range(0, len(data), 1000)]
                 for samples in sample_sets:
+
                     genplot(data, samples)
             else:
                 genplot(data, samples)
+
 
         pdfout.close()
 
@@ -448,7 +369,6 @@ class PlotHeatmap(object):
         data = self.conv_to_matrix(data, bins, samples)
 
         data = self.get_pandas_dataframe(data, bins)
-        chr_idxs = self.get_chr_idxs(bins)
 
         self.get_cluster_order(data)
 
@@ -456,7 +376,8 @@ class PlotHeatmap(object):
             mad_scores, sepdata, colordata, numread_data = self.read_metrics(data)
             data = self.filter_data(data, colordata, mad_scores, numread_data)
 
-            self.plot_heatmap_by_sep(data, chr_idxs, sepdata, colordata)
+            self.plot_heatmap_by_sep(data, sepdata, colordata)
+
 
 
 def parse_args():
@@ -532,9 +453,8 @@ def parse_args():
 
 if __name__ == '__main__':
     ARGS = parse_args()
-    m = PlotHeatmap(ARGS.input, ARGS.metrics, ARGS.order_data, ARGS.output, colname=ARGS.column_name,
+    m = PlotPcolor(ARGS.input, ARGS.metrics, ARGS.order_data, ARGS.output, colname=ARGS.column_name,
                     cellcalls=ARGS.cellcalls, mad_thres=ARGS.mad_thres, reads_thres=ARGS.reads_thres,
                     high_memory=ARGS.high_memory, plot_title=ARGS.plot_title, color_by_col=ARGS.color_by_col,
                     plot_by_col=ARGS.plot_by_col)
     m.main()
-

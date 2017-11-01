@@ -10,12 +10,14 @@ import shutil
 
 def merge_bams(inputs, output, config):
 
-    cmd = ['picard', '-Xmx12G',
+    cmd = ['picard', '-Xmx2G', '-Xms2G',
+           '-XX:ParallelGCThreads=1',
            'MergeSamFiles',
            'OUTPUT=' + output,
            'SORT_ORDER=coordinate',
            'ASSUME_SORTED=true',
            'VALIDATION_STRINGENCY=LENIENT',
+           'MAX_RECORDS_IN_RAM=150000'
            ]
     for bamfile in inputs:
         cmd.append('I=' + bamfile)
@@ -40,10 +42,11 @@ def copy_files(inp, outp):
 
 def generate_targets(input_bams, config, intervals, interval):
     # generate positions
-    cmd = ['gatk', '-Xmx12G',
+    cmd = ['gatk', '-Xmx2G',
            '-T', 'RealignerTargetCreator',
            '-R', config['ref_genome'],
-           '-o', intervals, '-L', interval
+           '-o', intervals, '-L', interval,
+           'MAX_RECORDS_IN_RAM=150000'
            ]
 
     for _, bamfile in input_bams.iteritems():
@@ -53,11 +56,12 @@ def generate_targets(input_bams, config, intervals, interval):
 
 
 def gatk_realigner(inputs, config, targets, interval, tempdir):
-    cmd = ['gatk', '-Xmx12G',
+    cmd = ['gatk', '-Xmx2G',
            '-T', 'IndelRealigner',
            '-R', config['ref_genome'],
            '-targetIntervals', targets,
-           '--nWayOut', '_indel_realigned.bam', '-L', interval
+           '--nWayOut', '_indel_realigned.bam', '-L', interval,
+           'MAX_RECORDS_IN_RAM=150000'
            ]
 
     for _, bamfile in inputs.iteritems():
@@ -68,7 +72,7 @@ def gatk_realigner(inputs, config, targets, interval, tempdir):
     pypeliner.commandline.execute(*cmd)
 
 
-def realign(input_bams, output_bams, tempdir, config, interval):
+def realign(input_bams, input_bais, output_bams, tempdir, config, interval):
 
     # make the dir
     if not os.path.exists(tempdir):

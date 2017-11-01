@@ -34,7 +34,7 @@ def create_museq_workflow(tumour_bam, normal_bam, ref_genome, snv_vcf, snv_csv,
                          args=(
                                mgd.InputFile(tumour_bam),
                                mgd.InputFile(normal_bam),
-                               mgd.InputFile(config['ref_genome']),
+                               config['ref_genome'],
                                config['mutationseq'],
                                mgd.OutputFile(museq_out_path, 'chrom'),
                                mgd.OutputFile(museq_log_path, 'chrom'),
@@ -45,7 +45,7 @@ def create_museq_workflow(tumour_bam, normal_bam, ref_genome, snv_vcf, snv_csv,
 
     workflow.transform(
                        name='merge_vcf',
-                       ctx={'mem': config['med_mem']},
+                       ctx={'mem': config['low_mem']},
                        func=tasks.concatenate_vcf,
                        args=(mgd.InputFile(museq_out_path, 'chrom'),
                              mgd.OutputFile(snv_vcf)
@@ -55,7 +55,7 @@ def create_museq_workflow(tumour_bam, normal_bam, ref_genome, snv_vcf, snv_csv,
 
     workflow.transform(
                          name='parse_museq',
-                         ctx={'mem': config['med_mem']},
+                         ctx={'mem': config['low_mem']},
                          func=tasks.parse_museq,
                          args=(
                                mgd.InputFile(snv_vcf),
