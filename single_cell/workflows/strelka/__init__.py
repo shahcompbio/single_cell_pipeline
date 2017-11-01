@@ -51,7 +51,7 @@ def create_strelka_workflow(
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
         func=tasks.count_fasta_bases,
         args=(
-            pypeliner.managed.InputFile(ref_genome_fasta_file),
+            ref_genome_fasta_file,
             pypeliner.managed.TempOutputFile('ref_base_counts.tsv')
         )
     )
@@ -76,7 +76,7 @@ def create_strelka_workflow(
         args=(
             pypeliner.managed.InputFile(normal_bam_file),
             pypeliner.managed.InputFile(tumour_bam_file),
-            pypeliner.managed.InputFile(ref_genome_fasta_file),
+            ref_genome_fasta_file,
             pypeliner.managed.TempOutputFile('somatic.indels.unfiltered.vcf', 'chrom', 'coord'),
             pypeliner.managed.TempOutputFile('somatic.indels.unfiltered.vcf.window', 'chrom', 'coord'),
             pypeliner.managed.TempOutputFile('somatic.snvs.unfiltered.vcf', 'chrom', 'coord'),

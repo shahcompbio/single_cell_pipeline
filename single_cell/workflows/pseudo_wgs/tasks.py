@@ -11,12 +11,14 @@ def merge_bams(inputs, output, config):
     filenames = inputs.values()
     
     
-    cmd = ['picard', '-Xmx12G',
+    cmd = ['picard', '-Xmx2G', '-Xms2G',
+           '-XX:ParallelGCThreads=1',
            'MergeSamFiles',
            'OUTPUT=' + output,
            'SORT_ORDER=coordinate',
            'ASSUME_SORTED=true',
            'VALIDATION_STRINGENCY=LENIENT',
+           'MAX_RECORDS_IN_RAM=150000'
            ]
     for bamfile in filenames:
         cmd.append('I='+bamfile)
@@ -27,30 +29,34 @@ def merge_bams(inputs, output, config):
 
 def bam_sort(bam_filename, sorted_bam_filename, config):
     pypeliner.commandline.execute(
-        'picard', '-Xmx12G',
+        'picard', '-Xmx2G', '-Xms2G',
+        '-XX:ParallelGCThreads=1',
         'SortSam',
         'INPUT=' + bam_filename,
         'OUTPUT=' + sorted_bam_filename,
         'SORT_ORDER=coordinate',
         'VALIDATION_STRINGENCY=LENIENT',
-        'MAX_RECORDS_IN_RAM=5000000')
+        'MAX_RECORDS_IN_RAM=150000')
 
 
 def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, config):
     pypeliner.commandline.execute(
-        'picard', '-Xmx12G',
+        'picard', '-Xmx2G', '-Xms2G',
+        '-XX:ParallelGCThreads=1',
         'MarkDuplicates',
         'INPUT=' + bam_filename,
         'OUTPUT=' + markduped_bam_filename,
         'METRICS_FILE=' + metrics_filename,
         'REMOVE_DUPLICATES=False',
         'ASSUME_SORTED=True',
-        'VALIDATION_STRINGENCY=LENIENT')
+        'VALIDATION_STRINGENCY=LENIENT',
+        'MAX_RECORDS_IN_RAM=150000')
 
 
 def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config):
     pypeliner.commandline.execute(
-        'picard', '-Xmx12G',
+        'picard', '-Xmx2G', '-Xms2G',
+        '-XX:ParallelGCThreads=1',
         'CollectWgsMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
@@ -59,19 +65,22 @@ def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config):
         'MINIMUM_MAPPING_QUALITY=' + str(config['picard_wgs_params']['min_mqual']),
         'COVERAGE_CAP=500',
         'VALIDATION_STRINGENCY=LENIENT',
+        'MAX_RECORDS_IN_RAM=150000',
         'COUNT_UNPAIRED=' + ('True' if config['picard_wgs_params']['count_unpaired'] else 'False'))
 
 
 def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, config):
     pypeliner.commandline.execute(
-        'picard', '-Xmx12G',
+        'picard', '-Xmx2G', '-Xms2G',
+        '-XX:ParallelGCThreads=1',
         'CollectGcBiasMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
         'REFERENCE_SEQUENCE=' + ref_genome,
         'S=' + summary_filename,
         'CHART_OUTPUT=' + chart_filename,
-        'VALIDATION_STRINGENCY=LENIENT')
+        'VALIDATION_STRINGENCY=LENIENT',
+        'MAX_RECORDS_IN_RAM=150000')
 
 
 def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_filename, histogram_filename, config):
@@ -96,13 +105,15 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_
         return
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx12G',
+        'picard', '-Xmx2G', '-Xms2G',
+        '-XX:ParallelGCThreads=1',
         'CollectInsertSizeMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
         'HISTOGRAM_FILE=' + histogram_filename,
         'ASSUME_SORTED=True',
-        'VALIDATION_STRINGENCY=LENIENT')
+        'VALIDATION_STRINGENCY=LENIENT',
+        'MAX_RECORDS_IN_RAM=150000')
 
 
 def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,

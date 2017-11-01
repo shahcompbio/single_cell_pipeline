@@ -24,6 +24,8 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
     plots_dir = os.path.join(results_dir, 'plots')
 
     plot_heatmap_ec_output = os.path.join(plots_dir, '{}_plot_heatmap_ec.pdf'.format(lib))
+    plot_pcolor_ec_output = os.path.join(plots_dir, '{}_plot_heatmap_ec_new.pdf'.format(lib))
+
     plot_heatmap_ec_mad_output = os.path.join(plots_dir,
                                               '{}_plot_heatmap_ec_mad.pdf'.format(lib))
     plot_heatmap_ec_numreads_output = os.path.join(plots_dir,
@@ -32,7 +34,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
     plot_metrics_output = os.path.join(plots_dir, '{}_plot_metrics.pdf'.format(lib))
     plot_kernel_density_output = os.path.join(plots_dir,
                                               '{}_plot_kernel_density.pdf'.format(lib))
-    summary_metrics_output = os.path.join(plots_dir, '{}_summary_metrics.txt'.format(lib))
+    summary_metrics_output = os.path.join(results_dir, '{}_summary_metrics.txt'.format(lib))
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -44,7 +46,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
     #calculate cell ordering in hierarchical clustering
     workflow.transform(
         name='plot_heatmap_all',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.plot_heatmap,
         args=(
             mgd.InputFile(hmm_reads),
@@ -75,20 +77,20 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
 
     workflow.transform(
         name='plot_metrics',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['low_mem']},
         func=tasks.plot_metrics,
         args=(
             mgd.InputFile(all_metrics_file),
             mgd.OutputFile(plot_metrics_output),
             'QC pipeline metrics',
             mgd.InputFile(gc_matrix),
-            mgd.InputFile(config['gc_windows'])
+            config['gc_windows'],
         )
     )
 
     workflow.transform(
         name='plot_kernel_density',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.plot_kernel_density,
         args=(
             mgd.InputFile(all_metrics_file),
@@ -109,9 +111,28 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
         )
     )
 
+
+    workflow.transform(
+        name='plot_pcolor_ec',
+        ctx={'mem': config['med_mem']},
+        func=tasks.plot_pcolor,
+        args=(
+            mgd.InputFile(hmm_reads),
+            mgd.InputFile(all_metrics_file),
+            None,
+            mgd.OutputFile(plot_pcolor_ec_output),
+        ),
+        kwargs={
+            'plot_title': 'QC pipeline metrics',
+            'colname': 'integer_copy_number',
+            'plot_by_col': 'experimental_condition',
+        }
+    )
+
+
     workflow.transform(
         name='plot_heatmap_ec',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.plot_heatmap,
         args=(
             mgd.InputFile(hmm_reads),
@@ -128,7 +149,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
 
     workflow.transform(
         name='plot_heatmap_ec_mad',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.plot_heatmap,
         args=(
             mgd.InputFile(hmm_reads),
@@ -146,7 +167,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
 
     workflow.transform(
         name='plot_heatmap_ec_nreads',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.plot_heatmap,
         args=(
             mgd.InputFile(hmm_reads),
