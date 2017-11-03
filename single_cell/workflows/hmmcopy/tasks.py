@@ -4,11 +4,13 @@ Created on Jul 24, 2017
 @author: dgrewal
 '''
 import os
+import csv
 import pypeliner
 from scripts import ExtractHmmMetrics
 from scripts import GenerateCNMatrix
 from scripts import FilterHmmData
 from scripts import GenHmmPlots
+from scripts import ConvertCSVToSEG
 import pandas as pd
 from PyPDF2 import PdfFileMerger
 
@@ -121,19 +123,25 @@ def merge_csv(in_filenames, out_filename, how, on, nan_val='NA'):
     data = data.fillna(nan_val)
     data.to_csv(out_filename, index=False)
 
-def concatenate_csv(in_filenames, out_filename, nan_val='NA'):
-    data = []
-    for _, in_filename in in_filenames.iteritems():
-        with open(in_filename) as f:
-            first_line = f.readline()
-            if len(first_line) == 0:
-                continue
-        data.append(pd.read_csv(in_filename, dtype=str))
-    data = pd.concat(data, ignore_index=True)
-    data = data.fillna(nan_val)
-    data.to_csv(out_filename, index=False)
+def concatenate_csv(in_filenames, out_filename):
+    """merge csv files, uses csv module to handle inconsistencies in column
+    indexes, pandas uses a lot of memory
+    :param in_filenames: input file dict
+    :param out_filename: output file
+    """
+    writer = None
+    for _,infile in in_filenames.iteritems():
 
+        with open(infile) as inp:
+            reader= csv.DictReader(inp)
 
+            for row in reader:
+                if not writer:
+                    writer = csv.DictWriter(open(out_filename, "w"),
+                                            fieldnames=reader._fieldnames)
+                    writer.writeheader()
+
+                writer.writerow(row)
 
 def generate_cn_matrix(infiles, output, tempdir):
     """
@@ -161,9 +169,9 @@ def filter_hmm_data(quality_metrics, segments, reads, mad_threshold,
                                mad_threshold, reads_out, segments_out)
     filter_hmm.main()
 
-def plot_hmmcopy(reads, segments, metrics, ref_genome, reads_out, segs_out,
+def plot_hmmcopy(reads, segments, metrics, sample_info, ref_genome, reads_out, segs_out,
                  bias_out, sample_id, num_states=7, plot_title=None, mad_threshold=None):
-    plot = GenHmmPlots(reads, segments, metrics, ref_genome, reads_out, segs_out,
+    plot = GenHmmPlots(reads, segments, metrics, sample_info, ref_genome, reads_out, segs_out,
                        bias_out, sample_id, num_states=num_states, plot_title=plot_title,
                        mad_threshold=mad_threshold)
     plot.main()
@@ -175,9 +183,11 @@ def merge_pdf(in_filenames, out_filename, metrics, mad_threshold):
     
     for in_files, out_file in zip(in_filenames, out_filename):
 
+        outdir = os.path.dirname(out_file)
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+
         merger = PdfFileMerger()
-
-
 
         for samp, infile in in_files.iteritems():
             #filter by mad if mad_threshold is specified
@@ -191,3 +201,7 @@ def merge_pdf(in_filenames, out_filename, metrics, mad_threshold):
             os.makedirs(os.path.dirname(out_file))
         with open(out_file, 'wb') as fout:
             merger.write(fout)
+
+def convert_csv_to_seg(filtered_segs, filtered_reads, output_seg):
+    converter = ConvertCSVToSEG(filtered_segs, filtered_reads, output_seg)
+    converter.main()

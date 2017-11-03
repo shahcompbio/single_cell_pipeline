@@ -105,7 +105,6 @@ def main():
             mgd.TempOutputFile('merged_lanes.bam', 'sample_id'),
             mgd.TempOutputFile('merged_lanes.bam.bai', 'sample_id'),
             config,
-            lanes,
         ),
     )
 
@@ -115,7 +114,8 @@ def main():
         args=(
             mgd.TempInputFile('merged_lanes.bam', 'sample_id'),
             mgd.TempInputFile('merged_lanes.bam.bai', 'sample_id'),
-            mgd.TempOutputFile('merged_realign.bam', 'sample_id', axes_origin=[]),
+            mgd.TempOutputFile('merged_realign.bam', 'sample_id',
+                               axes_origin=[]),
             config,
             args['out_dir'],
             args['realign'],
@@ -158,6 +158,7 @@ def main():
             mgd.OutputFile(reads_filename),
             mgd.OutputFile(segs_filename),
             mgd.TempOutputFile('hmmcopy_hmm_metrics.csv'),
+            mgd.InputFile(args['sample_info']),
             sampleids,
             config,
             args

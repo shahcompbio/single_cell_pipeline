@@ -50,7 +50,7 @@ def create_snv_postprocessing_workflow(
     workflow.transform(
         name='count_reads',
         axes=('sample_id',),
-        ctx={'mem': config['low_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.get_counts,
         args=(
             mgd.InputFile('bam', 'sample_id', fnames=bam_file),
