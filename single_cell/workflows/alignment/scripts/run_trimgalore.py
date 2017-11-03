@@ -8,7 +8,7 @@ from subprocess import Popen
 import os
 import warnings
 import argparse
-
+import shutil
 class RunTrimGalore(object):
     """
     Trim fastq files with trimgalore
@@ -113,7 +113,7 @@ class RunTrimGalore(object):
             os.makedirs(dir)
         
         path = os.path.join(self.tempdir, fname)
-        os.rename(path, outpath)
+        shutil.move(path, outpath)
         assert os.path.isfile(outpath)
 
     def get_file(self, r1_out, r2_out, ext, trimreport=False):

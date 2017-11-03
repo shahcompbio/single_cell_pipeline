@@ -187,6 +187,7 @@ def merge_pdf(in_filenames, out_filename, metrics, mad_threshold):
                     continue
             
             merger.append(open(infile, 'rb'))
-        
+        if not os.path.exists(os.path.dirname(out_file)):
+            os.makedirs(os.path.dirname(out_file))
         with open(out_file, 'wb') as fout:
             merger.write(fout)

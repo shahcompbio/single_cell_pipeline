@@ -61,7 +61,7 @@ def _rename_index(in_file, index_suffix):
         except:
             pass
 
-        os.rename(in_file + index_suffix, index_file)
+        shutil.move(in_file + index_suffix, index_file)
 
 
 def index_bcf(in_file, index_file=None):

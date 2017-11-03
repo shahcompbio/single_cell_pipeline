@@ -99,5 +99,5 @@ def realign(input_bams, input_bais, output_bams, tempdir, config, interval):
         realigned_bai = os.path.join(tempdir, key + '_indel_realigned.bai')
         output_bam_filename = output_bams[key]
         output_bai_filename = output_bam_filename + '.bai'
-        os.rename(realigned_bam, output_bam_filename)
-        os.rename(realigned_bai, output_bai_filename)
+        shutil.move(realigned_bam, output_bam_filename)
+        shutil.move(realigned_bai, output_bai_filename)

@@ -65,8 +65,8 @@ def produce_fastqc_report(
     fastq_basename = os.path.basename(fastq_filename).split('.')[0]
     output_basename = os.path.join(temp_directory, fastq_basename)
 
-    os.rename(output_basename + '_fastqc.zip', output_plots)
-    os.rename(output_basename + '_fastqc.html', output_html)
+    shutil.move(output_basename + '_fastqc.zip', output_plots)
+    shutil.move(output_basename + '_fastqc.html', output_html)
 
 
 def run_trimgalore(seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt, tempdir,
