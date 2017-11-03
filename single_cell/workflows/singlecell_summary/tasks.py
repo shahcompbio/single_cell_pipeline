@@ -9,6 +9,7 @@ from scripts import PlotKernelDensity
 from scripts import MergeFiles
 from scripts import PlotHeatmap
 from scripts import PlotMetrics
+from scripts import PlotPcolor
 
 
 def concatenate_csv(in_filenames, out_filename, nan_val='NA'):
@@ -94,3 +95,13 @@ def plot_heatmap(infile, metrics, order_data, output, plot_title=None,
     plot.main()
 
 
+
+def plot_pcolor(infile, metrics, order_data, output, plot_title=None,
+                 colname=None, plot_by_col=None, numreads_threshold=None,
+                 mad_threshold=None):
+
+    plot = PlotPcolor(infile, metrics, order_data, output, plot_title=plot_title,
+                       colname=colname, plot_by_col=plot_by_col,
+                       numreads_threshold=numreads_threshold,
+                       mad_threshold=mad_threshold)
+    plot.main()

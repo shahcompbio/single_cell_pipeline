@@ -35,7 +35,7 @@ def create_realignment_workflow(input_bams, input_bais, output_bams, config,
         workflow.transform(
             name='realignment',
             axes=('chrom',),
-            ctx={'mem': config['high_mem']},
+            ctx={'mem': config['med_mem']},
             func=tasks.realign,
             args=(
                 mgd.InputFile('bam', 'sample_id', fnames=input_bams),
@@ -49,7 +49,7 @@ def create_realignment_workflow(input_bams, input_bais, output_bams, config,
 
         workflow.transform(
             name='merge_realignment',
-            ctx={'mem': config['high_mem']},
+            ctx={'mem': config['med_mem']},
             axes=('sample_id',),
             func=tasks.merge_realignment,
             args=(
@@ -64,6 +64,7 @@ def create_realignment_workflow(input_bams, input_bais, output_bams, config,
         workflow.transform(
             name='copy_realign',
             axes=('sample_id',),
+            ctx={'mem': config['low_mem']},
             func=tasks.copy_files,
             args=(
                 mgd.InputFile('bam', 'sample_id',

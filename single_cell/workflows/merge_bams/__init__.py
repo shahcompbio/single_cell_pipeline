@@ -20,8 +20,9 @@ def create_merge_workflow(
     bam,
     bam_filename,
     bam_index_filename,
-    config,
-    lanes):
+    config):
+
+    lanes = bam.keys()
  
     workflow = pypeliner.workflow.Workflow()
 
@@ -30,10 +31,9 @@ def create_merge_workflow(
         value=lanes,
     )
 
-
     workflow.transform(
         name='merge_bams',
-        ctx={'mem': config['high_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.merge_bams,
         args=(
             mgd.InputFile('bam', 'lane', fnames=bam),
