@@ -51,7 +51,6 @@ def parse_args():
                         help='''Lanes to analyze.''')
 
     args = vars(parser.parse_args())
-    args['tmpdir'] = os.path.join(args['out_dir'], 'tmp')
 
     if args['matched_normal'] and not args['generate_pseudo_wgs']:
         raise Exception('generate_pseudo_wgs must be'
@@ -71,26 +70,6 @@ def main():
     config = utils.load_config(args)
 
     fastq1_files, fastq2_files, sampleids, lanes, seqinfo = utils.read_fastqs_file(args)
-
-    for fileset in (fastq1_files, fastq2_files):
-        for (cell_id, lane_id), filename in fileset.iteritems():
-            blob_name = filename.replace('/datadrive/analysis/', '')
-            assert 'datadrive' not in blob_name
-            store = storage.create_store(blob_name)
-            if not store.get_exists():
-                print 'uploading', blob_name
-                store.allocated_filename = filename
-                store.push()
-            else:
-                print 'exists', blob_name
-            fileset[(cell_id, lane_id)] = blob_name
-
-    blob_name = args['sample_info'].replace('/datadrive/analysis/', '')
-    store = storage.create_store(blob_name)
-    if not store.get_exists():
-        store.allocated_filename = args['sample_info']
-        store.push()
-    args['sample_info'] = blob_name
 
     workflow = pypeliner.workflow.Workflow()
 
