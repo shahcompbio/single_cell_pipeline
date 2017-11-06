@@ -1,0 +1,83 @@
+
+storage_container_name: 'tasks-container'
+
+pool_vm_size: 'STANDARD_G1'
+node_os_publisher: 'Canonical'
+node_os_offer: 'UbuntuServer'
+node_os_sku: '16'
+
+auto_scale_formula: |
+  startingNumberOfVMs = 1;
+  minNumberofVMs = 1;
+  maxNumberofVMs = 25;
+  pendingTaskSamplePercent = $PendingTasks.GetSamplePercent(180 * TimeInterval_Second);
+  pendingTaskSamples = pendingTaskSamplePercent < 70 ? startingNumberOfVMs : avg($PendingTasks.GetSample(180 * TimeInterval_Second));
+  $TargetLowPriorityNodes = max(minNumberofVMs,min(maxNumberofVMs, pendingTaskSamples));
+
+# Create VM
+# ---------
+# Install pip, singularity
+# Download the single cell pipeline data to the batch shared directory
+# including the reference data and the singularity container
+create_vm_commands: |
+  curl -fSsL https://bootstrap.pypa.io/get-pip.py | python
+  sudo apt-get update
+  sudo apt-get install -y libtool m4 automake make git
+  echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ wheezy main" | sudo tee /etc/apt/sources.list.d/azure-cli.list
+  sudo apt-key adv --keyserver packages.microsoft.com --recv-keys 52E16F86FEE04B979B07E28DB02C46DF417A0893
+  sudo apt-get install apt-transport-https
+  sudo apt-get update && sudo apt-get install azure-cli
+  git clone -b development https://github.com/singularityware/singularity.git
+  cd singularity/
+  ./autogen.sh
+  ./configure --prefix=/usr/local
+  sudo make install
+  singularity --version
+  mkdir $AZ_BATCH_NODE_SHARED_DIR/singlecellpipeline/
+  cd $AZ_BATCH_NODE_SHARED_DIR/singlecellpipeline/
+  az storage blob download-batch -s reference -d . --account-name batchdg --account-key 'gSqiS6Qcr1PV9lUpFO7J4pdjaxrFcVOSrbdJrgbiTcfXi4nhZDBpxG6JyLOzyQspNaG5Azlnx35gJ0foxrdWbw=='
+
+# Compute Task Start Commmands
+# ----------------------------
+# Development specific command
+# Make a development directory including site-packages
+# Pull the latest code from the pypeliner and single cell repo
+# and make sure they are used by the singularity container
+compute_start_commands: |
+  clean_up () {
+    echo "clean_up task executed"
+    find $AZ_BATCH_TASK_WORKING_DIR/ -xtype l -delete
+    exit 1
+  }
+  trap clean_up EXIT
+
+# Compute Task Run Commmand
+# ----------------------------
+# Run the singularity container, mapping the development directory
+# to the development directory of the container, the singlecellpipeline
+# directory to the ref data directory, and the working directory to
+# the /datadrive directory for common paths between head vm and compute
+# vm.  Run the delegator command in the container.
+compute_run_command: >
+  singularity
+  exec
+  {mounts}
+  -B $AZ_BATCH_NODE_SHARED_DIR/singlecellpipeline/:/refdata/
+  $AZ_BATCH_NODE_SHARED_DIR/singlecellpipeline/single_cell.img
+  python /development/bin/pypeliner_delegate
+  /{container}/{input_filename}
+  /{container}/{output_filename}
+
+# Compute Task Finish Commmand
+# ----------------------------
+# Post command workaround because azure batch fails to upload outputfiles
+# if there are broken symlinks in the working directory.
+compute_finish_commands: >
+  find $AZ_BATCH_TASK_WORKING_DIR/ -xtype l -delete
+
+no_delete_tasks: True
+#no_create_pool: True
+no_delete_pool: True
+pool_id_override: 'singlecellpool'
+job_id_override: 'singlecellpool'
+

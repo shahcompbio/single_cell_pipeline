@@ -1,0 +1,5 @@
+jobstore: 'jobstore'
+resultstore : 'output'
+tempstore: 'tempstore'
+
+storage_container_name: 'containername'
