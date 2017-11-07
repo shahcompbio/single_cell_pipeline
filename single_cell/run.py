@@ -15,9 +15,6 @@ from workflows import singlecell_summary
 from workflows import snv_postprocessing
 from workflows import alignment_postprocessing
 
-import pypeliner.storage
-
-
 def parse_args():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -61,8 +58,6 @@ def parse_args():
 
 def main():
     
-    storage = pypeliner.storage.AzureBlobStorage()
-
     args = parse_args()
 
     pyp = pypeliner.app.Pypeline(config=args)
