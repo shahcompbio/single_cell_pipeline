@@ -18,7 +18,7 @@ picard_wgs_params:
   count_unpaired: false
 
 # HMMcopy parameters
-parameters:
+hmmcopy_params:
   mu: 0,0.5,1.0,1.5,2.0,2.5,3.0
 
   m: 0,0.5,1.0,1.5,2.0,2.5,3.0
@@ -42,16 +42,16 @@ parameters:
   bin_size: 500000
 
 # Reference genome to align to in fasta format. Should be indexed by aligner and samtools
-ref_genome: /datadrive/refdata/GRCh37-lite.fa
+ref_genome: /refdata/GRCh37-lite.fa
 
 # Chromosomes for copy number analysis
 chromosomes: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y']
 
 # Binned GC content file
-gc_wig_file: /datadrive/refdata/GRCh37-lite.gc.ws_500000.wig
+gc_wig_file: /refdata/GRCh37-lite.gc.ws_500000.wig
 
 # Binned mappability file
-map_wig_file: /datadrive/refdata/GRCh37-lite.map.ws_125_to_500000.wig
+map_wig_file: /refdata/GRCh37-lite.map.ws_125_to_500000.wig
 
 # Adapter sequences for trimgalore
 adapter: 'CTGTCTCTTATACACATCTCCGAGCCCACGAGAC'
@@ -65,7 +65,7 @@ heatmap_plot_mad_threshold: 0.2
 
 heatmap_plot_numreads_threshold: 100000
 
-gc_windows: '/datadrive/refdata/gc_windows.txt'
+gc_windows: '/refdata/gc_windows.txt'
 
 low_mem: 2
 
