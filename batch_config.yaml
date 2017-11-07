@@ -27,7 +27,7 @@ create_vm_commands: |
   sudo apt-key adv --keyserver packages.microsoft.com --recv-keys 52E16F86FEE04B979B07E28DB02C46DF417A0893
   sudo apt-get install apt-transport-https
   sudo apt-get update && sudo apt-get install azure-cli
-  git clone -b development https://github.com/singularityware/singularity.git
+  git clone -b release-2.4 https://github.com/singularityware/singularity.git
   cd singularity/
   ./autogen.sh
   ./configure --prefix=/usr/local
@@ -64,7 +64,7 @@ compute_run_command: >
   {mounts}
   -B $AZ_BATCH_NODE_SHARED_DIR/singlecellpipeline/:/refdata/
   $AZ_BATCH_NODE_SHARED_DIR/singlecellpipeline/single_cell.img
-  python /development/bin/pypeliner_delegate
+  pypeliner_delegate
   /{container}/{input_filename}
   /{container}/{output_filename}
 
