@@ -11,5 +11,5 @@ setup(
     author='Andrew McPherson',
     author_email='andrew.mcpherson@gmail.com',
     entry_points={'console_scripts': ['single_cell = single_cell.run:main']},
-    package_data={'':['scripts/*.py']}
+    package_data={'':['scripts/*.py', 'scripts/*.R']}
 )

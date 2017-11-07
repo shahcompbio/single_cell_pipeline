@@ -99,12 +99,12 @@ def get_readgroup(run_id, sample_id, args, config, seqinfo):
 
     library_id = args['library_id']
     read_group_template = (
-        '@RG\tID:' + str(library_id) + '_' + sample_id + '_' + str(run_id) +
-        '\tPL:' + platform +
-        '\tPU:' + str(run_id) +
-        '\tLB:' + str(library_id) + '_' + sample_id +
-        '\tSM:' + sample_id +
-        '\tCN:' + centre)
+        '@RG\\tID:' + str(library_id) + '_' + sample_id + '_' + str(run_id) +
+        '\\tPL:' + platform +
+        '\\tPU:' + str(run_id) +
+        '\\tLB:' + str(library_id) + '_' + sample_id +
+        '\\tSM:' + sample_id +
+        '\\tCN:' + centre)
 
     return read_group_template
 
