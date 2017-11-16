@@ -10,6 +10,7 @@ import warnings
 import argparse
 import shutil
 from shutil import copyfile
+import signal
 
 class RunTrimGalore(object):
     """
@@ -49,7 +50,8 @@ class RunTrimGalore(object):
         """
         import sys
 
-        proc = Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
+        proc = Popen(cmd, stdout=sys.stdout, stderr=sys.stderr,
+                     preexec_fn=lambda:signal.signal(signal.SIGPIPE, signal.SIG_DFL))
 
         proc.communicate()
 
