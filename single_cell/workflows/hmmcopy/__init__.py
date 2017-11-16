@@ -137,9 +137,9 @@ def create_hmmcopy_workflow(bam_file, bai_file, corrected_reads_file,
               [mgd.TempInputFile('reads.pdf', 'sample_id'),
               mgd.TempInputFile('segs.pdf', 'sample_id'),
               mgd.TempInputFile('bias.pdf', 'sample_id')],
-              [reads_pdf_output,
-              segs_pdf_output,
-              bias_pdf_output],
+              [mgd.OutputFile(reads_pdf_output),
+              mgd.OutputFile(segs_pdf_output),
+              mgd.OutputFile(bias_pdf_output)],
               mgd.InputFile(hmm_metrics_file),
               None
             )
