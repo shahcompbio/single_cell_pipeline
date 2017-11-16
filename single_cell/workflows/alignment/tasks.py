@@ -5,7 +5,7 @@ import shutil
 import time
 import warnings
 from scripts import RunTrimGalore
-
+import tarfile
 
 def copy_files(inputs, outputs):
     for inp, outp in zip(inputs, outputs):
@@ -19,6 +19,10 @@ def makedirs(directory):
         if e.errno != errno.EEXIST:
             raise
 
+def make_tarfile(output_filename, source_dir):
+    with tarfile.open(output_filename, "w:gz") as tar:
+        tar.add(source_dir, arcname=os.path.basename(source_dir))
+
 
 def trim_fastqs(fastq1, fastq2, trim1, trim2, reports, sample_id, tempdir, source, config):
     """
@@ -26,31 +30,33 @@ def trim_fastqs(fastq1, fastq2, trim1, trim2, reports, sample_id, tempdir, sourc
     run trimgalore if needed, copy if not.
     """
 
-    if not os.path.exists(reports):
-        makedirs(reports)
+
+    reports_dir = os.path.join(tempdir, 'fastqc_reports')
+    if not os.path.exists(reports_dir):
+        makedirs(reports_dir)
 
     
-    out_html = os.path.join(reports, '{}_fastqc_R1.html'.format(sample_id))
-    out_plot = os.path.join(reports, '{}_fastqc_R1.zip'.format(sample_id))
+    out_html = os.path.join(reports_dir, '{}_fastqc_R1.html'.format(sample_id))
+    out_plot = os.path.join(reports_dir, '{}_fastqc_R1.zip'.format(sample_id))
 
     if not os.path.getsize(fastq1) == 0:
         warnings.warn("fastq file %s is empty, skipping fastqc" %fastq1)
         produce_fastqc_report(fastq1, out_html, out_plot, tempdir, 'fastqc')
 
-    out_html = os.path.join(reports, '{}_fastqc_R2.html'.format(sample_id))
-    out_plot = os.path.join(reports, '{}_fastqc_R2.zip'.format(sample_id))
+    out_html = os.path.join(reports_dir, '{}_fastqc_R2.html'.format(sample_id))
+    out_plot = os.path.join(reports_dir, '{}_fastqc_R2.zip'.format(sample_id))
 
     if not os.path.getsize(fastq2) == 0:
         warnings.warn("fastq file %s is empty, skipping fastqc" %fastq2)
         produce_fastqc_report(fastq2, out_html, out_plot, tempdir, 'fastqc')
 
     if source == 'hiseq':
-        rep1 = os.path.join(reports, '{}_trimgalore_R1.html'.format(sample_id))
-        rep2 = os.path.join(reports, '{}_trimgalore_R2.html'.format(sample_id))
-        qcrep1 = os.path.join(reports, '{}_trimgalore_qc_R1.html'.format(sample_id))
-        qcrep2 = os.path.join(reports, '{}_trimgalore_qc_R2.html'.format(sample_id))
-        qczip1 = os.path.join(reports, '{}_trimgalore_qc_R1.zip'.format(sample_id))
-        qczip2 = os.path.join(reports, '{}_trimgalore_qc_R2.zip'.format(sample_id))
+        rep1 = os.path.join(reports_dir, '{}_trimgalore_R1.html'.format(sample_id))
+        rep2 = os.path.join(reports_dir, '{}_trimgalore_R2.html'.format(sample_id))
+        qcrep1 = os.path.join(reports_dir, '{}_trimgalore_qc_R1.html'.format(sample_id))
+        qcrep2 = os.path.join(reports_dir, '{}_trimgalore_qc_R2.html'.format(sample_id))
+        qczip1 = os.path.join(reports_dir, '{}_trimgalore_qc_R1.zip'.format(sample_id))
+        qczip2 = os.path.join(reports_dir, '{}_trimgalore_qc_R2.zip'.format(sample_id))
 
         
         run_trimgalore(fastq1, fastq2, trim1, trim2, 'trim_galore', 'cutadapt',
@@ -58,6 +64,8 @@ def trim_fastqs(fastq1, fastq2, trim1, trim2, reports, sample_id, tempdir, sourc
                        rep1, rep2, qcrep1, qcrep2, qczip1, qczip2)
     else:
         copy_files([fastq1, fastq2], [trim1, trim2])
+
+    make_tarfile(reports, reports_dir)
 
 
 def produce_fastqc_report(
