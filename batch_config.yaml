@@ -35,6 +35,7 @@ create_vm_commands: |
   singularity --version
   mkdir $AZ_BATCH_NODE_SHARED_DIR/singlecellpipeline/
   cd $AZ_BATCH_NODE_SHARED_DIR/singlecellpipeline/
+  sudo mkdir /refdata/
   sudo mount -t cifs //{accountname}.file.core.windows.net/reference /refdata/ -o vers=3.0,username={accountname},password={storagekey},dir_mode=0755,file_mode=0755
 
 # Compute Task Start Commmands
