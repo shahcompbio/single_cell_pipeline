@@ -1,11 +1,12 @@
 
 storage_container_name: 'tasks-container'
 
-pool_vm_size: 'STANDARD_G1'
+pool_vm_size: 'STANDARD_A2M_V2'
 node_os_publisher: 'Canonical'
 node_os_offer: 'UbuntuServer'
 node_os_sku: '16'
 
+max_tasks_per_node: 2
 auto_scale_formula: |
   startingNumberOfVMs = 1;
   minNumberofVMs = 1;
