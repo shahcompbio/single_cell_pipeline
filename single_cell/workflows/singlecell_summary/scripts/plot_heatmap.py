@@ -308,9 +308,6 @@ class PlotHeatmap(object):
             samples = [samp for samp in samples
                        if numreads_data[samp] >= self.reads_thres]
 
-        if len(samples) < 2:
-            raise Exception('no data to plot')
-
         data = data.loc[samples]
         return data
 
