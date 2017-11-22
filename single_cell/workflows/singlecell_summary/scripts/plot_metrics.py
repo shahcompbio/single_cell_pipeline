@@ -270,6 +270,7 @@ class PlotMetrics(object):
     
         tick_labels = [x + 1 for x in range(size)]
 
+        well_labels=False
         #if the cell call matches the C[1-9]+ format then add cell calls to the plot
         if all([re.match("C[0-9]+$|NTC", cc) for cc in df['cell_call']]):
             well_labels = np.empty((size, size,))
@@ -283,25 +284,6 @@ class PlotMetrics(object):
                 label_value = 0 if label_value == 'NTC' else int(label_value.replace('C', ''))
                 well_labels[row_idx - 1, col_idx - 1] = label_value
     
-    
-            # cheat to get well labels that are different from the colour value
-            ax = sns.heatmap(well_labels,
-                             linewidths=0.6,
-                            square=True,
-                            annot=True,
-                            cmap=None,
-                            cbar=False,
-                            annot_kws={'size': 6},
-                            alpha=0,
-                            fmt='.3g')
-        
-            ax.get_xaxis().set_visible(False)
-            ax.get_yaxis().set_visible(False)
-        
-            for text in ax.texts:
-                text.set_color('black')
-    
-
         for i in range(len(df)):
             row_idx = int(df.ix[i, 'sample_plate'].split('_')[0].replace('R', ''))
             col_idx = int(df.ix[i, 'sample_plate'].split('_')[1].replace('C', ''))
@@ -314,7 +296,9 @@ class PlotMetrics(object):
                     yticklabels=tick_labels,
                     linewidths=0.6,
                     square=True,
-                    cbar=True)
+                    cbar=True,
+                    annot=well_labels,
+                    annot_kws={'size': 6})
     
         plt.title(title + '(' + plot_title + ')')
     
