@@ -38,19 +38,8 @@ def create_merge_workflow(
         args=(
             mgd.InputFile('bam', 'lane', fnames=bam),
             mgd.OutputFile(bam_filename),
-        ),
-    )
-
-    workflow.commandline(
-        name='bam_index',
-        ctx={'mem': config['low_mem']},
-        args=(
-            'samtools', 'index',
-            mgd.InputFile(bam_filename),
             mgd.OutputFile(bam_index_filename),
         ),
     )
-
-
 
     return workflow

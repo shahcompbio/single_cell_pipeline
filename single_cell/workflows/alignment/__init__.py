@@ -32,34 +32,23 @@ def create_alignment_workflow(
     workflow = pypeliner.workflow.Workflow()
 
     workflow.transform(
-            name='trimfastqs',
-            ctx={'mem': config['med_mem']},
-            func=tasks.trim_fastqs,
-            args=(
-                  mgd.InputFile(fastq_1_filename),
-                  mgd.InputFile(fastq_2_filename),
-                  mgd.TempOutputFile('trim_r1.fastq.gz'),
-                  mgd.TempOutputFile('trim_r2.fastq.gz'),
-                  mgd.OutputFile(fastqc_reports),
-                  sample_id,
-                  mgd.TempSpace('fastqc_1_temp'),
-                  seqinfo[sample_id],
-                  config)
-    )
-
-    workflow.transform(
         name='align_reads',
         ctx={'mem': config['med_mem']},
         func=tasks.align_pe,
         args=(
+            mgd.InputFile(fastq_1_filename),
+            mgd.InputFile(fastq_2_filename),
             mgd.TempInputFile('trim_r1.fastq.gz'),
             mgd.TempInputFile('trim_r2.fastq.gz'),
             mgd.OutputFile(bam_filename),
+            mgd.OutputFile(fastqc_reports),
             mgd.OutputFile(flagstat_metrics_filename),
             mgd.TempSpace('alignment_temp'),
             ref_genome,
             config,
-            read_group
+            read_group,
+            seqinfo[sample_id],
+            sample_id
         )
     )
 
