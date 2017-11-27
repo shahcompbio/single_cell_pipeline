@@ -25,7 +25,7 @@ def create_realignment_workflow(input_bams, input_bais, output_bams, config,
 
     if realign:
 
-        chromosomes = map(str, range(1, 23)) + ['X', 'Y']
+        chromosomes = config["chromosomes"]
 
         workflow.setobj(
             obj=mgd.OutputChunks('chrom'),
