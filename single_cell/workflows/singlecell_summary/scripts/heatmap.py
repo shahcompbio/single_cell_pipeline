@@ -15,14 +15,17 @@ import seaborn as sns
 
 class ClusterMap(object):
 
-    def __init__(self, data, colordata, vmax):
+    def __init__(self, data, colordata, vmax, chromosomes=None):
         """
         :param data pandas dataframe with bins as columns and samples as rows
         :param colordata: dict with samples and their corresponding type
                         used for adding a colorbar
         """
 
-        self.chromosomes = [str(v) for v in range(1, 23)] + ['X', 'Y']
+        if chromosomes:
+            self.chromosomes = chromosomes
+        else:
+            self.chromosomes = [str(v) for v in range(1, 23)] + ['X', 'Y']
 
         self.colordata = colordata
         self.rows = data.index

@@ -20,7 +20,7 @@ def create_museq_workflow(tumour_bam, normal_bam, ref_genome, snv_vcf, snv_csv,
                                   'variant_calling', '{chrom}.mutationseq.log')
 
 
-    chromosomes = map(str, range(1,23)) + ['X', 'Y']
+    chromosomes = config["chromosomes"]
 
     workflow.setobj(
         obj=mgd.OutputChunks('chrom'),

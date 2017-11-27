@@ -37,7 +37,11 @@ class PlotHeatmap(object):
         self.order_data = order_data
         self.output = output
 
-        self.chromosomes = [str(v) for v in range(1, 23)] + ['X', 'Y']
+
+        if kwargs.get("chromosomes"):
+            self.chromosomes = kwargs.get("chromosomes")
+        else:
+            self.chromosomes = [str(v) for v in range(1, 23)] + ['X', 'Y']
 
         self.sep = kwargs.get('sep')
         self.column_name = kwargs.get('colname')

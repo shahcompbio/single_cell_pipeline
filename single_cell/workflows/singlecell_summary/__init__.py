@@ -36,6 +36,8 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
                                               '{}_plot_kernel_density.pdf'.format(lib))
     summary_metrics_output = os.path.join(results_dir, '{}_summary_metrics.txt'.format(lib))
 
+    chromosomes = config["chromosomes"]
+
     workflow = pypeliner.workflow.Workflow()
 
     #calculate cell ordering in hierarchical clustering
@@ -52,6 +54,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
         kwargs={
             'plot_title': 'QC pipeline metrics',
             'colname': 'integer_copy_number',
+            'chromosomes': chromosomes,
         }
 
     )
@@ -121,6 +124,8 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
             'plot_title': 'QC pipeline metrics',
             'colname': 'integer_copy_number',
             'plot_by_col': 'experimental_condition',
+            'chromosomes': chromosomes,
+
         }
     )
 
@@ -139,6 +144,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
             'plot_title': 'QC pipeline metrics',
             'colname': 'integer_copy_number',
             'plot_by_col': 'experimental_condition',
+            'chromosomes': chromosomes,
         }
     )
 
@@ -157,6 +163,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
             'colname': 'integer_copy_number',
             'plot_by_col': 'experimental_condition',
             'mad_threshold': config['heatmap_plot_mad_threshold'],
+            'chromosomes': chromosomes,
         }
     )
 
@@ -174,7 +181,8 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
             'plot_title': 'QC pipeline metrics',
             'colname': 'integer_copy_number',
             'plot_by_col': 'experimental_condition',
-            'numreads_threshold': config['heatmap_plot_numreads_threshold']
+            'numreads_threshold': config['heatmap_plot_numreads_threshold'],
+            'chromosomes': chromosomes,
         }
     )
     return workflow
