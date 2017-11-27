@@ -133,27 +133,13 @@ def create_bam_post_workflow(
             mgd.InputFile(markdups_metrics_filename, 'sample_id'),
             mgd.InputFile(insert_metrics_filename, 'sample_id'),
             mgd.InputFile(wgs_metrics_filename, 'sample_id'),
+            mgd.InputFile(gc_metrics_filename, 'sample_id'),
             mgd.TempOutputFile('metrics_summary.csv', 'sample_id'),
+            mgd.TempOutputFile('gc_matrix.csv', 'sample_id'),
             mgd.InputInstance('sample_id'),
         ),
     )
     
-    workflow.transform(
-        name='collect_gc_metrics',
-        ctx={'mem': config['low_mem']},
-        func = tasks.collect_gc_metrics,
-        axes=('sample_id',),
-        args=(
-            mgd.InputFile(gc_metrics_filename, 'sample_id'),
-            mgd.TempOutputFile('gc_matrix.csv', 'sample_id'),
-            ',',
-            'NORMALIZED_COVERAGE',
-            mgd.InputInstance('sample_id'),
-            'gcbias'
-        ),
-    )
- 
- 
     workflow.transform(
         name='merge_summary_metrics',
         ctx={'mem': config['low_mem']},

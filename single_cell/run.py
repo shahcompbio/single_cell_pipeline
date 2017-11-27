@@ -173,7 +173,6 @@ def main():
             mgd.InputFile(gc_metrics),
             config,
             args,
-            sampleids
         ),
     )
   

@@ -11,7 +11,7 @@ import tasks
 
 def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
                             metrics_summary, gc_matrix, config,
-                            args, sample_ids):
+                            args):
 
 
     out_dir = args['out_dir']
@@ -37,11 +37,6 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
     summary_metrics_output = os.path.join(results_dir, '{}_summary_metrics.txt'.format(lib))
 
     workflow = pypeliner.workflow.Workflow()
-
-    workflow.setobj(
-        obj=mgd.OutputChunks('sample_id'),
-        value=sample_ids,
-    )
 
     #calculate cell ordering in hierarchical clustering
     workflow.transform(

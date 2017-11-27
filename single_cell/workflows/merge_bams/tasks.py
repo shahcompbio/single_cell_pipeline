@@ -5,8 +5,16 @@ Created on Jul 24, 2017
 '''
 import pypeliner
 
+def bam_index(infile, outfile):
+    pypeliner.commandline.execute(
+        'samtools', 'index',
+        infile,
+        outfile
+        )
 
-def merge_bams(inputs, output):
+
+
+def merge_bams(inputs, output, output_index):
     filenames = inputs.values()
     
     
@@ -23,3 +31,6 @@ def merge_bams(inputs, output):
         cmd.append('I='+bamfile)
     
     pypeliner.commandline.execute(*cmd)
+
+
+    bam_index(output, output_index)

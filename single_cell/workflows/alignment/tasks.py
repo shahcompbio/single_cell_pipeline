@@ -24,6 +24,34 @@ def make_tarfile(output_filename, source_dir):
         tar.add(source_dir, arcname=os.path.basename(source_dir))
 
 
+def produce_fastqc_report(
+        fastq_filename, output_html, output_plots, temp_directory, fastqc):
+    makedirs(temp_directory)
+
+    pypeliner.commandline.execute(
+        fastqc,
+        '--outdir=' + temp_directory,
+        fastq_filename)
+
+    fastq_basename = os.path.basename(fastq_filename).split('.')[0]
+    output_basename = os.path.join(temp_directory, fastq_basename)
+
+    shutil.move(output_basename + '_fastqc.zip', output_plots)
+    shutil.move(output_basename + '_fastqc.html', output_html)
+
+
+def run_trimgalore(seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt, tempdir,
+                   adapter, adapter2, report_r1, report_r2, qc_report_r1,
+                   qc_report_r2, qc_zip_r1, qc_zip_r2):
+
+    run_tg = RunTrimGalore(seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt,
+                           tempdir, adapter, adapter2, report_r1, report_r2,
+                           qc_report_r1, qc_report_r2, qc_zip_r1, qc_zip_r2)
+    run_tg.run_trimgalore()
+    run_tg.gather_outputs()
+
+
+
 def trim_fastqs(fastq1, fastq2, trim1, trim2, reports, sample_id, tempdir, source, config):
     """
     run fastqc on both fastq files
@@ -68,31 +96,6 @@ def trim_fastqs(fastq1, fastq2, trim1, trim2, reports, sample_id, tempdir, sourc
     make_tarfile(reports, reports_dir)
 
 
-def produce_fastqc_report(
-        fastq_filename, output_html, output_plots, temp_directory, fastqc):
-    makedirs(temp_directory)
-
-    pypeliner.commandline.execute(
-        fastqc,
-        '--outdir=' + temp_directory,
-        fastq_filename)
-
-    fastq_basename = os.path.basename(fastq_filename).split('.')[0]
-    output_basename = os.path.join(temp_directory, fastq_basename)
-
-    shutil.move(output_basename + '_fastqc.zip', output_plots)
-    shutil.move(output_basename + '_fastqc.html', output_html)
-
-
-def run_trimgalore(seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt, tempdir,
-                   adapter, adapter2, report_r1, report_r2, qc_report_r1,
-                   qc_report_r2, qc_zip_r1, qc_zip_r2):
-
-    run_tg = RunTrimGalore(seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt,
-                           tempdir, adapter, adapter2, report_r1, report_r2,
-                           qc_report_r1, qc_report_r2, qc_zip_r1, qc_zip_r2)
-    run_tg.run_trimgalore()
-    run_tg.gather_outputs()
 
 
 def get_readgroup(run_id, sample_id, args, config, seqinfo):
@@ -117,7 +120,7 @@ def get_readgroup(run_id, sample_id, args, config, seqinfo):
     return read_group_template
 
 
-def bam_sort(bam_filename, sorted_bam_filename, config):
+def bam_sort(bam_filename, sorted_bam_filename):
     pypeliner.commandline.execute(
         'picard', '-Xmx2G', '-Xms2G',
         '-XX:ParallelGCThreads=1',
@@ -130,7 +133,7 @@ def bam_sort(bam_filename, sorted_bam_filename, config):
 
 
 def bwa_align_paired_end(fastq1, fastq2, output, tempdir,
-                     reference, config, readgroup):
+                     reference, readgroup):
     """
     run bwa aln on both fastq files,
     bwa sampe to align, and convert to bam with samtools view
@@ -185,16 +188,19 @@ def run_flagstat(bam, metrics):
         )
 
 
-def align_pe(fastq1, fastq2, output, metrics, tempdir,
-             reference, config, readgroup):
+def align_pe(fastq1, fastq2, trim1, trim2, output, reports, metrics, tempdir,
+             reference, config, readgroup, source, sample_id):
+
+
+    trim_fastqs(fastq1, fastq2, trim1, trim2, reports, sample_id, tempdir, source, config)
 
     aln_temp = os.path.join(tempdir, "temp_alignments.bam")
-    bwa_align_paired_end(fastq1, fastq2, aln_temp, tempdir, reference,
-                         config, readgroup)
+    bwa_align_paired_end(trim1, trim2, aln_temp, tempdir, reference,
+                         readgroup)
 
     time.sleep(30)
 
-    bam_sort(aln_temp, output, config)
+    bam_sort(aln_temp, output)
 
     run_flagstat(output, metrics)
 
