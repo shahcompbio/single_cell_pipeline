@@ -11,22 +11,20 @@ from scripts import ParseMuseq
 
 
 def run_museq(tumour, normal, reference, museq_dir, out, log, interval, config):
+
     script = os.path.join(museq_dir, 'classify.py')
     model = os.path.join(museq_dir, 'model_v4.1.2_anaconda_sk_0.13.1.npz')
 
     conf = os.path.join(museq_dir, 'metadata.config')
 
-    pypeliner.commandline.execute('python',
-                                  script,
-                                   'normal:'+ normal,
-                                   'tumour:'+ tumour,
-                                   'reference:'+ reference,
-                                   'model:'+ model,
-                                   '--out', out,
-                                   '--log', log,
-                                   '--interval', interval,
-                                   '--config', conf
-                                  )
+    cmd = ['python', script, 'normal:'+ normal, 'tumour:'+ tumour,
+           'reference:'+ reference, 'model:'+ model, '--out', out,
+           '--log', log, '--config', conf]
+
+    if interval:
+        cmd.extend(['--interval', interval])
+
+    pypeliner.commandline.execute(*cmd)
 
 def concatenate_vcf(infiles, outfile):
     def get_header(infile):

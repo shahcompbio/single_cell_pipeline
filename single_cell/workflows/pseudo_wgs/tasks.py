@@ -9,7 +9,7 @@ from scripts import CollectMetrics
 
 def merge_bams(inputs, output, config):
     filenames = inputs.values()
-    
+
     
     cmd = ['picard', '-Xmx2G', '-Xms2G',
            '-XX:ParallelGCThreads=1',
@@ -120,5 +120,5 @@ def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
                     wgs_metrics, samplesheet, output, sample_id):
 
     collmet = CollectMetrics(wgs_metrics, insert_metrics, flagstat_metrics,
-                             markdups_metrics, output, samplesheet, sample_id)
+                             markdups_metrics, output, sample_id)
     collmet.main()

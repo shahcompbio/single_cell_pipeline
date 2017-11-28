@@ -9,36 +9,39 @@ import pypeliner.managed as mgd
 import tasks
 
 def create_museq_workflow(tumour_bam, normal_bam, ref_genome, snv_vcf, snv_csv,
-                            config, args):
+                            config, args, intervals):
     
     workflow = pypeliner.workflow.Workflow()
 
     museq_out_path = os.path.join(args['out_dir'],'pseudo_wgs',
-                                  'variant_calling', '{chrom}.mutationseq.vcf')
+                                  'variant_calling', '{interval}.mutationseq.vcf')
 
     museq_log_path = os.path.join(args['out_dir'],'pseudo_wgs',
-                                  'variant_calling', '{chrom}.mutationseq.log')
+                                  'variant_calling', '{interval}.mutationseq.log')
 
-
-    chromosomes = config["chromosomes"]
+    tumour_bam = dict([(ival, tumour_bam[ival])
+                         for ival in intervals])
+  
+    normal_bam = dict([(ival, normal_bam[ival])
+                         for ival in intervals])
 
     workflow.setobj(
-        obj=mgd.OutputChunks('chrom'),
-        value=chromosomes,
+        obj=mgd.OutputChunks('interval'),
+        value=intervals,
     )
 
     workflow.transform(name='run_museq',
-                         axes=('chrom',),
                          ctx={'mem': config['med_mem']},
+                         axes = ('interval',),
                          func=tasks.run_museq,
                          args=(
-                               mgd.InputFile(tumour_bam),
-                               mgd.InputFile(normal_bam),
+                               mgd.InputFile("tumour.split.bam", "interval", fnames=tumour_bam),
+                               mgd.InputFile("normal.split.bam", "interval", fnames=normal_bam),
                                config['ref_genome'],
                                config['mutationseq'],
-                               mgd.OutputFile(museq_out_path, 'chrom'),
-                               mgd.OutputFile(museq_log_path, 'chrom'),
-                               mgd.InputInstance('chrom'),
+                               mgd.OutputFile(museq_out_path, 'interval'),
+                               mgd.OutputFile(museq_log_path, 'interval'),
+                               None,
                                config
                                )
                          )
@@ -47,7 +50,7 @@ def create_museq_workflow(tumour_bam, normal_bam, ref_genome, snv_vcf, snv_csv,
                        name='merge_vcf',
                        ctx={'mem': config['low_mem']},
                        func=tasks.concatenate_vcf,
-                       args=(mgd.InputFile(museq_out_path, 'chrom'),
+                       args=(mgd.InputFile(museq_out_path, 'interval'),
                              mgd.OutputFile(snv_vcf)
                              )  
                        )
