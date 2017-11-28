@@ -188,9 +188,11 @@ def run_flagstat(bam, metrics):
         )
 
 
-def align_pe(fastq1, fastq2, trim1, trim2, output, reports, metrics, tempdir,
+def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
              reference, config, readgroup, source, sample_id):
 
+    trim1 = os.path.join(tempdir, 'trim_r1.fastq.gz')
+    trim2 = os.path.join(tempdir, 'trim_r2.fastq.gz')
 
     trim_fastqs(fastq1, fastq2, trim1, trim2, reports, sample_id, tempdir, source, config)
 

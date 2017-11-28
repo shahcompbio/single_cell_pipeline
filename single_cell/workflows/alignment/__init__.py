@@ -38,8 +38,6 @@ def create_alignment_workflow(
         args=(
             mgd.InputFile(fastq_1_filename),
             mgd.InputFile(fastq_2_filename),
-            mgd.TempInputFile('trim_r1.fastq.gz'),
-            mgd.TempInputFile('trim_r2.fastq.gz'),
             mgd.OutputFile(bam_filename),
             mgd.OutputFile(fastqc_reports),
             mgd.OutputFile(flagstat_metrics_filename),
