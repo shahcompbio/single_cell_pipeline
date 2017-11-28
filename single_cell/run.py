@@ -1,13 +1,13 @@
 import os
 import argparse
 import utils
-import itertools
 import pypeliner
 import pypeliner.managed as mgd
 from workflows import hmmcopy
 from workflows import strelka
 from workflows import alignment
 from workflows import merge_bams
+from workflows import split_bams
 from workflows import pseudo_wgs
 from workflows import realignment
 from workflows import mutationseq
@@ -66,7 +66,16 @@ def main():
 
     fastq1_files, fastq2_files, sampleids, lanes, seqinfo = utils.read_fastqs_file(args)
 
+    intervals = utils.generate_intervals(config["ref_genome"])  
+
+
     workflow = pypeliner.workflow.Workflow()
+
+    workflow.setobj(
+        obj=mgd.OutputChunks('interval'),
+        value=intervals,
+    )
+
 
     workflow.setobj(
         obj=mgd.OutputChunks('sample_id', 'lane'),
@@ -175,9 +184,8 @@ def main():
             args,
         ),
     )
-  
+
     if args['generate_pseudo_wgs']:
-  
         pseudo_wgs_bam = os.path.join(args['out_dir'], 'pseudo_wgs',
                                       'merged.sorted.markdups.bam')
         pseudo_wgs_bai = os.path.join(args['out_dir'], 'pseudo_wgs',
@@ -194,10 +202,27 @@ def main():
                 sampleids,
                 config,
                 args['out_dir'],
+                intervals,
             )
         )
   
     if args['matched_normal']:
+        workflow.subworkflow(
+            name='split_bams',
+            func=split_bams.create_split_workflow,
+            args=(
+                mgd.InputFile(pseudo_wgs_bam),
+                mgd.InputFile(args['matched_normal']),
+                mgd.TempOutputFile("tumour.split.bam", "interval", axes_origin=[]),
+                mgd.TempOutputFile("tumour.split.bam.bai", "interval", axes_origin=[]),
+                mgd.TempOutputFile("normal.split.bam", "interval", axes_origin=[]),
+                mgd.TempOutputFile("normal.split.bam.bai", "interval", axes_origin=[]),
+                intervals,
+                config['ref_genome'],
+                config
+            )
+        )
+
         varcalls_dir = os.path.join(args['out_dir'], 'pseudo_wgs',
                                     'variant_calling')
         museq_vcf = os.path.join(varcalls_dir, 'museq_snv.vcf')
@@ -206,16 +231,17 @@ def main():
             name='museq',
             func=mutationseq.create_museq_workflow,
             args=(
-                mgd.InputFile(pseudo_wgs_bam),
-                mgd.InputFile(args['matched_normal']),
+                mgd.TempInputFile("tumour.split.bam", "interval"),
+                mgd.TempInputFile("normal.split.bam", "interval"),
                 config['ref_genome'],
                 mgd.OutputFile(museq_vcf),
                 mgd.OutputFile(museq_csv),
                 config,
                 args,
+                intervals,
             ),
         )
-  
+
         strelka_snv_vcf = os.path.join(varcalls_dir, 'strelka_snv.vcf')
         strelka_indel_vcf = os.path.join(varcalls_dir, 'strelka_indel.vcf')
         strelka_snv_csv = os.path.join(varcalls_dir, 'strelka_snv.csv')
@@ -224,16 +250,17 @@ def main():
             name='strelka',
             func=strelka.create_strelka_workflow,
             args=(
-                mgd.InputFile(pseudo_wgs_bam),
-                mgd.InputFile(args['matched_normal']),
+                mgd.TempInputFile("tumour.split.bam", "interval"),
+                mgd.TempInputFile("normal.split.bam", "interval"),
                 config['ref_genome'],
                 mgd.OutputFile(strelka_indel_vcf),
                 mgd.OutputFile(strelka_snv_vcf),
                 mgd.OutputFile(strelka_indel_csv),
                 mgd.OutputFile(strelka_snv_csv),
+                intervals
             ),
         )
-  
+   
         countdata = os.path.join(args['out_dir'], 'pseudo_wgs',
                                  'counts', 'counts.csv')
         workflow.subworkflow(
@@ -250,7 +277,7 @@ def main():
                 args['out_dir'],
             )
         )
- 
+
     pyp.run(workflow)
 
 if __name__ == '__main__':

@@ -46,8 +46,9 @@ def call_somatic_variants(
         indel_window_file,
         snv_file,
         stats_file,
-        chrom,
-        (beg, end),
+        interval,
+#         chrom,
+#         (beg, end),
         known_chrom_size,
         max_input_depth=10000,
         min_tier_one_mapq=20,
@@ -57,6 +58,12 @@ def call_somatic_variants(
         ssnv_noise=0.0000005,
         ssnv_noise_strand_bias_frac=0.5,
         ssnv_prior=0.000001):
+
+    chrom, beg, end = interval.split('_')
+
+    beg = int(beg)
+    beg = beg+1 if beg==0 else beg
+    
 
     cmd = [
         'strelka2',
@@ -75,7 +82,7 @@ def call_somatic_variants(
 
         '-clobber',
         '-filter-unanchored',
-        '-genome-size', known_chrom_size,
+        '-genome-size', known_chrom_size[chrom],
         '-indel-nonsite-match-prob', 0.5,
         '-max-indel-size', 50,
         '-max-window-mismatch', 3, 20,
@@ -88,6 +95,7 @@ def call_somatic_variants(
         '--min-contig-open-end-support', 35,
         '--report-file', stats_file,
         '--shared-site-error-rate', ssnv_noise,
+        
         '--shared-site-error-strand-bias-fraction', ssnv_noise_strand_bias_frac,
         '--somatic-indel-rate', sindel_prior,
         '--shared-indel-error-rate', sindel_noise,
@@ -113,7 +121,7 @@ def filter_snv_file_list(
         in_files,
         stats_files,
         out_file,
-        chrom,
+        interval,
         known_chrom_size,
         depth_filter_multiple=3.0,
         max_filtered_basecall_frac=0.4,
@@ -121,13 +129,19 @@ def filter_snv_file_list(
         quality_lower_bound=15,
         use_depth_filter=True):
 
+
+    chrom = interval.split('_')[0]
+    known_chrom_size = known_chrom_size[chrom]
+
     max_normal_coverage = _get_max_normal_coverage(chrom, depth_filter_multiple, known_chrom_size, stats_files)
 
     writer = None
 
+    in_files = [in_files]
+
     with open(out_file, 'wb') as out_fh:
-        for key in sorted(in_files):
-            reader = vcf.Reader(filename=in_files[key])
+        for in_file in in_files:
+            reader = vcf.Reader(filename=in_file)
 
             if writer is None:
                 # Add filters to header
@@ -196,7 +210,8 @@ def filter_snv_file_list(
 
 
 def _get_max_normal_coverage(chrom, depth_filter_multiple, known_chrom_size, stats_files):
-    normal_coverage = _get_normal_coverage(stats_files.values())
+
+    normal_coverage = _get_normal_coverage([stats_files])
 
     normal_mean_coverage = normal_coverage / known_chrom_size
 
@@ -257,7 +272,7 @@ def filter_indel_file_list(
         stats_files,
         window_files,
         out_file,
-        chrom,
+        interval,
         known_chrom_size,
         depth_filter_multiple=3.0,
         max_int_hpol_length=14,
@@ -277,21 +292,26 @@ def filter_indel_file_list(
         'tumour_window_submap'
     )
 
+    chrom = interval.split('_')[0]
+    known_chrom_size = known_chrom_size[chrom]
+
     max_normal_coverage = _get_max_normal_coverage(chrom, depth_filter_multiple, known_chrom_size, stats_files)
 
     writer = None
 
+    vcf_files = [vcf_files]
+
     with open(out_file, 'wb') as out_fh:
-        for key in sorted(vcf_files):
+        for vcf_file in sorted(vcf_files):
             window = pd.read_csv(
-                window_files[key],
+                window_files,
                 comment='#',
                         converters={'chrom': str},
                 header=None,
                 names=window_cols,
                 sep='\t')
 
-            reader = vcf.Reader(filename=vcf_files[key])
+            reader = vcf.Reader(filename=vcf_file)
 
             if writer is None:
                 # Add format to header
