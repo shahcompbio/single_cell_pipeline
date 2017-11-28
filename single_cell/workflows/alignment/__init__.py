@@ -21,7 +21,7 @@ def create_alignment_workflow(
         seqinfo):
 
     out_dir = args['out_dir']
-    fastqc_reports = os.path.join(out_dir,  lane_id+"_reports.tar.gz")
+    fastqc_reports = os.path.join(out_dir, 'fastqc',  "{}_{}_reports.tar.gz".format(lane_id, sample_id))
 
     metrics_dir = os.path.join(args['out_dir'], 'metrics_per_lane',
                                lane_id, 'flagstat')
