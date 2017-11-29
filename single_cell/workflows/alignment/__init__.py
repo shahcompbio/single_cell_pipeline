@@ -45,7 +45,7 @@ def create_alignment_workflow(
             ref_genome,
             config,
             read_group,
-            seqinfo[sample_id],
+            seqinfo,
             sample_id
         )
     )

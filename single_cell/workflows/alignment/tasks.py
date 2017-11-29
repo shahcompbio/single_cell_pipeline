@@ -100,7 +100,7 @@ def trim_fastqs(fastq1, fastq2, trim1, trim2, reports, sample_id, tempdir, sourc
 
 def get_readgroup(run_id, sample_id, args, config, seqinfo):
     platform = 'illumina'
-    centre = 'UBCBRC' if seqinfo[sample_id] == 'nextseq' else 'BCCAGSC'
+    centre = 'UBCBRC' if seqinfo == 'nextseq' else 'BCCAGSC'
 
     if 'read_group' in config:
         if config['read_group']['PL']:
