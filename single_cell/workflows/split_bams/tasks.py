@@ -15,5 +15,5 @@ def split_bam_file(bam, reference, outbam, outbai, interval):
         '>', outbam)
     
     pypeliner.commandline.execute(
-        'samtools', 'index', bam,
+        'samtools', 'index', outbam,
         outbai)
