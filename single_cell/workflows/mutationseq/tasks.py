@@ -22,6 +22,9 @@ def run_museq(tumour, normal, reference, museq_dir, out, log, interval, config):
            '--log', log, '--config', conf]
 
     if interval:
+        if "_" in interval:
+            interval = interval.split('_')
+            interval = "{}:{}-{}".format(*interval)
         cmd.extend(['--interval', interval])
 
     pypeliner.commandline.execute(*cmd)
