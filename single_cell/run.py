@@ -64,16 +64,22 @@ def main():
 
     config = utils.load_config(args)
 
-    fastq1_files, fastq2_files, sampleids, lanes, seqinfo = utils.read_fastqs_file(args)
-
-    intervals = utils.generate_intervals(config["ref_genome"])  
-
+    fastq1_files, fastq2_files, sampleids = utils.read_fastqs_file(args)
 
     workflow = pypeliner.workflow.Workflow()
 
+    workflow.transform(
+        name='generate_intervals',
+        func=utils.generate_intervals,
+        ret=pypeliner.managed.TempOutputObj('intervals'),
+        args=(
+            config["ref_genome"],
+        )
+    )
+    
     workflow.setobj(
         obj=mgd.OutputChunks('interval'),
-        value=intervals,
+        value=pypeliner.managed.TempInputObj('intervals'),
     )
 
 
@@ -81,6 +87,19 @@ def main():
         obj=mgd.OutputChunks('sample_id', 'lane'),
         value=fastq1_files.keys(),
     )
+
+    workflow.transform(
+        name='get_seq_info',
+        axes=('sample_id', 'lane'),
+        func=utils.get_seq_info,
+        ret=pypeliner.managed.TempOutputObj('seqinfo', 'sample_id', 'lane'),
+        args=(
+            args['fastqs_file'],
+            mgd.InputInstance("sample_id"),
+            mgd.InputInstance("lane"),
+        )
+    )
+
 
     workflow.subworkflow(
         name='alignment_workflow',
@@ -95,7 +114,7 @@ def main():
             mgd.InputInstance('sample_id'),
             config,
             args,
-            seqinfo
+            mgd.TempInputObj('seqinfo', 'sample_id', 'lane')
         ),
     )
 
@@ -112,20 +131,26 @@ def main():
         ),
     )
 
-    workflow.subworkflow(
-        name='realignment_workflow',
-        func=realignment.create_realignment_workflow,
-        args=(
-            mgd.TempInputFile('merged_lanes.bam', 'sample_id'),
-            mgd.TempInputFile('merged_lanes.bam.bai', 'sample_id'),
-            mgd.TempOutputFile('merged_realign.bam', 'sample_id',
-                               axes_origin=[]),
-            config,
-            args['out_dir'],
-            args['realign'],
-            sampleids
-        ),
-    )
+    final_bam = mgd.TempInputFile('merged_lanes.bam', 'sample_id')
+    if args['realign']:
+
+        workflow.subworkflow(
+            name='realignment_workflow',
+            func=realignment.create_realignment_workflow,
+            args=(
+                mgd.TempInputFile('merged_lanes.bam', 'sample_id'),
+                mgd.TempInputFile('merged_lanes.bam.bai', 'sample_id'),
+                mgd.TempOutputFile('merged_realign.bam', 'sample_id',
+                                   axes_origin=[]),
+                config,
+                args['out_dir'],
+                args['realign'],
+                sampleids
+            ),
+        )
+        final_bam = mgd.TempInputFile('merged_realign.bam', 'sample_id')
+
+
 
     bam_directory = os.path.join(args['out_dir'], 'bams')
     bam_template = os.path.join(bam_directory, '{sample_id}.bam')
@@ -137,7 +162,7 @@ def main():
         name='bam_postprocess_workflow',
         func=alignment_postprocessing.create_bam_post_workflow,
         args=(
-            mgd.TempInputFile('merged_realign.bam', 'sample_id'),
+            final_bam,
             mgd.OutputFile('bam_markdups', 'sample_id', template=bam_template, axes_origin=[]),
             mgd.OutputFile('bam_markdups_index', 'sample_id',
                            template=bam_index_template, axes_origin=[]),
@@ -202,7 +227,6 @@ def main():
                 sampleids,
                 config,
                 args['out_dir'],
-                intervals,
             )
         )
   
@@ -217,7 +241,7 @@ def main():
                 mgd.TempOutputFile("tumour.split.bam.bai", "interval", axes_origin=[]),
                 mgd.TempOutputFile("normal.split.bam", "interval", axes_origin=[]),
                 mgd.TempOutputFile("normal.split.bam.bai", "interval", axes_origin=[]),
-                intervals,
+                pypeliner.managed.TempInputObj('intervals'),
                 config['ref_genome'],
                 config
             )
@@ -238,7 +262,7 @@ def main():
                 mgd.OutputFile(museq_csv),
                 config,
                 args,
-                intervals,
+                pypeliner.managed.TempInputObj('intervals'),
             ),
         )
 
@@ -257,7 +281,7 @@ def main():
                 mgd.OutputFile(strelka_snv_vcf),
                 mgd.OutputFile(strelka_indel_csv),
                 mgd.OutputFile(strelka_snv_csv),
-                intervals
+                pypeliner.managed.TempInputObj('intervals'),
             ),
         )
    
