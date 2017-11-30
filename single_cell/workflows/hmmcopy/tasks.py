@@ -84,6 +84,22 @@ def run_hmmcopy(
     metrics.main()
 
 
+
+def merge_files(reads, segs, hmm_metrics, merged_segs, merged_reads,
+                merged_hmm_metrics, cn_matrix, temp, mad_thres,
+                merged_reads_filt, merged_segs_filt, igv_segs):
+
+    concatenate_csv(reads, merged_reads)
+    concatenate_csv(segs, merged_segs)
+    concatenate_csv(hmm_metrics, merged_hmm_metrics)
+    generate_cn_matrix(reads, cn_matrix, temp)
+    
+    filter_hmm_data(merged_hmm_metrics, merged_segs, merged_reads, mad_thres,
+                    merged_reads_filt, merged_segs_filt)
+
+    convert_csv_to_seg(merged_segs_filt, merged_reads_filt, igv_segs)
+
+
 def merge_frames(frames, how, on):
     '''
     annotates input_df using ref_df

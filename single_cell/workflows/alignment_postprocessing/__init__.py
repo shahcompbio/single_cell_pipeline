@@ -1,11 +1,4 @@
 '''
-Created on Jul 11, 2017
-
-@author: dgrewal
-'''
-
-
-'''
 Created on Jul 6, 2017
 
 @author: dgrewal
@@ -66,17 +59,6 @@ def create_bam_post_workflow(
             mgd.TempSpace('tempdir', 'sample_id'),
             config,
             mgd.OutputFile(markdups_metrics_filename, 'sample_id'),
-        ),
-    )
-    
-    workflow.commandline(
-        name='bam_flagstat',
-        ctx={'mem': config['low_mem']},
-        axes=('sample_id',),
-        args=(
-            'samtools', 'flagstat',
-            mgd.InputFile('sorted_markdups', 'sample_id', fnames=bam_filename),
-            '>',
             mgd.OutputFile(flagstat_metrics_filename, 'sample_id'),
         ),
     )
@@ -127,39 +109,17 @@ def create_bam_post_workflow(
         name='collect_metrics',
         ctx={'mem': config['low_mem']},
         func=tasks.collect_metrics,
-        axes=('sample_id',),
         args=(
-            mgd.InputFile(flagstat_metrics_filename, 'sample_id'),
-            mgd.InputFile(markdups_metrics_filename, 'sample_id'),
-            mgd.InputFile(insert_metrics_filename, 'sample_id'),
-            mgd.InputFile(wgs_metrics_filename, 'sample_id'),
-            mgd.InputFile(gc_metrics_filename, 'sample_id'),
-            mgd.TempOutputFile('metrics_summary.csv', 'sample_id'),
-            mgd.TempOutputFile('gc_matrix.csv', 'sample_id'),
-            mgd.InputInstance('sample_id'),
+            mgd.InputFile(flagstat_metrics_filename, 'sample_id', axes_origin=[]),
+            mgd.InputFile(markdups_metrics_filename, 'sample_id', axes_origin=[]),
+            mgd.InputFile(insert_metrics_filename, 'sample_id', axes_origin=[]),
+            mgd.InputFile(wgs_metrics_filename, 'sample_id', axes_origin=[]),
+            mgd.InputFile(gc_metrics_filename, 'sample_id', axes_origin=[]),
+            mgd.TempOutputFile('metrics_summary.csv', 'sample_id', axes_origin=[]),
+            mgd.TempOutputFile('gc_matrix.csv', 'sample_id', axes_origin=[]),
+            mgd.OutputFile(alignment_metrics),
+            mgd.OutputFile(gc_metrics),
         ),
     )
     
-    workflow.transform(
-        name='merge_summary_metrics',
-        ctx={'mem': config['low_mem']},
-        func=tasks.concatenate_csv,
-        args=(
-            mgd.TempInputFile('metrics_summary.csv', 'sample_id'),
-            mgd.OutputFile(alignment_metrics),
-        ),
-    )
- 
-    workflow.transform(
-        name='merge_gc_metrics',
-        ctx={'mem': config['low_mem']},
-        func=tasks.merge_csv,
-        args=(
-            mgd.TempInputFile('gc_matrix.csv', 'sample_id'),
-            mgd.OutputFile(gc_metrics),
-            'outer',
-            'gc'
-        ),
-    )
-
     return workflow

@@ -21,7 +21,7 @@ def makedirs(directory):
 
 
 def postprocess_bam(infile, outfile, outfile_index, tempdir,
-                    config, markdups_metrics):
+                    config, markdups_metrics, flagstat_metrics):
     
     if not os.path.exists(tempdir):
         makedirs(tempdir)
@@ -34,6 +34,16 @@ def postprocess_bam(infile, outfile, outfile_index, tempdir,
 
     bam_index(outfile, outfile_index)
     
+    bam_flagstat(outfile, flagstat_metrics)
+    
+
+def bam_flagstat(infile, outfile):
+    pypeliner.commandline.execute(
+        'samtools', 'flagstat',
+        infile, '>',
+        outfile
+        )
+
 
 def bam_index(infile, outfile):
     pypeliner.commandline.execute(
@@ -130,20 +140,40 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_
         'MAX_RECORDS_IN_RAM=150000')
 
 def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
-                    wgs_metrics, gc_metrics, output, gc_output,  sample_id):
+                    wgs_metrics, gc_metrics, output, gc_output, merged_metrics,
+                    merged_gc_metrics):
 
-    collmet = CollectMetrics(wgs_metrics, insert_metrics, flagstat_metrics,
-                             markdups_metrics, output, sample_id)
-    collmet.main()
+    for sample in flagstat_metrics.keys():
+        flgstat = flagstat_metrics[sample]
+        mkdup = markdups_metrics[sample]
+        insrt = insert_metrics[sample]
+        wgs = wgs_metrics[sample]
+        gc = gc_metrics[sample]
+        outfile = output[sample]
+        gc_outfile = gc_output[sample]
 
-    gen_gc = GenerateCNMatrix(gc_metrics, gc_output, ',',
-                              'NORMALIZED_COVERAGE', sample_id,
-                              'gcbias')
-    gen_gc.main()
+        collmet = CollectMetrics(wgs, insrt, flgstat,
+                                 mkdup, outfile, sample)
+        collmet.main()
+
+        gen_gc = GenerateCNMatrix(gc, gc_outfile, ',',
+                                  'NORMALIZED_COVERAGE', sample,
+                                  'gcbias')
+        gen_gc.main()
 
 
-def concatenate_csv(in_filenames, out_filename, nan_val='NA'):
+    samples = flagstat_metrics.keys()
+    concatenate_csv(output, merged_metrics, samples)
+    merge_csv(gc_output, merged_gc_metrics, 'outer', 'gc', samples)
+
+
+def concatenate_csv(in_filenames, out_filename, sample_ids, nan_val='NA'):
     data = []
+
+    if not isinstance(in_filenames, dict):
+        in_filenames = dict([(sampid, in_filenames[sampid])
+                             for sampid in sample_ids])
+    
     for _, in_filename in in_filenames.iteritems():
         with open(in_filename) as f:
             first_line = f.readline()
@@ -155,8 +185,14 @@ def concatenate_csv(in_filenames, out_filename, nan_val='NA'):
     data.to_csv(out_filename, index=False)
 
 
-def merge_csv(in_filenames, out_filename, how, on, nan_val='NA'):
+def merge_csv(in_filenames, out_filename, how, on, sample_ids, nan_val='NA'):
     data = []
+
+    if not isinstance(in_filenames, dict):
+        in_filenames = dict([(sampid, in_filenames[sampid])
+                             for sampid in sample_ids])
+
+    
     for _, in_filename in in_filenames.iteritems():
         with open(in_filename) as f:
             first_line = f.readline()

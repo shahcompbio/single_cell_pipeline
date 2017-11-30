@@ -50,58 +50,23 @@ def create_hmmcopy_workflow(bam_file, bai_file, corrected_reads_file,
 
 
     workflow.transform(
-        name='generate_cn_matrix',
+        name='merge_files',
         ctx={'mem': config['low_mem']},
-        func=tasks.generate_cn_matrix,
+        func=tasks.merge_files,
         args=(
             mgd.TempInputFile('reads.csv', 'sample_id'),
-            mgd.OutputFile(cn_matrix_file),
-            mgd.TempSpace('cnmatrix_temp')
-        ),
-    )
-
-    workflow.transform(
-        name='merge_tables',
-        ctx={'mem': config['low_mem']},
-        func=tasks.concatenate_csv,
-        args=(
             mgd.TempInputFile('segs.csv', 'sample_id'),
-            mgd.OutputFile(segments_file),
-        ),
-    )
-
-    workflow.transform(
-        name='merge_reads',
-        ctx={'mem': config['low_mem']},
-        func=tasks.concatenate_csv,
-        args=(
-            mgd.TempInputFile('reads.csv', 'sample_id'),
-            mgd.OutputFile(corrected_reads_file),
-        ),
-    )
-
-    workflow.transform(
-        name='merge_hmm_metrics',
-        ctx={'mem': config['low_mem']},
-        func=tasks.concatenate_csv,
-        args=(
             mgd.TempInputFile('hmm_metrics.csv', 'sample_id'),
+            mgd.OutputFile(segments_file),
+            mgd.OutputFile(corrected_reads_file),
             mgd.OutputFile(hmm_metrics_file),
-        ),
-    )
-
-    workflow.transform(
-        name='filter_hmmcopy_results',
-        ctx={'mem': config['low_mem']},
-        func=tasks.filter_hmm_data,
-        args=(
-            mgd.InputFile(hmm_metrics_file),
-            mgd.InputFile(segments_file),
-            mgd.InputFile(corrected_reads_file),
+            mgd.OutputFile(cn_matrix_file),
+            mgd.TempSpace('cnmatrix_temp'),
             0.2,
             mgd.OutputFile(reads_filt_filename),
             mgd.OutputFile(segs_filt_filename),
-        )
+            mgd.OutputFile(output_seg_filename),
+        ),
     )
 
     workflow.transform(
@@ -143,17 +108,6 @@ def create_hmmcopy_workflow(bam_file, bai_file, corrected_reads_file,
               mgd.InputFile(hmm_metrics_file),
               None
             )
-    )
-
-    workflow.transform(
-        name='convert_csv_seg',
-        ctx={'mem': config['low_mem']},
-        func=tasks.convert_csv_to_seg,
-        args=(
-            mgd.InputFile(segs_filt_filename),
-            mgd.InputFile(reads_filt_filename),
-            mgd.OutputFile(output_seg_filename),
-        )
     )
 
     reads_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_reads_mad.pdf'.format(lib))
