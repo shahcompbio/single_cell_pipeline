@@ -150,8 +150,6 @@ def main():
         )
         final_bam = mgd.TempInputFile('merged_realign.bam', 'sample_id')
 
-
-
     bam_directory = os.path.join(args['out_dir'], 'bams')
     bam_template = os.path.join(bam_directory, '{sample_id}.bam')
     bam_index_template = os.path.join(bam_directory, '{sample_id}.bam.bai')
