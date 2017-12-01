@@ -35,7 +35,7 @@ create_vm_commands: |
   sudo make install
   singularity --version
   sudo mkdir /refdata/
-  sudo mount -t cifs //{accountname}.file.core.windows.net/reference /refdata/ -o vers=3.0,username={accountname},password={accountkey},dir_mode=0755,file_mode=0755
+  az storage blob download-batch -s reference-grch37 -d /refdata --account-name {accountname} --account-key {accountkey}
 
 # Compute Task Start Commmands
 # ----------------------------
