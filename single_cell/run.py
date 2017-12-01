@@ -64,7 +64,7 @@ def main():
 
     config = utils.load_config(args)
 
-    fastq1_files, fastq2_files, sampleids = utils.read_fastqs_file(args)
+    fastq1_files, fastq2_files, sampleids, seqinfo = utils.read_fastqs_file(args['fastqs_file'])
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -76,7 +76,7 @@ def main():
             config["ref_genome"],
         )
     )
-    
+     
     workflow.setobj(
         obj=mgd.OutputChunks('interval'),
         value=pypeliner.managed.TempInputObj('intervals'),
@@ -88,18 +88,9 @@ def main():
         value=fastq1_files.keys(),
     )
 
-    workflow.transform(
-        name='get_seq_info',
-        axes=('sample_id', 'lane'),
-        func=utils.get_seq_info,
-        ret=pypeliner.managed.TempOutputObj('seqinfo', 'sample_id', 'lane'),
-        args=(
-            args['fastqs_file'],
-            mgd.InputInstance("sample_id"),
-            mgd.InputInstance("lane"),
-        )
-    )
-
+    workflow.setobj(
+        obj=mgd.TempOutputObj('seqinfo', 'sample_id', axes_origin=[]),
+        value=seqinfo)
 
     workflow.subworkflow(
         name='alignment_workflow',
@@ -114,7 +105,7 @@ def main():
             mgd.InputInstance('sample_id'),
             config,
             args,
-            mgd.TempInputObj('seqinfo', 'sample_id', 'lane')
+            mgd.TempInputObj('seqinfo', 'sample_id')
         ),
     )
 

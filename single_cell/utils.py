@@ -21,20 +21,9 @@ def generate_intervals(ref, size=100000000):
 
     return intervals
 
-def get_seq_info(fastqs_file, sample_id, lane):
+def read_fastqs_file(fastqs_file):
+
     fastqs = pd.read_csv(fastqs_file, dtype=str)
-
-    for column in ('sample_id', 'lane_id', 'fastq_1', 'fastq_2', 'source',):
-        if column not in fastqs.columns:
-            raise Exception(
-                'input fastqs_file should contain {}'.format(column))
-
-    return fastqs.loc[(fastqs['sample_id'] == sample_id) & (fastqs['lane_id'] == lane)].iloc[0]["source"]
-
-
-def read_fastqs_file(args):
-
-    fastqs = pd.read_csv(args['fastqs_file'], dtype=str)
 
     for column in ('sample_id', 'lane_id', 'fastq_1', 'fastq_2', 'source',):
         if column not in fastqs.columns:
@@ -50,8 +39,9 @@ def read_fastqs_file(args):
         fastq_2_filenames[(row['sample_id'], row['lane_id'])] = row['fastq_2']
 
 
+    seqinfo = {row["sample_id"]:row["source"] for _,row in fastqs.iterrows()}
 
-    return fastq_1_filenames, fastq_2_filenames, sample_ids
+    return fastq_1_filenames, fastq_2_filenames, sample_ids, seqinfo
 
 
 def load_config(args):
