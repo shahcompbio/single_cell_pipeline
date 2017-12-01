@@ -7,6 +7,7 @@ import os
 import pypeliner
 import pypeliner.managed as mgd
 
+import single_cell.utils
 import tasks
 
 
