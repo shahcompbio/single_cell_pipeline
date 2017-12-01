@@ -4,7 +4,6 @@ Created on Jul 24, 2017
 @author: dgrewal
 '''
 import os
-import csv
 import pypeliner
 from scripts import ExtractHmmMetrics
 from scripts import GenerateCNMatrix
@@ -139,25 +138,6 @@ def merge_csv(in_filenames, out_filename, how, on, nan_val='NA'):
     data = data.fillna(nan_val)
     data.to_csv(out_filename, index=False)
 
-def concatenate_csv(in_filenames, out_filename):
-    """merge csv files, uses csv module to handle inconsistencies in column
-    indexes, pandas uses a lot of memory
-    :param in_filenames: input file dict
-    :param out_filename: output file
-    """
-    writer = None
-    for _,infile in in_filenames.iteritems():
-
-        with open(infile) as inp:
-            reader= csv.DictReader(inp)
-
-            for row in reader:
-                if not writer:
-                    writer = csv.DictWriter(open(out_filename, "w"),
-                                            fieldnames=reader._fieldnames)
-                    writer.writeheader()
-
-                writer.writerow(row)
 
 def generate_cn_matrix(infiles, output, tempdir):
     """

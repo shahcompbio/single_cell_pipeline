@@ -14,6 +14,7 @@ from workflows import mutationseq
 from workflows import singlecell_summary
 from workflows import snv_postprocessing
 from workflows import alignment_postprocessing
+from workflows import aneufinder
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -47,6 +48,10 @@ def parse_args():
                         action='store_true',
                         help='''Lanes to analyze.''')
 
+    parser.add_argument('--aneufinder',
+                        action='store_true',
+                        help='''Run Aneufinder in addition to HMMCopy.''')
+
     args = vars(parser.parse_args())
 
     if args['matched_normal'] and not args['generate_pseudo_wgs']:
@@ -57,7 +62,7 @@ def parse_args():
 
 
 def main():
-    
+
     args = parse_args()
 
     pyp = pypeliner.app.Pypeline(config=args)
@@ -176,7 +181,27 @@ def main():
             args
         ),
     )
-   
+
+    aneufinder_output = os.path.join(results_dir, 'AneuFinderOutput')
+    if not os.path.exists(aneufinder_output):
+        os.mkdir(aneufinder_output)
+    aneufinder_segs_filename = os.path.join(aneufinder_output, '{}_aneufinder_segments.csv'.format(args['library_id']))
+    aneufinder_reads_filename = os.path.join(aneufinder_output, '{}_aneufinder_reads.csv'.format(args['library_id']))
+    workflow.subworkflow(
+        name='aneufinder_workflow',
+        func=aneufinder.create_aneufinder_workflow,
+        args=(
+            mgd.InputFile('bam_markdups', 'sample_id', template=bam_template),
+            mgd.InputFile(args['sample_info']),
+            sampleids,
+            config,
+            aneufinder_output,
+            mgd.OutputFile(aneufinder_segs_filename),
+            mgd.OutputFile(aneufinder_reads_filename),
+            args['library_id']
+        ),
+    )
+
     # merge all samples per lane together
     workflow.subworkflow(
         name='summary_workflow',

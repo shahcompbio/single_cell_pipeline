@@ -1,3 +1,5 @@
+import csv
+
 import yaml
 import pandas as pd
 import pysam
@@ -56,3 +58,24 @@ def load_config(args):
             'Unable to open config file: {0}'.format(
                 args['config_file']))
     return config
+
+
+def concatenate_csv(in_filenames, out_filename):
+    """merge csv files, uses csv module to handle inconsistencies in column
+    indexes, pandas uses a lot of memory
+    :param in_filenames: input file dict
+    :param out_filename: output file
+    """
+    writer = None
+    for _,infile in in_filenames.iteritems():
+
+        with open(infile) as inp:
+            reader= csv.DictReader(inp)
+
+            for row in reader:
+                if not writer:
+                    writer = csv.DictWriter(open(out_filename, "w"),
+                                            fieldnames=reader._fieldnames)
+                    writer.writeheader()
+
+                writer.writerow(row)
