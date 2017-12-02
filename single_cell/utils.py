@@ -32,12 +32,14 @@ def read_fastqs_file(fastqs_file):
 
     sample_ids = list(sorted(fastqs['sample_id'].unique()))
 
+    if fastqs.duplicated(['sample_id', 'lane_id']).any():
+        raise Exception('input fastqs_file with duplicate sample_id/lane_id pairs')
+
     fastq_1_filenames = dict()
     fastq_2_filenames = dict()
     for _, row in fastqs.iterrows():
         fastq_1_filenames[(row['sample_id'], row['lane_id'])] = row['fastq_1']
         fastq_2_filenames[(row['sample_id'], row['lane_id'])] = row['fastq_2']
-
 
     seqinfo = {row["sample_id"]:row["source"] for _,row in fastqs.iterrows()}
 
