@@ -30,7 +30,9 @@ def create_museq_workflow(tumour_bam, tumour_bai, normal_bam, normal_bai, ref_ge
                          func=tasks.run_museq,
                          args=(
                                mgd.InputFile("tumour.split.bam", "interval", fnames=tumour_bam),
+                               mgd.InputFile("tumour.split.bam.bai", "interval", fnames=tumour_bai),
                                mgd.InputFile("normal.split.bam", "interval", fnames=normal_bam),
+                               mgd.InputFile("normal.split.bam.bai", "interval", fnames=normal_bai),
                                config['ref_genome'],
                                config['mutationseq'],
                                mgd.TempOutputFile("museq.vcf", 'interval'),
