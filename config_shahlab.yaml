@@ -58,6 +58,7 @@ adapter: 'CTGTCTCTTATACACATCTCCGAGCCCACGAGAC'
 adapter2: 'CTGTCTCTTATACACATCTGACGCTGCCGACGA'
 
 mutationseq: /shahlab/pipelines/apps_centos6/mutationSeq_4.3.7_anaconda/
+mutationseq_model: /shahlab/pipelines/apps_centos6/mutationSeq_4.3.7_anaconda/model_v4.1.2_anaconda_sk_0.13.1.npz
 
 hmmcopy_plot_mad_threshold: 0.2
 

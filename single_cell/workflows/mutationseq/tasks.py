@@ -13,7 +13,7 @@ from scripts import ParseMuseq
 def run_museq(tumour, tumour_bai, normal, normal_bai, reference, museq_dir, out, log, interval, config):
 
     script = os.path.join(museq_dir, 'classify.py')
-    model = os.path.join(museq_dir, 'model_v4.1.2_anaconda_sk_0.13.1.npz')
+    model = config['mutationseq_model']
 
     conf = os.path.join(museq_dir, 'metadata.config')
 
