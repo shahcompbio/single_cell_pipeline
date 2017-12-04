@@ -14,7 +14,9 @@ import os
 
 def create_strelka_workflow(
         normal_bam_file,
+        normal_bai_file,
         tumour_bam_file,
+        tumour_bai_file,
         ref_genome_fasta_file,
         indel_vcf_file,
         snv_vcf_file,

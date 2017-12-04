@@ -8,7 +8,7 @@ import pypeliner
 import pypeliner.managed as mgd
 import tasks
 
-def create_museq_workflow(tumour_bam, normal_bam, ref_genome, snv_vcf, snv_csv,
+def create_museq_workflow(tumour_bam, tumour_bai, normal_bam, normal_bai, ref_genome, snv_vcf, snv_csv,
                             config, args, intervals):
     
     workflow = pypeliner.workflow.Workflow()

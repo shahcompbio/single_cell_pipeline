@@ -5,7 +5,7 @@ Created on Nov 21, 2017
 '''
 import pypeliner
 
-def split_bam_file(bam, reference, outbam, outbai, interval):
+def split_bam_file(bam, bai, reference, outbam, outbai, interval):
     
     interval = interval.split('_')
     interval = interval[0] +':'+interval[1] +'-'+interval[2]

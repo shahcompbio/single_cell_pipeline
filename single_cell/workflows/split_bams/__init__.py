@@ -11,7 +11,9 @@ import tasks
 
 def create_split_workflow(
     tumour_bam,
+    tumour_bai,
     normal_bam,
+    normal_bai,
     tumour_split_bam,
     tumour_split_bai,
     normal_split_bam,
@@ -46,6 +48,7 @@ def create_split_workflow(
         axes=('interval',),
         args=(
             mgd.InputFile(tumour_bam),
+            mgd.InputFile(tumour_bai),
             ref_genome,
             mgd.OutputFile("tumour.split.bam", "interval", fnames=tumour_split_bam),
             mgd.OutputFile("tumour.split.bam.bai", "interval", fnames=tumour_split_bai),
@@ -60,6 +63,7 @@ def create_split_workflow(
         func=tasks.split_bam_file,
         args=(
             mgd.InputFile(normal_bam),
+            mgd.InputFile(normal_bai),
             ref_genome,
             mgd.OutputFile("normal.split.bam", "interval", fnames=normal_split_bam),
             mgd.OutputFile("normal.split.bam.bai", "interval", fnames=normal_split_bai),
