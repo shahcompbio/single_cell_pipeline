@@ -14,6 +14,7 @@ import pypeliner.managed as mgd
 
 def create_snv_postprocessing_workflow(
     bam_file,
+    bai_file,
     museq_parsed,
     strelka_parsed,
     output,

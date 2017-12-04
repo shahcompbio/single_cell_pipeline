@@ -225,7 +225,9 @@ def main():
             func=split_bams.create_split_workflow,
             args=(
                 mgd.InputFile(pseudo_wgs_bam),
+                mgd.InputFile(pseudo_wgs_bai),
                 mgd.InputFile(args['matched_normal']),
+                mgd.InputFile(args['matched_normal']+".bai"),
                 mgd.TempOutputFile("tumour.split.bam", "interval", axes_origin=[]),
                 mgd.TempOutputFile("tumour.split.bam.bai", "interval", axes_origin=[]),
                 mgd.TempOutputFile("normal.split.bam", "interval", axes_origin=[]),
@@ -245,7 +247,9 @@ def main():
             func=mutationseq.create_museq_workflow,
             args=(
                 mgd.TempInputFile("tumour.split.bam", "interval"),
+                mgd.TempInputFile("tumour.split.bam.bai", "interval"),
                 mgd.TempInputFile("normal.split.bam", "interval"),
+                mgd.TempInputFile("normal.split.bam.bai", "interval"),
                 config['ref_genome'],
                 mgd.OutputFile(museq_vcf),
                 mgd.OutputFile(museq_csv),
@@ -263,8 +267,10 @@ def main():
             name='strelka',
             func=strelka.create_strelka_workflow,
             args=(
-                mgd.TempInputFile("tumour.split.bam", "interval"),
                 mgd.TempInputFile("normal.split.bam", "interval"),
+                mgd.TempInputFile("normal.split.bam.bai", "interval"),
+                mgd.TempInputFile("tumour.split.bam", "interval"),
+                mgd.TempInputFile("tumour.split.bam.bai", "interval"),
                 config['ref_genome'],
                 mgd.OutputFile(strelka_indel_vcf),
                 mgd.OutputFile(strelka_snv_vcf),
@@ -282,6 +288,8 @@ def main():
             args=(
                 mgd.InputFile('bam_markdups', 'sample_id',
                               template=bam_template),
+                mgd.InputFile('bam_markdups_index', 'sample_id',
+                              template=bam_index_template),
                 mgd.InputFile(museq_csv),
                 mgd.InputFile(strelka_snv_csv),
                 mgd.OutputFile(countdata),
