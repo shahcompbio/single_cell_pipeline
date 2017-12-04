@@ -13,12 +13,6 @@ def create_museq_workflow(tumour_bam, tumour_bai, normal_bam, normal_bai, ref_ge
     
     workflow = pypeliner.workflow.Workflow()
 
-    museq_out_path = os.path.join(args['out_dir'],'pseudo_wgs',
-                                  'variant_calling', '{interval}.mutationseq.vcf')
-
-    museq_log_path = os.path.join(args['out_dir'],'pseudo_wgs',
-                                  'variant_calling', '{interval}.mutationseq.log')
-
     tumour_bam = dict([(ival, tumour_bam[ival])
                          for ival in intervals])
   
@@ -39,8 +33,8 @@ def create_museq_workflow(tumour_bam, tumour_bai, normal_bam, normal_bai, ref_ge
                                mgd.InputFile("normal.split.bam", "interval", fnames=normal_bam),
                                config['ref_genome'],
                                config['mutationseq'],
-                               mgd.TempOutputFile(museq_out_path, 'interval'),
-                               mgd.TempOutputFile(museq_log_path, 'interval'),
+                               mgd.TempOutputFile("museq.vcf", 'interval'),
+                               mgd.TempOutputFile("museq.log", 'interval'),
                                mgd.InputInstance('interval'),
                                config
                                )
@@ -50,7 +44,7 @@ def create_museq_workflow(tumour_bam, tumour_bai, normal_bam, normal_bai, ref_ge
                        name='merge_vcf',
                        ctx={'mem': config['low_mem']},
                        func=tasks.concatenate_vcf,
-                       args=(mgd.TempInputFile(museq_out_path, 'interval'),
+                       args=(mgd.TempInputFile("museq.vcf", 'interval'),
                              mgd.OutputFile(snv_vcf)
                              )  
                        )
