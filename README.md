@@ -205,4 +205,36 @@ single_cell_nextseq \
 
 
 
+# Singularity container
+create a workdir and cd into the directory
 
+clone mutationseq
+```
+git clone https://dgrewal@svn.bcgsc.ca/bitbucket/scm/museq/mutationseq.git
+```
+Clone Single Cell pipeline repo
+```
+git clone https://dgrewal@svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git
+```
+Clone pypeliner repo
+```
+git clone https://dgrewal@bitbucket.org/dranew/pypeliner.git
+```
+Download GATK jar file
+```
+wget ftp://ftp.bcgsc.ca/public/shahlab/dgrewal/GenomeAnalysisTK.jar
+```
+copy conda_packages.txt and singularity.recipe files from the single_cell pipeline.
+```
+cp single_cell_pipeline/conda_packages.txt .
+cp single_cell_pipeline/singularity.recipe .
+```
+Download boost
+```
+wget https://sourceforge.net/projects/boost/files/boost/1.57.0/boost_1_57_0.tar.gz
+tar -xvf boost_1_57_0.tar.gz
+```
+build container:
+```
+sudo singularity build  single_cell.img singularity.recipe
+```
