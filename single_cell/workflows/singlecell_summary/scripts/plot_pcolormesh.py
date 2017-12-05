@@ -43,11 +43,11 @@ class PlotPcolor(object):
         else:
             self.chromosomes = [str(v) for v in range(1, 23)] + ['X', 'Y']
 
-        self.sep = kwargs.get('sep')
-        self.column_name = kwargs.get('colname')
+        self.sep = kwargs.get('separator')
+        self.column_name = kwargs.get('column_name')
         self.cellcalls = kwargs.get('cellcalls')
-        self.mad_thres = kwargs.get('mad_thres')
-        self.reads_thres = kwargs.get('reads_thres')
+        self.mad_thres = kwargs.get('mad_threshold')
+        self.reads_thres = kwargs.get('numreads_threshold')
         self.high_memory = kwargs.get('high_memory')
         self.plot_title = kwargs.get('plot_title')
 
@@ -61,6 +61,11 @@ class PlotPcolor(object):
         if not self.plot_by_col:
             self.plot_by_col = 'all'
             
+        if self.sep == 'comma':
+            self.sep= ','
+        elif self.sep == 'tab':
+            self.sep = '\t'
+
         if not self.sep:
             self.sep = ','
 
@@ -349,7 +354,7 @@ class PlotPcolor(object):
 
                 samples = sorted(samples)
                 #plot in groups of 1000
-                sample_sets =  [samples[x:x+1000] for x in range(0, len(data), 1000)]
+                sample_sets =  [samples[x:x+1000] for x in range(0, len(samples), 1000)]
                 for samples in sample_sets:
 
                     genplot(data, samples)
@@ -422,13 +427,11 @@ def parse_args():
     parser.add_argument('--mad_threshold',
                         type=float,
                         default=None,
-                        dest='mad_thres',
                         help='''all cells that have low MAD won't be plotted''')
 
     parser.add_argument('--numreads_threshold',
                         type=int,
                         default=None,
-                        dest='reads_thres',
                         help='''all cells that have low MAD won't be plotted''')
 
     parser.add_argument('--plot_by_col',
@@ -453,8 +456,8 @@ def parse_args():
 
 if __name__ == '__main__':
     ARGS = parse_args()
-    m = PlotPcolor(ARGS.input, ARGS.metrics, ARGS.order_data, ARGS.output, colname=ARGS.column_name,
-                    cellcalls=ARGS.cellcalls, mad_thres=ARGS.mad_thres, reads_thres=ARGS.reads_thres,
+    m = PlotPcolor(ARGS.input, ARGS.metrics, ARGS.order_data, ARGS.output, column_name=ARGS.column_name,
+                    cellcalls=ARGS.cellcalls, mad_threshold=ARGS.mad_threshold, numreads_threshold=ARGS.numreads_threshold,
                     high_memory=ARGS.high_memory, plot_title=ARGS.plot_title, color_by_col=ARGS.color_by_col,
-                    plot_by_col=ARGS.plot_by_col)
+                    plot_by_col=ARGS.plot_by_col, separator = ARGS.separator)
     m.main()
