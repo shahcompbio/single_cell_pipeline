@@ -61,6 +61,7 @@ def create_strelka_workflow(
         ret=pypeliner.managed.TempOutputObj('known_sizes', 'interval', axes_origin=[]),
         args=(
             pypeliner.managed.InputFile("tumour.split.bam", "interval", fnames=tumour_bam_file),
+            pypeliner.managed.InputFile("tumour.split.bam.bai", "interval", fnames=tumour_bai_file),
             pypeliner.managed.TempInputFile('ref_base_counts.tsv'),
             chromosomes
         )
@@ -73,7 +74,9 @@ def create_strelka_workflow(
         func=tasks.call_somatic_variants,
         args=(
             pypeliner.managed.InputFile("normal.split.bam", "interval", fnames=normal_bam_file),
+            pypeliner.managed.InputFile("normal.split.bam.bai", "interval", fnames=normal_bai_file),
             pypeliner.managed.InputFile("tumour.split.bam", "interval", fnames=tumour_bam_file),
+            pypeliner.managed.InputFile("tumour.split.bam.bai", "interval", fnames=tumour_bai_file),
             ref_genome_fasta_file,
             pypeliner.managed.TempOutputFile('somatic.indels.unfiltered.vcf', 'interval'),
             pypeliner.managed.TempOutputFile('somatic.indels.unfiltered.vcf.window', 'interval'),
@@ -235,7 +238,7 @@ def get_coords(bam_file, chrom, split_size):
     return coords
 
 
-def get_known_chromosome_sizes(bam_file, size_file, chromosomes):
+def get_known_chromosome_sizes(bam_file, bai_file, size_file, chromosomes):
     chromosomes = _get_chromosomes(bam_file, chromosomes)
 
     sizes = {}

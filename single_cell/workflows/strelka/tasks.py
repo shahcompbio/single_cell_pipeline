@@ -40,7 +40,9 @@ def count_fasta_bases(ref_genome_fasta_file, out_file):
 
 def call_somatic_variants(
         normal_bam_file,
+        normal_bai_file,
         tumour_bam_file,
+        tumour_bai_file,
         ref_genome_fasta_file,
         indel_file,
         indel_window_file,
