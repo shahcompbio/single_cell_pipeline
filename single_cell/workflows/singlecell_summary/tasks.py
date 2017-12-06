@@ -85,11 +85,11 @@ def plot_metrics(metrics, output, plot_title, gcbias_matrix, gc_content):
 
 
 def plot_heatmap(infile, metrics, order_data, output, plot_title=None,
-                 colname=None, plot_by_col=None, numreads_threshold=None,
+                 column_name=None, plot_by_col=None, numreads_threshold=None,
                  mad_threshold=None, chromosomes=None):
 
     plot = PlotHeatmap(infile, metrics, order_data, output, plot_title=plot_title,
-                       colname=colname, plot_by_col=plot_by_col,
+                       column_name=column_name, plot_by_col=plot_by_col,
                        numreads_threshold=numreads_threshold,
                        mad_threshold=mad_threshold, chromosomes=chromosomes)
     plot.main()
@@ -97,11 +97,11 @@ def plot_heatmap(infile, metrics, order_data, output, plot_title=None,
 
 
 def plot_pcolor(infile, metrics, order_data, output, plot_title=None,
-                 colname=None, plot_by_col=None, numreads_threshold=None,
+                 column_name=None, plot_by_col=None, numreads_threshold=None,
                  mad_threshold=None, chromosomes=None):
 
     plot = PlotPcolor(infile, metrics, order_data, output, plot_title=plot_title,
-                       colname=colname, plot_by_col=plot_by_col,
+                       column_name=column_name, plot_by_col=plot_by_col,
                        numreads_threshold=numreads_threshold,
                        mad_threshold=mad_threshold, chromosomes=chromosomes)
     plot.main()
