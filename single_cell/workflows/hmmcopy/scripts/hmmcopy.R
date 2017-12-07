@@ -198,6 +198,31 @@ format_posterior_marginals_table <- function(samp.corrected, samp.segmented) {
 	
 }
 
+error_exit_clean <- function(samp.uncorrected, chromosomes, sample_id, out_reads, out_segs, out_params, out_post_marginals, error) {
+
+	warning(paste(error, opt$tumour_file, sep=""))
+
+	uncorrected.table <- format_read_count_table(samp.uncorrected, chromosomes)
+	uncorrected.table$cell_id <- sample_id
+
+	uncorrected.table["cor_gc"] <- NA
+	uncorrected.table["cor_map"] <- NA
+	uncorrected.table["ideal"] <- NA
+	uncorrected.table["valid"] <- NA
+	uncorrected.table["state"] <- NA
+	uncorrected.table["copy"] <- NA
+	uncorrected.table["integer_copy_number"] <- NA
+	uncorrected.table["integer_copy_scale"] <- NA
+	write.table(format(uncorrected.table, scientific=F, trim=T), file=out_reads, quote=F, sep=",", col.names=T, row.names=F)
+
+	#write colnames to the seg file
+	segs <- c("chr","start","end","state","median","integer_median","integer_copy_number")
+	cat(segs, "\n", file=out_segs, sep=",")
+
+	file.create(out_params)
+	file.create(out_post_marginals)
+}
+
 #=======================================================================================================================
 # Run HMMcopy
 #=======================================================================================================================
@@ -220,27 +245,8 @@ samp.uncorrected <- wigsToRangedData(opt$tumour_file, opt$gc_file, opt$map_file,
 samp.corrected <- try(correctReadcount(samp.uncorrected, verbose=F), silent=T)
 
 if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.map == Inf))) > 0) {
-	warning(paste("Low coverage sample results in loess regression failure, unable to correct and segment ", opt$tumour_file, sep=""))
-	
-	uncorrected.table <- format_read_count_table(samp.uncorrected, chromosomes)
-        uncorrected.table$cell_id <- opt$sample_id
-
-    uncorrected.table["cor_gc"] <- NA
-    uncorrected.table["cor_map"] <- NA
-    uncorrected.table["ideal"] <- NA
-    uncorrected.table["valid"] <- NA
-    uncorrected.table["state"] <- NA
-    uncorrected.table["copy"] <- NA
-    uncorrected.table["integer_copy_number"] <- NA
-    uncorrected.table["integer_copy_scale"] <- NA
-	write.table(format(uncorrected.table, scientific=F, trim=T), file=out_reads, quote=F, sep=",", col.names=T, row.names=F)
-	
-	#write colnames to the seg file
-	segs <- c("chr","start","end","state","median","integer_median","integer_copy_number")
-	cat(segs, "\n", file=out_segs, sep=",")
-
-	file.create(out_params)
-	file.create(out_post_marginals)
+        err <- "Low coverage sample results in loess regression failure, unable to correct and segment"
+        error_exit_clean(samp.uncorrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_post_marginals, err)
 	
 } else {
 	#samp.corrected$copy <- samp.corrected$cor.map
@@ -292,7 +298,13 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 	}
 	
 	# segment
-	samp.segmented <- HMMsegment(samp.corrected, new.params, verbose=F)
+	tryCatch({
+		samp.segmented <- HMMsegment(samp.corrected, new.params, verbose=F)
+	},
+		error = function(err){
+			error_exit_clean(samp.uncorrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_post_marginals, as.character(err))
+			quit()
+	})
 	samp.corrected$state <- samp.segmented$state
 	
 	# convert to integer copy number scale
