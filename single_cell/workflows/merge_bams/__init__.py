@@ -20,10 +20,16 @@ def create_merge_workflow(
     bam,
     bam_filename,
     bam_index_filename,
-    config):
+    config,
+    sample_lanes):
 
-    lanes = bam.keys()
- 
+
+    lanes = list(set([v[1] for v in sample_lanes]))
+    samples = list(set([v[0] for v in sample_lanes]))
+
+    bam_filename = dict([(sampid, bam_filename[sampid])for sampid in samples])
+    bam_index_filename = dict([(sampid, bam_index_filename[sampid])for sampid in samples])
+
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
@@ -31,14 +37,20 @@ def create_merge_workflow(
         value=lanes,
     )
 
+    workflow.setobj(
+        obj=mgd.OutputChunks('sample_id', 'lane'),
+        value=sample_lanes,
+    )
+
     workflow.transform(
         name='merge_bams',
         ctx={'mem': config['med_mem']},
         func=tasks.merge_bams,
+        axes=('sample_id',),
         args=(
-            mgd.InputFile('bam', 'lane', fnames=bam),
-            mgd.OutputFile(bam_filename),
-            mgd.OutputFile(bam_index_filename),
+            mgd.InputFile('bam', 'sample_id', 'lane', fnames=bam),
+            mgd.OutputFile('merged_lanes.bam', 'sample_id', fnames=bam_filename),
+            mgd.OutputFile('merged_lanes.bam.bai', 'sample_id', fnames=bam_index_filename),
         ),
     )
 

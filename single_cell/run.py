@@ -76,7 +76,7 @@ def main():
             config["ref_genome"],
         )
     )
-     
+      
     workflow.setobj(
         obj=mgd.OutputChunks('interval'),
         value=pypeliner.managed.TempInputObj('intervals'),
@@ -88,43 +88,37 @@ def main():
         value=fastq1_files.keys(),
     )
 
-    workflow.setobj(
-        obj=mgd.TempOutputObj('seqinfo', 'sample_id', axes_origin=[]),
-        value=seqinfo)
-
     workflow.subworkflow(
         name='alignment_workflow',
-        axes=('sample_id', 'lane',),
         func=alignment.create_alignment_workflow,
         args=(
-            mgd.InputFile('fastq_1', 'sample_id', 'lane', fnames=fastq1_files),
-            mgd.InputFile('fastq_2', 'sample_id', 'lane', fnames=fastq2_files),
-            mgd.TempOutputFile('aligned_per_cell_per_lane.sorted.bam', 'sample_id', 'lane'),
+            mgd.InputFile('fastq_1', 'sample_id', 'lane', fnames=fastq1_files, axes_origin=[]),
+            mgd.InputFile('fastq_2', 'sample_id', 'lane', fnames=fastq2_files, axes_origin=[]),
+            mgd.TempOutputFile('aligned_per_cell_per_lane.sorted.bam', 'sample_id', 'lane', axes_origin=[]),
             config['ref_genome'],
-            mgd.InputInstance('lane'),
-            mgd.InputInstance('sample_id'),
+            fastq1_files.keys(),
             config,
             args,
-            mgd.TempInputObj('seqinfo', 'sample_id')
+            seqinfo,
         ),
     )
 
     # merge bams per sample for all lanes
     workflow.subworkflow(
         name='merge_workflow',
-        axes=('sample_id',),
         func=merge_bams.create_merge_workflow,
         args=(
             mgd.TempInputFile('aligned_per_cell_per_lane.sorted.bam', 'sample_id', 'lane'),
-            mgd.TempOutputFile('merged_lanes.bam', 'sample_id'),
-            mgd.TempOutputFile('merged_lanes.bam.bai', 'sample_id'),
+            mgd.TempOutputFile('merged_lanes.bam', 'sample_id', axes_origin=[]),
+            mgd.TempOutputFile('merged_lanes.bam.bai', 'sample_id', axes_origin=[]),
             config,
+            fastq1_files.keys(),
         ),
     )
-
+ 
     final_bam = mgd.TempInputFile('merged_lanes.bam', 'sample_id')
     if args['realign']:
-
+ 
         workflow.subworkflow(
             name='realignment_workflow',
             func=realignment.create_realignment_workflow,
@@ -140,7 +134,7 @@ def main():
             ),
         )
         final_bam = mgd.TempInputFile('merged_realign.bam', 'sample_id')
-
+ 
     bam_directory = os.path.join(args['out_dir'], 'bams')
     bam_template = os.path.join(bam_directory, '{sample_id}.bam')
     bam_index_template = os.path.join(bam_directory, '{sample_id}.bam.bai')
@@ -163,7 +157,7 @@ def main():
             args['out_dir'],
         ),
     )
-
+ 
     results_dir = os.path.join(args['out_dir'], 'results')
     segs_filename = os.path.join(results_dir, '{}_segments.csv'.format(args['library_id']))
     reads_filename = os.path.join(results_dir, '{}_reads.csv'.format(args['library_id']))
@@ -182,7 +176,7 @@ def main():
             args
         ),
     )
-  
+   
     # merge all samples per lane together
     workflow.subworkflow(
         name='summary_workflow',
@@ -198,7 +192,7 @@ def main():
             args,
         ),
     )
-
+ 
     if args['generate_pseudo_wgs']:
         pseudo_wgs_bam = os.path.join(args['out_dir'], 'pseudo_wgs',
                                       'merged.sorted.markdups.bam')
@@ -218,7 +212,7 @@ def main():
                 args['out_dir'],
             )
         )
-  
+   
     if args['matched_normal']:
         workflow.subworkflow(
             name='split_bams',
@@ -237,7 +231,7 @@ def main():
                 config
             )
         )
-
+ 
         varcalls_dir = os.path.join(args['out_dir'], 'pseudo_wgs',
                                     'variant_calling')
         museq_vcf = os.path.join(varcalls_dir, 'museq_snv.vcf')
@@ -258,7 +252,7 @@ def main():
                 pypeliner.managed.TempInputObj('intervals'),
             ),
         )
-
+ 
         strelka_snv_vcf = os.path.join(varcalls_dir, 'strelka_snv.vcf')
         strelka_indel_vcf = os.path.join(varcalls_dir, 'strelka_indel.vcf')
         strelka_snv_csv = os.path.join(varcalls_dir, 'strelka_snv.csv')
@@ -279,7 +273,7 @@ def main():
                 pypeliner.managed.TempInputObj('intervals'),
             ),
         )
-   
+    
         countdata = os.path.join(args['out_dir'], 'pseudo_wgs',
                                  'counts', 'counts.csv')
         workflow.subworkflow(

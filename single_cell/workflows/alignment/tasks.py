@@ -189,7 +189,9 @@ def run_flagstat(bam, metrics):
 
 
 def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
-             reference, config, readgroup, source, sample_id):
+             reference, config, source, sample_id, lane_id, args):
+
+    readgroup = get_readgroup(lane_id, sample_id, args, config, source)
 
     trim1 = os.path.join(tempdir, 'trim_r1.fastq.gz')
     trim2 = os.path.join(tempdir, 'trim_r2.fastq.gz')
