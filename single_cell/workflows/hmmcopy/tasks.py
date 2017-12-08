@@ -12,7 +12,7 @@ from scripts import GenHmmPlots
 from scripts import ConvertCSVToSEG
 import pandas as pd
 from PyPDF2 import PdfFileMerger
-
+from single_cell.utils import concatenate_csv
 
 scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
 run_hmmcopy_rscript = os.path.join(scripts_directory, 'hmmcopy.R')
