@@ -182,25 +182,26 @@ def main():
         ),
     )
 
-    aneufinder_output = os.path.join(results_dir, 'AneuFinderOutput')
-    if not os.path.exists(aneufinder_output):
-        os.mkdir(aneufinder_output)
-    aneufinder_segs_filename = os.path.join(aneufinder_output, '{}_aneufinder_segments.csv'.format(args['library_id']))
-    aneufinder_reads_filename = os.path.join(aneufinder_output, '{}_aneufinder_reads.csv'.format(args['library_id']))
-    workflow.subworkflow(
-        name='aneufinder_workflow',
-        func=aneufinder.create_aneufinder_workflow,
-        args=(
-            mgd.InputFile('bam_markdups', 'sample_id', template=bam_template),
-            mgd.InputFile(args['sample_info']),
-            sampleids,
-            config,
-            aneufinder_output,
-            mgd.OutputFile(aneufinder_segs_filename),
-            mgd.OutputFile(aneufinder_reads_filename),
-            args['library_id']
-        ),
-    )
+    if args['aneufinder']:
+        aneufinder_output = os.path.join(results_dir, 'AneuFinderOutput')
+        if not os.path.exists(aneufinder_output):
+            os.mkdir(aneufinder_output)
+        aneufinder_segs_filename = os.path.join(aneufinder_output, '{}_aneufinder_segments.csv'.format(args['library_id']))
+        aneufinder_reads_filename = os.path.join(aneufinder_output, '{}_aneufinder_reads.csv'.format(args['library_id']))
+        workflow.subworkflow(
+            name='aneufinder_workflow',
+            func=aneufinder.create_aneufinder_workflow,
+            args=(
+                mgd.InputFile('bam_markdups', 'sample_id', template=bam_template),
+                mgd.InputFile(args['sample_info']),
+                sampleids,
+                config,
+                aneufinder_output,
+                mgd.OutputFile(aneufinder_segs_filename),
+                mgd.OutputFile(aneufinder_reads_filename),
+                args['library_id']
+            ),
+        )
 
     # merge all samples per lane together
     workflow.subworkflow(
