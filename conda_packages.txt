@@ -27,3 +27,5 @@ seaborn
 gatk
 strelka
 pypdf2
+bioconductor-aneufinder
+bioconductor-bsgenome.hsapiens.ucsc.hg19
