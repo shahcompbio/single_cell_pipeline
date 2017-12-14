@@ -27,8 +27,8 @@ def convert_segments_to_hmmcopy_format(
 
     rdata_df = pd.read_csv(csv_name)
 
-    df = rdata_df[['seqnames', 'start', 'end', 'copy.number', 'mean.counts', 'state']]
-    df = df.rename(columns={'seqnames': 'chr', 'copy.number': 'integer_copy_number'})
+    df = rdata_df[['seqnames', 'start', 'end', 'mean.counts', 'state']]
+    df = df.rename(columns={'seqnames': 'chr'})
     df['state'] = df['state'].apply(lambda x: int(x[0]))
     df['cell_id'] = cell_id
 
