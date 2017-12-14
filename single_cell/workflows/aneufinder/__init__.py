@@ -24,7 +24,7 @@ def create_aneufinder_workflow(bam_file,
 
     workflow.transform(
         name='run_aneufinder_on_individual_cells',
-        ctx={'mem': config['low_mem']},
+        ctx={'mem': config['med_mem']},
         func=tasks.run_aneufinder,
         axes=('sample_id',),
         args=(

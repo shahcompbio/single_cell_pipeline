@@ -56,11 +56,10 @@ def create_alignment_workflow(
             mgd.OutputFile(flagstat_metrics_filename, 'sample_id', 'lane'),
             mgd.TempSpace('alignment_temp', 'sample_id', 'lane'),
             ref_genome,
-            config,
             mgd.TempInputObj('seqinfo', 'sample_id'),
             mgd.InputInstance('sample_id'),
             mgd.InputInstance('lane'),
-            args
+            args['library_id']
         )
     )
 

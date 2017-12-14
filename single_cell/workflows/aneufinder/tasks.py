@@ -11,8 +11,9 @@ rdata_to_csv_rscript = os.path.join(scripts_directory, 'Rdatatocsv.R')
 
 
 def symlink(actual_file, symlink):
-    if not os.path.exists(symlink):
-        os.symlink(actual_file, symlink)
+    shutil.copy(actual_file, symlink)
+#    if not os.path.exists(symlink):
+#        os.symlink(actual_file, symlink)
 
 
 def makedir(dir):
