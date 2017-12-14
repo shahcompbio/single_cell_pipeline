@@ -73,21 +73,6 @@ def main():
 
     workflow = pypeliner.workflow.Workflow()
 
-    workflow.transform(
-        name='generate_intervals',
-        func=utils.generate_intervals,
-        ret=pypeliner.managed.TempOutputObj('intervals'),
-        args=(
-            config["ref_genome"],
-        )
-    )
-      
-    workflow.setobj(
-        obj=mgd.OutputChunks('interval'),
-        value=pypeliner.managed.TempInputObj('intervals'),
-    )
-
-
     workflow.setobj(
         obj=mgd.OutputChunks('sample_id', 'lane'),
         value=fastq1_files.keys(),
@@ -185,7 +170,7 @@ def main():
     if args['aneufinder']:
         aneufinder_output = os.path.join(results_dir, 'AneuFinderOutput')
         if not os.path.exists(aneufinder_output):
-            os.mkdir(aneufinder_output)
+            os.makedirs(aneufinder_output)
         aneufinder_segs_filename = os.path.join(aneufinder_output, '{}_aneufinder_segments.csv'.format(args['library_id']))
         aneufinder_reads_filename = os.path.join(aneufinder_output, '{}_aneufinder_reads.csv'.format(args['library_id']))
         workflow.subworkflow(
@@ -240,6 +225,20 @@ def main():
         )
    
     if args['matched_normal']:
+        workflow.transform(
+            name='generate_intervals',
+            func=utils.generate_intervals,
+            ret=pypeliner.managed.TempOutputObj('intervals'),
+            args=(
+                config["ref_genome"],
+            )
+        )
+          
+        workflow.setobj(
+            obj=mgd.OutputChunks('interval'),
+            value=pypeliner.managed.TempInputObj('intervals'),
+        )
+        
         workflow.subworkflow(
             name='split_bams',
             func=split_bams.create_split_workflow,
