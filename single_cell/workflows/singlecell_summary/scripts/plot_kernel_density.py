@@ -11,7 +11,7 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import warnings
-
+import numpy as np
 import statsmodels.nonparametric.api as smnp
 
 
@@ -61,6 +61,9 @@ class PlotKernelDensity(object):
         return data
 
     def get_ymax(self, data):
+        if np.isnan(data).all():
+            return 0
+
         kde = smnp.KDEUnivariate(data)
         kde.fit()
         return max(kde.density)
@@ -87,9 +90,13 @@ class PlotKernelDensity(object):
         pdfout = PdfPages(self.output)
         data = self.load(self.input)
 
+        fig = None
+
         # plot all data
         mad_scores = data[self.column_name]
-        self.plot_kernel_density(pdfout, mad_scores)
+
+        if not np.isnan(mad_scores).all():
+            self.plot_kernel_density(pdfout, mad_scores)
         ylim_max = self.get_ymax(mad_scores)
 
         # get all experimental conditions
@@ -105,6 +112,9 @@ class PlotKernelDensity(object):
                     expcond)
                 continue
 
+            if np.isnan(mad_scores).all():
+                continue
+
             fig = self.plot_kernel_density(
                 pdfout,
                 mad_scores,
@@ -112,10 +122,11 @@ class PlotKernelDensity(object):
 
             ylim_max = max(ylim_max, self.get_ymax(mad_scores))
 
-        fig.set_ylim((0, ylim_max))
-        plt.tight_layout()
-        plt.suptitle(self.plot_title, fontsize=12)
-        pdfout.savefig(fig.get_figure())
+        if fig:
+            fig.set_ylim((0, ylim_max))
+            plt.tight_layout()
+            plt.suptitle(self.plot_title, fontsize=12)
+            pdfout.savefig(fig.get_figure())
 
         pdfout.close()
 

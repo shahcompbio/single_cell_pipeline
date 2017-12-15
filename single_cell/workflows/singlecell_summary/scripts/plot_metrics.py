@@ -290,19 +290,24 @@ class PlotMetrics(object):
             matrix_value = float(df.ix[i, metric])
             matrix[row_idx - 1, col_idx - 1] = matrix_value
 
+       
+
+        #raise Exception(set([c for v in np.isnan(matrix) for c in v]))
+        try:
+            sns.heatmap(matrix,
+                        xticklabels=tick_labels,
+                        yticklabels=tick_labels,
+                        linewidths=0.6,
+                        square=True,
+                        cbar=True,
+                        annot=well_labels,
+                        annot_kws={'size': 6})
         
-        sns.heatmap(matrix,
-                    xticklabels=tick_labels,
-                    yticklabels=tick_labels,
-                    linewidths=0.6,
-                    square=True,
-                    cbar=True,
-                    annot=well_labels,
-                    annot_kws={'size': 6})
-    
-        plt.title(title + '(' + plot_title + ')')
-    
-        pdf.savefig(bbox_inches='tight', pad_inches=0.4)
+            plt.title(title + '(' + plot_title + ')')
+        
+            pdf.savefig(bbox_inches='tight', pad_inches=0.4)
+        except ValueError:
+            warnings.warn("Couldn't generate plot")
     
         plt.close()
     

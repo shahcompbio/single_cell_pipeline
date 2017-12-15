@@ -40,10 +40,6 @@ class MergeFiles(object):
         if os.stat(fname).st_size == 0:
             return pandas.DataFrame()
 
-        print fname
-        for a in open(fname):
-            print a
-        print self.sep
         data = pandas.read_csv(fname,
                                sep=self.sep,
                                dtype={'chromosome':str, 'start': int}
@@ -72,6 +68,7 @@ class MergeFiles(object):
         else:
             left = frames[0]
             right = frames[1]
+
             merged_frame = pandas.merge(left, right,
                                         how=self.merge_type,
                                         on=self.key_cols)
