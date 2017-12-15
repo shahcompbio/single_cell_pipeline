@@ -377,6 +377,16 @@ class PlotPcolor(object):
         bins = self.sort_bins(bins)
         data = self.conv_to_matrix(data, bins, samples)
 
+        if not data:
+            warnings.warn("no data to plot")
+            if self.output:
+                open(self.output, "w").close()
+            if self.order_data:
+                ofile = open(self.order_data, "w")
+                ofile.write('cell_id,%s_heatmap_order\n' %self.plot_by_col)
+                ofile.close()
+            return
+
         data = self.get_pandas_dataframe(data, bins)
 
         self.get_cluster_order(data)
