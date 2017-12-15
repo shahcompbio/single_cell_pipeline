@@ -336,6 +336,10 @@ class PlotPcolor(object):
 
         pdfout = PdfPages(self.output)
 
+        if not data.values:
+            warnings.warn("no data to plot")
+            return
+
         vmax = np.nanmax(data.values)
 
 

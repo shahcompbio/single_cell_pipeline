@@ -3,6 +3,7 @@ import csv
 import yaml
 import pandas as pd
 import pysam
+import warnings
 
 def generate_intervals(ref, size=100000000):
     fasta = pysam.FastaFile(ref)
@@ -79,3 +80,7 @@ def concatenate_csv(in_filenames, out_filename):
                     writer.writeheader()
 
                 writer.writerow(row)
+
+    if not writer:
+        warnings.warn("no data to merge, generating an empty file")
+        open(out_filename, 'w').close()

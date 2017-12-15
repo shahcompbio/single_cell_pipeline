@@ -4,7 +4,7 @@ Created on Nov 16, 2016
 @author: dgrewal
 '''
 from __future__ import division
-
+import warnings
 import argparse
 import pandas as pd
 import math
@@ -109,6 +109,11 @@ class FilterHmmData(object):
             with open(outfile, 'w') as output:
 
                 header = inp.readline()
+                #if input file is empty
+                if not header:
+                    warnings.warn("no data to filter")
+                    return
+
                 output.write(header)
                 header = header.strip().split(',')
                 samp_idx = header.index('cell_id')
