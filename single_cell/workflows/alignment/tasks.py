@@ -5,12 +5,14 @@ import shutil
 import warnings
 import tarfile
 
+
 def makedirs(directory):
     try:
         os.makedirs(directory)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
+
 
 def make_tarfile(output_filename, source_dir):
     with tarfile.open(output_filename, "w:gz") as tar:
@@ -25,12 +27,17 @@ def produce_fastqc_report(fastq_filename, output_html, output_plots, temp_dir):
         '--outdir=' + temp_dir,
         fastq_filename)
 
-    fastq_basename = os.path.basename(fastq_filename).split('.')[0]
+    if fastq_filename.endswith(".fastq.gz"):
+        fastq_basename = fastq_filename.replace(".fastq.gz", "")
+    if fastq_filename.endswith(".fq.gz"):
+        fastq_basename = fastq_filename.replace(".fq.gz", "")
+    else:
+        raise Exception("Unknown file type")
+
     output_basename = os.path.join(temp_dir, fastq_basename)
 
     shutil.move(output_basename + '_fastqc.zip', output_plots)
     shutil.move(output_basename + '_fastqc.html', output_html)
-
 
 
 def run_fastqc(fastq1, fastq2, reports, tempdir):
@@ -41,24 +48,22 @@ def run_fastqc(fastq1, fastq2, reports, tempdir):
     reports_dir = os.path.join(tempdir, 'fastqc_reports')
     if not os.path.exists(reports_dir):
         makedirs(reports_dir)
-    
+
     out_html = os.path.join(reports_dir, 'fastqc_R1.html')
     out_plot = os.path.join(reports_dir, 'fastqc_R1.zip')
     if not os.path.getsize(fastq1) == 0:
         produce_fastqc_report(fastq1, out_html, out_plot, tempdir)
     else:
-        warnings.warn("fastq file %s is empty, skipping fastqc" %fastq1)
+        warnings.warn("fastq file %s is empty, skipping fastqc" % fastq1)
 
     out_html = os.path.join(reports_dir, 'fastqc_R2.html')
     out_plot = os.path.join(reports_dir, 'fastqc_R2.zip')
     if not os.path.getsize(fastq2) == 0:
         produce_fastqc_report(fastq2, out_html, out_plot, tempdir)
     else:
-        warnings.warn("fastq file %s is empty, skipping fastqc" %fastq1)
+        warnings.warn("fastq file %s is empty, skipping fastqc" % fastq1)
 
     make_tarfile(reports, reports_dir)
-
-
 
 
 def get_readgroup(run_id, sample_id, library_id, seqinfo):
@@ -89,7 +94,7 @@ def bam_sort(bam_filename, sorted_bam_filename):
 
 
 def bwa_align_paired_end(fastq1, fastq2, output,
-                     reference, readgroup):
+                         reference, readgroup):
     """
     run bwa aln on both fastq files,
     bwa sampe to align, and convert to bam with samtools view
@@ -99,16 +104,17 @@ def bwa_align_paired_end(fastq1, fastq2, output,
         reference, fastq1, fastq2, '|',
         'samtools', 'view', '-bSh', '-',
         '>', output,
-        )
+    )
+
 
 def run_flagstat(bam, metrics):
-    
+
     pypeliner.commandline.execute(
-            'samtools', 'flagstat',
-            bam,
-            '>',
-            metrics
-        )
+        'samtools', 'flagstat',
+        bam,
+        '>',
+        metrics
+    )
 
 
 def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
