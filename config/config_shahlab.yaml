@@ -1,12 +1,4 @@
 
-# Read group information (PU and LB are read from the NextSeq SampleSheet.csv file)
-read_group:  
-  # Platform
-  PL: null
-
-  # Sequencing centre identifier (either BCCAGSC or UBCBRC)
-  CN: null
-
 picard_wgs_params:
   # Minimum base quality to count a read
   min_bqual: 20
@@ -53,14 +45,8 @@ gc_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.gc.ws_5
 # Binned mappability file
 map_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.map.ws_125_to_500000.wig
 
-# Adapter sequences for trimgalore
-adapter: 'CTGTCTCTTATACACATCTCCGAGCCCACGAGAC'
-adapter2: 'CTGTCTCTTATACACATCTGACGCTGCCGACGA'
-
 mutationseq: /shahlab/pipelines/apps_centos6/mutationSeq_4.3.7_anaconda/
 mutationseq_model: /shahlab/pipelines/apps_centos6/mutationSeq_4.3.7_anaconda/model_v4.1.2_anaconda_sk_0.13.1.npz
-
-hmmcopy_plot_mad_threshold: 0.2
 
 heatmap_plot_mad_threshold: 0.2
 
