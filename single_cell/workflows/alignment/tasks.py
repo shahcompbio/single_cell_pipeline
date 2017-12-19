@@ -27,10 +27,12 @@ def produce_fastqc_report(fastq_filename, output_html, output_plots, temp_dir):
         '--outdir=' + temp_dir,
         fastq_filename)
 
-    if fastq_filename.endswith(".fastq.gz"):
-        fastq_basename = fastq_filename.replace(".fastq.gz", "")
-    if fastq_filename.endswith(".fq.gz"):
-        fastq_basename = fastq_filename.replace(".fq.gz", "")
+
+    fastq_basename = os.path.basename(fastq_filename)
+    if fastq_basename.endswith(".fastq.gz"):
+        fastq_basename = fastq_basename.replace(".fastq.gz", "")
+    elif fastq_basename.endswith(".fq.gz"):
+        fastq_basename = fastq_basename.replace(".fq.gz", "")
     else:
         raise Exception("Unknown file type")
 
