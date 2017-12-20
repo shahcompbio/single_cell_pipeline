@@ -336,7 +336,7 @@ class PlotPcolor(object):
 
         pdfout = PdfPages(self.output)
 
-        if not data.values:
+        if not data.values.size:
             warnings.warn("no data to plot")
             return
 
