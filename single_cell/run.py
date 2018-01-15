@@ -70,7 +70,7 @@ def main():
 
     config = utils.load_config(args)
 
-    fastq1_files, fastq2_files, sampleids, seqinfo = utils.read_fastqs_file(args['fastqs_file'])
+    fastq1_files, fastq2_files, sampleids, seqinfo = utils.read_fastqs_file(args['fastqs_file']) # TODO remove fastq2_files
 
     workflow = pypeliner.workflow.Workflow()
 

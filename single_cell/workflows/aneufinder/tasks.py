@@ -79,7 +79,13 @@ def run_aneufinder(
     # Run Aneufinder
     cmd = ['Rscript', run_aneufinder_rscript, working_dir, temp_output]
 
-    pypeliner.commandline.execute(*cmd)
+    try:
+        pypeliner.commandline.execute(*cmd)
+    except:
+        print('Aneufinder failed on {}'.format(bam_file))
+        open(segments, 'w').close()
+        open(reads, 'w').close()
+        file(dnacopy_plot, 'w').close()
 
     # Copy out the plot files. Grabs the first bin size that it sees
     all_plots = os.listdir(os.path.join(temp_output, 'PLOTS', 'method-dnacopy'))
@@ -114,7 +120,8 @@ def merge_pdf(in_filenames, out_filename):
         merger = PdfFileMerger()
 
         for samp, infile in in_files.iteritems():
-            merger.append(open(infile, 'rb'))
+            if os.stat(infile).st_size > 0:
+                merger.append(open(infile, 'rb'))
         if not os.path.exists(os.path.dirname(out_file)):
             os.makedirs(os.path.dirname(out_file))
         with open(out_file, 'wb') as fout:
