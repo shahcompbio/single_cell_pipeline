@@ -69,7 +69,7 @@ def main():
 
     config = utils.load_config(args)
 
-    fastq1_files, fastq2_files, sampleids, seqinfo = utils.read_fastqs_file(args['fastqs_file'])
+    fastq1_files, sampleids, seqinfo = utils.read_fastqs_file(args['fastqs_file'])
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -83,7 +83,6 @@ def main():
         func=alignment.create_alignment_workflow,
         args=(
             mgd.InputFile('fastq_1', 'sample_id', 'lane', fnames=fastq1_files, axes_origin=[]),
-            mgd.InputFile('fastq_2', 'sample_id', 'lane', fnames=fastq2_files, axes_origin=[]),
             mgd.TempOutputFile('aligned_per_cell_per_lane.sorted.bam', 'sample_id', 'lane', axes_origin=[]),
             config['ref_genome'],
             fastq1_files.keys(),

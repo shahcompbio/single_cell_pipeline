@@ -42,7 +42,7 @@ def produce_fastqc_report(fastq_filename, output_html, output_plots, temp_dir):
     shutil.move(output_basename + '_fastqc.html', output_html)
 
 
-def run_fastqc(fastq1, fastq2, reports, tempdir):
+def run_fastqc(fastq1, reports, tempdir):
     """
     run fastqc on both fastq files
     run trimgalore if needed, copy if not.
@@ -55,13 +55,6 @@ def run_fastqc(fastq1, fastq2, reports, tempdir):
     out_plot = os.path.join(reports_dir, 'fastqc_R1.zip')
     if not os.path.getsize(fastq1) == 0:
         produce_fastqc_report(fastq1, out_html, out_plot, tempdir)
-    else:
-        warnings.warn("fastq file %s is empty, skipping fastqc" % fastq1)
-
-    out_html = os.path.join(reports_dir, 'fastqc_R2.html')
-    out_plot = os.path.join(reports_dir, 'fastqc_R2.zip')
-    if not os.path.getsize(fastq2) == 0:
-        produce_fastqc_report(fastq2, out_html, out_plot, tempdir)
     else:
         warnings.warn("fastq file %s is empty, skipping fastqc" % fastq1)
 
@@ -95,7 +88,7 @@ def bam_sort(bam_filename, sorted_bam_filename):
         'MAX_RECORDS_IN_RAM=150000')
 
 
-def bwa_align_paired_end(fastq1, fastq2, output,
+def bwa_align_paired_end(fastq1, output,
                          reference, readgroup):
     """
     run bwa aln on both fastq files,
@@ -103,7 +96,7 @@ def bwa_align_paired_end(fastq1, fastq2, output,
     """
     pypeliner.commandline.execute(
         'bwa', 'mem', '-M', '-R', readgroup,
-        reference, fastq1, fastq2, '|',
+        reference, fastq1, '|',
         'samtools', 'view', '-bSh', '-',
         '>', output,
     )
@@ -119,15 +112,15 @@ def run_flagstat(bam, metrics):
     )
 
 
-def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
+def align_pe(fastq1, output, reports, metrics, tempdir,
              reference, source, sample_id, lane_id, library_id):
 
     readgroup = get_readgroup(lane_id, sample_id, library_id, source)
 
-    run_fastqc(fastq1, fastq2, reports, tempdir)
+    run_fastqc(fastq1, reports, tempdir)
 
     aln_temp = os.path.join(tempdir, "temp_alignments.bam")
-    bwa_align_paired_end(fastq1, fastq2, aln_temp, reference, readgroup)
+    bwa_align_paired_end(fastq1, aln_temp, reference, readgroup)
 
     bam_sort(aln_temp, output)
 

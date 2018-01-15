@@ -11,7 +11,6 @@ import pypeliner.managed as mgd
 
 def create_alignment_workflow(
         fastq_1_filename,
-        fastq_2_filename,
         bam_filename,
         ref_genome,
         sample_lanes,
@@ -50,7 +49,6 @@ def create_alignment_workflow(
         func=tasks.align_pe,
         args=(
             mgd.InputFile('fastq_1', 'sample_id', 'lane', fnames=fastq_1_filename),
-            mgd.InputFile('fastq_2', 'sample_id', 'lane', fnames=fastq_2_filename),
             mgd.OutputFile('aligned_per_cell_per_lane.sorted.bam', 'sample_id', 'lane', fnames=bam_filename),
             mgd.OutputFile(fastqc_reports, 'sample_id', 'lane'),
             mgd.OutputFile(flagstat_metrics_filename, 'sample_id', 'lane'),
