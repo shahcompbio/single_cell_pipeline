@@ -48,7 +48,7 @@ def create_wgs_workflow(
 
     workflow.transform(
         name='merge_bams',
-        ctx={'mem': config['med_mem']},
+        ctx={'mem': config["memory"]['med']},
         func=tasks.merge_bams,
         args=(
             mgd.InputFile('bam', 'sample_id', fnames=bam),
@@ -59,7 +59,7 @@ def create_wgs_workflow(
 
     workflow.transform(
         name='bam_sort',
-        ctx={'mem': config['med_mem']},
+        ctx={'mem': config["memory"]['med']},
         func=tasks.bam_sort,
         args=(
             mgd.TempInputFile('merged.bam'),
@@ -70,7 +70,7 @@ def create_wgs_workflow(
   
     workflow.transform(
         name='bam_markdups',
-        ctx={'mem': config['med_mem']},
+        ctx={'mem': config["memory"]['med']},
         func=tasks.bam_markdups,
         args=(
             mgd.TempInputFile('sorted.bam'),
@@ -82,7 +82,7 @@ def create_wgs_workflow(
   
     workflow.commandline(
         name='bam_index',
-        ctx={'mem': config['low_mem']},
+        ctx={'mem': config["memory"]['low']},
         args=(
             'samtools', 'index',
             mgd.InputFile(bam_filename),
@@ -92,7 +92,7 @@ def create_wgs_workflow(
   
     workflow.commandline(
         name='bam_flagstat',
-        ctx={'mem': config['low_mem']},
+        ctx={'mem': config["memory"]['low']},
         args=(
             'samtools', 'flagstat',
             mgd.InputFile(bam_filename),
@@ -103,7 +103,7 @@ def create_wgs_workflow(
   
     workflow.transform(
         name='bam_collect_wgs_metrics',
-        ctx={'mem': config['med_mem']},
+        ctx={'mem': config["memory"]['med']},
         func=tasks.bam_collect_wgs_metrics,
         args=(
             mgd.InputFile(bam_filename),
@@ -115,7 +115,7 @@ def create_wgs_workflow(
   
     workflow.transform(
         name='bam_collect_gc_metrics',
-        ctx={'mem': config['med_mem']},
+        ctx={'mem': config["memory"]['med']},
         func=tasks.bam_collect_gc_metrics,
         args=(
             mgd.InputFile(bam_filename),
@@ -129,7 +129,7 @@ def create_wgs_workflow(
   
     workflow.transform(
         name='bam_collect_insert_metrics',
-        ctx={'mem': config['med_mem']},
+        ctx={'mem': config["memory"]['med']},
         func=tasks.bam_collect_insert_metrics,
         args=(
             mgd.InputFile(bam_filename),
@@ -142,7 +142,7 @@ def create_wgs_workflow(
       
     workflow.transform(
         name='collect_metrics',
-        ctx={'mem': config['low_mem']},
+        ctx={'mem': config["memory"]['low']},
         func=tasks.collect_metrics,
         args=(
             mgd.InputFile(flagstat_metrics_filename),

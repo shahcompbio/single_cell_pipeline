@@ -10,14 +10,10 @@ import tasks
 
 
 def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
-                            metrics_summary, gc_matrix, config,
+                            metrics_summary, gc_matrix, config, results_dir,
                             args):
 
-
-    out_dir = args['out_dir']
     lib = args['library_id']
-
-    results_dir = os.path.join(out_dir, 'results')
 
     all_metrics_file = os.path.join(results_dir, '{}_all_metrics_summary.csv'.format(lib))
 
@@ -41,7 +37,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
     #calculate cell ordering in hierarchical clustering
     workflow.transform(
         name='plot_heatmap_all',
-        ctx={'mem': config['med_mem']},
+        ctx={'mem': config['memory']['med']},
         func=tasks.plot_heatmap,
         args=(
             mgd.InputFile(hmm_reads),
@@ -59,7 +55,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
 
     workflow.transform(
         name='merge_all_metrics',
-        ctx={'mem': config['low_mem']},
+        ctx={'mem': config['memory']['low']},
         func=tasks.merge_tables,
         args=(
             [mgd.InputFile(metrics_summary),
@@ -73,7 +69,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
 
     workflow.transform(
         name='plot_metrics',
-        ctx={'mem': config['low_mem']},
+        ctx={'mem': config['memory']['low']},
         func=tasks.plot_metrics,
         args=(
             mgd.InputFile(all_metrics_file),
@@ -86,7 +82,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
 
     workflow.transform(
         name='plot_kernel_density',
-        ctx={'mem': config['med_mem']},
+        ctx={'mem': config['memory']['med']},
         func=tasks.plot_kernel_density,
         args=(
             mgd.InputFile(all_metrics_file),
@@ -99,7 +95,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
 
     workflow.transform(
         name='summary_metrics',
-        ctx={'mem': config['low_mem']},
+        ctx={'mem': config['memory']['low']},
         func=tasks.get_summary_metrics,
         args=(
             mgd.InputFile(all_metrics_file),
@@ -110,7 +106,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
 
     workflow.transform(
         name='plot_heatmap_ec',
-        ctx={'mem': config['med_mem']},
+        ctx={'mem': config['memory']['med']},
         func=tasks.plot_pcolor,
         args=(
             mgd.InputFile(hmm_reads),
@@ -129,7 +125,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
 
     workflow.transform(
         name='plot_heatmap_ec_mad',
-        ctx={'mem': config['med_mem']},
+        ctx={'mem': config['memory']['med']},
         func=tasks.plot_pcolor,
         args=(
             mgd.InputFile(hmm_reads),
@@ -148,7 +144,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
 
     workflow.transform(
         name='plot_heatmap_ec_nreads',
-        ctx={'mem': config['med_mem']},
+        ctx={'mem': config['memory']['med']},
         func=tasks.plot_pcolor,
         args=(
             mgd.InputFile(hmm_reads),

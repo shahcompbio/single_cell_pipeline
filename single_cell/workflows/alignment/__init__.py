@@ -45,7 +45,7 @@ def create_alignment_workflow(
 
     workflow.transform(
         name='align_reads',
-        ctx={'mem': config['med_mem']},
+        ctx={'mem': config["memory"]['med']},
         axes = ('sample_id', 'lane',),
         func=tasks.align_pe,
         args=(

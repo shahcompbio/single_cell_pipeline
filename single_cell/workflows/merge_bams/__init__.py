@@ -44,7 +44,7 @@ def create_merge_workflow(
 
     workflow.transform(
         name='merge_bams',
-        ctx={'mem': config['med_mem']},
+        ctx={'mem': config["memory"]['med']},
         func=tasks.merge_bams,
         axes=('sample_id',),
         args=(
