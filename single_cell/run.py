@@ -16,6 +16,7 @@ from workflows import snv_postprocessing
 from workflows import alignment_postprocessing
 from workflows import aneufinder
 
+
 def parse_args():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -33,7 +34,7 @@ def parse_args():
 
     parser.add_argument('out_dir',
                         help='''Path to output files.''')
- 
+
     parser.add_argument('config_file',
                         help='''Path to yaml config file.''')
 
@@ -100,15 +101,15 @@ def main():
         args=(
             mgd.TempInputFile('aligned_per_cell_per_lane.sorted.bam', 'sample_id', 'lane'),
             mgd.TempOutputFile('merged_lanes.bam', 'sample_id', axes_origin=[]),
-            mgd.TempOutputFile('merged_lanes.bam.bai', 'sample_id', axes_origin=[]),
+            mgd.TempOutputFile('merged_lanes.bam.bai','sample_id', axes_origin=[]),
             config,
             fastq1_files.keys(),
         ),
     )
- 
+
     final_bam = mgd.TempInputFile('merged_lanes.bam', 'sample_id')
     if args['realign']:
- 
+
         workflow.subworkflow(
             name='realignment_workflow',
             func=realignment.create_realignment_workflow,
@@ -124,7 +125,7 @@ def main():
             ),
         )
         final_bam = mgd.TempInputFile('merged_realign.bam', 'sample_id')
- 
+
     bam_directory = os.path.join(args['out_dir'], 'bams')
     bam_template = os.path.join(bam_directory, '{sample_id}.bam')
     bam_index_template = os.path.join(bam_directory, '{sample_id}.bam.bai')
@@ -138,7 +139,7 @@ def main():
             final_bam,
             mgd.OutputFile('bam_markdups', 'sample_id', template=bam_template, axes_origin=[]),
             mgd.OutputFile('bam_markdups_index', 'sample_id',
-                           template=bam_index_template, axes_origin=[]),
+                            template=bam_index_template, axes_origin=[]),
             config['ref_genome'],
             mgd.TempOutputFile('alignment_metrics.csv'),
             mgd.OutputFile(gc_metrics),
@@ -147,32 +148,54 @@ def main():
             args['out_dir'],
         ),
     )
- 
-    results_dir = os.path.join(args['out_dir'], 'results')
-    segs_filename = os.path.join(results_dir, '{}_segments.csv'.format(args['library_id']))
-    reads_filename = os.path.join(results_dir, '{}_reads.csv'.format(args['library_id']))
-    workflow.subworkflow(
-        name='hmmcopy_workflow',
-        func=hmmcopy.create_hmmcopy_workflow,
-        args=(
-            mgd.InputFile('bam_markdups', 'sample_id', template=bam_template),
-            mgd.InputFile('bam_markdups_index', 'sample_id', template=bam_index_template),
-            mgd.OutputFile(reads_filename),
-            mgd.OutputFile(segs_filename),
-            mgd.TempOutputFile('hmmcopy_hmm_metrics.csv'),
-            mgd.InputFile(args['sample_info']),
-            sampleids,
-            config,
-            args
-        ),
-    )
+
+    for name, params in config["hmmcopy_params"].iteritems():
+        name = "hmmcopy_" + name
+        results_dir = os.path.join(args['out_dir'], 'results', name)
+        segs_filename = os.path.join(results_dir, '{}_segments.csv'.format(args['library_id']))
+        reads_filename = os.path.join(results_dir, '{}_reads.csv'.format(args['library_id']))
+        workflow.subworkflow(
+            name='hmmcopy_workflow_' + name,
+            func=hmmcopy.create_hmmcopy_workflow,
+            args=(mgd.InputFile('bam_markdups', 'sample_id', template=bam_template),
+                mgd.InputFile('bam_markdups_index', 'sample_id', template=bam_index_template),
+                mgd.OutputFile(reads_filename),
+                mgd.OutputFile(segs_filename),
+                mgd.TempOutputFile(name + '_hmmcopy_hmm_metrics.csv'),
+                mgd.InputFile(args['sample_info']),
+                sampleids,
+                config,
+                args,
+                params,
+                results_dir
+            ),
+        )
+
+        # merge all samples per lane together
+        workflow.subworkflow(
+            name='summary_workflow_' + name,
+            func=singlecell_summary.create_summary_workflow,
+            args=(
+                mgd.InputFile(args['sample_info']),
+                mgd.InputFile(segs_filename),
+                mgd.InputFile(reads_filename),
+                mgd.TempInputFile(name + '_hmmcopy_hmm_metrics.csv'),
+                mgd.TempInputFile('alignment_metrics.csv'),
+                mgd.InputFile(gc_metrics),
+                config,
+                results_dir,
+                args,
+            ),
+        )
 
     if args['aneufinder']:
         aneufinder_output = os.path.join(results_dir, 'AneuFinderOutput')
         if not os.path.exists(aneufinder_output):
             os.makedirs(aneufinder_output)
-        aneufinder_segs_filename = os.path.join(aneufinder_output, '{}_aneufinder_segments.csv'.format(args['library_id']))
-        aneufinder_reads_filename = os.path.join(aneufinder_output, '{}_aneufinder_reads.csv'.format(args['library_id']))
+        aneufinder_segs_filename = os.path.join(aneufinder_output,
+            '{}_aneufinder_segments.csv'.format(args['library_id']))
+        aneufinder_reads_filename = os.path.join(aneufinder_output,
+            '{}_aneufinder_reads.csv'.format(args['library_id']))
         workflow.subworkflow(
             name='aneufinder_workflow',
             func=aneufinder.create_aneufinder_workflow,
@@ -188,22 +211,6 @@ def main():
             ),
         )
 
-    # merge all samples per lane together
-    workflow.subworkflow(
-        name='summary_workflow',
-        func=singlecell_summary.create_summary_workflow,
-        args=(
-            mgd.InputFile(args['sample_info']),
-            mgd.InputFile(segs_filename),
-            mgd.InputFile(reads_filename),
-            mgd.TempInputFile('hmmcopy_hmm_metrics.csv'),
-            mgd.TempInputFile('alignment_metrics.csv'),
-            mgd.InputFile(gc_metrics),
-            config,
-            args,
-        ),
-    )
- 
     if args['generate_pseudo_wgs']:
         pseudo_wgs_bam = os.path.join(args['out_dir'], 'pseudo_wgs',
                                       'merged.sorted.markdups.bam')
@@ -223,7 +230,7 @@ def main():
                 args['out_dir'],
             )
         )
-   
+
     if args['matched_normal']:
         workflow.transform(
             name='generate_intervals',
@@ -233,12 +240,12 @@ def main():
                 config["ref_genome"],
             )
         )
-          
+
         workflow.setobj(
             obj=mgd.OutputChunks('interval'),
             value=pypeliner.managed.TempInputObj('intervals'),
         )
-        
+
         workflow.subworkflow(
             name='split_bams',
             func=split_bams.create_split_workflow,
@@ -246,7 +253,7 @@ def main():
                 mgd.InputFile(pseudo_wgs_bam),
                 mgd.InputFile(pseudo_wgs_bai),
                 mgd.InputFile(args['matched_normal']),
-                mgd.InputFile(args['matched_normal']+".bai"),
+                mgd.InputFile(args['matched_normal'] + ".bai"),
                 mgd.TempOutputFile("tumour.split.bam", "interval", axes_origin=[]),
                 mgd.TempOutputFile("tumour.split.bam.bai", "interval", axes_origin=[]),
                 mgd.TempOutputFile("normal.split.bam", "interval", axes_origin=[]),
@@ -256,7 +263,7 @@ def main():
                 config
             )
         )
- 
+
         varcalls_dir = os.path.join(args['out_dir'], 'pseudo_wgs',
                                     'variant_calling')
         museq_vcf = os.path.join(varcalls_dir, 'museq_snv.vcf')
@@ -277,7 +284,7 @@ def main():
                 pypeliner.managed.TempInputObj('intervals'),
             ),
         )
- 
+
         strelka_snv_vcf = os.path.join(varcalls_dir, 'strelka_snv.vcf')
         strelka_indel_vcf = os.path.join(varcalls_dir, 'strelka_indel.vcf')
         strelka_snv_csv = os.path.join(varcalls_dir, 'strelka_snv.csv')
@@ -298,7 +305,7 @@ def main():
                 pypeliner.managed.TempInputObj('intervals'),
             ),
         )
-    
+
         countdata = os.path.join(args['out_dir'], 'pseudo_wgs',
                                  'counts', 'counts.csv')
         workflow.subworkflow(

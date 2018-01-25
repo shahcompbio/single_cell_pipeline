@@ -43,7 +43,7 @@ def create_split_workflow(
 
     workflow.transform(
         name='split_tumour_bam',
-        ctx={'mem': config['low_mem']},
+        ctx={'mem': config['memory']['low']},
         func=tasks.split_bam_file,
         axes=('interval',),
         args=(
@@ -58,7 +58,7 @@ def create_split_workflow(
  
     workflow.transform(
         name='split_normal_bam',
-        ctx={'mem': config['low_mem']},
+        ctx={'mem': config['memory']['low']},
         axes=('interval',),
         func=tasks.split_bam_file,
         args=(

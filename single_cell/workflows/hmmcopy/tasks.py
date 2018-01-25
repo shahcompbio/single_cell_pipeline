@@ -28,6 +28,7 @@ def run_hmmcopy(
     hmm_metrics,
     sample_id,
     config,
+    hmmparams,
     tempdir,):
 
     #generate wig file for hmmcopy
@@ -35,8 +36,8 @@ def run_hmmcopy(
     readcount_wig = os.path.join(tempdir, 'readcounter.wig')
     pypeliner.commandline.execute(
             'readCounter',
-            '-w', str(config['hmmcopy_params']['bin_size']),
-            '-q', str(config['hmmcopy_params']['min_mqual']),
+            '-w', str(hmmparams['bin_size']),
+            '-q', str(hmmparams['min_mqual']),
             '-c', ','.join(config['chromosomes']),
             bam_file,
             '>',
@@ -46,34 +47,34 @@ def run_hmmcopy(
     #run hmmcopy
     cmd = ['Rscript', run_hmmcopy_rscript,
         '--tumour_file=' + readcount_wig,
-        '--gc_file=' + config['gc_wig_file'],
-        '--map_file=' + config['map_wig_file'],
+        '--gc_file=' + hmmparams['gc_wig_file'],
+        '--map_file=' + hmmparams['map_wig_file'],
         '--reads_output=' + corrected_reads_filename,
         '--segs_output=' + segments_filename,
         '--params_output=' + parameters_filename,
         '--post_marginals_output=' + posterior_marginals_filename,
         '--sample_id=' + sample_id]
 
-    if config['hmmcopy_params']['map_cutoff']:
-        cmd.append('--map_cutoff=' + str(config['hmmcopy_params']['map_cutoff']))
+    if hmmparams['map_cutoff']:
+        cmd.append('--map_cutoff=' + str(hmmparams['map_cutoff']))
 
-    if config['hmmcopy_params']['num_states']:
-        cmd.append('--num_states=' + str(config['hmmcopy_params']['num_states']))
+    if hmmparams['num_states']:
+        cmd.append('--num_states=' + str(hmmparams['num_states']))
 
-    if config['hmmcopy_params']['mu']:
-        cmd.append('--param_mu=' + str(config['hmmcopy_params']['mu']))
+    if hmmparams['mu']:
+        cmd.append('--param_mu=' + str(hmmparams['mu']))
 
-    if config['hmmcopy_params']['m']:
-        cmd.append('--param_m=' + str(config['hmmcopy_params']['m']))
+    if hmmparams['m']:
+        cmd.append('--param_m=' + str(hmmparams['m']))
 
-    if config['hmmcopy_params']['kappa']:
-        cmd.append('--param_k=' + str(config['hmmcopy_params']['kappa']))
+    if hmmparams['kappa']:
+        cmd.append('--param_k=' + str(hmmparams['kappa']))
 
-    if config['hmmcopy_params']['e']:
-        cmd.append('--param_e=' + str(config['hmmcopy_params']['e']))
+    if hmmparams['e']:
+        cmd.append('--param_e=' + str(hmmparams['e']))
 
-    if config['hmmcopy_params']['s']:
-        cmd.append('--param_s=' + str(config['hmmcopy_params']['s']))
+    if hmmparams['s']:
+        cmd.append('--param_s=' + str(hmmparams['s']))
 
     pypeliner.commandline.execute(*cmd)
 
