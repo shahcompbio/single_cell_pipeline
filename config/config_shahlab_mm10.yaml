@@ -115,6 +115,8 @@ heatmap_plot_numreads_threshold: 100000
 # gc_windows: '/shahlab/pipelines/reference/gc_windows.txt'
 gc_windows: null
 
+one_split_job: False
+
 memory:
   low: 2
   med: 6

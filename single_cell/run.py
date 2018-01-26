@@ -260,7 +260,7 @@ def main():
                 mgd.TempOutputFile("normal.split.bam.bai", "interval", axes_origin=[]),
                 pypeliner.managed.TempInputObj('intervals'),
                 config['ref_genome'],
-                config
+                config,
             )
         )
 

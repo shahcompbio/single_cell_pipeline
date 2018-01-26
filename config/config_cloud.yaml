@@ -114,6 +114,8 @@ heatmap_plot_numreads_threshold: 100000
 
 gc_windows: '/refdata/gc_windows.txt'
 
+one_split_job: True
+
 memory:
   low: 2
   med: 6
