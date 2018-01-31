@@ -3,13 +3,49 @@ Created on Jul 24, 2017
 
 @author: dgrewal
 '''
-
+import os
 import pypeliner
 from scripts import CollectMetrics
 
-def merge_bams(inputs, output, config):
-    filenames = inputs.values()
+def bam_postprocess(inputs, output, output_bai, markdups_metrics,
+                    flagstat_metrics, tempdir):
 
+    if not os.path.exists(tempdir):
+        os.makedirs(tempdir)
+
+    merged_bam = os.path.join(tempdir, "merged.bam", tempdir)
+    merge_bams(inputs, merged_bam)
+
+    sorted_bam = os.path.join(tempdir, "sorted.bam", tempdir)
+    bam_sort(merged_bam, sorted_bam)
+
+    os.remove(merged_bam)
+
+    bam_markdups(sorted_bam, output, markdups_metrics, tempdir)
+
+    os.remove(sorted_bam)
+
+    index_bam(output, output_bai)
+
+    flagstat_bam(output, flagstat_metrics)
+
+
+def index_bam(infile, outfile):
+
+    cmd = ['samtools','index', infile, outfile]
+
+    pypeliner.commandline.execute(*cmd)
+
+
+def flagstat_bam(infile, outfile):
+
+    cmd = ['samtools','flagstat', infile, '>', outfile]
+
+    pypeliner.commandline.execute(*cmd)
+
+
+def merge_bams(inputs, output, tmp_dir):
+    filenames = inputs.values()
     
     cmd = ['picard', '-Xmx2G', '-Xms2G',
            '-XX:ParallelGCThreads=1',
@@ -18,16 +54,20 @@ def merge_bams(inputs, output, config):
            'SORT_ORDER=coordinate',
            'ASSUME_SORTED=true',
            'VALIDATION_STRINGENCY=LENIENT',
-           'MAX_RECORDS_IN_RAM=150000'
+           'MAX_RECORDS_IN_RAM=150000',
+           'TMP_DIR='+tmp_dir
            ]
     for bamfile in filenames:
         cmd.append('I='+bamfile)
     
     pypeliner.commandline.execute(*cmd)
 
+    for fname in inputs.values():
+        os.remove(fname)
 
 
-def bam_sort(bam_filename, sorted_bam_filename, config):
+
+def bam_sort(bam_filename, sorted_bam_filename, tmp_dir):
     pypeliner.commandline.execute(
         'picard', '-Xmx2G', '-Xms2G',
         '-XX:ParallelGCThreads=1',
@@ -36,10 +76,11 @@ def bam_sort(bam_filename, sorted_bam_filename, config):
         'OUTPUT=' + sorted_bam_filename,
         'SORT_ORDER=coordinate',
         'VALIDATION_STRINGENCY=LENIENT',
+        'TMP_DIR='+tmp_dir,
         'MAX_RECORDS_IN_RAM=150000')
 
 
-def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, config):
+def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, config, tmp_dir):
     pypeliner.commandline.execute(
         'picard', '-Xmx2G', '-Xms2G',
         '-XX:ParallelGCThreads=1',
@@ -50,6 +91,7 @@ def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, config)
         'REMOVE_DUPLICATES=False',
         'ASSUME_SORTED=True',
         'VALIDATION_STRINGENCY=LENIENT',
+        'TMP_DIR='+tmp_dir,
         'MAX_RECORDS_IN_RAM=150000')
 
 
