@@ -37,7 +37,8 @@ def create_bam_post_workflow(
     bam_index_filename = dict([(sampid, bam_index_filename[sampid])
                          for sampid in sample_ids])
 
-
+    gc_metrics = dict([(sampid, gc_metrics[sampid])
+                        for sampid in sample_ids])
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -104,6 +105,18 @@ def create_bam_post_workflow(
             config
         ),
     )
+
+    workflow.transform(
+        name="collect_gc_metrics",
+        func=tasks.collect_gc,
+        ctx={'mem': config["memory"]['med']},
+        axes = ('sample_id',),
+        args = (
+            mgd.InputFile(gc_metrics_filename, 'sample_id'),
+            mgd.OutputFile('gc_metrics.csv', 'sample_id', fnames = gc_metrics),
+            mgd.InputInstance('sample_id')
+        )
+    )
         
     workflow.transform(
         name='collect_metrics',
@@ -114,11 +127,8 @@ def create_bam_post_workflow(
             mgd.InputFile(markdups_metrics_filename, 'sample_id', axes_origin=[]),
             mgd.InputFile(insert_metrics_filename, 'sample_id', axes_origin=[]),
             mgd.InputFile(wgs_metrics_filename, 'sample_id', axes_origin=[]),
-            mgd.InputFile(gc_metrics_filename, 'sample_id', axes_origin=[]),
             mgd.TempOutputFile('metrics_summary.csv', 'sample_id', axes_origin=[]),
-            mgd.TempOutputFile('gc_matrix.csv', 'sample_id', axes_origin=[]),
             mgd.OutputFile(alignment_metrics),
-            mgd.OutputFile(gc_metrics),
         ),
     )
     

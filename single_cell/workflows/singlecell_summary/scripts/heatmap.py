@@ -15,7 +15,7 @@ import seaborn as sns
 
 class ClusterMap(object):
 
-    def __init__(self, data, colordata, vmax, chromosomes=None):
+    def __init__(self, data, colordata, vmax, max_cn, chromosomes=None):
         """
         :param data pandas dataframe with bins as columns and samples as rows
         :param colordata: dict with samples and their corresponding type
@@ -27,6 +27,8 @@ class ClusterMap(object):
         else:
             self.chromosomes = [str(v) for v in range(1, 23)] + ['X', 'Y']
 
+        self.max_cn = max_cn
+
         self.colordata = colordata
         self.rows = data.index
 
@@ -34,7 +36,10 @@ class ClusterMap(object):
 
         self.data = data.as_matrix()
 
-        self.vmax = vmax
+        #set max for data
+        self.data = np.clip(self.data, 0, self.max_cn)
+
+        self.vmax = min(self.max_cn, vmax)
 
         self.generate_plot()
 
@@ -178,12 +183,16 @@ class ClusterMap(object):
         :param cmap: colormap 
         :param ticklabels: tick labels
         """
+
         bounds = range(cmap.N + 1)
         norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
 
         cbar = matplotlib.colorbar.ColorbarBase(axes, cmap=cmap, norm=norm,
                                                 orientation='horizontal')
         cbar.set_ticks([v + 0.5 for v in bounds])
+
+        if not ticklabels:
+            ticklabels = [str(v).replace(str(self.max_cn), str(self.max_cn-1)+"+") for v in bounds]
 
         if ticklabels:
             cbar.set_ticklabels(ticklabels)

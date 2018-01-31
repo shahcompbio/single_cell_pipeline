@@ -9,11 +9,13 @@ import pypeliner.managed as mgd
 import tasks
 
 
-def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
-                            metrics_summary, gc_matrix, config, results_dir,
-                            args):
+def create_summary_workflow(sample_info, hmm_segments, hmm_reads, sample_gc_metrics, hmm_metrics,
+                            metrics_summary, config, results_dir,
+                            args, samples):
 
     lib = args['library_id']
+
+    gc_metrics = os.path.join(results_dir, '{}_gc_metrics.csv'.format(args['library_id']))
 
     all_metrics_file = os.path.join(results_dir, '{}_all_metrics_summary.csv'.format(lib))
 
@@ -34,6 +36,24 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
 
     workflow = pypeliner.workflow.Workflow()
 
+    workflow.setobj(
+        obj=mgd.OutputChunks('sample_id'),
+        value=samples,
+    )
+
+
+    workflow.transform(
+        name='merge_gc_metrics',
+        ctx={'mem': config['memory']['low']},
+        func=tasks.merge_csv,
+        args=(
+            mgd.InputFile("gc_metrics.csv", 'sample_id', fnames = sample_gc_metrics),
+            mgd.OutputFile(gc_metrics),
+            'outer','gc'
+        ),
+    
+    )
+
     #calculate cell ordering in hierarchical clustering
     workflow.transform(
         name='plot_heatmap_all',
@@ -49,6 +69,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
             'plot_title': 'QC pipeline metrics',
             'column_name': 'integer_copy_number',
             'chromosomes': chromosomes,
+            'max_cn':20,
         }
 
     )
@@ -75,7 +96,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
             mgd.InputFile(all_metrics_file),
             mgd.OutputFile(plot_metrics_output),
             'QC pipeline metrics',
-            mgd.InputFile(gc_matrix),
+            mgd.InputFile(gc_metrics),
             config['gc_windows'],
         )
     )
@@ -119,7 +140,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
             'column_name': 'integer_copy_number',
             'plot_by_col': 'experimental_condition',
             'chromosomes': chromosomes,
-
+            'max_cn':20,
         }
     )
 
@@ -139,6 +160,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
             'plot_by_col': 'experimental_condition',
             'mad_threshold': config['heatmap_plot_mad_threshold'],
             'chromosomes': chromosomes,
+            'max_cn':20,
         }
     )
 
@@ -158,6 +180,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, hmm_metrics,
             'plot_by_col': 'experimental_condition',
             'numreads_threshold': config['heatmap_plot_numreads_threshold'],
             'chromosomes': chromosomes,
+            'max_cn':20,
         }
     )
 
