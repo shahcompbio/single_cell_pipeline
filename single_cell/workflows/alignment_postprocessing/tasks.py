@@ -139,33 +139,28 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_
         'VALIDATION_STRINGENCY=LENIENT',
         'MAX_RECORDS_IN_RAM=150000')
 
+def collect_gc(infile, outfile, sample_id):
+    gen_gc = GenerateCNMatrix(infile, outfile, ',',
+                              'NORMALIZED_COVERAGE', sample_id,
+                              'gcbias')
+    gen_gc.main()
+
 def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
-                    wgs_metrics, gc_metrics, output, gc_output, merged_metrics,
-                    merged_gc_metrics):
+                    wgs_metrics, output, merged_metrics):
 
     for sample in flagstat_metrics.keys():
         flgstat = flagstat_metrics[sample]
         mkdup = markdups_metrics[sample]
         insrt = insert_metrics[sample]
         wgs = wgs_metrics[sample]
-        gc = gc_metrics[sample]
         outfile = output[sample]
-        gc_outfile = gc_output[sample]
 
         collmet = CollectMetrics(wgs, insrt, flgstat,
                                  mkdup, outfile, sample)
         collmet.main()
 
-        gen_gc = GenerateCNMatrix(gc, gc_outfile, ',',
-                                  'NORMALIZED_COVERAGE', sample,
-                                  'gcbias')
-        gen_gc.main()
-
-
     samples = flagstat_metrics.keys()
     concatenate_csv(output, merged_metrics, samples)
-    merge_csv(gc_output, merged_gc_metrics, 'outer', 'gc', samples)
-
 
 def concatenate_csv(in_filenames, out_filename, sample_ids, nan_val='NA'):
     data = []

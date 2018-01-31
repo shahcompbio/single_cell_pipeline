@@ -69,6 +69,10 @@ class PlotPcolor(object):
         if not self.sep:
             self.sep = ','
 
+        self.max_cn = kwargs.get("max_cn")
+
+        if self.max_cn:
+            self.max_cn = int(self.max_cn)+1
 
     def build_label_indices(self, header):
         '''
@@ -305,7 +309,7 @@ class PlotPcolor(object):
         generate heatmap, annotate and save
 
         """
-        ClusterMap(data, ccdata, vmax, chromosomes=self.chromosomes)
+        ClusterMap(data, ccdata, vmax, self.max_cn, chromosomes=self.chromosomes)
 
         plt.suptitle(title)
 
@@ -456,6 +460,10 @@ def parse_args():
                         default='cell_call',
                          help='''column name to use for coloring the side bar in heatmap''')
 
+    parser.add_argument('--max_cn',
+                        default=20,
+                         help='''maximum copynumber to plot in heatmap''')
+
     parser.add_argument('--high_memory',
                         action='store_true',
                          help='set this flag to override the default limit of 1000 cells'\
@@ -473,5 +481,5 @@ if __name__ == '__main__':
     m = PlotPcolor(ARGS.input, ARGS.metrics, ARGS.order_data, ARGS.output, column_name=ARGS.column_name,
                     cellcalls=ARGS.cellcalls, mad_threshold=ARGS.mad_threshold, numreads_threshold=ARGS.numreads_threshold,
                     high_memory=ARGS.high_memory, plot_title=ARGS.plot_title, color_by_col=ARGS.color_by_col,
-                    plot_by_col=ARGS.plot_by_col, separator = ARGS.separator)
+                    plot_by_col=ARGS.plot_by_col, separator = ARGS.separator, max_cn = ARGS.max_cn)
     m.main()

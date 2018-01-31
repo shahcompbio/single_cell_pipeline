@@ -129,8 +129,6 @@ def main():
     bam_directory = os.path.join(args['out_dir'], 'bams')
     bam_template = os.path.join(bam_directory, '{sample_id}.bam')
     bam_index_template = os.path.join(bam_directory, '{sample_id}.bam.bai')
-    results_dir = os.path.join(args['out_dir'], 'results')
-    gc_metrics = os.path.join(results_dir, '{}_gc_metrics.csv'.format(args['library_id']))
     # merge bams per sample for all lanes
     workflow.subworkflow(
         name='bam_postprocess_workflow',
@@ -142,7 +140,7 @@ def main():
                             template=bam_index_template, axes_origin=[]),
             config['ref_genome'],
             mgd.TempOutputFile('alignment_metrics.csv'),
-            mgd.OutputFile(gc_metrics),
+            mgd.TempOutputFile('gc_metrics.csv', 'sample_id', axes_origin=[]),
             sampleids,
             config,
             args['out_dir'],
@@ -179,12 +177,13 @@ def main():
                 mgd.InputFile(args['sample_info']),
                 mgd.InputFile(segs_filename),
                 mgd.InputFile(reads_filename),
+                mgd.TempInputFile('gc_metrics.csv', 'sample_id'),
                 mgd.TempInputFile(name + '_hmmcopy_hmm_metrics.csv'),
                 mgd.TempInputFile('alignment_metrics.csv'),
-                mgd.InputFile(gc_metrics),
                 config,
                 results_dir,
                 args,
+                sampleids
             ),
         )
 
@@ -240,7 +239,7 @@ def main():
                 config["ref_genome"],
             )
         )
-
+ 
         workflow.setobj(
             obj=mgd.OutputChunks('interval'),
             value=pypeliner.managed.TempInputObj('intervals'),
