@@ -55,7 +55,7 @@ def create_wgs_workflow(
             mgd.OutputFile(bam_index_filename),
             mgd.OutputFile(markdups_metrics_filename),
             mgd.OutputFile(flagstat_metrics_filename),
-            mgd.TempSpace("temp_bam_wgs_post")
+            mgd.TempSpace("temp_wgs_post")
         ),
     )
 
@@ -69,6 +69,7 @@ def create_wgs_workflow(
             ref_genome,
             mgd.OutputFile(wgs_metrics_filename),
             config,
+            mgd.TempSpace("temp_wgs_post_wgsmetrics")
         ),
     )
 
@@ -82,7 +83,7 @@ def create_wgs_workflow(
             mgd.OutputFile(gc_metrics_filename),
             mgd.OutputFile(gc_summary_filename),
             mgd.OutputFile(gc_chart_filename),
-            config
+            mgd.TempSpace("temp_wgs_post_gc")
         ),
     )
 
@@ -95,7 +96,7 @@ def create_wgs_workflow(
             mgd.InputFile(flagstat_metrics_filename),
             mgd.OutputFile(insert_metrics_filename),
             mgd.OutputFile(insert_histogram_filename),
-            config
+            mgd.TempSpace("temp_wgs_post_insert")
         ),
     )
 
