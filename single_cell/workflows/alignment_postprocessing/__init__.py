@@ -74,6 +74,7 @@ def create_bam_post_workflow(
             ref_genome,
             mgd.OutputFile(wgs_metrics_filename, 'sample_id'),
             config,
+            mgd.TempSpace('wgs_tempdir', 'sample_id'),
         ),
     )
     
@@ -88,7 +89,7 @@ def create_bam_post_workflow(
             mgd.OutputFile(gc_metrics_filename, 'sample_id'),
             mgd.OutputFile(gc_summary_filename, 'sample_id'),
             mgd.OutputFile(gc_chart_filename, 'sample_id'),
-            config
+            mgd.TempSpace('gc_tempdir', 'sample_id'),
         ),
     )
     
@@ -102,7 +103,7 @@ def create_bam_post_workflow(
             mgd.InputFile(flagstat_metrics_filename, 'sample_id'),
             mgd.OutputFile(insert_metrics_filename, 'sample_id'),
             mgd.OutputFile(insert_histogram_filename, 'sample_id'),
-            config
+            mgd.TempSpace('insert_tempdir', 'sample_id'),
         ),
     )
 

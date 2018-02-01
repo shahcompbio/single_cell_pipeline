@@ -4,8 +4,16 @@ Created on Jul 24, 2017
 @author: dgrewal
 '''
 import os
+import errno
 import pypeliner
 from scripts import CollectMetrics
+
+def makedirs(directory):
+    try:
+        os.makedirs(directory)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
 
 def bam_postprocess(inputs, output, output_bai, markdups_metrics,
                     flagstat_metrics, tempdir):
@@ -13,11 +21,11 @@ def bam_postprocess(inputs, output, output_bai, markdups_metrics,
     if not os.path.exists(tempdir):
         os.makedirs(tempdir)
 
-    merged_bam = os.path.join(tempdir, "merged.bam", tempdir)
-    merge_bams(inputs, merged_bam)
+    merged_bam = os.path.join(tempdir, "merged.bam")
+    merge_bams(inputs, merged_bam, tempdir)
 
-    sorted_bam = os.path.join(tempdir, "sorted.bam", tempdir)
-    bam_sort(merged_bam, sorted_bam)
+    sorted_bam = os.path.join(tempdir, "sorted.bam")
+    bam_sort(merged_bam, sorted_bam, tempdir)
 
     os.remove(merged_bam)
 
@@ -45,6 +53,9 @@ def flagstat_bam(infile, outfile):
 
 
 def merge_bams(inputs, output, tmp_dir):
+    if not os.path.exists(tmp_dir):
+        makedirs(tmp_dir)
+
     filenames = inputs.values()
     
     cmd = ['picard', '-Xmx2G', '-Xms2G',
@@ -68,6 +79,9 @@ def merge_bams(inputs, output, tmp_dir):
 
 
 def bam_sort(bam_filename, sorted_bam_filename, tmp_dir):
+    if not os.path.exists(tmp_dir):
+        makedirs(tmp_dir)
+
     pypeliner.commandline.execute(
         'picard', '-Xmx2G', '-Xms2G',
         '-XX:ParallelGCThreads=1',
@@ -80,7 +94,10 @@ def bam_sort(bam_filename, sorted_bam_filename, tmp_dir):
         'MAX_RECORDS_IN_RAM=150000')
 
 
-def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, config, tmp_dir):
+def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, tmp_dir):
+    if not os.path.exists(tmp_dir):
+        makedirs(tmp_dir)
+
     pypeliner.commandline.execute(
         'picard', '-Xmx2G', '-Xms2G',
         '-XX:ParallelGCThreads=1',
@@ -95,7 +112,10 @@ def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, config,
         'MAX_RECORDS_IN_RAM=150000')
 
 
-def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config):
+def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config, tmp_dir):
+    if not os.path.exists(tmp_dir):
+        makedirs(tmp_dir)
+
     pypeliner.commandline.execute(
         'picard', '-Xmx2G', '-Xms2G',
         '-XX:ParallelGCThreads=1',
@@ -111,7 +131,10 @@ def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config):
         'COUNT_UNPAIRED=' + ('True' if config['picard_wgs_params']['count_unpaired'] else 'False'))
 
 
-def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, config):
+def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, tmp_dir):
+    if not os.path.exists(tmp_dir):
+        makedirs(tmp_dir)
+
     pypeliner.commandline.execute(
         'picard', '-Xmx2G', '-Xms2G',
         '-XX:ParallelGCThreads=1',
@@ -125,7 +148,10 @@ def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_f
         'MAX_RECORDS_IN_RAM=150000')
 
 
-def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_filename, histogram_filename, config):
+def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_filename, histogram_filename, tmp_dir):
+    if not os.path.exists(tmp_dir):
+        makedirs(tmp_dir)
+
     # Check if any paired reads exist
     has_paired = None
     with open(flagstat_metrics_filename) as f:
