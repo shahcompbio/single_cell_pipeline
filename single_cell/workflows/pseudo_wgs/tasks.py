@@ -73,11 +73,6 @@ def merge_bams(inputs, output, tmp_dir):
     
     pypeliner.commandline.execute(*cmd)
 
-    for fname in inputs.values():
-        os.remove(fname)
-
-
-
 def bam_sort(bam_filename, sorted_bam_filename, tmp_dir):
     if not os.path.exists(tmp_dir):
         makedirs(tmp_dir)

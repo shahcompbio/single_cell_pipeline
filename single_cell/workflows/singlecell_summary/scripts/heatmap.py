@@ -81,6 +81,9 @@ class ClusterMap(object):
         # all colors 2 and up are red with increasing intensity
         num_reds = maxval
 
+        if num_reds == self.max_cn:
+            num_reds = num_reds - 1
+
         cmap = matplotlib.cm.get_cmap('Reds', num_reds)
 
         reds_hex = []
@@ -91,6 +94,10 @@ class ClusterMap(object):
 
         num_reds = int(localmax-2)
         reds_hex = reds_hex[:num_reds]
+
+        #set max_cn to black
+        if (num_reds+2) == self.max_cn:
+            reds_hex.append('#000000')
 
         cmap = ListedColormap(['#3498DB', '#85C1E9', '#D3D3D3'] + reds_hex)
 
