@@ -17,7 +17,6 @@ from collections import defaultdict
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import warnings
-import resource
 
 
 from heatmap import ClusterMap
@@ -73,6 +72,8 @@ class PlotPcolor(object):
 
         if self.max_cn:
             self.max_cn = int(self.max_cn)+1
+        else:
+            self.max_cn=20
 
     def build_label_indices(self, header):
         '''
