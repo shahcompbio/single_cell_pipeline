@@ -24,14 +24,19 @@ matplotlib.rcParams['pdf.fonttype'] = 42
 sns.set(context='talk',
         style='ticks',
         font='Helvetica',
-        rc={'axes.titlesize': 10,
+        rc={'axes.titlesize': 12,
             'axes.labelsize': 12,
             'xtick.labelsize': 12,
             'ytick.labelsize': 12,
-            'legend.fontsize': 12})
+            'legend.fontsize': 12,
+            'font.size':12})
 
 
 def parse_args():
+
+    ann_cols = ['cell_call','experimental_condition', 'sample_type',
+                'coverage_depth', 'mad_neutral_state', 'MSRSI_non_integerness']
+
     #=========================================================================
     # Read Command Line Input
     #=========================================================================
@@ -78,6 +83,11 @@ def parse_args():
                         help='''title of the plots''')
 
     parser.add_argument('--sample_id',
+                        required=True,
+                        help='''title of the plots''')
+
+    parser.add_argument('--annotation_cols',
+                        default=ann_cols,
                         help='''title of the plots''')
 
     args = parser.parse_args()
@@ -112,6 +122,13 @@ class GenHmmPlots(object):
         if not self.plot_title:
             self.plot_title = ''
 
+        self.annotation_cols = kwargs.get('annotation_cols')
+
+        if not self.annotation_cols:
+            self.annotation_cols = ['cell_call','experimental_condition',
+                                    'sample_type', 'coverage_depth',
+                                    'mad_neutral_state', 'MSRSI_non_integerness']
+
         self.reads_pdf, self.segs_pdf, self.bias_pdf = self.get_pdf_handles(
             reads_out, bias_out, segs_out)
 
@@ -130,6 +147,8 @@ class GenHmmPlots(object):
         """
 
         df = self.load_data_pandas(self.metrics)
+
+        df = df[df['cell_id'] == self.sample_id]
 
         return df
 
@@ -166,36 +185,31 @@ class GenHmmPlots(object):
 
         return reads_pdf, segs_pdf, bias_pdf
 
+    def get_annotations(self, metrics):
+        annotations = []
+        for colname in self.annotation_cols:
+
+            if colname in metrics:
+                val = metrics[colname].iloc[0]
+                if not isinstance(val, str):
+                    val = '%.3f' % val
+            else:
+                val = 'NA'
+
+            annstr = "{} : {}".format(colname, val)
+            annotations.append(annstr)
+        return annotations
+
+    def add_annotations(self, fig, annotations):
+        annotations = ', '.join(annotations)
+
+        fig.text(0.05, 0.02, annotations)
+
     def get_plot_title(self, sample_id, metrics):
         """
 
         """
-        if 'cell_call' in metrics:
-            cellcall = metrics['cell_call'].iloc[0]
-        else:
-            cellcall = 'NA'
-
-        if 'experimental_condition' in metrics:
-            cond = metrics['experimental_condition'].iloc[0]
-        else:
-            cond = 'NA'
-
-        if 'sample_type' in metrics:
-            st = metrics['sample_type'].iloc[0]
-            st = str(st)
-        else:
-            st = 'NA'
-
-        mad = metrics['mad_neutral_state'].iloc[0]
-        mad = str('%.3f' % mad)
-        ni = metrics['MSRSI_non_integerness'].iloc[0]
-        ni = str('%.3f' % ni)
-
-        title_str = [sample_id, '(cell call', cellcall, ', condition',
-                     cond, ', sample_type', st, ', neutral MAD ', mad, ', MSRSI NonInt. ',
-                     ni, ')']
-
-        title_str = ' '.join(title_str) + self.plot_title
+        title_str = sample_id + self.plot_title
         return title_str
 
     def get_mad_score(self, sample_id, metrics):
@@ -233,7 +247,7 @@ class GenHmmPlots(object):
         ax.tick_params(axis='x', which='minor', pad=9.1)
         ax = utl.add_open_grid_lines(ax)
 
-    def plot_corrected_reads(self, df, sample_id, title):
+    def plot_corrected_reads(self, df, sample_id, title, annotations):
         """
 
         """
@@ -255,11 +269,13 @@ class GenHmmPlots(object):
         self.gen_reads_plot(df, ax, typ='cor_map')
 
         sns.despine(offset=10, trim=True)
-        plt.tight_layout()
+        plt.tight_layout(rect=(0, 0.05, 1, 1))
+
+        self.add_annotations(fig, annotations)
         self.reads_pdf.savefig(fig, pad_inches=0.2)
         plt.close()
 
-    def plot_bias(self, df, sample_id, title):
+    def plot_bias(self, df, sample_id, title, annotations):
         """
         """
         df_ideal = df[df['ideal'] == True]
@@ -267,7 +283,7 @@ class GenHmmPlots(object):
         col = '#006ba4'
 
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(
-            2, 2, sharex='col', sharey='row', figsize=(9, 9))
+            2, 2, sharex='col', sharey='row', figsize=(15, 15))
 
         ax1.set_ylabel('Read count')
         ax1.set_title('Uncorrected')
@@ -311,15 +327,16 @@ class GenHmmPlots(object):
                 facecolors='none',
                 alpha=0.1)
 
+        self.add_annotations(fig, annotations)
         fig.suptitle(title, fontsize=10)
         sns.despine(offset=10, trim=True)
 
-        plt.tight_layout(rect=(0, 0, 1, 0.95))
+        plt.tight_layout(rect=(0, 0.05, 1, 0.95))
         self.bias_pdf.savefig(fig, pad_inches=0.2)
         plt.close()
 
-    def plot_segments(
-            self, df, segments, plot_title, num_states=7, remove_y=False):
+    def plot_segments(self, df, segments, plot_title,
+                      annotations, num_states=7, remove_y=False):
         if df is not None and remove_y:
             df = df[df['chr'] != 'Y']
 
@@ -375,7 +392,9 @@ class GenHmmPlots(object):
             location='upper center')
         ax = utl.add_open_grid_lines(ax)
 
-        plt.tight_layout()
+        self.add_annotations(fig, annotations)
+
+        plt.tight_layout(rect=(0, 0.05, 1, 1))
         self.segs_pdf.savefig(fig, pad_inches=0.2)
         plt.close()
 
@@ -434,6 +453,7 @@ class GenHmmPlots(object):
         metrics = self.check_info_columns(metrics)
 
         plot_title = self.get_plot_title(self.sample_id, metrics)
+        annotations = self.get_annotations(metrics)
 
         # If the check_mad returns false: filter it
         if not self.check_mad_score(self.sample_id, metrics):
@@ -443,11 +463,11 @@ class GenHmmPlots(object):
 #         reads_samp = self.get_sample_data(reads, self.sample_id, norm=True)
 #         segs_samp = self.get_sample_data(segs, self.sample_id)
 
-        self.plot_corrected_reads(reads, self.sample_id, plot_title)
+        self.plot_corrected_reads(reads, self.sample_id, plot_title, annotations)
 
-        self.plot_bias(reads, self.sample_id, plot_title)
+        self.plot_bias(reads, self.sample_id, plot_title, annotations)
 
-        self.plot_segments(reads, segs, plot_title,
+        self.plot_segments(reads, segs, plot_title, annotations,
                            num_states=self.num_states)
 
         self.reads_pdf.close()
@@ -458,6 +478,7 @@ if __name__ == '__main__':
     args = parse_args()
 
     genhmm = GenHmmPlots(args.corrected_reads, args.segments, args.quality_metrics, args.sample_info, args.ref_genome,
-                         args.reads_output, args.segs_output, args.bias_output, args.sample_id)
+                         args.reads_output, args.segs_output, args.bias_output, args.sample_id, annotation_cols=args.annotation_cols,
+                         num_states = args.num_states, mad_threshold = args.mad_threshold, plot_title = args.plot_title)
 
     genhmm.main()

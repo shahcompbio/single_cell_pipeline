@@ -23,6 +23,7 @@ def create_strelka_workflow(
         parsed_indel_csv,
         parsed_snv_csv,
         intervals,
+        config,
         chromosomes=default_chromosomes,
         split_size=int(1e7),
         use_depth_thresholds=True):

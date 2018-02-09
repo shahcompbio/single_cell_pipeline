@@ -155,14 +155,20 @@ class ClusterMap(object):
         :param linkage matrix
         :param placement: list with [x,y,w,h] values for positioning plot
         """
-        axm = fig.add_axes(placement)
-
-        vmax = np.nanmax(mat)
-        cmap = self.generate_colormap_heatmap(vmax, self.vmax)
 
         #sort matrix based on dendrogram order
         leaves = hc.leaves_list(linkage)
         mat = mat[leaves, :]
+
+        vmax = np.nanmax(mat)
+        cmap = self.generate_colormap_heatmap(vmax, self.vmax)
+
+        #calculate appropriate margin to accomodate labels
+        label_len = max([len(self.rows[leaves[i]]) for i in range(mat.shape[0])])
+        right_margin = label_len * 0.005
+        placement[-2] -= right_margin
+
+        axm = fig.add_axes(placement)
 
         axm.pcolormesh(mat, cmap=cmap, rasterized=True)
 
@@ -228,7 +234,10 @@ class ClusterMap(object):
         # heatmap placement
         # x = cbar x + cbar w + margin
         #w = width
-        hmap_plc = [0.117, y, 0.8, h]
+        #right will get scaled based on labels inside plot_heatmap
+        hmap_plc = [0.117, y, 0.9, h]
         self.plot_heatmap(fig, self.data, linkage, hmap_plc)
+
+
 
         return fig

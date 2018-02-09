@@ -84,14 +84,32 @@ def run_hmmcopy(
     metrics.main()
 
 
+def concatenate_csv_pandas(in_filenames, out_filename, nan_val='NA'):
+    data = []
+    for _, in_filename in in_filenames.iteritems():
+        with open(in_filename) as f:
+            first_line = f.readline()
+            if len(first_line) == 0:
+                continue
+        data.append(pd.read_csv(in_filename, dtype=str))
+    data = pd.concat(data, ignore_index=True)
+    data = data.fillna(nan_val)
+    data.to_csv(out_filename, index=False)
 
-def merge_files(reads, segs, hmm_metrics, merged_segs, merged_reads,
-                merged_hmm_metrics, cn_matrix, temp, mad_thres,
-                merged_reads_filt, merged_segs_filt, igv_segs):
+
+
+def merge_files(reads, segs, hmm_metrics, hmm_params, hmm_posteriors,
+                merged_segs, merged_reads, merged_hmm_metrics,
+                merged_hmm_params, merged_hmm_posteriors, cn_matrix, temp,
+                mad_thres,merged_reads_filt, merged_segs_filt, igv_segs):
 
     concatenate_csv(reads, merged_reads)
     concatenate_csv(segs, merged_segs)
     concatenate_csv(hmm_metrics, merged_hmm_metrics)
+
+    concatenate_csv_pandas(hmm_params, merged_hmm_params)
+    concatenate_csv(hmm_posteriors, merged_hmm_posteriors)
+
     generate_cn_matrix(reads, cn_matrix, temp)
     
     filter_hmm_data(merged_hmm_metrics, merged_segs, merged_reads, mad_thres,
@@ -167,16 +185,24 @@ def filter_hmm_data(quality_metrics, segments, reads, mad_threshold,
     filter_hmm.main()
 
 def plot_hmmcopy(reads, segments, metrics, sample_info, ref_genome, reads_out, segs_out,
-                 bias_out, sample_id, num_states=7, plot_title=None, mad_threshold=None):
+                 bias_out, sample_id, num_states=7, plot_title=None,
+                 mad_threshold=None, annotation_cols=None):
     plot = GenHmmPlots(reads, segments, metrics, sample_info, ref_genome, reads_out, segs_out,
                        bias_out, sample_id, num_states=num_states, plot_title=plot_title,
-                       mad_threshold=mad_threshold)
+                       mad_threshold=mad_threshold, annotation_cols=annotation_cols)
     plot.main()
-
 
 def merge_pdf(in_filenames, out_filename, metrics, mad_threshold):
 
     metrics = pd.read_csv(metrics, sep=',')
+
+    data = {}
+    for cell, cond in zip(metrics['cell_id'], metrics['experimental_condition']):
+        if cond in data:
+            data[cond].append(cell)
+        else:
+            data[cond] = [cell]
+    samples = [x for _,v in data.iteritems() for x in sorted(v)]
     
     for in_files, out_file in zip(in_filenames, out_filename):
 
@@ -186,7 +212,8 @@ def merge_pdf(in_filenames, out_filename, metrics, mad_threshold):
 
         merger = PdfFileMerger()
 
-        for samp, infile in in_files.iteritems():
+        for samp in samples:
+            infile = in_files[samp]
             #filter by mad if mad_threshold is specified
             if mad_threshold:
                 mad = metrics[metrics['cell_id'] == samp]['mad_neutral_state'].iloc[0]

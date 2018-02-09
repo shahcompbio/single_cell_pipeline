@@ -357,9 +357,11 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 	
 	# format and output parameter and posterior marginal tables
 	df.params <- format_parameter_table(samp.segmented)
+        df.params$cell_id <- opt$sample_id
 	write.table(format(df.params, scientific=F, trim=T), file=out_params, quote=F, sep=",", col.names=T, row.names=F)
 	
 	df.marginals <- format_posterior_marginals_table(samp.corrected, samp.segmented)
+        df.marginals$cell_id <- opt$sample_id
 	write.table(format(df.marginals, scientific=F, trim=T), file=out_post_marginals, quote=F, sep=",", col.names=T, row.names=F)
 
 }

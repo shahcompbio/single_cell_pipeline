@@ -25,7 +25,7 @@ def create_museq_workflow(tumour_bam, tumour_bai, normal_bam, normal_bai, ref_ge
     )
 
     workflow.transform(name='run_museq',
-                         ctx={'mem': config["memory"]['med']},
+                         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
                          axes = ('interval',),
                          func=tasks.run_museq,
                          args=(
@@ -44,7 +44,7 @@ def create_museq_workflow(tumour_bam, tumour_bai, normal_bam, normal_bai, ref_ge
 
     workflow.transform(
                        name='merge_vcf',
-                       ctx={'mem': config["memory"]['low']},
+                       ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
                        func=tasks.concatenate_vcf,
                        args=(mgd.TempInputFile("museq.vcf", 'interval'),
                              mgd.OutputFile(snv_vcf)
@@ -54,7 +54,7 @@ def create_museq_workflow(tumour_bam, tumour_bai, normal_bam, normal_bai, ref_ge
 
     workflow.transform(
                          name='parse_museq',
-                         ctx={'mem': config["memory"]['low']},
+                         ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
                          func=tasks.parse_museq,
                          args=(
                                mgd.InputFile(snv_vcf),

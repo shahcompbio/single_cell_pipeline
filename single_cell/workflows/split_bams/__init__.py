@@ -46,7 +46,7 @@ def create_split_workflow(
     if one_split_job:
         workflow.transform(
             name='split_tumour_bam',
-            ctx={'mem': config['memory']['low']},
+            ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
             func=tasks.split_bam_file_one_job,
             args=(
                 mgd.InputFile(tumour_bam),
@@ -60,7 +60,7 @@ def create_split_workflow(
 
         workflow.transform(
             name='split_normal_bam',
-            ctx={'mem': config['memory']['low']},
+            ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
             func=tasks.split_bam_file_one_job,
             args=(
                 mgd.InputFile(normal_bam),
@@ -75,7 +75,7 @@ def create_split_workflow(
     else:
         workflow.transform(
             name='split_tumour_bam',
-            ctx={'mem': config['memory']['low']},
+            ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
             func=tasks.split_bam_file,
             axes=('interval',),
             args=(
@@ -90,7 +90,7 @@ def create_split_workflow(
 
         workflow.transform(
             name='split_normal_bam',
-            ctx={'mem': config['memory']['low']},
+            ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
             axes=('interval',),
             func=tasks.split_bam_file,
             args=(

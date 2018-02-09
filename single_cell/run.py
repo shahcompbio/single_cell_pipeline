@@ -152,13 +152,21 @@ def main():
         results_dir = os.path.join(args['out_dir'], 'results', name)
         segs_filename = os.path.join(results_dir, '{}_segments.csv'.format(args['library_id']))
         reads_filename = os.path.join(results_dir, '{}_reads.csv'.format(args['library_id']))
+        reads_pdf_output = os.path.join(results_dir, 'plots', '{}_reads.pdf'.format(args['library_id']))
+        segs_pdf_output = os.path.join(results_dir, 'plots', '{}_segs.pdf'.format(args['library_id']))
+        bias_pdf_output = os.path.join(results_dir, 'plots', '{}_bias.pdf'.format(args['library_id']))
+
         workflow.subworkflow(
             name='hmmcopy_workflow_' + name,
             func=hmmcopy.create_hmmcopy_workflow,
             args=(mgd.InputFile('bam_markdups', 'sample_id', template=bam_template),
                 mgd.InputFile('bam_markdups_index', 'sample_id', template=bam_index_template),
+                mgd.TempInputFile('alignment_metrics.csv'),
                 mgd.OutputFile(reads_filename),
                 mgd.OutputFile(segs_filename),
+                mgd.OutputFile(reads_pdf_output),
+                mgd.OutputFile(segs_pdf_output),
+                mgd.OutputFile(bias_pdf_output),
                 mgd.TempOutputFile(name + '_hmmcopy_hmm_metrics.csv'),
                 mgd.InputFile(args['sample_info']),
                 sampleids,
@@ -181,6 +189,7 @@ def main():
                 mgd.TempInputFile(name + '_hmmcopy_hmm_metrics.csv'),
                 mgd.TempInputFile('alignment_metrics.csv'),
                 config,
+                params,
                 results_dir,
                 args,
                 sampleids
@@ -302,6 +311,7 @@ def main():
                 mgd.OutputFile(strelka_indel_csv),
                 mgd.OutputFile(strelka_snv_csv),
                 pypeliner.managed.TempInputObj('intervals'),
+                config
             ),
         )
 

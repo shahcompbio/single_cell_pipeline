@@ -50,7 +50,7 @@ def create_bam_post_workflow(
 
     workflow.transform(
         name='postprocess_bam',
-        ctx={'mem': config["memory"]['med']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
         axes=('sample_id',),
         func=tasks.postprocess_bam,
         args=(
@@ -66,7 +66,7 @@ def create_bam_post_workflow(
     
     workflow.transform(
         name='bam_collect_wgs_metrics',
-        ctx={'mem': config["memory"]['med']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
         func=tasks.bam_collect_wgs_metrics,
         axes=('sample_id',),
         args=(
@@ -80,7 +80,7 @@ def create_bam_post_workflow(
     
     workflow.transform(
         name='bam_collect_gc_metrics',
-        ctx={'mem': config["memory"]['med']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
         func=tasks.bam_collect_gc_metrics,
         axes=('sample_id',),
         args=(
@@ -95,7 +95,7 @@ def create_bam_post_workflow(
     
     workflow.transform(
         name='bam_collect_insert_metrics',
-        ctx={'mem': config["memory"]['med']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
         func=tasks.bam_collect_insert_metrics,
         axes=('sample_id',),
         args=(
@@ -110,7 +110,7 @@ def create_bam_post_workflow(
     workflow.transform(
         name="collect_gc_metrics",
         func=tasks.collect_gc,
-        ctx={'mem': config["memory"]['med']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
         axes = ('sample_id',),
         args = (
             mgd.InputFile(gc_metrics_filename, 'sample_id'),
@@ -121,7 +121,7 @@ def create_bam_post_workflow(
         
     workflow.transform(
         name='collect_metrics',
-        ctx={'mem': config["memory"]['low']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
         func=tasks.collect_metrics,
         args=(
             mgd.InputFile(flagstat_metrics_filename, 'sample_id', axes_origin=[]),
