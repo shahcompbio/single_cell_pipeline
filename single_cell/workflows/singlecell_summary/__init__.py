@@ -10,7 +10,7 @@ import tasks
 
 
 def create_summary_workflow(sample_info, hmm_segments, hmm_reads, sample_gc_metrics, hmm_metrics,
-                            metrics_summary, config, results_dir,
+                            metrics_summary, config, hmmparams, results_dir,
                             args, samples):
 
     lib = args['library_id']
@@ -44,7 +44,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, sample_gc_metr
 
     workflow.transform(
         name='merge_gc_metrics',
-        ctx={'mem': config['memory']['low']},
+        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
         func=tasks.merge_csv,
         args=(
             mgd.InputFile("gc_metrics.csv", 'sample_id', fnames = sample_gc_metrics),
@@ -57,7 +57,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, sample_gc_metr
     #calculate cell ordering in hierarchical clustering
     workflow.transform(
         name='plot_heatmap_all',
-        ctx={'mem': config['memory']['med']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
         func=tasks.plot_heatmap,
         args=(
             mgd.InputFile(hmm_reads),
@@ -69,14 +69,14 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, sample_gc_metr
             'plot_title': 'QC pipeline metrics',
             'column_name': 'integer_copy_number',
             'chromosomes': chromosomes,
-            'max_cn':20,
+            'max_cn':hmmparams['num_states'],
         }
 
     )
 
     workflow.transform(
         name='merge_all_metrics',
-        ctx={'mem': config['memory']['low']},
+        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
         func=tasks.merge_tables,
         args=(
             [mgd.InputFile(metrics_summary),
@@ -90,7 +90,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, sample_gc_metr
 
     workflow.transform(
         name='plot_metrics',
-        ctx={'mem': config['memory']['low']},
+        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
         func=tasks.plot_metrics,
         args=(
             mgd.InputFile(all_metrics_file),
@@ -103,7 +103,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, sample_gc_metr
 
     workflow.transform(
         name='plot_kernel_density',
-        ctx={'mem': config['memory']['med']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
         func=tasks.plot_kernel_density,
         args=(
             mgd.InputFile(all_metrics_file),
@@ -116,7 +116,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, sample_gc_metr
 
     workflow.transform(
         name='summary_metrics',
-        ctx={'mem': config['memory']['low']},
+        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
         func=tasks.get_summary_metrics,
         args=(
             mgd.InputFile(all_metrics_file),
@@ -127,7 +127,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, sample_gc_metr
 
     workflow.transform(
         name='plot_heatmap_ec',
-        ctx={'mem': config['memory']['med']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
         func=tasks.plot_pcolor,
         args=(
             mgd.InputFile(hmm_reads),
@@ -140,13 +140,13 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, sample_gc_metr
             'column_name': 'integer_copy_number',
             'plot_by_col': 'experimental_condition',
             'chromosomes': chromosomes,
-            'max_cn':20,
+            'max_cn':hmmparams['num_states'],
         }
     )
 
     workflow.transform(
         name='plot_heatmap_ec_mad',
-        ctx={'mem': config['memory']['med']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
         func=tasks.plot_pcolor,
         args=(
             mgd.InputFile(hmm_reads),
@@ -160,13 +160,13 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, sample_gc_metr
             'plot_by_col': 'experimental_condition',
             'mad_threshold': config['heatmap_plot_mad_threshold'],
             'chromosomes': chromosomes,
-            'max_cn':20,
+            'max_cn':hmmparams['num_states'],
         }
     )
 
     workflow.transform(
         name='plot_heatmap_ec_nreads',
-        ctx={'mem': config['memory']['med']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
         func=tasks.plot_pcolor,
         args=(
             mgd.InputFile(hmm_reads),
@@ -180,7 +180,7 @@ def create_summary_workflow(sample_info, hmm_segments, hmm_reads, sample_gc_metr
             'plot_by_col': 'experimental_condition',
             'numreads_threshold': config['heatmap_plot_numreads_threshold'],
             'chromosomes': chromosomes,
-            'max_cn':20,
+            'max_cn':hmmparams['num_states'],
         }
     )
 

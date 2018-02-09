@@ -1,3 +1,6 @@
+pools:
+  standard: singlecellgrch37standard
+  highmem: singlecellgrch37highmem
 
 picard_wgs_params:
   # Minimum base quality to count a read

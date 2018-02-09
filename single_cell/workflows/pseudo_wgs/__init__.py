@@ -46,23 +46,63 @@ def create_wgs_workflow(
     )
 
     workflow.transform(
-        name='bam_postprocess',
-        ctx={'mem': config["memory"]['med']},
-        func=tasks.bam_postprocess,
+        name='merge_bams',
+        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem']},
+        func=tasks.merge_bams,
         args=(
             mgd.InputFile('bam', 'sample_id', fnames=bam),
-            mgd.OutputFile(bam_filename),
-            mgd.OutputFile(bam_index_filename),
-            mgd.OutputFile(markdups_metrics_filename),
-            mgd.OutputFile(flagstat_metrics_filename),
-            mgd.TempSpace("temp_wgs_post")
+            mgd.TempOutputFile('merged.bam'),
+            mgd.TempSpace("temp_wgs_merge_bams")
         ),
     )
 
+    workflow.transform(
+        name='bam_sort',
+        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem']},
+        func=tasks.bam_sort,
+        args=(
+            mgd.TempInputFile('merged.bam'),
+            mgd.TempOutputFile('sorted.bam'),
+            mgd.TempSpace("temp_wgs_sort_bam")
+        ),
+    )
+
+    workflow.transform(
+        name='bam_markdups',
+        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem']},
+        func=tasks.bam_markdups,
+        args=(
+            mgd.TempInputFile('sorted.bam'),
+            mgd.OutputFile(bam_filename),
+            mgd.OutputFile(markdups_metrics_filename),
+            mgd.TempSpace("temp_wgs_mkdup_bam")
+        ),
+    )
+
+    workflow.commandline(
+        name='bam_index',
+        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
+        args=(
+            'samtools', 'index',
+            mgd.InputFile(bam_filename),
+            mgd.OutputFile(bam_index_filename),
+        ),
+    )
+
+    workflow.commandline(
+        name='bam_flagstat',
+        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
+        args=(
+            'samtools', 'flagstat',
+            mgd.InputFile(bam_filename),
+            '>',
+            mgd.OutputFile(flagstat_metrics_filename),
+        ),
+    )
 
     workflow.transform(
         name='bam_collect_wgs_metrics',
-        ctx={'mem': config["memory"]['med']},
+        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem']},
         func=tasks.bam_collect_wgs_metrics,
         args=(
             mgd.InputFile(bam_filename),
@@ -75,7 +115,7 @@ def create_wgs_workflow(
 
     workflow.transform(
         name='bam_collect_gc_metrics',
-        ctx={'mem': config["memory"]['med']},
+        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem']},
         func=tasks.bam_collect_gc_metrics,
         args=(
             mgd.InputFile(bam_filename),
@@ -89,7 +129,7 @@ def create_wgs_workflow(
 
     workflow.transform(
         name='bam_collect_insert_metrics',
-        ctx={'mem': config["memory"]['med']},
+        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem']},
         func=tasks.bam_collect_insert_metrics,
         args=(
             mgd.InputFile(bam_filename),
@@ -102,7 +142,7 @@ def create_wgs_workflow(
 
     workflow.transform(
         name='collect_metrics',
-        ctx={'mem': config["memory"]['low']},
+        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
         func=tasks.collect_metrics,
         args=(
             mgd.InputFile(flagstat_metrics_filename),

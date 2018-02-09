@@ -1,3 +1,6 @@
+pools:
+  standard: null
+  highmem: null
 
 picard_wgs_params:
   # Minimum base quality to count a read

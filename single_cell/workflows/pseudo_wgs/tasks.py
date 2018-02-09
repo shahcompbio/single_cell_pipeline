@@ -58,8 +58,8 @@ def merge_bams(inputs, output, tmp_dir):
 
     filenames = inputs.values()
     
-    cmd = ['picard', '-Xmx2G', '-Xms2G',
-           '-XX:ParallelGCThreads=1',
+    cmd = ['picard', '-Xmx12G', '-Xms12G',
+           '-XX:ParallelGCThreads=2',
            'MergeSamFiles',
            'OUTPUT=' + output,
            'SORT_ORDER=coordinate',
@@ -78,8 +78,8 @@ def bam_sort(bam_filename, sorted_bam_filename, tmp_dir):
         makedirs(tmp_dir)
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx2G', '-Xms2G',
-        '-XX:ParallelGCThreads=1',
+        'picard', '-Xmx12G', '-Xms12G',
+        '-XX:ParallelGCThreads=2',
         'SortSam',
         'INPUT=' + bam_filename,
         'OUTPUT=' + sorted_bam_filename,
@@ -94,8 +94,8 @@ def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, tmp_dir
         makedirs(tmp_dir)
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx2G', '-Xms2G',
-        '-XX:ParallelGCThreads=1',
+        'picard', '-Xmx12G', '-Xms12G',
+        '-XX:ParallelGCThreads=2',
         'MarkDuplicates',
         'INPUT=' + bam_filename,
         'OUTPUT=' + markduped_bam_filename,
@@ -112,8 +112,8 @@ def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config, 
         makedirs(tmp_dir)
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx2G', '-Xms2G',
-        '-XX:ParallelGCThreads=1',
+        'picard', '-Xmx12G', '-Xms12G',
+        '-XX:ParallelGCThreads=2',
         'CollectWgsMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
@@ -131,8 +131,8 @@ def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_f
         makedirs(tmp_dir)
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx2G', '-Xms2G',
-        '-XX:ParallelGCThreads=1',
+        'picard', '-Xmx12G', '-Xms12G',
+        '-XX:ParallelGCThreads=2',
         'CollectGcBiasMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,
@@ -168,8 +168,8 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_
         return
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx2G', '-Xms2G',
-        '-XX:ParallelGCThreads=1',
+        'picard', '-Xmx12G', '-Xms12G',
+        '-XX:ParallelGCThreads=2',
         'CollectInsertSizeMetrics',
         'INPUT=' + bam_filename,
         'OUTPUT=' + metrics_filename,

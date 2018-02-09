@@ -35,7 +35,7 @@ def create_snv_postprocessing_workflow(
 
     workflow.transform(
         name='overlap_var_calls',
-        ctx={'mem': config['memory']['med']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
         func=tasks.merge_tables,
         args=([mgd.InputFile(museq_parsed),
                mgd.InputFile(strelka_parsed)],
@@ -51,7 +51,7 @@ def create_snv_postprocessing_workflow(
     workflow.transform(
         name='count_reads',
         axes=('sample_id',),
-        ctx={'mem': config['memory']['med']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
         func=tasks.get_counts,
         args=(
             mgd.InputFile('bam', 'sample_id', fnames=bam_file),
@@ -63,7 +63,7 @@ def create_snv_postprocessing_workflow(
 
     workflow.transform(
         name='merge_counts',
-        ctx={'mem': config['memory']['low']},
+        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
         func=tasks.merge_csv,
         args=(
             mgd.InputFile(countdata, 'sample_id'),
