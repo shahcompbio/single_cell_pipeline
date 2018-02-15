@@ -1,6 +1,6 @@
 package:
   name: single_cell_pipeline
-  version: '0.0.'
+  version: '0.0.8'
 
 source:
   git_url: https://amcpherson@svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git

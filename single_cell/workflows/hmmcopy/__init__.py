@@ -12,8 +12,8 @@ import tasks
 
 
 def create_hmmcopy_workflow(bam_file, bai_file, alignment_metrics, corrected_reads_file,
-                            segments_file, reads_pdf_output, segs_pdf_output, bias_pdf_output, 
-                            hmm_metrics_file, sample_info,
+                            segments_file, reads_pdf_output, segs_pdf_output, bias_pdf_output,
+                            params_pdf_output, hmm_metrics_file, sample_info,
                             sample_ids, config, args, hmmparams, results_dir ):
 
     lib = args['library_id']
@@ -99,12 +99,14 @@ def create_hmmcopy_workflow(bam_file, bai_file, alignment_metrics, corrected_rea
         args=(
             mgd.TempInputFile('reads.csv', 'sample_id'),
             mgd.TempInputFile('segs.csv', 'sample_id'),
+            mgd.TempInputFile('params.csv', 'sample_id'),
             mgd.TempInputFile("merged_metrics.csv"),
             mgd.InputFile(sample_info),
             config['ref_genome'],
             mgd.TempOutputFile('reads.pdf', 'sample_id'),
             mgd.TempOutputFile('segs.pdf', 'sample_id'),
             mgd.TempOutputFile('bias.pdf', 'sample_id'),
+            mgd.TempOutputFile('params.pdf', 'sample_id'),
             mgd.InputInstance('sample_id'),
         ),
         kwargs={
@@ -122,10 +124,12 @@ def create_hmmcopy_workflow(bam_file, bai_file, alignment_metrics, corrected_rea
         args=(
               [mgd.TempInputFile('reads.pdf', 'sample_id'),
               mgd.TempInputFile('segs.pdf', 'sample_id'),
-              mgd.TempInputFile('bias.pdf', 'sample_id')],
+              mgd.TempInputFile('bias.pdf', 'sample_id'),
+              mgd.TempInputFile('params.pdf', 'sample_id')],
               [mgd.OutputFile(reads_pdf_output),
               mgd.OutputFile(segs_pdf_output),
-              mgd.OutputFile(bias_pdf_output)],
+              mgd.OutputFile(bias_pdf_output),
+              mgd.OutputFile(params_pdf_output)],
               mgd.TempInputFile("merged_metrics.csv"),
               None
             )
@@ -134,6 +138,7 @@ def create_hmmcopy_workflow(bam_file, bai_file, alignment_metrics, corrected_rea
     reads_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_reads_mad.pdf'.format(lib))
     segs_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_segs_mad.pdf'.format(lib))
     bias_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_bias_mad.pdf'.format(lib))
+    params_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_params_mad.pdf'.format(lib))
     workflow.transform(
         name='merge_hmm_copy_mad',
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
@@ -141,10 +146,12 @@ def create_hmmcopy_workflow(bam_file, bai_file, alignment_metrics, corrected_rea
         args=(
               [mgd.TempInputFile('reads.pdf', 'sample_id'),
               mgd.TempInputFile('segs.pdf', 'sample_id'),
-              mgd.TempInputFile('bias.pdf', 'sample_id')],
+              mgd.TempInputFile('bias.pdf', 'sample_id'),
+              mgd.TempInputFile('params.pdf', 'sample_id')],
               [mgd.OutputFile(reads_mad_pdf_output),
               mgd.OutputFile(segs_mad_pdf_output),
-              mgd.OutputFile(bias_mad_pdf_output)],
+              mgd.OutputFile(bias_mad_pdf_output),
+              mgd.OutputFile(params_mad_pdf_output)],
               mgd.TempInputFile("merged_metrics.csv"),
               0.2
             )
