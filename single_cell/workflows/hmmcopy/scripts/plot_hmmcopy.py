@@ -502,9 +502,10 @@ class GenHmmPlots(object):
             color = cmap[state]
             data = reads[reads["state"] == state]["copy"]
 
-            sns.kdeplot(data, bw="scott",  kernel="epa",
-                        shade=True, linewidth=0, facecolor=color,
-                        label=state, legend=False)
+            if not data.empty:
+                sns.kdeplot(data, bw="scott",  kernel="epa",
+                            shade=True, linewidth=0, facecolor=color,
+                            label=state, legend=False)
 
             x = np.arange(0, np.nanmax(np.array(reads["copy"])), 0.01)
             mu = params[(params["parameter"]=="mus") & (params["state"] == state)]["final"].iloc[0]

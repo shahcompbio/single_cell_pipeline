@@ -43,17 +43,23 @@ class ClusterMap(object):
 
         self.generate_plot()
 
-    def build_label_indices(self, header):
-        '''
-        gets all the label cols from file and builds
-        a dict with their indices as values
-        '''
-        if isinstance(header, str):
-            header = header.strip().split(self.sep)
+    def get_chr_idxs(self, bins):
+        """
+        :param bins: sorted bins used for the plot
+        :return chr_idxs: list with the index where chromosome changes 
+        returns the index where the chromosome changes
+        used for marking chr boundaries on the plot
+        """
+        # chr 1 starts at beginning
+        chr_idxs = [0]
 
-        lbl_idx = {val: i for i, val in enumerate(header)}
+        chrom = '1'
+        for i, bin_v in enumerate(bins):
+            if bin_v[0] != chrom:
+                chr_idxs.append(i)
+                chrom = bin_v[0]
 
-        return lbl_idx
+        return chr_idxs
 
     def get_cmap_colorbar(self):
         """generates listed colormap for colordata
