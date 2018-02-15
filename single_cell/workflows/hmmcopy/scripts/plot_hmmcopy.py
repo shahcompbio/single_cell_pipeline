@@ -504,8 +504,9 @@ class GenHmmPlots(object):
 
             if not data.empty:
                 sns.kdeplot(data, bw="scott",  kernel="epa",
-                            shade=True, linewidth=0, facecolor=color,
-                            label=state, legend=False)
+                            shade=True, linewidth=0.5,
+                            label=state, legend=False,
+                            color = color)
 
             x = np.arange(0, np.nanmax(np.array(reads["copy"])), 0.01)
             mu = params[(params["parameter"]=="mus") & (params["state"] == state)]["final"].iloc[0]
