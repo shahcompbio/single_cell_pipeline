@@ -16,6 +16,12 @@ from matplotlib.backends.backend_pdf import PdfPages
 import utils as utl
 import math
 import warnings
+from matplotlib.patches import Patch
+
+from matplotlib.colors import rgb2hex
+
+
+import numpy as np
 
 lowess = sm.nonparametric.lowess
 
@@ -50,6 +56,10 @@ def parse_args():
                         required=True,
                         help='''Path to HMMcopy segments output .csv file.''')
 
+    parser.add_argument('--params',
+                        required=True,
+                        help='''Path to HMMcopy params output .csv file.''')
+
     parser.add_argument('--quality_metrics',
                         required=True,
                         help='''Optional quality metrics file for the run, with 'mad_neutral_state' column.''')
@@ -79,6 +89,11 @@ def parse_args():
                         required=True,
                         help='''Path to HMMcopy segs reads output .pdf file.''')
 
+    parser.add_argument('--params_output',
+                        required=True,
+                        help='''Path to HMMcopy segs reads output .pdf file.''')
+
+
     parser.add_argument('--plot_title',
                         help='''title of the plots''')
 
@@ -99,11 +114,13 @@ class GenHmmPlots(object):
     generate the reads, bias and segment plots
     """
 
-    def __init__(self, reads, segments, metrics, sample_info,
-                 ref_genome, reads_out, segs_out, bias_out, sample_id, **kwargs):
+    def __init__(self, reads, segments, params, metrics, sample_info,
+                 ref_genome, reads_out, segs_out, bias_out, params_out,
+                 sample_id, **kwargs):
 
         self.reads = reads
         self.segments = segments
+        self.params = params
         self.metrics = metrics
         self.ref_genome = ref_genome
         self.sample_id = sample_id
@@ -129,8 +146,8 @@ class GenHmmPlots(object):
                                     'sample_type', 'coverage_depth',
                                     'mad_neutral_state', 'MSRSI_non_integerness']
 
-        self.reads_pdf, self.segs_pdf, self.bias_pdf = self.get_pdf_handles(
-            reads_out, bias_out, segs_out)
+        self.reads_pdf, self.segs_pdf, self.bias_pdf, self.params_pdf = self.get_pdf_handles(
+            reads_out, bias_out, segs_out, params_out)
 
     def load_data_pandas(self, infile):
         """
@@ -147,6 +164,18 @@ class GenHmmPlots(object):
         """
 
         df = self.load_data_pandas(self.metrics)
+
+        df = df[df['cell_id'] == self.sample_id]
+
+        return df
+
+
+    def read_params(self):
+        """
+
+        """
+
+        df = self.load_data_pandas(self.params)
 
         df = df[df['cell_id'] == self.sample_id]
 
@@ -174,7 +203,7 @@ class GenHmmPlots(object):
 
         return df
 
-    def get_pdf_handles(self, reads_out, bias_out, segs_out):
+    def get_pdf_handles(self, reads_out, bias_out, segs_out, params_out):
         """
 
         """
@@ -182,8 +211,9 @@ class GenHmmPlots(object):
         reads_pdf = PdfPages(reads_out)
         bias_pdf = PdfPages(bias_out)
         segs_pdf = PdfPages(segs_out)
+        params_pdf = PdfPages(params_out)
 
-        return reads_pdf, segs_pdf, bias_pdf
+        return reads_pdf, segs_pdf, bias_pdf, params_pdf
 
     def get_annotations(self, metrics):
         annotations = []
@@ -442,6 +472,58 @@ class GenHmmPlots(object):
 
         return metrics
 
+    def get_cmap(self, num_states):
+        """
+        generating a custom heatmap 2:gray 0: blue 2+: reds
+        """
+        cmap = matplotlib.cm.get_cmap('viridis', num_states)
+        colors = {}
+
+        for i in range(cmap.N):
+            # will return rgba, we take only first 3 so we get rgb
+            rgb = cmap(i)[:3]
+            colors[i+1] = rgb2hex(rgb)
+
+        return colors
+
+    def add_legend(self, fig, cmap):
+        lgnd_patches = [Patch(color=c, label=k)
+                        for k,c in cmap.iteritems()]
+        plt.legend(handles=lgnd_patches,
+                   bbox_to_anchor=(1, 1))
+
+    def plot_params(self, reads, params, plot_title,
+                      annotations, num_states=7):
+
+        fig = plt.figure(figsize=(10, 10))
+        cmap = self.get_cmap(num_states)
+
+        for state in range(1, num_states+1):
+            color = cmap[state]
+            data = reads[reads["state"] == state]["copy"]
+
+            sns.kdeplot(data, bw="scott",  kernel="epa",
+                        shade=True, linewidth=0, facecolor=color,
+                        label=state, legend=False)
+
+            x = np.arange(0, np.nanmax(np.array(reads["copy"])), 0.01)
+            mu = params[(params["parameter"]=="mus") & (params["state"] == state)]["final"].iloc[0]
+            lmbda = params[(params["parameter"]=="lambdas") & (params["state"] == state)]["final"].iloc[0]
+            nu = params[(params["parameter"]=="nus") & (params["state"] == state)]["final"].iloc[0]
+
+            y = utl.t_dist_pdf(x, mu, lmbda, nu)
+            plt.plot(x,y, color)
+
+        plt.ylabel("density")
+        plt.suptitle(plot_title)
+
+        self.add_legend(fig, cmap)
+
+        self.add_annotations(fig, annotations)
+        plt.tight_layout(rect=(0, 0.05, 1, 0.95))
+        self.params_pdf.savefig(fig)
+        plt.close()
+
     def main(self):
         """
         main
@@ -449,6 +531,8 @@ class GenHmmPlots(object):
         metrics = self.read_quality_metrics()
         reads = self.read_corrected_reads()
         segs = self.read_segments()
+        params = self.read_params()
+
 
         metrics = self.check_info_columns(metrics)
 
@@ -470,15 +554,19 @@ class GenHmmPlots(object):
         self.plot_segments(reads, segs, plot_title, annotations,
                            num_states=self.num_states)
 
+        self.plot_params(reads, params, plot_title, annotations,
+                         num_states=self.num_states)
+
         self.reads_pdf.close()
         self.bias_pdf.close()
         self.segs_pdf.close()
+        self.params_pdf.close()
 
 if __name__ == '__main__':
     args = parse_args()
 
-    genhmm = GenHmmPlots(args.corrected_reads, args.segments, args.quality_metrics, args.sample_info, args.ref_genome,
-                         args.reads_output, args.segs_output, args.bias_output, args.sample_id, annotation_cols=args.annotation_cols,
+    genhmm = GenHmmPlots(args.corrected_reads, args.segments, args.params, args.quality_metrics, args.sample_info, args.ref_genome,
+                         args.reads_output, args.segs_output, args.bias_output, args.params_output, args.sample_id, annotation_cols=args.annotation_cols,
                          num_states = args.num_states, mad_threshold = args.mad_threshold, plot_title = args.plot_title)
 
     genhmm.main()

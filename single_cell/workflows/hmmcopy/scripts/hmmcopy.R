@@ -260,7 +260,8 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 	# apply segmentation parameters
 	default.params <- HMMsegment(samp.corrected, getparam=T)
 	new.params <- default.params
-	
+
+
 	# check whether to add additional states
 	if (!is.null(opt$num_states) && opt$num_states > 6) {		
 		while (nrow(new.params) < opt$num_states) {
@@ -357,7 +358,17 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 	
 	# format and output parameter and posterior marginal tables
 	df.params <- format_parameter_table(samp.segmented)
-        df.params$cell_id <- opt$sample_id
+
+	#add nus data to params output
+	nus <- data.frame(matrix(ncol = ncol(df.params), nrow=nrow(new.params)))
+	colnames(nus) <- colnames(df.params)
+	nus$final <- new.params$nu
+	nus$parameter <- "nus"
+	nus$state <- rownames(new.params)
+
+	df.params <- rbind(df.params, nus)
+	df.params$cell_id <- opt$sample_id
+
 	write.table(format(df.params, scientific=F, trim=T), file=out_params, quote=F, sep=",", col.names=T, row.names=F)
 	
 	df.marginals <- format_posterior_marginals_table(samp.corrected, samp.segmented)

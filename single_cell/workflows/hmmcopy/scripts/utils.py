@@ -10,7 +10,15 @@ import matplotlib
 import numpy as np
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle
+from scipy.special import gamma
+from math import pi
 import warnings
+
+def t_dist_pdf(x, mu, lmbda, nu):
+    p = (gamma(nu/2+0.5)/gamma(nu/2))* \
+        pow((lmbda/(pi * nu)), 0.5) * \
+        pow(1+(lmbda * pow((x - mu), 2))/nu, -0.5 * nu - 0.5)
+    return p
 
 
 
