@@ -17,6 +17,7 @@ import utils as utl
 import math
 import warnings
 from matplotlib.patches import Patch
+import statsmodels.nonparametric.api as smnp
 
 from matplotlib.colors import rgb2hex
 
@@ -476,7 +477,7 @@ class GenHmmPlots(object):
         """
         generating a custom heatmap 2:gray 0: blue 2+: reds
         """
-        cmap = matplotlib.cm.get_cmap('viridis', num_states)
+        cmap = matplotlib.cm.get_cmap('coolwarm', num_states)
         colors = {}
 
         for i in range(cmap.N):
@@ -498,6 +499,8 @@ class GenHmmPlots(object):
         fig = plt.figure(figsize=(10, 10))
         cmap = self.get_cmap(num_states)
 
+        ylim_max = 0
+
         for state in range(1, num_states+1):
             color = cmap[state]
             data = reads[reads["state"] == state]["copy"]
@@ -515,7 +518,11 @@ class GenHmmPlots(object):
 
             y = utl.t_dist_pdf(x, mu, lmbda, nu)
             plt.plot(x,y, color)
+            ylim_max = max([ylim_max, max(y)])
 
+
+        ylim_max = max(plt.ylim()[1], ylim_max)
+        plt.ylim((0, ylim_max))
         plt.ylabel("density")
         plt.suptitle(plot_title)
 
@@ -550,9 +557,9 @@ class GenHmmPlots(object):
 #         segs_samp = self.get_sample_data(segs, self.sample_id)
 
         self.plot_corrected_reads(reads, self.sample_id, plot_title, annotations)
-
+ 
         self.plot_bias(reads, self.sample_id, plot_title, annotations)
-
+ 
         self.plot_segments(reads, segs, plot_title, annotations,
                            num_states=self.num_states)
 
