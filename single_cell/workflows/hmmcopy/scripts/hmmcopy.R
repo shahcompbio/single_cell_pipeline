@@ -219,7 +219,9 @@ error_exit_clean <- function(samp.uncorrected, chromosomes, sample_id, out_reads
 	segs <- c("chr","start","end","state","median","integer_median","integer_copy_number")
 	cat(segs, "\n", file=out_segs, sep=",")
 
-	file.create(out_params)
+	params <- c("initial","1","2","3","4","5","final","state","parameter","cell_id")
+	cat(params, "\n", file=out_params, sep=",")
+
 	file.create(out_post_marginals)
 }
 
