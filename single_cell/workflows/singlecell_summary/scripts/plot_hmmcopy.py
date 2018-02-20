@@ -589,7 +589,6 @@ class GenHmmPlots(object):
         plt.legend(handles=lgnd_patches,
                    bbox_to_anchor=(1, 1))
 
-
     def main(self):
         """
         main
