@@ -287,16 +287,16 @@ class ExtractHmmMetrics(object):
             segments_data = None
     
         metrics = self.compute_quality_metrics(corrected_data, segments_data, self.sample_id)
-    
+
         df_metrics = pd.concat([df_metrics, pd.DataFrame(metrics).transpose()])
-   
+
         param_data = pd.read_csv(self.params)
-       
+
         if not param_data.empty:
+
             loglik = float(param_data.ix[param_data['parameter']=='loglik', 'final'])
-  
+
             df_loglik = df_loglik.append(pd.Series({self.sample_id: loglik}))
- 
         else:
             df_loglik = df_loglik.append(pd.Series({self.sample_id: np.nan}))
 
