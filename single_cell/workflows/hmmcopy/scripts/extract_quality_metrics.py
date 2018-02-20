@@ -291,9 +291,10 @@ class ExtractHmmMetrics(object):
         df_metrics = pd.concat([df_metrics, pd.DataFrame(metrics).transpose()])
     
     
-        if os.stat(self.params).st_size != 0:
-            param_data = pd.read_csv(self.params)
-    
+        param_data = pd.read_csv(self.params)
+
+        if not param_data.empty:
+
             loglik = float(param_data.ix[param_data['parameter']=='loglik', 'final'])
     
             df_loglik = df_loglik.append(pd.Series({self.sample_id: loglik}))
