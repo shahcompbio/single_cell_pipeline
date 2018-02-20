@@ -499,6 +499,9 @@ class GenHmmPlots(object):
         fig = plt.figure(figsize=(10, 10))
         cmap = self.get_cmap(num_states)
 
+        if params.empty:
+            return
+
         ylim_max = 0
 
         for state in range(1, num_states+1):
