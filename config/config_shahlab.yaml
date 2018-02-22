@@ -43,6 +43,8 @@ hmmcopy_params:
     # Binned mappability file
     map_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.map.ws_125_to_500000.wig
 
+    exclude_list: /shahlab/amcpherson/projects/ith3/data/ref_db/destruct/repeats.satellite.regions
+
 
   tetraploid:
     mu: 0,0.25,0.5,0.75,1.0,1.25,1.5
@@ -73,6 +75,8 @@ hmmcopy_params:
     # Binned mappability file
     map_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.map.ws_125_to_500000.wig
 
+    exclude_list: /shahlab/amcpherson/projects/ith3/data/ref_db/destruct/repeats.satellite.regions
+
   triploid:
     mu: 0,0.33,0.66,1.0,1.33,1.66,2.0
 
@@ -102,6 +106,7 @@ hmmcopy_params:
     # Binned mappability file
     map_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.map.ws_125_to_500000.wig
 
+    exclude_list: /shahlab/amcpherson/projects/ith3/data/ref_db/destruct/repeats.satellite.regions
 
 
 # Reference genome to align to in fasta format. Should be indexed by aligner and samtools

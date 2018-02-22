@@ -10,6 +10,8 @@ from scripts import GenerateCNMatrix
 from scripts import FilterHmmData
 from scripts import GenHmmPlots
 from scripts import ConvertCSVToSEG
+from scripts import ReadCounter
+
 import pandas as pd
 from PyPDF2 import PdfFileMerger
 from single_cell.utils import concatenate_csv
@@ -34,15 +36,10 @@ def run_hmmcopy(
     #generate wig file for hmmcopy
     os.makedirs(tempdir)
     readcount_wig = os.path.join(tempdir, 'readcounter.wig')
-    pypeliner.commandline.execute(
-            'readCounter',
-            '-w', str(hmmparams['bin_size']),
-            '-q', str(hmmparams['min_mqual']),
-            '-c', ','.join(config['chromosomes']),
-            bam_file,
-            '>',
-            readcount_wig,
-        )
+
+    rc = ReadCounter(bam_file, readcount_wig, hmmparams['bin_size'], config['chromosomes'],
+                     hmmparams['min_mqual'], excluded=hmmparams['exclude_list'])
+    rc.main()
 
     #run hmmcopy
     cmd = ['Rscript', run_hmmcopy_rscript,
