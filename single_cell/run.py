@@ -246,6 +246,7 @@ def main():
             name='generate_intervals',
             func=utils.generate_intervals,
             ret=pypeliner.managed.TempOutputObj('intervals'),
+            ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
             args=(
                 config["ref_genome"],
             )

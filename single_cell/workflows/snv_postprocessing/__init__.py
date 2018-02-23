@@ -42,7 +42,7 @@ def create_snv_postprocessing_workflow(
               mgd.TempOutputFile("overlapping_calls.csv"),
               'merge',
               '\t',
-              'inner',
+              'outer',
               ['case_id', 'chromosome', 'start', 'stop', 'ref', 'alt'],
               'NA'
               )
