@@ -31,10 +31,14 @@ class GenerateCNMatrix(object):
 
         return input_df
 
-    def write(self, input_df):
+    def write(self, input_df, transpose=False):
         '''
         write the dataframe to output file
         '''
+        if transpose:
+            del input_df["gc"]
+            input_df = input_df.T
+            input_df["cell_id"] = input_df.index
 
         input_df.to_csv(self.output,
                         sep=self.sep,
@@ -93,7 +97,8 @@ class GenerateCNMatrix(object):
         
         if self.type == 'hmmcopy_corrected_reads':
             data = self.read_hmmcopy_corrected_read_file(sample_id)
+            self.write(data)
         else:
             data = self.read_gcbias_file(sample_id)
-        self.write(data)
+            self.write(data, transpose=True)
 
