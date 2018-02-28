@@ -6,9 +6,10 @@ Created on Nov 1, 2015
 from __future__ import division
 
 from collections import OrderedDict
+import subprocess
 
 from scripts import ParseStrelka
-
+import os
 import csv
 import ConfigParser
 import math
@@ -16,6 +17,14 @@ import pandas as pd
 import pypeliner
 import re
 import vcf
+import vcf_tasks
+import pysam
+
+import multiprocessing
+from utils import helpers
+from strelkautils import default_chromosomes
+
+
 
 FILTER_ID_BASE = 'BCNoise'
 FILTER_ID_DEPTH = 'DP'
@@ -25,6 +34,36 @@ FILTER_ID_QSS = 'QSS_ref'
 FILTER_ID_REPEAT = 'Repeat'
 FILTER_ID_SPANNING_DELETION = 'SpanDel'
 
+
+def _get_files_for_chrom(infiles, intervals, chrom):
+
+    if not isinstance(infiles, dict):
+        infiles = {ival:infiles[ival] for ival in intervals}
+
+    outfiles = {}
+    
+    for interval in intervals:
+        ival_chrom = interval.split("_")[0]
+        
+        if ival_chrom==chrom:
+            outfiles[interval] = infiles[interval]
+    
+    return outfiles
+
+
+def get_known_chromosome_sizes(size_file, chromosomes):
+    sizes = {}
+
+    with open(size_file, 'r') as fh:
+        reader = csv.DictReader(fh, ['path', 'chrom', 'known_size', 'size'], delimiter='\t')
+
+        for row in reader:
+            if row['chrom'] not in chromosomes:
+                continue
+
+            sizes[row['chrom']] = int(row['known_size'])
+
+    return sizes
 
 def count_fasta_bases(ref_genome_fasta_file, out_file):
 
@@ -38,41 +77,29 @@ def count_fasta_bases(ref_genome_fasta_file, out_file):
     pypeliner.commandline.execute(*cmd)
 
 
-def call_somatic_variants(
-        normal_bam_file,
-        normal_bai_file,
-        tumour_bam_file,
-        tumour_bai_file,
-        ref_genome_fasta_file,
-        indel_file,
-        indel_window_file,
-        snv_file,
-        stats_file,
-        interval,
-#         chrom,
-#         (beg, end),
-        known_chrom_size,
-        max_input_depth=10000,
-        min_tier_one_mapq=20,
-        min_tier_two_mapq=5,
-        sindel_noise=0.000001,
-        sindel_prior=0.000001,
-        ssnv_noise=0.0000005,
-        ssnv_noise_strand_bias_frac=0.5,
-        ssnv_prior=0.000001):
+def _somatic_variant_call_worker(normal_bam_file, tumour_bam_file, ref_genome,
+                                 indel_file, snv_file, indel_window_file, stats_file,
+                                interval, known_chrom_sizes, max_input_depth,
+                                min_tier_one_mapq, min_tier_two_mapq,
+                                sindel_noise, sindel_prior,
+                                ssnv_noise, ssnv_noise_strand_bias_frac,
+                                ssnv_prior):
 
-    chrom, beg, end = interval.split('_')
+    chrom,beg,end = interval.split('_')
+
+    known_chrom_sizes = known_chrom_sizes[chrom]
 
     beg = int(beg)
     beg = beg+1 if beg==0 else beg
-    
+    end = int(end)
+
 
     cmd = [
         'strelka2',
         '-bam-file', normal_bam_file,
         '--tumor-bam-file', tumour_bam_file,
 
-        '-samtools-reference', ref_genome_fasta_file,
+        '-samtools-reference', ref_genome,
 
         '--somatic-indel-file', indel_file,
         '--somatic-snv-file', snv_file,
@@ -84,7 +111,7 @@ def call_somatic_variants(
 
         '-clobber',
         '-filter-unanchored',
-        '-genome-size', known_chrom_size[chrom],
+        '-genome-size', known_chrom_sizes,
         '-indel-nonsite-match-prob', 0.5,
         '-max-indel-size', 50,
         '-max-window-mismatch', 3, 20,
@@ -112,7 +139,83 @@ def call_somatic_variants(
         '--tier2-single-align-score-rescue-mode'
     ]
 
-    pypeliner.commandline.execute(*cmd)
+    cmd = map(str,cmd)
+
+    subprocess.call(cmd)
+
+def call_somatic_variants(
+        normal_bam_file,
+        normal_bai_file,
+        tumour_bam_file,
+        tumour_bai_file,
+        known_sizes,
+        ref_genome,
+        indel_file,
+        indel_window_file,
+        snv_file,
+        stats_file,
+        intervals,
+        tempdir,
+        ncores=None,
+        max_input_depth=10000,
+        min_tier_one_mapq=20,
+        min_tier_two_mapq=5,
+        sindel_noise=0.000001,
+        sindel_prior=0.000001,
+        ssnv_noise=0.0000005,
+        ssnv_noise_strand_bias_frac=0.5,
+        ssnv_prior=0.000001):
+
+
+    indel_file = {ival:indel_file[ival] for ival in intervals}
+    indel_window_file = {ival:indel_window_file[ival] for ival in intervals}
+    snv_file = {ival:snv_file[ival] for ival in intervals}
+    stats_file = {ival:stats_file[ival] for ival in intervals}
+
+    count = multiprocessing.cpu_count()
+    
+    if ncores:
+        count = min(ncores, count)
+    
+    pool = multiprocessing.Pool(processes=count)
+
+    helpers.makedirs(tempdir)
+
+    tasks = []
+
+    intervals = [intervals[0]]
+
+    for interval in intervals:
+
+        ival_indel = indel_file[interval]
+        ival_indel_win = indel_window_file[interval]
+        ival_snv = snv_file[interval]
+        ival_stats = stats_file[interval]
+
+
+        task = pool.apply_async(_somatic_variant_call_worker,
+                                args=(normal_bam_file, tumour_bam_file,
+                                      ref_genome, ival_indel, ival_snv,
+                                      ival_indel_win, ival_stats,
+                                      interval,
+                                      known_sizes,
+                                      max_input_depth,
+                                      min_tier_one_mapq,
+                                      min_tier_two_mapq,
+                                      sindel_noise,
+                                      sindel_prior,
+                                      ssnv_noise,
+                                      ssnv_noise_strand_bias_frac,
+                                      ssnv_prior))
+        tasks.append(task)
+
+    pool.close()
+    pool.join()
+
+    [task.get() for task in tasks]
+
+
+    return known_sizes
 
 #=======================================================================================================================
 # SNV filtering
@@ -123,8 +226,9 @@ def filter_snv_file_list(
         in_files,
         stats_files,
         out_file,
-        interval,
+        chrom,
         known_chrom_size,
+        intervals,
         depth_filter_multiple=3.0,
         max_filtered_basecall_frac=0.4,
         max_spanning_deletion_frac=0.75,
@@ -132,18 +236,18 @@ def filter_snv_file_list(
         use_depth_filter=True):
 
 
-    chrom = interval.split('_')[0]
     known_chrom_size = known_chrom_size[chrom]
+
+    in_files = _get_files_for_chrom(in_files, intervals, chrom)
+    stats_files = _get_files_for_chrom(stats_files, intervals, chrom)
 
     max_normal_coverage = _get_max_normal_coverage(chrom, depth_filter_multiple, known_chrom_size, stats_files)
 
     writer = None
 
-    in_files = [in_files]
-
     with open(out_file, 'wb') as out_fh:
-        for in_file in in_files:
-            reader = vcf.Reader(filename=in_file)
+        for key in sorted(in_files):
+            reader = vcf.Reader(filename=in_files[key])
 
             if writer is None:
                 # Add filters to header
@@ -213,7 +317,7 @@ def filter_snv_file_list(
 
 def _get_max_normal_coverage(chrom, depth_filter_multiple, known_chrom_size, stats_files):
 
-    normal_coverage = _get_normal_coverage([stats_files])
+    normal_coverage = _get_normal_coverage(stats_files.values())
 
     normal_mean_coverage = normal_coverage / known_chrom_size
 
@@ -274,8 +378,9 @@ def filter_indel_file_list(
         stats_files,
         window_files,
         out_file,
-        interval,
+        chrom,
         known_chrom_size,
+        intervals,
         depth_filter_multiple=3.0,
         max_int_hpol_length=14,
         max_ref_repeat=8,
@@ -294,26 +399,28 @@ def filter_indel_file_list(
         'tumour_window_submap'
     )
 
-    chrom = interval.split('_')[0]
+
     known_chrom_size = known_chrom_size[chrom]
+
+    vcf_files = _get_files_for_chrom(vcf_files, intervals, chrom)
+    stats_files = _get_files_for_chrom(stats_files, intervals, chrom)
+    window_files = _get_files_for_chrom(window_files, intervals, chrom)
 
     max_normal_coverage = _get_max_normal_coverage(chrom, depth_filter_multiple, known_chrom_size, stats_files)
 
     writer = None
 
-    vcf_files = [vcf_files]
-
     with open(out_file, 'wb') as out_fh:
-        for vcf_file in sorted(vcf_files):
+        for key in sorted(vcf_files):
             window = pd.read_csv(
-                window_files,
+                window_files[key],
                 comment='#',
                         converters={'chrom': str},
                 header=None,
                 names=window_cols,
                 sep='\t')
 
-            reader = vcf.Reader(filename=vcf_file)
+            reader = vcf.Reader(filename=vcf_files[key])
 
             if writer is None:
                 # Add format to header
