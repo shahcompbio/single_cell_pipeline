@@ -6,61 +6,21 @@ Created on Jul 24, 2017
 import pandas as pd
 from scripts import SummaryMetrics
 from scripts import PlotKernelDensity
-from scripts import MergeFiles
 from scripts import PlotHeatmap
 from scripts import PlotMetrics
 from scripts import PlotPcolor
+from utils import csvutils
+from utils import pdfutils
+from utils import helpers
+from scripts import GenHmmPlots
+
+def merge_tables(infile, output, sep,
+                 merge_type, key_cols, nan_val):
+    csvutils.merge_csv(infile, output, merge_type, key_cols)
 
 
 def concatenate_csv(in_filenames, out_filename, nan_val='NA'):
-    data = []
-    for _, in_filename in in_filenames.iteritems():
-        with open(in_filename) as f:
-            first_line = f.readline()
-            if len(first_line) == 0:
-                continue
-        data.append(pd.read_csv(in_filename, dtype=str))
-    data = pd.concat(data, ignore_index=True)
-    data = data.fillna(nan_val)
-    data.to_csv(out_filename, index=False)
-
-
-def merge_csv(in_filenames, out_filename, how, on, nan_val='NA'):
-    data = []
-    for _, in_filename in in_filenames.iteritems():
-        with open(in_filename) as f:
-            first_line = f.readline()
-            if len(first_line) == 0:
-                continue
-        data.append(pd.read_csv(in_filename, dtype=str))
-
-    data = merge_frames(data, how, on)
-    data = data.fillna(nan_val)
-    data.to_csv(out_filename, index=False)
-
-
-def merge_frames(frames, how, on):
-    '''
-    annotates input_df using ref_df
-    '''
-
-    if ',' in on:
-        on = on.split(',')
-
-    if len(frames) == 1:
-        return frames[0]
-    else:
-        left = frames[0]
-        right = frames[1]
-        merged_frame = pd.merge(left, right,
-                                how=how,
-                                on=on)
-        for frame in frames[2:]:
-            merged_frame = pd.merge(merged_frame, frame,
-                                    how=how,
-                                    on=on)
-        return merged_frame
-
+    csvutils.concatenate_csv(in_filenames, out_filename)
 
 def get_summary_metrics(infile, output):
     summ = SummaryMetrics(infile, output)
@@ -70,14 +30,6 @@ def get_summary_metrics(infile, output):
 def plot_kernel_density(infile, output, sep, colname, plot_title):
     plot = PlotKernelDensity(infile, output, sep, colname, plot_title)
     plot.main()
-
-def merge_tables(infile, output, typ, sep,
-                 merge_type, key_cols, nan_val):
-
-    m = MergeFiles(infile, output, typ, sep,
-                   merge_type, key_cols, nan_val)
-    m.main()
-
 
 def plot_metrics(metrics, output, plot_title, gcbias_matrix, gc_content):
     plot = PlotMetrics(metrics, output, plot_title, gcbias_matrix, gc_content)
@@ -95,8 +47,6 @@ def plot_heatmap(infile, metrics, order_data, output, plot_title=None,
                        max_cn = max_cn)
     plot.main()
 
-
-
 def plot_pcolor(infile, metrics, order_data, output, plot_title=None,
                  column_name=None, plot_by_col=None, numreads_threshold=None,
                  mad_threshold=None, chromosomes=None, max_cn=None):
@@ -107,3 +57,38 @@ def plot_pcolor(infile, metrics, order_data, output, plot_title=None,
                        mad_threshold=mad_threshold, chromosomes=chromosomes,
                        max_cn = max_cn)
     plot.main()
+
+
+def plot_hmmcopy(reads, segments, params, metrics, sample_info, ref_genome, reads_out, segs_out,
+                 bias_out, params_out, sample_id, num_states=7, plot_title=None,
+                 mad_threshold=None, annotation_cols=None):
+    plot = GenHmmPlots(reads, segments, params, metrics, sample_info, ref_genome, reads_out, segs_out,
+                       bias_out, params_out, sample_id, num_states=num_states, plot_title=plot_title,
+                       mad_threshold=mad_threshold, annotation_cols=annotation_cols)
+    plot.main()
+
+
+def filtersamps(samp, metrics, mad_threshold):
+    mad = metrics[metrics['cell_id'] == samp]['mad_neutral_state'].iloc[0]
+    if mad>mad_threshold:
+        return True
+    return False
+    
+
+def merge_pdf(in_filenames, out_filename, metrics, mad_threshold):
+
+    metrics = pd.read_csv(metrics, sep=',')
+    expconds = metrics["experimental_condition"].unique()
+
+    cells = []
+    for expcond in expconds:
+        cells += sorted(metrics[metrics["experimental_condition"]==expcond]["cell_id"])
+
+    for infiles, out_file in zip(in_filenames, out_filename):
+
+        helpers.makedirs(out_file, isfile=True)
+
+        infiles = [infiles[samp] for samp in cells\
+                   if filtersamps(samp, metrics, mad_threshold)]
+
+        pdfutils.merge_pdfs(infiles, out_file)
