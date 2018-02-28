@@ -43,6 +43,7 @@ hmmcopy_params:
     # Binned mappability file
     map_wig_file: /refdata/GRCh37-lite.map.ws_125_to_500000.wig
 
+    exclude_list: null
 
   tetraploid:
     mu: 0,0.25,0.5,0.75,1.0,1.25,1.5
@@ -73,6 +74,8 @@ hmmcopy_params:
     # Binned mappability file
     map_wig_file: /refdata/GRCh37-lite.map.ws_125_to_500000.wig
 
+    exclude_list: null
+
   triploid:
     mu: 0,0.33,0.66,1.0,1.33,1.66,2.0
 
@@ -102,6 +105,8 @@ hmmcopy_params:
     # Binned mappability file
     map_wig_file: /refdata/GRCh37-lite.map.ws_125_to_500000.wig
 
+    exclude_list: null
+
 # Reference genome to align to in fasta format. Should be indexed by aligner and samtools
 ref_genome: /refdata/GRCh37-lite.fa
 
@@ -123,3 +128,5 @@ memory:
   low: 2
   med: 6
   high: 15
+
+max_cores: null
