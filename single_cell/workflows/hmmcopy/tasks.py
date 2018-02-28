@@ -12,9 +12,9 @@ from scripts import ConvertCSVToSEG
 from scripts import ReadCounter
 from scripts import CorrectReadCount
 
-from utils import csvutils
-from utils import pdfutils
-from utils import helpers
+from single_cell.utils import csvutils
+from single_cell.utils import pdfutils
+from single_cell.utils import helpers
 
 scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
 run_hmmcopy_rscript = os.path.join(scripts_directory, 'hmmcopy.R')

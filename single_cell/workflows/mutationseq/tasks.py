@@ -10,8 +10,8 @@ import multiprocessing
 
 from scripts import ParseMuseq
 
-from utils import helpers
-from utils import vcfutils
+from single_cell.utils import helpers
+from single_cell.utils import vcfutils
 
 import subprocess 
 

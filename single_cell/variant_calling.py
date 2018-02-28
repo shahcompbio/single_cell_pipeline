@@ -10,7 +10,7 @@ import pypeliner.managed as mgd
 from workflows import snv_postprocessing
 from workflows import mutationseq 
 from workflows import strelka
-from utils import helpers
+from single_cell.utils import helpers
 
 def variant_calling_workflow(workflow, args):
 

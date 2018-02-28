@@ -21,7 +21,7 @@ import vcf_tasks
 import pysam
 
 import multiprocessing
-from utils import helpers
+from single_cell.utils import helpers
 from strelkautils import default_chromosomes
 
 

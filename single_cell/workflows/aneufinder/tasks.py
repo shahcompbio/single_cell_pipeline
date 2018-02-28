@@ -4,8 +4,8 @@ import pypeliner
 import shutil
 from PyPDF2 import PdfFileMerger
 
-from utils import helpers
-from utils import pdfutils
+from single_cell.utils import helpers
+from single_cell.utils import pdfutils
 
 
 scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')

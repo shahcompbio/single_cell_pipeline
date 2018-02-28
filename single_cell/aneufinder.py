@@ -9,7 +9,7 @@ import os
 import pypeliner
 import pypeliner.managed as mgd
 from workflows import aneufinder 
-from utils import helpers
+from single_cell.utils import helpers
 
 
 def aneufinder_workflow(workflow, args):
