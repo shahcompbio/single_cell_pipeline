@@ -124,3 +124,5 @@ memory:
   low: 2
   med: 6
   high: 15
+
+max_cores: null
