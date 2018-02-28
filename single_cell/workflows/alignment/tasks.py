@@ -4,42 +4,77 @@ import errno
 import shutil
 import warnings
 import tarfile
+import pandas as pd
+from scripts import CollectMetrics
+from scripts import GenerateCNMatrix
+
+from utils import picardutils
+from utils import bamutils
+from utils import helpers
+from utils import csvutils
+from utils import gatkutils
 
 
-def makedirs(directory):
-    try:
-        os.makedirs(directory)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
+def merge_all_metrics(infiles, outfile):
+    csvutils.merge_csv(infiles, outfile, "outer", "cell_id")
 
+def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config, tempdir):
+    picardutils.bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config, tempdir)
 
-def make_tarfile(output_filename, source_dir):
-    with tarfile.open(output_filename, "w:gz") as tar:
-        tar.add(source_dir, arcname=os.path.basename(source_dir))
+def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, tempdir):
+    picardutils.bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, tempdir)
 
+def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_filename, histogram_filename, tempdir):
+    picardutils.bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_filename, histogram_filename, tempdir)
 
-def produce_fastqc_report(fastq_filename, output_html, output_plots, temp_dir):
-    makedirs(temp_dir)
+def merge_bams(inputs, output, output_index):
 
-    pypeliner.commandline.execute(
-        'fastqc',
-        '--outdir=' + temp_dir,
-        fastq_filename)
+    picardutils.merge_bams(inputs, output)
+    bamutils.bam_index(output, output_index)
 
+def merge_realignment(input_filenames, output_filename,
+                      config, input_sample_id):
+    merge_filenames = []
+    for (_, sample_id), filename in input_filenames.iteritems():
+        if input_sample_id != sample_id:
+            continue
+        merge_filenames.append(filename)
 
-    fastq_basename = os.path.basename(fastq_filename)
-    if fastq_basename.endswith(".fastq.gz"):
-        fastq_basename = fastq_basename.replace(".fastq.gz", "")
-    elif fastq_basename.endswith(".fq.gz"):
-        fastq_basename = fastq_basename.replace(".fq.gz", "")
-    else:
-        raise Exception("Unknown file type")
+    merge_bams(merge_filenames, output_filename, output_filename+".bai")
 
-    output_basename = os.path.join(temp_dir, fastq_basename)
+def realign(input_bams, input_bais, output_bams, tempdir, config, interval):
 
-    shutil.move(output_basename + '_fastqc.zip', output_plots)
-    shutil.move(output_basename + '_fastqc.html', output_html)
+    # make the dir
+    if not os.path.exists(tempdir):
+        os.makedirs(tempdir)
+
+    # symlink inputs to tempdir, inputs have same filename but they should be
+    # different for mapping file nwayout to work
+    # realign
+    new_inputs = {}
+    for key, bamfile in input_bams.iteritems():
+        new_bam = os.path.join(tempdir, key + '.bam')
+        new_bai = os.path.join(tempdir, key + '.bam.bai')
+
+        os.symlink(bamfile, new_bam)
+        os.symlink(bamfile + '.bai', new_bai)
+        new_inputs[key] = new_bam
+
+    # save intervals file in tempdir
+    targets = os.path.join(tempdir, 'realn_positions.intervals')
+    gatkutils.generate_targets(input_bams, config, targets, interval)
+
+    # run gatk realigner
+    gatkutils.gatk_realigner(new_inputs, config, targets, interval, tempdir)
+
+    # copy generated files in temp dir to the specified output paths
+    for key in input_bams.keys():
+        realigned_bam = os.path.join(tempdir, key + '_indel_realigned.bam')
+        realigned_bai = os.path.join(tempdir, key + '_indel_realigned.bai')
+        output_bam_filename = output_bams[key]
+        output_bai_filename = output_bam_filename + '.bai'
+        shutil.move(realigned_bam, output_bam_filename)
+        shutil.move(realigned_bai, output_bai_filename)
 
 
 def run_fastqc(fastq1, fastq2, reports, tempdir):
@@ -49,23 +84,23 @@ def run_fastqc(fastq1, fastq2, reports, tempdir):
     """
     reports_dir = os.path.join(tempdir, 'fastqc_reports')
     if not os.path.exists(reports_dir):
-        makedirs(reports_dir)
+        helpers.makedirs(reports_dir)
 
     out_html = os.path.join(reports_dir, 'fastqc_R1.html')
     out_plot = os.path.join(reports_dir, 'fastqc_R1.zip')
     if not os.path.getsize(fastq1) == 0:
-        produce_fastqc_report(fastq1, out_html, out_plot, tempdir)
+        bamutils.produce_fastqc_report(fastq1, out_html, out_plot, tempdir)
     else:
         warnings.warn("fastq file %s is empty, skipping fastqc" % fastq1)
 
     out_html = os.path.join(reports_dir, 'fastqc_R2.html')
     out_plot = os.path.join(reports_dir, 'fastqc_R2.zip')
     if not os.path.getsize(fastq2) == 0:
-        produce_fastqc_report(fastq2, out_html, out_plot, tempdir)
+        bamutils.produce_fastqc_report(fastq2, out_html, out_plot, tempdir)
     else:
         warnings.warn("fastq file %s is empty, skipping fastqc" % fastq1)
 
-    make_tarfile(reports, reports_dir)
+    helpers.make_tarfile(reports, reports_dir)
 
 
 def get_readgroup(run_id, sample_id, library_id, seqinfo):
@@ -83,41 +118,6 @@ def get_readgroup(run_id, sample_id, library_id, seqinfo):
     return read_group_template
 
 
-def bam_sort(bam_filename, sorted_bam_filename):
-    pypeliner.commandline.execute(
-        'picard', '-Xmx2G', '-Xms2G',
-        '-XX:ParallelGCThreads=1',
-        'SortSam',
-        'INPUT=' + bam_filename,
-        'OUTPUT=' + sorted_bam_filename,
-        'SORT_ORDER=coordinate',
-        'VALIDATION_STRINGENCY=LENIENT',
-        'MAX_RECORDS_IN_RAM=150000')
-
-
-def bwa_align_paired_end(fastq1, fastq2, output,
-                         reference, readgroup):
-    """
-    run bwa aln on both fastq files,
-    bwa sampe to align, and convert to bam with samtools view
-    """
-    pypeliner.commandline.execute(
-        'bwa', 'mem', '-M', '-R', readgroup,
-        reference, fastq1, fastq2, '|',
-        'samtools', 'view', '-bSh', '-',
-        '>', output,
-    )
-
-
-def run_flagstat(bam, metrics):
-
-    pypeliner.commandline.execute(
-        'samtools', 'flagstat',
-        bam,
-        '>',
-        metrics
-    )
-
 
 def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
              reference, source, sample_id, lane_id, library_id):
@@ -127,8 +127,61 @@ def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
     run_fastqc(fastq1, fastq2, reports, tempdir)
 
     aln_temp = os.path.join(tempdir, "temp_alignments.bam")
-    bwa_align_paired_end(fastq1, fastq2, aln_temp, reference, readgroup)
+    bamutils.bwa_mem_paired_end(fastq1, fastq2, aln_temp, reference, readgroup)
 
-    bam_sort(aln_temp, output)
+    picardutils.bam_sort(aln_temp, output, tempdir)
 
-    run_flagstat(output, metrics)
+    bamutils.bam_flagstat(output, metrics)
+
+
+def postprocess_bam(infile, outfile, outfile_index, tempdir,
+                    config, markdups_metrics, flagstat_metrics):
+    
+    if not os.path.exists(tempdir):
+        helpers.makedirs(tempdir)
+    
+    sorted_bam = os.path.join(tempdir, 'sorted.bam')
+    
+    picardutils.bam_sort(infile, sorted_bam, tempdir)
+
+    picardutils.bam_markdups(sorted_bam, outfile, markdups_metrics, tempdir)
+
+    bamutils.bam_index(outfile, outfile_index)
+    
+    bamutils.bam_flagstat(outfile, flagstat_metrics)
+
+
+def collect_gc(infiles, outfile, tempdir):
+
+    helpers.makedirs(tempdir)
+
+    tempouts = []
+    for sample_id,infile in infiles.iteritems():
+        tempout = os.path.join(tempdir, os.path.basename(infile)+".parsed.csv") 
+        tempouts.append(tempout)
+        gen_gc = GenerateCNMatrix(infile, tempout, ',',
+                                  'NORMALIZED_COVERAGE', sample_id,
+                                  'gcbias')
+        gen_gc.main()
+
+    csvutils.concatenate_csv(tempouts, outfile)
+
+def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
+                    wgs_metrics, tempdir, merged_metrics):
+
+    helpers.makedirs(tempdir)
+    sample_outputs = []
+    for sample in flagstat_metrics.keys():
+        flgstat = flagstat_metrics[sample]
+        mkdup = markdups_metrics[sample]
+        insrt = insert_metrics[sample]
+        wgs = wgs_metrics[sample]
+        outfile = os.path.join(tempdir, sample+"_metrics.csv")
+        sample_outputs.append(outfile)
+
+        collmet = CollectMetrics(wgs, insrt, flgstat,
+                                 mkdup, outfile, sample)
+        collmet.main()
+
+    csvutils.concatenate_csv(sample_outputs, merged_metrics)
+
