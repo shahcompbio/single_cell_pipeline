@@ -423,10 +423,11 @@ class PlotMetrics(object):
     
     def plot_gcbias_all(self, infile, pdf, plot_title, metrics, gcdata):
         df = pd.read_csv(infile)
+        df = df.set_index("cell_id")
     
         cmap = self.get_cmap(metrics)
-    
-        samples = [v for v in df.columns.values if v != 'gc']
+
+        samples = df.index
     
         plt.figure(figsize=(12,12))
         sns.set(context='talk',
@@ -444,7 +445,7 @@ class PlotMetrics(object):
     
         for samp in samples:
             cc = metrics[metrics['cell_id'] == samp]["cell_call"].iloc[0]
-            plt.plot(df['gc'], df[samp], color=cmap[cc], alpha=alpha)
+            plt.plot(range(0,101), df.loc[samp][map(str, range(0,101))], color=cmap[cc], alpha=alpha)
     
         if self.gc_content:
             ax = sns.barplot(x='gc', y='windows', data=gcdata,
@@ -499,6 +500,7 @@ class PlotMetrics(object):
                     'legend.fontsize': 6})
     
         df = pd.read_csv(infile)
+        df = df.set_index("cell_id")
     
         samps = get_samples_by_ec(metrics)
         cmap = self.get_cmap(metrics)
@@ -508,7 +510,7 @@ class PlotMetrics(object):
         for ec, samps in samps.iteritems():
             for samp in samps:
                 cc = metrics[metrics['cell_id'] == samp]["cell_call"].iloc[0]
-                plt.plot(df['gc'], df[samp], color=cmap[cc], alpha=alpha)
+                plt.plot(range(0,101), df.loc[samp][map(str, range(0,101))], color=cmap[cc], alpha=alpha)
     
             if self.gc_content:
                 ax = sns.barplot(x='gc', y='windows', data=gcdata,
@@ -563,6 +565,7 @@ class PlotMetrics(object):
                     'legend.fontsize': 6})
     
         df = pd.read_csv(infile)
+        df = df.set_index("cell_id")
     
         samps = get_samples_by_ec_cc(metrics)
     
@@ -571,7 +574,7 @@ class PlotMetrics(object):
         for ec, samps in samps.iteritems():
             plt.figure(figsize=(12,12))
             for samp in samps:
-                plt.plot(df['gc'], df[samp], color='#2098AE', alpha=alpha)
+                plt.plot(range(0,101), df.loc[samp][map(str, range(0,101))], color='#2098AE', alpha=alpha)
     
             if self.gc_content:
                 ax = sns.barplot(x='gc', y='windows', data=gcdata,
