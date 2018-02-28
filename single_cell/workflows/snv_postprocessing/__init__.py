@@ -36,16 +36,14 @@ def create_snv_postprocessing_workflow(
     workflow.transform(
         name='overlap_var_calls',
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
-        func=tasks.merge_tables,
+        func=tasks.merge_csv,
         args=([mgd.InputFile(museq_parsed),
                mgd.InputFile(strelka_parsed)],
               mgd.TempOutputFile("overlapping_calls.csv"),
-              'merge',
-              '\t',
-              'inner',
+              'outer',
               ['case_id', 'chromosome', 'start', 'stop', 'ref', 'alt'],
-              'NA'
-              )
+        ),
+        kwargs={'sep': '\t'}
     )
 
     workflow.transform(
@@ -69,7 +67,7 @@ def create_snv_postprocessing_workflow(
             mgd.InputFile(countdata, 'sample_id'),
             mgd.OutputFile(output),
             'outer',
-            'chrom,coord,ref_base,var_base'
+            ['chrom','coord','ref_base','var_base']
         ),
     )
 

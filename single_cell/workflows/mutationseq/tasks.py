@@ -6,66 +6,92 @@ Created on Jul 24, 2017
 import os
 import pypeliner
 import warnings
+import multiprocessing
 
 from scripts import ParseMuseq
 
+from utils import helpers
+from utils import vcfutils
 
-def run_museq(tumour, tumour_bai, normal, normal_bai, reference, museq_dir, out, log, interval, config):
+import subprocess 
 
-    script = os.path.join(museq_dir, 'classify.py')
+
+def _run_museq_worker(tumour, normal, out, log, config, interval):
+    '''
+    Run museq script for each chromosome
+
+    :param tumour: path to tumour bam
+    :param normal: path to normal bam
+    :param out: path to temporary output VCF file for the chromosome
+    :param log: path to the log file
+    :param config: path to the config YAML file
+    :param chrom: chromosome number
+    '''
+
+    interval = interval.split('_')
+    interval = interval[0]+':'+interval[1]+"-"+interval[2]
+
+    script = os.path.join(config['mutationseq'], 'classify.py')
+    conf = os.path.join(config['mutationseq'], 'metadata.config')
     model = config['mutationseq_model']
+    reference = config['ref_genome']
 
-    conf = os.path.join(museq_dir, 'metadata.config')
+    cmd = ['python', script, 'normal:' + normal, 'tumour:' + tumour,
+           'reference:' + reference, 'model:' + model, '--out', out,
+           '--log', log, '--config', conf, '--interval', interval]
 
-    cmd = ['python', script, 'normal:'+ normal, 'tumour:'+ tumour,
-           'reference:'+ reference, 'model:'+ model, '--out', out,
-           '--log', log, '--config', conf]
 
-    if interval:
-        if "_" in interval:
-            interval = interval.split('_')
-            interval = "{}:{}-{}".format(*interval)
-        cmd.extend(['--interval', interval])
+    subprocess.call(cmd)
 
-    pypeliner.commandline.execute(*cmd)
 
-def concatenate_vcf(infiles, outfile):
-    def get_header(infile):
-        '''
-        extract header from the file
-        '''
-        header = []
-        for line in infile:
-            if line.startswith('##'):
-                header.append(line)
-            elif line.startswith('#'):
-                header.append(line)
-                return header
-            else:
-                raise Exception('invalid header: missing #CHROM line')
+def run_museq(tumour, tumour_bai, normal, normal_bai, out, log, tempdir, config, intervals, ncores=None):
+    '''
+    Run museq script for all chromosomes and merge VCF files
 
-        warnings.warn("One of the input files is empty")
-        return []
+    :param tumour: path to tumour bam
+    :param normal: path to normal bam
+    :param out: path to the temporary output VCF file for the merged VCF files
+    :param log: path to the log file
+    :param config: path to the config YAML file
+    '''
 
-    with open(outfile, 'w') as ofile:
-        header = None
+    helpers.makedirs(os.path.dirname(log))
+    helpers.makedirs(tempdir)
 
-        for _,ifile in infiles.iteritems():
+    count = multiprocessing.cpu_count()
+    
+    if ncores:
+        count = min(ncores, count)
+    
+    pool = multiprocessing.Pool(processes=count)
 
-            with open(ifile) as f:
+    output_vcf = {}
 
-                if not header:
-                    header = get_header(f)
+    tasks = []
 
-                    for line in header:
-                        ofile.write(line)
-                else:
-                    if not get_header(f) == header:
-                        warnings.warn(
-                            'merging vcf files with mismatching headers')
+    for interval in intervals:
+        outfile = os.path.join(tempdir, str(interval) + '.vcf.tmp')
 
-                for l in f:
-                    print >> ofile, l,
+        task = pool.apply_async(_run_museq_worker,
+                                args=(
+                                        tumour,
+                                        normal,
+                                        outfile,
+                                        log,
+                                        config,
+                                        interval,
+                                    )
+                                )
+
+        tasks.append(task)
+        output_vcf[interval] = outfile
+
+    pool.close()
+    pool.join()
+
+    [task.get() for task in tasks]
+
+    vcfutils.concatenate_vcf(output_vcf, out)
 
 def parse_museq(infile, output):
     parser = ParseMuseq(infile=infile, tid='NA', nid='NA', output=output,
