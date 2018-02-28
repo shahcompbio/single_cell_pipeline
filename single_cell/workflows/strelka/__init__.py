@@ -42,7 +42,7 @@ def create_strelka_workflow(
               
     workflow.transform(
         name='count_fasta_bases',
-        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'] },
         func=tasks.count_fasta_bases,
         args=(
             ref_genome_fasta_file,
@@ -53,7 +53,7 @@ def create_strelka_workflow(
 
     workflow.transform(
         name="get_chrom_sizes",
-        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'] },
         func=tasks.get_known_chromosome_sizes,
         ret=pypeliner.managed.TempOutputObj('known_sizes'),
         args=(
@@ -64,7 +64,7 @@ def create_strelka_workflow(
      
     workflow.transform(
         name='call_somatic_variants',
-        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['multicore'] },
         func=tasks.call_somatic_variants,
         args=(
             pypeliner.managed.InputFile(normal_bam_file),
@@ -86,7 +86,7 @@ def create_strelka_workflow(
     workflow.transform(
         name='add_indel_filters',
         axes=('chrom',),
-        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'] },
         func=tasks.filter_indel_file_list,
         args=(
             pypeliner.managed.TempInputFile('somatic.indels.unfiltered.vcf', 'interval', axes_origin=[]),
@@ -103,7 +103,7 @@ def create_strelka_workflow(
     workflow.transform(
         name='add_snv_filters',
         axes=('chrom',),
-        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'] },
         func=tasks.filter_snv_file_list,
         args=(
             pypeliner.managed.TempInputFile('somatic.snvs.unfiltered.vcf', 'interval', axes_origin=[]),
@@ -118,7 +118,7 @@ def create_strelka_workflow(
    
     workflow.transform(
         name='merge_indels',
-        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'] },
         func=vcf_tasks.concatenate_vcf,
         args=(
             pypeliner.managed.TempInputFile('somatic.indels.filtered.vcf', 'chrom'),
@@ -128,7 +128,7 @@ def create_strelka_workflow(
    
     workflow.transform(
         name='merge_snvs',
-        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'] },
         func=vcf_tasks.concatenate_vcf,
         args=(
             pypeliner.managed.TempInputFile('somatic.snvs.filtered.vcf', 'chrom'),
@@ -138,7 +138,7 @@ def create_strelka_workflow(
    
     workflow.transform(
         name='filter_indels',
-        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'] },
         func=vcf_tasks.filter_vcf,
         args=(
             pypeliner.managed.TempInputFile('somatic.indels.filtered.vcf.gz'),
@@ -148,7 +148,7 @@ def create_strelka_workflow(
    
     workflow.transform(
         name='filter_snvs',
-        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'] },
         func=vcf_tasks.filter_vcf,
         args=(
             pypeliner.managed.TempInputFile('somatic.snvs.filtered.vcf.gz'),
@@ -158,6 +158,7 @@ def create_strelka_workflow(
    
     workflow.transform(
         name='finalise_indels',
+        ctx={'pool_id': config['pools']['standard']},
         func=vcf_tasks.finalise_vcf,
         args=(
             pypeliner.managed.TempInputFile('somatic.indels.passed.vcf'),
@@ -167,6 +168,7 @@ def create_strelka_workflow(
    
     workflow.transform(
         name='finalise_snvs',
+        ctx={'pool_id': config['pools']['standard']},
         func=vcf_tasks.finalise_vcf,
         args=(
             pypeliner.managed.TempInputFile('somatic.snvs.passed.vcf'),
@@ -176,7 +178,7 @@ def create_strelka_workflow(
    
     workflow.transform(
         name='parse_strelka_snv',
-        ctx={'mem': 10},
+        ctx={'mem': 10, 'pool_id': config['pools']['standard']},
         func=tasks.parse_strelka,
         args=(
               pypeliner.managed.InputFile(snv_vcf_file),
@@ -186,7 +188,7 @@ def create_strelka_workflow(
    
     workflow.transform(
         name='parse_strelka_indel',
-        ctx={'mem': 10},
+        ctx={'mem': 10, 'pool_id': config['pools']['standard']},
         func=tasks.parse_strelka,
         args=(
               pypeliner.managed.InputFile(indel_vcf_file),

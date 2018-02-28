@@ -7,7 +7,7 @@ import os
 import pypeliner
 import pypeliner.managed as mgd
 from workflows import pseudo_wgs 
-from utils import helpers
+from single_cell.utils import helpers
 
 def pseudo_wgs_workflow(workflow, args):
 

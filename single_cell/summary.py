@@ -7,7 +7,7 @@ import os
 import pypeliner
 import pypeliner.managed as mgd
 from workflows import singlecell_summary 
-from utils import helpers
+from single_cell.utils import helpers
 
 
 

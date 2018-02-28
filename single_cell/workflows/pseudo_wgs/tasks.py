@@ -8,8 +8,8 @@ import errno
 import pypeliner
 from scripts import CollectMetrics
 
-from utils import bamutils
-from utils import picardutils
+from single_cell.utils import bamutils
+from single_cell.utils import picardutils
 
 def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config, tempdir):
     picardutils.bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config, tempdir, mem="12G")

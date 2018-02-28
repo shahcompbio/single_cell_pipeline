@@ -8,11 +8,11 @@ import pandas as pd
 from scripts import CollectMetrics
 from scripts import GenerateCNMatrix
 
-from utils import picardutils
-from utils import bamutils
-from utils import helpers
-from utils import csvutils
-from utils import gatkutils
+from single_cell.utils import picardutils
+from single_cell.utils import bamutils
+from single_cell.utils import helpers
+from single_cell.utils import csvutils
+from single_cell.utils import gatkutils
 
 
 def merge_all_metrics(infiles, outfile):

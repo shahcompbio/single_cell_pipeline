@@ -9,9 +9,9 @@ from scripts import PlotKernelDensity
 from scripts import PlotHeatmap
 from scripts import PlotMetrics
 from scripts import PlotPcolor
-from utils import csvutils
-from utils import pdfutils
-from utils import helpers
+from single_cell.utils import csvutils
+from single_cell.utils import pdfutils
+from single_cell.utils import helpers
 from scripts import GenHmmPlots
 
 def merge_tables(infile, output, sep,
