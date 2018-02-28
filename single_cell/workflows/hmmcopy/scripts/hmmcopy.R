@@ -37,9 +37,7 @@ suppressPackageStartupMessages(library("plyr"))
 # Command Line Options
 #=======================================================================================================================
 spec = matrix(c(
-				"tumour_file",  "t",    1, "character", "binned tumour read file (.wig)",
-				"gc_file",      "g",    1, "character", "binned gc content file (.wig)",
-				"map_file",     "m",    1, "character", "binned mappability file (.wig)",
+				"corrected_data",  "t",    1, "character", "csv file with the corrected_data",
 				"map_cutoff",   "c",    2, "double",    "optional mappability cutoff, all bins below this cutoff removed",
 				"num_states",   "n",    2, "integer",   "optional number of hidden states to model, must be equal to or greater than 6",
 				"param_mu",     "u",    2, "character", "optional mu median parameter, comma-separated list of length num_states",
@@ -68,15 +66,15 @@ if (!is.null(opt$help)) {
 modify_param <- function(model.params, param.name, opt.param, num.states) {
 	if (!is.null(opt.param)) {
 		length.param <- length(strsplit(opt.param, ",")[[1]])
-		
+
 		if (length.param == num.states) {
 			model.params[param.name] <- as.numeric(strsplit(opt.param, ",")[[1]])
-			
+
 		} else {
 			stop(paste(paste("Invalid length for parameter ", param.name, sep=""), ". Length must be equal to num_states.", sep=""))
-		
+
 		}
-		
+
 	}
 	return(model.params)
 }
@@ -98,28 +96,28 @@ recompute_start_end <- function(segs_chr, bin_size) {
 
 recompute_segment_medians <- function(segs.df, samp.corrected) {
 	chr <- space(samp.corrected)
-	
+
 	segs_list <- list_segments(segs.df)
-	
+
 	segs_list <- segs_list[levels(chr)]
-	
+
 	segs_list_rescaled <- lapply(segs_list, recompute_start_end, bin_size=samp.corrected$ranges[1]@width)
-	
+
 	segs_integer_median <- HMMcopy:::processSegments(segs_list_rescaled, chr, start(samp.corrected), end(samp.corrected), samp.corrected$integer_copy_scale)
 }
 
-get_bin_integer_copy_number <- function(df.row, segs) {	
+get_bin_integer_copy_number <- function(df.row, segs) {
 	within_chr <- which((as.character(segs$chr) == as.character(df.row$chr)))
 	within_start <- which((segs$start <= df.row$start))
 	within_end <- which((segs$end >= df.row$end))
-	
+
 	row_segment <- intersect(intersect(within_chr, within_start), within_end)
-	
+
 	if (length(row_segment)==1) {
 		df.row$integer_copy_number <- segs$integer_copy_number[row_segment]
 	} else {
 		df.row$integer_copy_number <- NA
-		warning.message <- paste("Warning! Could not find unique segment for bin:", 
+		warning.message <- paste("Warning! Could not find unique segment for bin:",
 				df.row$chr, df.row$start, df.row$end, collapse=" ")
 		warning(warning.message)
 	}
@@ -137,27 +135,27 @@ format_parameter_table <- function(samp.segmented) {
 	# lambdas - state precision (inverse variance)
 	# pi - state distribution
 	# loglik  - likelihood values of each EM iteration
-	
+
 	num_iter <- ncol(samp.segmented$mus)
-	
+
 	df.params <- data.frame()
-	
+
 	state_params <- c("mus", "lambdas")
-	
+
 	for (i in 1:length(state_params)) {
 		df.param <- data.frame(samp.segmented[[state_params[i]]])
 		colnames(df.param)[1] <- "initial"
 		colnames(df.param)[2:ncol(df.param)] <- c(1:(ncol(df.param)-1))
 		colnames(df.param)[ncol(df.param)] <- "final"
-		
+
 		if (nrow(df.param) > 1) {
 			df.param$state <- c(1:nrow(df.param))
 		} else {
 			df.param$state <- NA
 		}
-		
+
 		df.param$parameter <- state_params[i]
-		
+
 		df.params <- rbind(df.params, df.param)
 	}
 	df.pi <- data.frame(matrix(nrow=length(samp.segmented$pi), ncol=ncol(df.params)))
@@ -166,7 +164,7 @@ format_parameter_table <- function(samp.segmented) {
 	df.pi[,ncol(df.params)] <- "pi"
 	colnames(df.pi) <- colnames(df.params)
 	df.params <- rbind(df.params, df.pi)
-	
+
 	df.loglik <- data.frame(t(samp.segmented$loglik))
 	colnames(df.loglik)[1] <- "initial"
 	colnames(df.loglik)[2:ncol(df.loglik)] <- c(1:(ncol(df.loglik)-1))
@@ -174,28 +172,28 @@ format_parameter_table <- function(samp.segmented) {
 	df.loglik$state <- NA
 	df.loglik$parameter <- "loglik"
 	df.params <- rbind(df.params, df.loglik)
-	
+
 	return(df.params)
-	
+
 }
 
 format_posterior_marginals_table <- function(samp.corrected, samp.segmented) {
 	# rho - posterior marginals (responsibilities) for each position and state
-	
+
 	df.bins <- as.data.frame(samp.corrected)
 	colnames(df.bins)[1] <- "chr"
 	df.bins <- df.bins[,c(1:4)]
-	
+
 	df.rho <- data.frame(t(samp.segmented$rho))
 	colnames(df.rho) <- paste("state", as.character(c(1:ncol(df.rho))), sep="")
-	
+
 	df.rho <- cbind(df.bins, df.rho)
-	
+
 	df.rho$chr <- factor(df.rho$chr, levels=chromosomes, ordered=T)
 	df.rho <- df.rho[order(df.rho$chr),]
-	
+
 	return(df.rho)
-	
+
 }
 
 error_exit_clean <- function(samp.uncorrected, chromosomes, sample_id, out_reads, out_segs, out_params, out_post_marginals, error) {
@@ -219,7 +217,9 @@ error_exit_clean <- function(samp.uncorrected, chromosomes, sample_id, out_reads
 	segs <- c("chr","start","end","state","median","integer_median","integer_copy_number")
 	cat(segs, "\n", file=out_segs, sep=",")
 
-	file.create(out_params)
+	params <- c("initial","1","2","3","4","5","final","state","parameter","cell_id")
+	cat(params, "\n", file=out_params, sep=",")
+
 	file.create(out_post_marginals)
 }
 
@@ -234,128 +234,134 @@ chromosomes <- c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", 
 #out_post_marginals <- paste(paste(opt$out_dir, opt$out_basename, sep="/"), ".posterior_marginals.csv", sep="")
 
 out_reads <- opt$reads_output
-out_segs <- opt$segs_output 
+out_segs <- opt$segs_output
 out_params <- opt$params_output
 out_post_marginals <- opt$post_marginals_output
 
-# read alignment data
-samp.uncorrected <- wigsToRangedData(opt$tumour_file, opt$gc_file, opt$map_file, verbose=F)
 
-# correct and segment data
-samp.corrected <- try(correctReadcount(samp.uncorrected, verbose=F), silent=T)
+samp.corrected <- read.table(opt$corrected_data, sep=',', header=TRUE)
+
+#if correct hmmcopy fails then all corrected cols will be NA, just skip hmmcopy in that case
+if (all(is.na(samp.corrected$cor_gc)) & all(is.na(samp.corrected$copy))){
+        err <- "Low coverage sample results in loess regression failure, unable to correct and segment"
+	error_exit_clean(samp.corrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_post_marginals, err)
+}
+samp.corrected <- RangedData(ranges = IRanges(start=samp.corrected$start, end=samp.corrected$end), space=samp.corrected$chr,
+                             width=samp.corrected$width, reads=samp.corrected$reads, gc=samp.corrected$gc, map=samp.corrected$map,
+                             cor_gc=samp.corrected$cor_gc, copy=samp.corrected$copy, valid=samp.corrected$valid, ideal=samp.corrected$ideal,
+                             modal_curve=samp.corrected$modal_curve,modal_quantile=samp.corrected$modal_quantile)
+
 
 if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.map == Inf))) > 0) {
         err <- "Low coverage sample results in loess regression failure, unable to correct and segment"
-        error_exit_clean(samp.uncorrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_post_marginals, err)
-	
+        error_exit_clean(samp.corrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_post_marginals, err)
+
 } else {
-	#samp.corrected$copy <- samp.corrected$cor.map
-	samp.corrected$copy <- samp.corrected$cor.gc
-	
+
 	# if mappability cutoff given, remove bins with mappability below cutoff value
 	if (!is.null(opt$map_cutoff)) {
 		samp.corrected$copy[samp.corrected$map < opt$map_cutoff] <- NA
 	}
-	
+
 	# apply segmentation parameters
 	default.params <- HMMsegment(samp.corrected, getparam=T)
 	new.params <- default.params
 
 
 	# check whether to add additional states
-	if (!is.null(opt$num_states) && opt$num_states > 6) {		
+	if (!is.null(opt$num_states) && opt$num_states > 6) {
 		while (nrow(new.params) < opt$num_states) {
 			new.params <- rbind(new.params, new.params[6,])
 		}
-		
+
 		rownames(new.params) <- NULL
-		
+
 		if (is.null(opt$param_mu) || is.null(opt$param_m) || is.null(opt$param_k)) {
-			warning(paste("Number of states was increased, but no new values given for one of mu, m, kappa.", 
+			warning(paste("Number of states was increased, but no new values given for one of mu, m, kappa.",
 						  "Parameter settings may be nonsensical.", sep=" "))
 		}
-		
+
 	} else if (!is.null(opt$num_states) && opt$num_states < 6) {
 		stop(paste(paste("Invalid value specified for num_states parameter. Must be equal to or greater than 6, but given ", opt$num_states, sep=""), ".", sep=""))
 	}
-	
+
 	# modify model parameters (if specified)
 	new.params <- modify_param(new.params, 'mu', opt$param_mu, opt$num_states)
-	
+
 	new.params <- modify_param(new.params, 'm', opt$param_m, opt$num_states)
-	
+
 	new.params <- modify_param(new.params, 'kappa', opt$param_k, opt$num_states)
-	
+
 	if (!is.null(opt$param_e)) {
 		new.params$e <- as.numeric(opt$param_e)
 	}
-	
+
 	if (!is.null(opt$param_g)) {
 		new.params$gamma <- as.numeric(opt$param_g)
 	}
-	
+
 	if (!is.null(opt$param_s)) {
 		new.params$S <- as.numeric(opt$param_s)
 	}
-	
+
 	# segment
 	tryCatch({
 		samp.segmented <- HMMsegment(samp.corrected, new.params, verbose=F)
 	},
 		error = function(err){
-			error_exit_clean(samp.uncorrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_post_marginals, as.character(err))
+			error_exit_clean(samp.corrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_post_marginals, as.character(err))
 			quit()
 	})
 	samp.corrected$state <- samp.segmented$state
-	
+
 	# convert to integer copy number scale
 	state_2_index <- which(samp.segmented$segs$state == 2)
 	state_3_index <- which(samp.segmented$segs$state == 3)
 	if (length(state_3_index) > 0) {
-		
+
 		state_3_median <- median(samp.segmented$segs$median[state_3_index])
 		samp.corrected$integer_copy_scale <- samp.corrected$copy / (state_3_median / 2)
-				
+
 	} else if (length(state_2_index) > 0) {
-		
+
 		state_2_median <- median(samp.segmented$segs$median[state_2_index])
 		samp.corrected$integer_copy_scale <- samp.corrected$copy / state_2_median
-			
+
 	} else {
-		
+
 		warning(paste("Sample had no State 3 or State 2 copy number calls. Unable to produce integer profile for ", opt$tumour_file, sep=""))
 		samp.corrected$integer_copy_scale <- NA
-		
+
 	}
-		
+
 	# recompute segment medians
 	segs.integer.medians <- recompute_segment_medians(samp.segmented$segs, samp.corrected)
 	colnames(segs.integer.medians)[ncol(segs.integer.medians)] <- "integer_median"
-	
+
 	# round segment medians to integer copy number
 	segs.integer.medians$integer_copy_number <- round(segs.integer.medians$integer_median)
-	
+
 	# format corrected read count table
 	corrected.table <- format_read_count_table(samp.corrected, chromosomes)
-	
+
 	# add integer copy number to read count table
 	corrected.table <- adply(corrected.table, 1, get_bin_integer_copy_number, segs=segs.integer.medians)
 	colnames(corrected.table)[ncol(corrected.table)] <- "integer_copy_number"
-        corrected.table$cell_id <- opt$sample_id	
+        corrected.table$cell_id <- opt$sample_id
 	# output read count table\
 
-        names(corrected.table)[names(corrected.table) == 'cor.map'] <- 'cor_map'
-        names(corrected.table)[names(corrected.table) == 'cor.gc'] <- 'cor_gc'
+        # names(corrected.table)[names(corrected.table) == 'cor.map'] <- 'cor_map'
+        # names(corrected.table)[names(corrected.table) == 'cor.gc'] <- 'cor_gc'
         #print(colnames(corrected.table))
 	write.table(format(corrected.table, scientific=F, trim=T), file=out_reads, quote=F, sep=",", col.names=T, row.names=F)
-	
+
 	# format and output segment table
 	segments.table <- merge(samp.segmented$segs, segs.integer.medians, sort=F)
 	segments.table$chr <- factor(segments.table$chr, levels=chromosomes, ordered=T)
 	segments.table <- segments.table[order(segments.table$chr),]
         segments.table$cell_id <- opt$sample_id
 	write.table(format(segments.table, scientific=F, trim=T), file=out_segs, quote=F, sep=",", col.names=T, row.names=F)
-	
+
 	# format and output parameter and posterior marginal tables
 	df.params <- format_parameter_table(samp.segmented)
 
@@ -370,7 +376,7 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 	df.params$cell_id <- opt$sample_id
 
 	write.table(format(df.params, scientific=F, trim=T), file=out_params, quote=F, sep=",", col.names=T, row.names=F)
-	
+
 	df.marginals <- format_posterior_marginals_table(samp.corrected, samp.segmented)
         df.marginals$cell_id <- opt$sample_id
 	write.table(format(df.marginals, scientific=F, trim=T), file=out_post_marginals, quote=F, sep=",", col.names=T, row.names=F)
