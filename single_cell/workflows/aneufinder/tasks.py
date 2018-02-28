@@ -2,24 +2,15 @@ import os
 import pandas as pd
 import pypeliner
 import shutil
-from single_cell.workflows.hmmcopy.scripts.plot_hmmcopy import GenHmmPlots
 from PyPDF2 import PdfFileMerger
+
+from utils import helpers
+from utils import pdfutils
+
 
 scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
 run_aneufinder_rscript = os.path.join(scripts_directory, 'Aneufinder.R')
 rdata_to_csv_rscript = os.path.join(scripts_directory, 'Rdatatocsv.R')
-
-
-def symlink(actual_file, symlink):
-    shutil.copy(actual_file, symlink)
-#    if not os.path.exists(symlink):
-#        os.symlink(actual_file, symlink)
-
-
-def makedir(dir):
-    if not os.path.exists(dir):
-        os.mkdir(dir)
-
 
 def convert_segments_to_hmmcopy_format(
     csv_name,
@@ -59,22 +50,22 @@ def run_aneufinder(
     dnacopy_plot):
 
     # Create an output folder for temp storage
-    makedir(working_dir)
+    helpers.makedirs(working_dir)
 
     bam_name = os.path.basename(bam_file)
     # Symlink to the original bam file
     fake_bam_file = os.path.join(working_dir, bam_name)
-    symlink(bam_file, fake_bam_file)
+    helpers.copy_file(bam_file, fake_bam_file)
 
     bai_file = bam_file + '.bai'
     if os.path.exists(bai_file):
         bai_name = bam_name + '.bai'
         fake_bai_file = os.path.join(working_dir, bai_name)
-        symlink(bai_file, fake_bai_file)
+        helpers.copy_file(bai_file, fake_bai_file)
 
     # Give aneufinder a place to output
     temp_output = os.path.join(working_dir, 'output')
-    makedir(temp_output)
+    helpers.makedirs(temp_output)
 
     # Run Aneufinder
     cmd = ['Rscript', run_aneufinder_rscript, working_dir, temp_output]
@@ -89,6 +80,7 @@ def run_aneufinder(
 
     # Copy out the plot files. Grabs the first bin size that it sees
     all_plots = os.listdir(os.path.join(temp_output, 'PLOTS', 'method-dnacopy'))
+    
     cell_plot = [x for x in all_plots if x.startswith('profiles')][0]
     cell_plot = os.path.join(temp_output, 'PLOTS', 'method-dnacopy', cell_plot)
 
@@ -110,19 +102,5 @@ def run_aneufinder(
 
 
 def merge_pdf(in_filenames, out_filename):
-
     for in_files, out_file in zip(in_filenames, out_filename):
-
-        outdir = os.path.dirname(out_file)
-        if not os.path.exists(outdir):
-            os.makedirs(outdir)
-
-        merger = PdfFileMerger()
-
-        for samp, infile in in_files.iteritems():
-            if os.stat(infile).st_size > 0:
-                merger.append(open(infile, 'rb'))
-        if not os.path.exists(os.path.dirname(out_file)):
-            os.makedirs(os.path.dirname(out_file))
-        with open(out_file, 'wb') as fout:
-            merger.write(fout)
+        pdfutils.merge_pdf(in_files, out_file)
