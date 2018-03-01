@@ -8,11 +8,10 @@ import pypeliner
 
 def generate_targets(input_bams, config, intervals, interval):
     # generate positions
-    cmd = ['gatk', '-Xmx2G',
+    cmd = ['gatk', '-Xmx8G',
            '-T', 'RealignerTargetCreator',
            '-R', config['ref_genome'],
            '-o', intervals, '-L', interval,
-           '--maxReadsForRealignment','150000'
            ]
 
     for _, bamfile in input_bams.iteritems():
@@ -22,7 +21,10 @@ def generate_targets(input_bams, config, intervals, interval):
 
 
 def gatk_realigner(inputs, config, targets, interval, tempdir):
-    cmd = ['gatk', '-Xmx2G',
+
+
+    targets = os.path.abspath(targets)
+    cmd = ['gatk', '-Xmx8G',
            '-T', 'IndelRealigner',
            '-R', config['ref_genome'],
            '-targetIntervals', targets,
@@ -31,8 +33,13 @@ def gatk_realigner(inputs, config, targets, interval, tempdir):
            ]
 
     for _, bamfile in inputs.iteritems():
+        bamfile = os.path.abspath(bamfile)
         cmd.extend(['-I', bamfile])
 
+
+    cwd = os.getcwd()
     os.chdir(tempdir)
 
     pypeliner.commandline.execute(*cmd)
+
+    os.chdir(cwd)

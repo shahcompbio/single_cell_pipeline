@@ -70,7 +70,8 @@ def create_alignment_workflow(
             mgd.TempInputObj('seqinfo', 'sample_id'),
             mgd.InputInstance('sample_id'),
             mgd.InputInstance('lane'),
-            args['library_id']
+            args['library_id'],
+            config
         )
     )
 
@@ -85,38 +86,39 @@ def create_alignment_workflow(
             mgd.TempOutputFile('merged_lanes.bam.bai', 'sample_id'),
         )
     )
- 
-    final_bam = mgd.TempInputFile('merged_lanes.bam', 'sample_id')
+
     if args['realign']:
         workflow.transform(
             name='realignment',
             axes=('chrom',),
-            ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+            ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem']},
             func=tasks.realign,
             args=(
-                mgd.InputFile('merged_lanes.bam', 'sample_id'),
-                mgd.InputFile('merged_lanes.bam.bai', 'sample_id'),
+                mgd.TempInputFile('merged_lanes.bam', 'sample_id'),
+                mgd.TempInputFile('merged_lanes.bam.bai', 'sample_id'),
                 mgd.TempOutputFile('realigned.bam', 'chrom', 'sample_id'),
                 mgd.TempSpace('realignment_temp', 'chrom', cleanup='before'),
                 config,
                 mgd.InputInstance('chrom')
             )
         )
-       
+
         workflow.transform(
             name='merge_realignment',
-            ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+            ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem']},
             axes=('sample_id',),
             func=tasks.merge_realignment,
             args=(
                 mgd.TempInputFile('realigned.bam', 'chrom', 'sample_id'),
-                mgd.OutputFile('merged_realign.bam', 'sample_id'),
+                mgd.TempOutputFile('merged_realign.bam', 'sample_id'),
                 config,
                 mgd.InputInstance('sample_id')
             )
         )
+
+    final_bam = mgd.TempInputFile('merged_lanes.bam', 'sample_id')
+    if args["realign"]:
         final_bam = mgd.TempInputFile('merged_realign.bam', 'sample_id')
-         
 
     markdups_metrics = os.path.join(merge_metrics, 'markdups_metrics', '{sample_id}.markdups_metrics.txt')
     flagstat_metrics = os.path.join(merge_metrics, 'flagstat_metrics', '{sample_id}.flagstat_metrics.txt')
@@ -135,7 +137,7 @@ def create_alignment_workflow(
             mgd.OutputFile(flagstat_metrics, 'sample_id'),
         ),
     )
- 
+
     wgs_metrics_filename = os.path.join(merge_metrics, 'wgs_metrics', '{sample_id}.wgs_metrics.txt') 
     workflow.transform(
         name='bam_collect_wgs_metrics',
@@ -150,7 +152,7 @@ def create_alignment_workflow(
             mgd.TempSpace('wgs_tempdir', 'sample_id'),
         ),
     )
-     
+
     gc_metrics_filename = os.path.join(merge_metrics, 'gc_metrics', '{sample_id}.gc_metrics.txt')
     gc_summary_filename = os.path.join(merge_metrics, 'gc_metrics', '{sample_id}.gc_metrics.summ.txt')
     gc_chart_filename = os.path.join(merge_metrics, 'gc_metrics', '{sample_id}.gc_metrics.pdf')
@@ -184,7 +186,7 @@ def create_alignment_workflow(
             mgd.TempSpace('insert_tempdir', 'sample_id'),
         ),
     )
- 
+
     workflow.transform(
         name="collect_gc_metrics",
         func=tasks.collect_gc,
@@ -209,5 +211,5 @@ def create_alignment_workflow(
             mgd.OutputFile(alignment_metrics),
         ),
     )
-    
+
     return workflow

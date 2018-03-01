@@ -56,8 +56,8 @@ def realign(input_bams, input_bais, output_bams, tempdir, config, interval):
         new_bam = os.path.join(tempdir, key + '.bam')
         new_bai = os.path.join(tempdir, key + '.bam.bai')
 
-        os.symlink(bamfile, new_bam)
-        os.symlink(bamfile + '.bai', new_bai)
+        shutil.copy(bamfile, new_bam)
+        shutil.copy(bamfile + '.bai', new_bai)
         new_inputs[key] = new_bam
 
     # save intervals file in tempdir
@@ -73,6 +73,7 @@ def realign(input_bams, input_bais, output_bams, tempdir, config, interval):
         realigned_bai = os.path.join(tempdir, key + '_indel_realigned.bai')
         output_bam_filename = output_bams[key]
         output_bai_filename = output_bam_filename + '.bai'
+
         shutil.move(realigned_bam, output_bam_filename)
         shutil.move(realigned_bai, output_bai_filename)
 
@@ -120,14 +121,19 @@ def get_readgroup(run_id, sample_id, library_id, seqinfo):
 
 
 def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
-             reference, source, sample_id, lane_id, library_id):
+             reference, source, sample_id, lane_id, library_id, config):
 
     readgroup = get_readgroup(lane_id, sample_id, library_id, source)
 
     run_fastqc(fastq1, fastq2, reports, tempdir)
 
     aln_temp = os.path.join(tempdir, "temp_alignments.bam")
-    bamutils.bwa_mem_paired_end(fastq1, fastq2, aln_temp, reference, readgroup)
+    if config["aligner"] == "bwa-mem":
+        bamutils.bwa_mem_paired_end(fastq1, fastq2, aln_temp, reference, readgroup)
+    elif config["aligner"] == "bwa-aln":
+        bamutils.bwa_aln_paired_end(fastq1, fastq2, aln_temp, tempdir, reference, readgroup)
+    else:
+        raise Exception("Aligner %s not supported, pipeline supports bwa-aln and bwa-mem" %config["aligner"])
 
     picardutils.bam_sort(aln_temp, output, tempdir)
 
