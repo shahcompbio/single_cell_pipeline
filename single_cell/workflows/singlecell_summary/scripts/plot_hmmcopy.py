@@ -470,6 +470,9 @@ class GenHmmPlots(object):
             data = reads[reads["state"] == state]["integer_copy_scale"]
 
 
+            if np.isnan(data).all():
+                continue
+
             if not data.empty:
                 sns.kdeplot(data, bw="scott",  kernel="epa",
                             shade=True, linewidth=0.5,

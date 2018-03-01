@@ -15,6 +15,44 @@ def parse_args():
 
     subparsers = parser.add_subparsers()
 
+    #All subcommands
+    all_commands = subparsers.add_parser("all")
+    all_commands.set_defaults(which='all')
+
+    all_commands.add_argument('sample_info',
+                        help='''Per sample meta data CSV''')
+
+    all_commands.add_argument('fastqs_file',
+                        help='''Path to input fastq table CSV.''')
+
+    all_commands.add_argument('bams_file',
+                        help='''Path to input fastq table CSV.''')
+
+    all_commands.add_argument('library_id',
+                        help='''Library id.''')
+
+    all_commands.add_argument('matched_normal',
+                        help='''Path to matched wgs normal.''')
+
+
+
+    #All subcommands
+    qc = subparsers.add_parser("qc")
+    qc.set_defaults(which='qc')
+
+    qc.add_argument('sample_info',
+                        help='''Per sample meta data CSV''')
+
+    qc.add_argument('fastqs_file',
+                        help='''Path to input fastq table CSV.''')
+
+    qc.add_argument('bams_file',
+                        help='''Path to input fastq table CSV.''')
+
+    qc.add_argument('library_id',
+                        help='''Library id.''')
+
+
     #Align subcommand
     align = subparsers.add_parser("align")
     align.set_defaults(which='align')
@@ -32,10 +70,6 @@ def parse_args():
     align.add_argument('library_id',
                         help='''Library id.''')
 
-    align.add_argument('--realign',
-                        action='store_true',
-                        help='''Lanes to analyze.''')
-    
 
     #hmmcopy command
     hmmcopy = subparsers.add_parser("hmmcopy")
@@ -101,6 +135,11 @@ def parse_args():
     parser.add_argument('--generate_pseudo_wgs',
                         action='store_true',
                         help='''Lanes to analyze.''')
+
+    parser.add_argument('--realign',
+                        action='store_true',
+                        help='''will run local realignment on all cells in batch''')
+
 
     args = vars(parser.parse_args())
 
