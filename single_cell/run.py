@@ -12,37 +12,37 @@ def main():
 
     args = parse_args()
 
-    if args["which"] == "align":
+    if args["which"] == "align" or args["which"]=="all" or args["which"]=="qc":
         pyp = pypeliner.app.Pypeline(config=args)
         workflow = pypeliner.workflow.Workflow()
         workflow = align_workflow(workflow, args)
         pyp.run(workflow)
 
-    if args["which"] == "hmmcopy":
+    if args["which"] == "hmmcopy" or args["which"]=="all" or args["which"]=="qc":
         pyp = pypeliner.app.Pypeline(config=args)
         workflow = pypeliner.workflow.Workflow()
         workflow = hmmcopy_workflow(workflow, args)
         pyp.run(workflow)
 
-    if args["which"] == 'aneufinder':
+    if args["which"] == 'aneufinder' or args["which"]=="all" or args["which"]=="qc":
         pyp = pypeliner.app.Pypeline(config=args)
         workflow = pypeliner.workflow.Workflow()
         workflow = aneufinder_workflow(workflow, args)
         pyp.run(workflow)
     
-    if args["which"] == "summary":
+    if args["which"] == "summary" or args["which"]=="all" or args["which"]=="qc":
         pyp = pypeliner.app.Pypeline(config=args)
         workflow = pypeliner.workflow.Workflow()
         workflow = summary_workflow(workflow, args)
         pyp.run(workflow)
         
-    if args["which"] == "pseudo_wgs":
+    if args["which"] == "pseudo_wgs" or args["which"]=="all":
         pyp = pypeliner.app.Pypeline(config=args)
         workflow = pypeliner.workflow.Workflow()
         workflow = pseudo_wgs_workflow(workflow, args)
         pyp.run(workflow)
 
-    if args["which"] == "variant_calling":
+    if args["which"] == "variant_calling" or args["which"]=="all":
         pyp = pypeliner.app.Pypeline(config=args)
         workflow = pypeliner.workflow.Workflow()
         workflow = variant_calling_workflow(workflow, args)
