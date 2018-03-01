@@ -33,6 +33,9 @@ def run_hmmcopy(
     hmmparams,
     tempdir,):
 
+
+    run_readcount_rscript = os.path.join(scripts_directory, 'correct_read_count.R')
+
     #generate wig file for hmmcopy
     os.makedirs(tempdir)
     readcount_wig = os.path.join(tempdir, 'readcounter.wig')
@@ -42,12 +45,23 @@ def run_hmmcopy(
     rc.main()
 
     correct_reads_out = os.path.join(tempdir, 'corrected_reads.csv')
-    CorrectReadCount(hmmparams["gc_wig_file"],
-                     hmmparams['map_wig_file'],
-                     readcount_wig,
-                     correct_reads_out,
-                     mappability=hmmparams['map_cutoff']).main()
-    
+    if hmmparams["smoothing_function"] == 'loess':
+        cmd=['Rscript', run_readcount_rscript,
+             readcount_wig,
+             hmmparams['gc_wig_file'],
+             hmmparams['map_wig_file'],
+             correct_reads_out
+             ]
+        pypeliner.commandline.execute(*cmd)
+    elif hmmparams["smoothing_function"] == 'modal':
+        CorrectReadCount(hmmparams["gc_wig_file"],
+                         hmmparams['map_wig_file'],
+                         readcount_wig,
+                         correct_reads_out,
+                         mappability=hmmparams['map_cutoff']).main()
+    else:
+        raise Exception("smoothing function %s not supported. pipeline supports loess and modal" %hmmparams["smoothing_function"])
+
     #run hmmcopy
     cmd = ['Rscript', run_hmmcopy_rscript,
         '--corrected_data=' + correct_reads_out,

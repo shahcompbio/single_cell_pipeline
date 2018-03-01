@@ -258,6 +258,8 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 
 } else {
 
+	samp.corrected$copy <- samp.corrected$cor.gc
+
 	# if mappability cutoff given, remove bins with mappability below cutoff value
 	if (!is.null(opt$map_cutoff)) {
 		samp.corrected$copy[samp.corrected$map < opt$map_cutoff] <- NA
