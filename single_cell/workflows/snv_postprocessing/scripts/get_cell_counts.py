@@ -48,19 +48,23 @@ class GetCounts(object):
         pileup_iterator = self.positions_iterator(
             bam_file, positions, self.max_pileup_depth)
     
-        for pileup_column in pileup_iterator:
+        for i,pileup_column in enumerate(pileup_iterator):
+
+            if not pileup_column:
+                continue
+
             counts = self.get_counts(pileup_column,
                                 self.min_bqual,
                                 self.min_mqual,
                                 self.count_duplicates,
                                 self.count_qc_failures,
                                 self.strand_counts)
-    
+
             total_counts = sum([counts[b] for b in bases])
-    
+
             if total_counts < self.min_counts:
                 continue
-    
+
             out_row = {}
     
             out_row['chrom'] = bam_file.getrname(pileup_column.tid)
@@ -245,7 +249,8 @@ class GetCounts(object):
                                                   max_depth=max_pileup_depth,
                                                   mask=False,
                                                   stepper='all')
-    
+
+                pileup_column = None
                 for pileup_column in pileup_iterator:
                     break
     
@@ -260,3 +265,4 @@ class DummyPileupProxy(object):
         self.pos = pos
 
         self.tid = tid
+
