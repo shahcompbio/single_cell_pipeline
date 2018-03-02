@@ -41,7 +41,7 @@ def create_snv_postprocessing_workflow(
                mgd.InputFile(strelka_parsed)],
               mgd.TempOutputFile("overlapping_calls.csv"),
               'outer',
-              ['case_id', 'chromosome', 'start', 'stop', 'ref', 'alt'],
+              ['case_id', 'chromosome', 'start', 'stop'],
         ),
         kwargs={'sep': '\t'}
     )
@@ -53,6 +53,7 @@ def create_snv_postprocessing_workflow(
         func=tasks.get_counts,
         args=(
             mgd.InputFile('bam', 'sample_id', fnames=bam_file),
+            mgd.InputFile('bai', 'sample_id', fnames=bai_file),
             mgd.TempInputFile("overlapping_calls.csv"),
             mgd.OutputFile(countdata, 'sample_id'),
             mgd.InputInstance('sample_id')
