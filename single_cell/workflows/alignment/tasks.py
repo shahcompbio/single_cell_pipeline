@@ -7,6 +7,7 @@ import tarfile
 import pandas as pd
 from scripts import CollectMetrics
 from scripts import GenerateCNMatrix
+from scripts import RunTrimGalore
 
 from single_cell.utils import picardutils
 from single_cell.utils import bamutils
@@ -131,7 +132,8 @@ def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
     if config["aligner"] == "bwa-mem":
         bamutils.bwa_mem_paired_end(fastq1, fastq2, aln_temp, reference, readgroup)
     elif config["aligner"] == "bwa-aln":
-        bamutils.bwa_aln_paired_end(fastq1, fastq2, aln_temp, tempdir, reference, readgroup)
+        trim1, trim2 = trim_fastqs(fastq1, fastq2, sample_id, tempdir, source, config)
+        bamutils.bwa_aln_paired_end(trim1, trim2, aln_temp, tempdir, reference, readgroup)
     else:
         raise Exception("Aligner %s not supported, pipeline supports bwa-aln and bwa-mem" %config["aligner"])
 
@@ -190,4 +192,46 @@ def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
         collmet.main()
 
     csvutils.concatenate_csv(sample_outputs, merged_metrics)
+
+
+def run_trimgalore(seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt, tempdir,
+                   adapter, adapter2, report_r1, report_r2, qc_report_r1,
+                   qc_report_r2, qc_zip_r1, qc_zip_r2):
+
+    run_tg = RunTrimGalore(seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt,
+                           tempdir, adapter, adapter2, report_r1, report_r2,
+                           qc_report_r1, qc_report_r2, qc_zip_r1, qc_zip_r2)
+    run_tg.run_trimgalore()
+    run_tg.gather_outputs()
+
+
+def trim_fastqs(fastq1, fastq2, sample_id, tempdir, source, config):
+    """
+    run fastqc on both fastq files
+    run trimgalore if needed, copy if not.
+    """
+
+    trim1 = os.path.join(tempdir, "fastq_R1_trimmed.fastq.gz")
+    trim2 = os.path.join(tempdir, "fastq_R2_trimmed.fastq.gz")
+
+    reports_dir = os.path.join(tempdir, 'fastqc_reports')
+    if not os.path.exists(reports_dir):
+        helpers.makedirs(reports_dir)
+
+    if source=='nextseq':
+        helpers.copy_file(fastq1, trim1)
+        helpers.copy_file(fastq2, trim2)
+    else:
+        rep1 = os.path.join(reports_dir, '{}_trimgalore_R1.html'.format(sample_id))
+        rep2 = os.path.join(reports_dir, '{}_trimgalore_R2.html'.format(sample_id))
+        qcrep1 = os.path.join(reports_dir, '{}_trimgalore_qc_R1.html'.format(sample_id))
+        qcrep2 = os.path.join(reports_dir, '{}_trimgalore_qc_R2.html'.format(sample_id))
+        qczip1 = os.path.join(reports_dir, '{}_trimgalore_qc_R1.zip'.format(sample_id))
+        qczip2 = os.path.join(reports_dir, '{}_trimgalore_qc_R2.zip'.format(sample_id))
+
+        run_trimgalore(fastq1, fastq2, trim1, trim2, 'trim_galore', 'cutadapt',
+                       tempdir, config['adapter'], config['adapter2'],
+                       rep1, rep2, qcrep1, qcrep2, qczip1, qczip2)
+
+    return trim1, trim2
 
