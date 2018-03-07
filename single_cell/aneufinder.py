@@ -15,8 +15,8 @@ from single_cell.utils import helpers
 def aneufinder_workflow(workflow, args):
 
     config = helpers.load_config(args)
-    sampleids = helpers.get_samples(args['sample_info'])
-    bam_files, _  = helpers.get_bams(args['bams_file'])
+    sampleids = helpers.get_samples(args['input_yaml'])
+    bam_files, _  = helpers.get_bams(args['input_yaml'])
 
     workflow.setobj(
         obj=mgd.OutputChunks('sample_id'),
