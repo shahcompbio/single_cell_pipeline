@@ -13,6 +13,17 @@ import pysam
 
 import shutil
 
+def load_yaml(path):
+    try:
+        with open(path) as infile:
+            data = yaml.load(infile)
+
+    except IOError:
+        raise Exception(
+            'Unable to open file: {0}'.format(path))
+    return data
+
+
 
 def symlink(actual_file, symlink):
     if not os.path.exists(symlink):
@@ -43,78 +54,67 @@ def generate_intervals(ref, size=100000000):
 
 def get_fastqs(fastqs_file):
 
-    fastqs = pd.read_csv(fastqs_file, dtype=str)
+    data = load_yaml(fastqs_file)
 
-    for column in ('cell_id', 'lane_id', 'fastq_1', 'fastq_2', 'source',):
-        if column not in fastqs.columns:
-            raise Exception(
-                'input fastqs_file should contain {}'.format(column))
-
-    if fastqs.duplicated(['cell_id', 'lane_id']).any():
-        raise Exception('input fastqs_file with duplicate sample_id/lane_id pairs')
+    for cell in data.keys():
+        assert "fastqs" in data[cell], "couldnt extract fastq file paths from yaml input"
 
     fastq_1_filenames = dict()
     fastq_2_filenames = dict()
-    for _, row in fastqs.iterrows():
-        fastq_1_filenames[(row['cell_id'], row['lane_id'])] = row['fastq_1']
-        fastq_2_filenames[(row['cell_id'], row['lane_id'])] = row['fastq_2']
-
+    for cell in data.keys():
+        fastqs = data[cell]["fastqs"]
+        
+        for lane,paths in fastqs.iteritems():
+            fastq_1_filenames[(cell,lane)] = paths["fastq_1"]
+            fastq_2_filenames[(cell,lane)] = paths["fastq_2"]
+    
     return fastq_1_filenames, fastq_2_filenames
 
 def get_seqinfo(fastqs_file):
 
-    fastqs = pd.read_csv(fastqs_file, dtype=str)
+    data = load_yaml(fastqs_file)
 
-    for column in ('cell_id', 'source',):
-        if column not in fastqs.columns:
-            raise Exception(
-                'input fastqs_file should contain {}'.format(column))
+    for cell in data.keys():
+        assert "source" in data[cell], "couldnt extract source information from yaml input"
+    
+    return {cell: data[cell]["source"] for cell in data.keys()}
 
-    seqinfo = {row["cell_id"]:row["source"] for _,row in fastqs.iterrows()}
 
-    return seqinfo
+def get_sample_info(fastqs_file):
+    """
+    load yaml and remove some extra info to reduce size
+    """
+
+    data = load_yaml(fastqs_file)
+
+    cells = data.keys()
+    
+    for cell in cells:
+        del data[cell]["fastqs"]
+        del data[cell]["bam"]
+    return data
+
 
 def get_samples(fastqs_file):
 
-    fastqs = pd.read_csv(fastqs_file, dtype=str)
-
-    for column in ('cell_id',):
-        if column not in fastqs.columns:
-            raise Exception(
-                'input fastqs_file should contain {}'.format(column))
-
-    sample_ids = list(sorted(fastqs['cell_id'].unique()))
-    return sample_ids
-
+    data = load_yaml(fastqs_file)
+    
+    return data.keys()
 
 def get_bams(fastqs_file):
 
-    fastqs = pd.read_csv(fastqs_file, dtype=str)
+    data = load_yaml(fastqs_file)
 
-    for column in ('cell_id', 'bam',):
-        if column not in fastqs.columns:
-            raise Exception(
-                'input bams_file should contain {}'.format(column))
+    for cell in data.keys():
+        assert "bam" in data[cell], "couldnt extract fastq file paths from yaml input"
 
-    bam_filenames = dict()
-    bai_filenames = dict()
-    for _, row in fastqs.iterrows():
-        bam_filenames[row['cell_id']] = row['bam']
-        bai_filenames[row['cell_id']] = row['bam']+".bai"
+    bam_filenames = {cell:data[cell]["bam"] for cell in data.keys()}
+    bai_filenames = {cell:data[cell]["bam"]+".bai" for cell in data.keys()}
 
     return bam_filenames, bai_filenames
 
-
 def load_config(args):
-    try:
-        with open(args['config_file']) as infile:
-            config = yaml.load(infile)
-
-    except IOError:
-        raise Exception(
-            'Unable to open config file: {0}'.format(
-                args['config_file']))
-    return config
+    return load_yaml(args["config_file"])
 
 
 

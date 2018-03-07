@@ -27,7 +27,7 @@ def concatenate_csv(in_filenames, out_filename, nan_val='NA'):
     data.to_csv(out_filename, index=False)
 
 
-def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', sep=','):
+def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', sep=',', suffixes=None):
     data = []
 
     if isinstance(in_filenames, dict):
@@ -40,15 +40,17 @@ def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', sep=','):
                 continue
         data.append(pd.read_csv(in_filename, sep=sep, dtype=str))
 
-    data = merge_frames(data, how, on)
+    data = merge_frames(data, how, on, suffixes = suffixes)
     data = data.fillna(nan_val)
     data.to_csv(out_filename, index=False)
 
 
-def merge_frames(frames, how, on):
+def merge_frames(frames, how, on, suffixes=None):
     '''
     annotates input_df using ref_df
     '''
+
+    suff = ['','']
 
     if ',' in on:
         on = on.split(',')
@@ -58,13 +60,23 @@ def merge_frames(frames, how, on):
     else:
         left = frames[0]
         right = frames[1]
+        
+        if suffixes:
+            suff = (suffixes[0],suffixes[1])
+        
         merged_frame = pd.merge(left, right,
                                 how=how,
-                                on=on)
-        for frame in frames[2:]:
+                                on=on, 
+                                suffixes=suff)
+        for i,frame in enumerate(frames[2:]):
+            
+            if suffixes:
+                suff = (suffixes[i+2],suffixes[i+2])
+            
             merged_frame = pd.merge(merged_frame, frame,
                                     how=how,
-                                    on=on)
+                                    on=on,
+                                    suffixes=suff)
         return merged_frame
 
 
@@ -75,7 +87,11 @@ def concatenate_csv_lowmem(in_filenames, out_filename):
     :param out_filename: output file
     """
     writer = None
-    for _,infile in in_filenames.iteritems():
+    
+    if isinstance(in_filenames, dict):
+        in_filenames = in_filenames.values()
+    
+    for infile in in_filenames:
 
         with open(infile) as inp:
             reader= csv.DictReader(inp)
