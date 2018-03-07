@@ -18,13 +18,10 @@ def create_snv_postprocessing_workflow(
     museq_parsed,
     strelka_parsed,
     output,
+    overlapping_calls,
     sample_ids,
     config,
-    out_dir
 ):
-
-    countdata = os.path.join(out_dir, 'pseudo_wgs', 'counts',
-                             '{sample_id}_counts.csv')
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -35,40 +32,38 @@ def create_snv_postprocessing_workflow(
 
     workflow.transform(
         name='overlap_var_calls',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.merge_csv,
         args=([mgd.InputFile(museq_parsed),
                mgd.InputFile(strelka_parsed)],
-              mgd.TempOutputFile("overlapping_calls.csv"),
+              mgd.OutputFile(overlapping_calls),
               'outer',
-              ['case_id', 'chromosome', 'start', 'stop'],
+              ['case_id', 'chromosome', 'start', 'stop', "ref", "alt"],
         ),
-        kwargs={'sep': '\t'}
+        kwargs={'sep': ',', 'suffixes': ['_museq', "_strelka"]},
     )
 
     workflow.transform(
         name='count_reads',
         axes=('sample_id',),
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.get_counts,
         args=(
             mgd.InputFile('bam', 'sample_id', fnames=bam_file),
             mgd.InputFile('bai', 'sample_id', fnames=bai_file),
-            mgd.TempInputFile("overlapping_calls.csv"),
-            mgd.OutputFile(countdata, 'sample_id'),
+            mgd.InputFile(overlapping_calls),
+            mgd.TempOutputFile("counts.csv", 'sample_id'),
             mgd.InputInstance('sample_id')
         ),
     )
 
     workflow.transform(
         name='merge_counts',
-        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
-        func=tasks.merge_csv,
+        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard'], 'ncpus':1},
+        func=tasks.concat_csv,
         args=(
-            mgd.InputFile(countdata, 'sample_id'),
+            mgd.TempInputFile("counts.csv", 'sample_id'),
             mgd.OutputFile(output),
-            'outer',
-            ['chrom','coord','ref_base','var_base']
         ),
     )
 

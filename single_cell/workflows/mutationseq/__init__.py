@@ -14,7 +14,7 @@ def create_museq_workflow(tumour_bam, tumour_bai, normal_bam, normal_bai, ref_ge
     workflow = pypeliner.workflow.Workflow()
 
     workflow.transform(name='run_museq',
-                         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['multicore'], "numcores":10},
+                         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['multicore'], 'ncpus':8},
                          func=tasks.run_museq,
                          args=(
                                mgd.InputFile(tumour_bam),
@@ -32,7 +32,7 @@ def create_museq_workflow(tumour_bam, tumour_bai, normal_bam, normal_bai, ref_ge
 
     workflow.transform(
                          name='parse_museq',
-                         ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
+                         ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard'], 'ncpus':1},
                          func=tasks.parse_museq,
                          args=(
                                mgd.InputFile(snv_vcf),

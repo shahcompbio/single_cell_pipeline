@@ -32,7 +32,7 @@ def create_hmmcopy_workflow(bam_file, bai_file, reads_file,
 
     workflow.transform(
         name='run_hmmcopy',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.run_hmmcopy,
         axes=('sample_id',),
         args=(
@@ -53,7 +53,7 @@ def create_hmmcopy_workflow(bam_file, bai_file, reads_file,
 
     workflow.transform(
         name='merge_files',
-        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.merge_files,
         args=(
             mgd.TempInputFile('reads.csv', 'sample_id'),

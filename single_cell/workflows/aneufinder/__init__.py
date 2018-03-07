@@ -24,7 +24,7 @@ def create_aneufinder_workflow(bam_file,
 
     workflow.transform(
         name='run_aneufinder_on_individual_cells',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.run_aneufinder,
         axes=('sample_id',),
         args=(
@@ -40,7 +40,7 @@ def create_aneufinder_workflow(bam_file,
 
     workflow.transform(
         name='merge_segments',
-        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=concatenate_csv_lowmem,
         args=(
             mgd.TempInputFile('segments.csv', 'sample_id'),
@@ -50,7 +50,7 @@ def create_aneufinder_workflow(bam_file,
 
     workflow.transform(
         name='merge_reads',
-        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=concatenate_csv_lowmem,
         args=(
             mgd.TempInputFile('reads.csv', 'sample_id'),
@@ -61,7 +61,7 @@ def create_aneufinder_workflow(bam_file,
     dnacopy_pdf_output = os.path.join(aneufinder_output, 'plots', '{}_reads.pdf'.format(library_id))
     workflow.transform(
         name='merge_aneufinder_pdfs',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.merge_pdf,
         args=(
             [mgd.TempInputFile('dnacopy.pdf', 'sample_id')],
