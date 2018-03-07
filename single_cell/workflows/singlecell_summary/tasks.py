@@ -14,6 +14,23 @@ from single_cell.utils import pdfutils
 from single_cell.utils import helpers
 from scripts import GenHmmPlots
 
+
+def annotate_metrics(infile, sample_info, outfile):
+    infile = pd.read_csv(infile)
+
+    cols = ["cell_call", "experimental_condition", "sample_type", "i5_barcode", "i7_barcode", "sample_plate", "sample_well"]
+
+    for col in cols:
+        infile[col] = "NA"
+
+    cells = infile["cell_id"]
+    
+    for col in cols:
+        coldata = [sample_info[cell][col] for cell in cells]
+        infile[col] = coldata
+
+    infile.to_csv(outfile, index=False, na_rep="NA")
+
 def merge_tables(infile, output, sep,
                  merge_type, key_cols, nan_val):
     csvutils.merge_csv(infile, output, merge_type, key_cols)

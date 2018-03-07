@@ -67,6 +67,7 @@ class GetCounts(object):
 
             out_row = {}
     
+            out_row['sample_id'] = self.sample_id
             out_row['chrom'] = bam_file.getrname(pileup_column.tid)
     
             # One based coordinate
@@ -83,25 +84,23 @@ class GetCounts(object):
             out_row['var_base'] = var_base
     
             if self.strand_counts:
-                out_row[sampid+'_ref_counts_forward'] = counts[ref_base.upper()]
+                out_row['ref_counts_forward'] = counts[ref_base.upper()]
     
-                out_row[sampid+'_ref_counts_reverse'] = counts[ref_base.lower()]
+                out_row['ref_counts_reverse'] = counts[ref_base.lower()]
     
-                out_row[sampid+'_var_counts_forward'] = counts[var_base.upper()]
+                out_row['var_counts_forward'] = counts[var_base.upper()]
     
-                out_row[sampid+'_var_counts_reverse'] = counts[var_base.lower()]
+                out_row['var_counts_reverse'] = counts[var_base.lower()]
     
             else:
-                out_row[sampid+'_ref_counts'] = counts[ref_base]
+                out_row['ref_counts'] = counts[ref_base]
     
-                out_row[sampid+'_var_counts'] = counts[var_base]
+                out_row['var_counts'] = counts[var_base]
     
             writer.writerow(out_row)
     
     
     def get_bases_and_fields(self):
-        sampid = self.sample_id
-    
         if self.strand_counts:
             bases = ['A', 'a', 'C', 'c', 'G', 'g', 'T', 't']
         else:
@@ -111,11 +110,10 @@ class GetCounts(object):
         fields = ['chrom', 'coord', 'ref_base', 'var_base']
     
         if self.strand_counts:
-            fields += [sampid+'_ref_counts_forward', sampid+'_ref_counts_reverse',
-                       sampid+'_var_counts_forward', sampid+'_var_counts_reverse']
-    
+            fields += ["sample_id", 'ref_counts_forward', 'ref_counts_reverse',
+                       'var_counts_forward', 'var_counts_reverse']
         else:
-            fields += [sampid+'_ref_counts', sampid+'_var_counts']
+            fields += ["sample_id", 'ref_counts', 'var_counts']
     
         return bases, fields
     
@@ -206,7 +204,7 @@ class GetCounts(object):
         else:
             merge_file = open(file_name)
     
-        header = merge_file.readline().strip().split()
+        header = merge_file.readline().strip().split(",")
         chr_idx = header.index('chromosome')
         pos_idx = header.index('start')
         ref_idx = header.index('ref')
@@ -215,7 +213,7 @@ class GetCounts(object):
     
     
         for line in merge_file:
-            columns = line.split("\t")
+            columns = line.split(",")
             chrom = columns[chr_idx]
             pos = int(columns[pos_idx])
             ref = columns[ref_idx]
