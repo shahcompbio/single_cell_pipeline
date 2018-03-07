@@ -258,7 +258,7 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 
 } else {
 
-	samp.corrected$copy <- samp.corrected$cor.gc
+	samp.corrected$copy <- samp.corrected$cor_gc
 
 	# if mappability cutoff given, remove bins with mappability below cutoff value
 	if (!is.null(opt$map_cutoff)) {

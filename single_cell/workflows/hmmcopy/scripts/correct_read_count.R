@@ -38,7 +38,7 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 
         write.table(format(uncorrected.table, scientific=F, trim=T), file=outfile, quote=F, sep=",", col.names=T, row.names=F)
 } else{
-samp.corrected <- as.data.frame(samp.corrected)
+samp.corrected <- format_read_count_table(samp.corrected)
 colnames(samp.corrected) <- c("chr","start","end","width","reads","gc","map","valid","ideal","cor_gc","cor_map","copy")
 samp.corrected["modal_curve"] <- NA
 samp.corrected["modal_quantile"] <- NA
