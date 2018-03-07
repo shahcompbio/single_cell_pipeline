@@ -155,7 +155,6 @@ def call_somatic_variants(
         snv_file,
         stats_file,
         intervals,
-        tempdir,
         ncores=None,
         max_input_depth=10000,
         min_tier_one_mapq=20,
@@ -179,11 +178,7 @@ def call_somatic_variants(
     
     pool = multiprocessing.Pool(processes=count)
 
-    helpers.makedirs(tempdir)
-
     tasks = []
-
-    intervals = [intervals[0]]
 
     for interval in intervals:
 
