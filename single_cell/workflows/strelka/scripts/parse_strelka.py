@@ -66,7 +66,7 @@ class ParseStrelka(object):
 
         #write the last value
         if gr_info:
-            pau.write_list(outfile, gr_info[0])
+            pau.write_list(outfile, gr_info[0], sep=",")
 
     def main(self):
         '''

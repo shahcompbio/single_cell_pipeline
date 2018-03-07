@@ -69,4 +69,4 @@ class ParseMuseq(object):
                 infos = museq.get_data()
     
                 for info in infos:
-                    pau.write_list(outfile, info)
+                    pau.write_list(outfile, info, sep=',')
