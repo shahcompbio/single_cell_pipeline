@@ -16,14 +16,12 @@ def variant_calling_workflow(workflow, args):
 
     config = helpers.load_config(args)
 
-    pseudo_wgs_bam = os.path.join(args['out_dir'], 'pseudo_wgs',
-                                  'merged.sorted.markdups.bam')
-    pseudo_wgs_bai = os.path.join(args['out_dir'], 'pseudo_wgs',
-                                  'merged.sorted.markdups.bam.bai')
+    pseudo_wgs_bam = args["merged_wgs"]
+    pseudo_wgs_bai = args["merged_wgs"]+".bai"
 
-    bam_files, bai_files  = helpers.get_bams(args['bams_file'])
+    bam_files, bai_files  = helpers.get_bams(args['input_yaml'])
 
-    sampleids = helpers.get_samples(args['bams_file'])
+    sampleids = helpers.get_samples(args['input_yaml'])
 
     workflow.setobj(
         obj=mgd.OutputChunks('sample_id'),
@@ -33,13 +31,14 @@ def variant_calling_workflow(workflow, args):
     workflow.transform(
         name='generate_intervals',
         func=helpers.generate_intervals,
+        ctx={'ncpus':1},
         ret=pypeliner.managed.TempOutputObj('intervals'),
         args=(
             config["ref_genome"],
         )
     )
-    
-    varcalls_dir = os.path.join(args['out_dir'], 'pseudo_wgs',
+     
+    varcalls_dir = os.path.join(args['out_dir'], 'results',
                                 'variant_calling')
     museq_vcf = os.path.join(varcalls_dir, 'museq_snv.vcf')
     museq_csv = os.path.join(varcalls_dir, 'museq_snv.csv')
@@ -59,7 +58,7 @@ def variant_calling_workflow(workflow, args):
             mgd.TempInputObj('intervals')
         ),
     )
-    
+     
     strelka_snv_vcf = os.path.join(varcalls_dir, 'strelka_snv.vcf')
     strelka_indel_vcf = os.path.join(varcalls_dir, 'strelka_indel.vcf')
     strelka_snv_csv = os.path.join(varcalls_dir, 'strelka_snv.csv')
@@ -82,8 +81,8 @@ def variant_calling_workflow(workflow, args):
         ),
     )
      
-    countdata = os.path.join(args['out_dir'], 'pseudo_wgs',
-                             'counts', 'counts.csv')
+    countdata = os.path.join(varcalls_dir, 'counts.csv')
+    olp_calls = os.path.join(varcalls_dir, 'overlapping_calls.csv')
     workflow.subworkflow(
         name='postprocessing',
         func=snv_postprocessing.create_snv_postprocessing_workflow,
@@ -93,9 +92,9 @@ def variant_calling_workflow(workflow, args):
             mgd.InputFile(museq_csv),
             mgd.InputFile(strelka_snv_csv),
             mgd.OutputFile(countdata),
+            mgd.OutputFile(olp_calls),
             sampleids,
             config,
-            args['out_dir'],
         )
     )
 
