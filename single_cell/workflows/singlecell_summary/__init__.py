@@ -7,9 +7,10 @@ import os
 import pypeliner
 import pypeliner.managed as mgd
 import tasks
+from single_cell.utils import helpers
 
 
-def create_summary_workflow(sample_info, alignment_metrics, gc_metrics, hmm_segments, hmm_reads,
+def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_reads,
                             hmm_metrics, hmm_params, reads_pdf_output, segs_pdf_output, bias_pdf_output,
                             params_pdf_output, config, hmmparams, results_dir,
                             args, samples):
@@ -33,6 +34,8 @@ def create_summary_workflow(sample_info, alignment_metrics, gc_metrics, hmm_segm
 
     chromosomes = config["chromosomes"]
 
+    sample_info  = helpers.get_sample_info(args["input_yaml"])
+
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
@@ -44,7 +47,7 @@ def create_summary_workflow(sample_info, alignment_metrics, gc_metrics, hmm_segm
     #calculate cell ordering in hierarchical clustering
     workflow.transform(
         name='plot_heatmap_all',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.plot_heatmap,
         args=(
             mgd.InputFile(hmm_reads),
@@ -63,22 +66,33 @@ def create_summary_workflow(sample_info, alignment_metrics, gc_metrics, hmm_segm
 
     workflow.transform(
         name='merge_all_metrics',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.merge_tables,
         args=(
             [mgd.InputFile(alignment_metrics),
              mgd.InputFile(hmm_metrics),
-             mgd.InputFile(sample_info),
              mgd.TempInputFile('order_data.csv')],
-            mgd.OutputFile(all_metrics_file),
+            mgd.TempOutputFile("all_metrics.csv"),
             ',', 'outer', 'cell_id', 'NA'
         )
     )
 
+    workflow.transform(
+        name='annotate_metrics',
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
+        func=tasks.annotate_metrics,
+        args=(
+            mgd.TempInputFile("all_metrics.csv"),
+            sample_info,
+            mgd.OutputFile(all_metrics_file),
+        )
+    )
+
+
  
     workflow.transform(
         name='plot_metrics',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.plot_metrics,
         args=(
             mgd.InputFile(all_metrics_file),
@@ -91,7 +105,7 @@ def create_summary_workflow(sample_info, alignment_metrics, gc_metrics, hmm_segm
  
     workflow.transform(
         name='plot_kernel_density',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.plot_kernel_density,
         args=(
             mgd.InputFile(all_metrics_file),
@@ -104,7 +118,7 @@ def create_summary_workflow(sample_info, alignment_metrics, gc_metrics, hmm_segm
  
     workflow.transform(
         name='summary_metrics',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.get_summary_metrics,
         args=(
             mgd.InputFile(all_metrics_file),
@@ -115,7 +129,7 @@ def create_summary_workflow(sample_info, alignment_metrics, gc_metrics, hmm_segm
  
     workflow.transform(
         name='plot_heatmap_ec',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.plot_pcolor,
         args=(
             mgd.InputFile(hmm_reads),
@@ -134,7 +148,7 @@ def create_summary_workflow(sample_info, alignment_metrics, gc_metrics, hmm_segm
  
     workflow.transform(
         name='plot_heatmap_ec_mad',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.plot_pcolor,
         args=(
             mgd.InputFile(hmm_reads),
@@ -154,7 +168,7 @@ def create_summary_workflow(sample_info, alignment_metrics, gc_metrics, hmm_segm
  
     workflow.transform(
         name='plot_heatmap_ec_nreads',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.plot_pcolor,
         args=(
             mgd.InputFile(hmm_reads),
@@ -175,7 +189,7 @@ def create_summary_workflow(sample_info, alignment_metrics, gc_metrics, hmm_segm
 
     workflow.transform(
         name='plot_hmm_copy',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.plot_hmmcopy,
         axes=('sample_id',),
         args=(
@@ -201,7 +215,7 @@ def create_summary_workflow(sample_info, alignment_metrics, gc_metrics, hmm_segm
 
     workflow.transform(
         name='merge_hmm_copy',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.merge_pdf,
         args=(
               [mgd.TempInputFile('reads.pdf', 'sample_id'),
@@ -223,7 +237,7 @@ def create_summary_workflow(sample_info, alignment_metrics, gc_metrics, hmm_segm
     params_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_params_mad.pdf'.format(lib))
     workflow.transform(
         name='merge_hmm_copy_mad',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.merge_pdf,
         args=(
               [mgd.TempInputFile('reads.pdf', 'sample_id'),

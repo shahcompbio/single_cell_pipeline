@@ -39,7 +39,7 @@ def create_wgs_workflow(
 
     workflow.transform(
         name='merge_bams',
-        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem']},
+        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
         func=tasks.merge_bams,
         args=(
             mgd.InputFile('bam', 'sample_id', fnames=bam),
@@ -50,7 +50,7 @@ def create_wgs_workflow(
 
     workflow.transform(
         name='bam_sort',
-        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem']},
+        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
         func=tasks.bam_sort,
         args=(
             mgd.TempInputFile('merged.bam'),
@@ -61,7 +61,7 @@ def create_wgs_workflow(
 
     workflow.transform(
         name='bam_markdups',
-        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem']},
+        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
         func=tasks.bam_markdups,
         args=(
             mgd.TempInputFile('sorted.bam'),
@@ -73,7 +73,7 @@ def create_wgs_workflow(
 
     workflow.transform(
         name='bam_index',
-        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.index_bam,
         args=(
             mgd.InputFile(bam_filename),

@@ -56,7 +56,7 @@ def create_alignment_workflow(
     flagstat_metrics = os.path.join(lane_metrics, 'flagstat', '{sample_id}.txt')
     workflow.transform(
         name='align_reads',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         axes = ('sample_id', 'lane',),
         func=tasks.align_pe,
         args=(
@@ -77,7 +77,7 @@ def create_alignment_workflow(
 
     workflow.transform(
         name='merge_bams',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.merge_bams,
         axes=('sample_id',),
         args=(
@@ -91,7 +91,7 @@ def create_alignment_workflow(
         workflow.transform(
             name='realignment',
             axes=('chrom',),
-            ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem']},
+            ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
             func=tasks.realign,
             args=(
                 mgd.TempInputFile('merged_lanes.bam', 'sample_id'),
@@ -105,7 +105,7 @@ def create_alignment_workflow(
 
         workflow.transform(
             name='merge_realignment',
-            ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem']},
+            ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
             axes=('sample_id',),
             func=tasks.merge_realignment,
             args=(
@@ -124,7 +124,7 @@ def create_alignment_workflow(
     flagstat_metrics = os.path.join(merge_metrics, 'flagstat_metrics', '{sample_id}.flagstat_metrics.txt')
     workflow.transform(
         name='postprocess_bam',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         axes=('sample_id',),
         func=tasks.postprocess_bam,
         args=(
@@ -141,7 +141,7 @@ def create_alignment_workflow(
     wgs_metrics_filename = os.path.join(merge_metrics, 'wgs_metrics', '{sample_id}.wgs_metrics.txt') 
     workflow.transform(
         name='bam_collect_wgs_metrics',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.bam_collect_wgs_metrics,
         axes=('sample_id',),
         args=(
@@ -158,7 +158,7 @@ def create_alignment_workflow(
     gc_chart_filename = os.path.join(merge_metrics, 'gc_metrics', '{sample_id}.gc_metrics.pdf')
     workflow.transform(
         name='bam_collect_gc_metrics',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.bam_collect_gc_metrics,
         axes=('sample_id',),
         args=(
@@ -175,7 +175,7 @@ def create_alignment_workflow(
     insert_histogram_filename = os.path.join(merge_metrics, 'insert_metrics', '{sample_id}.insert_metrics.pdf')
     workflow.transform(
         name='bam_collect_insert_metrics',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.bam_collect_insert_metrics,
         axes=('sample_id',),
         args=(
@@ -190,7 +190,7 @@ def create_alignment_workflow(
     workflow.transform(
         name="collect_gc_metrics",
         func=tasks.collect_gc,
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         args = (
             mgd.InputFile(gc_metrics_filename, 'sample_id', axes_origin=[]),
             mgd.OutputFile(gc_metrics),
@@ -200,7 +200,7 @@ def create_alignment_workflow(
 
     workflow.transform(
         name='collect_metrics',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard']},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.collect_metrics,
         args=(
             mgd.InputFile(flagstat_metrics, 'sample_id', axes_origin=[]),
