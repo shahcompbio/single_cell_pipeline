@@ -19,13 +19,7 @@ def parse_args():
     all_commands = subparsers.add_parser("all")
     all_commands.set_defaults(which='all')
 
-    all_commands.add_argument('sample_info',
-                        help='''Per sample meta data CSV''')
-
-    all_commands.add_argument('fastqs_file',
-                        help='''Path to input fastq table CSV.''')
-
-    all_commands.add_argument('bams_file',
+    all_commands.add_argument('input_yaml',
                         help='''Path to input fastq table CSV.''')
 
     all_commands.add_argument('library_id',
@@ -34,19 +28,16 @@ def parse_args():
     all_commands.add_argument('matched_normal',
                         help='''Path to matched wgs normal.''')
 
+    all_commands.add_argument('merged_wgs',
+                        help='''Per sample meta data CSV''')
+
 
 
     #All subcommands
     qc = subparsers.add_parser("qc")
     qc.set_defaults(which='qc')
 
-    qc.add_argument('sample_info',
-                        help='''Per sample meta data CSV''')
-
-    qc.add_argument('fastqs_file',
-                        help='''Path to input fastq table CSV.''')
-
-    qc.add_argument('bams_file',
+    qc.add_argument('input_yaml',
                         help='''Path to input fastq table CSV.''')
 
     qc.add_argument('library_id',
@@ -57,14 +48,7 @@ def parse_args():
     align = subparsers.add_parser("align")
     align.set_defaults(which='align')
 
-
-    align.add_argument('sample_info',
-                        help='''Per sample meta data CSV''')
-
-    align.add_argument('fastqs_file',
-                        help='''Path to input fastq table CSV.''')
-
-    align.add_argument('bams_file',
+    align.add_argument('input_yaml',
                         help='''Path to input fastq table CSV.''')
 
     align.add_argument('library_id',
@@ -75,9 +59,7 @@ def parse_args():
     hmmcopy = subparsers.add_parser("hmmcopy")
     hmmcopy.set_defaults(which='hmmcopy')
 
-    hmmcopy.add_argument('sample_info',
-                        help='''Per sample meta data CSV''')
-    hmmcopy.add_argument('bams_file',
+    hmmcopy.add_argument('input_yaml',
                         help='''Path to input fastq table CSV.''')
     hmmcopy.add_argument('library_id',
                         help='''Library id.''')
@@ -87,9 +69,7 @@ def parse_args():
     aneufinder = subparsers.add_parser("aneufinder")
     aneufinder.set_defaults(which='aneufinder')
 
-    aneufinder.add_argument('sample_info',
-                        help='''Per sample meta data CSV''')
-    aneufinder.add_argument('bams_file',
+    aneufinder.add_argument('input_yaml',
                         help='''Path to input fastq table CSV.''')
     aneufinder.add_argument('library_id',
                         help='''Library id.''')
@@ -99,7 +79,7 @@ def parse_args():
     summary = subparsers.add_parser("summary")
     summary.set_defaults(which='summary')
 
-    summary.add_argument('sample_info',
+    summary.add_argument('input_yaml',
                         help='''Per sample meta data CSV''')
     summary.add_argument('library_id',
                         help='''Library id.''')
@@ -109,9 +89,11 @@ def parse_args():
     pseudo_wgs = subparsers.add_parser("pseudo_wgs")
     pseudo_wgs.set_defaults(which='pseudo_wgs')
 
-    pseudo_wgs.add_argument('bams_file',
+    pseudo_wgs.add_argument('input_yaml',
                         help='''Per sample meta data CSV''')
 
+    pseudo_wgs.add_argument('merged_wgs',
+                        help='''Per sample meta data CSV''')
 
     
     #generate wgs bam command
@@ -121,7 +103,9 @@ def parse_args():
 
     varcall.add_argument('matched_normal',
                         help='''Path to matched wgs normal.''')
-    varcall.add_argument('bams_file',
+    varcall.add_argument('input_yaml',
+                        help='''Per sample meta data CSV''')
+    varcall.add_argument('merged_wgs',
                         help='''Per sample meta data CSV''')
 
 

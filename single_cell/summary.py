@@ -14,7 +14,7 @@ from single_cell.utils import helpers
 def summary_workflow(workflow, args):
 
     config = helpers.load_config(args)
-    sampleids = helpers.get_samples(args['sample_info'])
+    sampleids = helpers.get_samples(args['input_yaml'])
 
     workflow.setobj(
         obj=mgd.OutputChunks('sample_id'),
@@ -44,7 +44,6 @@ def summary_workflow(workflow, args):
             name='summary_workflow_' + name,
             func=singlecell_summary.create_summary_workflow,
             args=(
-                mgd.InputFile(args['sample_info']),
                 mgd.InputFile(alignment_metrics),
                 mgd.InputFile(gc_metrics),
                 mgd.InputFile(segs_filename),

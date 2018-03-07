@@ -12,8 +12,8 @@ from utils import helpers
 def hmmcopy_workflow(workflow, args):
 
     config = helpers.load_config(args)
-    sampleids = helpers.get_samples(args['sample_info'])
-    bam_files, bai_files  = helpers.get_bams(args['bams_file'])
+    sampleids = helpers.get_samples(args['input_yaml'])
+    bam_files, bai_files  = helpers.get_bams(args['input_yaml'])
 
     workflow.setobj(
         obj=mgd.OutputChunks('sample_id'),
