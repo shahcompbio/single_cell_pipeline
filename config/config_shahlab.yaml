@@ -1,6 +1,7 @@
 pools:
   standard: null
   highmem: null
+  multicore: null
 
 picard_wgs_params:
   # Minimum base quality to count a read
@@ -137,5 +138,5 @@ memory:
   med: 6
   high: 18
 
-max_cores: null
+max_cores: 8
 aligner: bwa-mem
