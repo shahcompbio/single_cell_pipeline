@@ -10,6 +10,9 @@ import os
         
 def merge_pdfs(infiles, outfile):
 
+    if isinstance(infiles, dict):
+        infiles = infiles.values()
+
     merger = PdfFileMerger()
 
     for infile in infiles:

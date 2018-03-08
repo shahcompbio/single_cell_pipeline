@@ -34,7 +34,6 @@ def aneufinder_workflow(workflow, args):
         func=aneufinder.create_aneufinder_workflow,
         args=(
             mgd.InputFile('bam_markdups', 'sample_id', fnames=bam_files),
-            mgd.InputFile(args['sample_info']),
             sampleids,
             config,
             output,

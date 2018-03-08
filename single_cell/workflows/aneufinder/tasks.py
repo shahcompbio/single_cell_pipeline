@@ -103,4 +103,4 @@ def run_aneufinder(
 
 def merge_pdf(in_filenames, out_filename):
     for in_files, out_file in zip(in_filenames, out_filename):
-        pdfutils.merge_pdf(in_files, out_file)
+        pdfutils.merge_pdfs(in_files, out_file)
