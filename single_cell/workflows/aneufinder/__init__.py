@@ -3,11 +3,10 @@ import pypeliner
 import pypeliner.managed as mgd
 
 import tasks
-from utils.csvutils import concatenate_csv_lowmem
 
+from single_cell.utils import csvutils
 
 def create_aneufinder_workflow(bam_file,
-                               sample_info,
                                sample_ids,
                                config,
                                aneufinder_output,
@@ -41,7 +40,7 @@ def create_aneufinder_workflow(bam_file,
     workflow.transform(
         name='merge_segments',
         ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard'], 'ncpus':1},
-        func=concatenate_csv_lowmem,
+        func=csvutils.concatenate_csv_lowmem,
         args=(
             mgd.TempInputFile('segments.csv', 'sample_id'),
             mgd.OutputFile(aneufinder_segs_filename)
@@ -51,7 +50,7 @@ def create_aneufinder_workflow(bam_file,
     workflow.transform(
         name='merge_reads',
         ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard'], 'ncpus':1},
-        func=concatenate_csv_lowmem,
+        func=csvutils.concatenate_csv_lowmem,
         args=(
             mgd.TempInputFile('reads.csv', 'sample_id'),
             mgd.OutputFile(aneufinder_reads_filename)
