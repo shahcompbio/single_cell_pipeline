@@ -461,6 +461,9 @@ class GenHmmPlots(object):
         scale = (reads["integer_copy_scale"]/reads["copy"])
         scale = scale[~reads['copy'].isnull()].unique()
         #account for floating point errors
+        scale =  scale[np.isfinite(scale)]
+        if not scale:
+            return
         assert np.nanvar(scale) < 0.0001
         scale = scale[0]
 
