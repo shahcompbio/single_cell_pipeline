@@ -1,0 +1,150 @@
+pools:
+  standard: null
+
+  highmem: null
+
+  multicore: null
+
+picard_wgs_params:
+  # Minimum base quality to count a read
+  min_bqual: 20
+
+  # Minimum mapping quality to count a read
+  min_mqual: 20
+
+  # Count unpaired reads for wgs metrics
+  count_unpaired: false
+
+# HMMcopy parameters
+hmmcopy_params:
+  diploid:
+    mu: 0,0.5,1.0,1.5,2.0,2.5,3.0
+
+    m: 0,0.5,1.0,1.5,2.0,2.5,3.0
+
+    kappa: 25,100,700,100,25,25,25
+
+    e: null
+
+    s: null
+
+    # Optional mappability cutoff
+    map_cutoff: 0.9
+
+    # Number of states
+    num_states: 7
+
+    # Minimum mapping quality to count a read
+    min_mqual: 20
+
+    # Bin size
+    bin_size: 500000
+
+    # Binned GC content file
+    gc_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.gc.ws_500000.wig
+
+    # Binned mappability file
+    map_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.map.ws_125_to_500000.wig
+
+    smoothing_function: loess
+
+    exclude_list: null
+
+  tetraploid:
+    mu: 0,0.25,0.5,0.75,1.0,1.25,1.5
+
+    m: 0,0.25,0.5,0.75,1.0,1.25,1.5
+
+    kappa: 25,100,700,100,25,25,25
+
+    e: null
+
+    s: null
+
+    # Optional mappability cutoff
+    map_cutoff: 0.9
+
+    # Number of states
+    num_states: 7
+
+    # Minimum mapping quality to count a read
+    min_mqual: 20
+
+    # Bin size
+    bin_size: 500000
+
+    # Binned GC content file
+    gc_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.gc.ws_500000.wig
+
+    # Binned mappability file
+    map_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.map.ws_125_to_500000.wig
+
+    smoothing_function: loess
+
+    exclude_list: null
+
+  triploid:
+    mu: 0,0.33,0.66,1.0,1.33,1.66,2.0
+
+    m: 0,0.33,0.66,1.0,1.33,1.66,2.0
+
+    kappa: 25,100,700,100,25,25,25
+
+    e: null
+
+    s: null
+
+    # Optional mappability cutoff
+    map_cutoff: 0.9
+
+    # Number of states
+    num_states: 7
+
+    # Minimum mapping quality to count a read
+    min_mqual: 20
+
+    # Bin size
+    bin_size: 500000
+
+    # Binned GC content file
+    gc_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.gc.ws_500000.wig
+
+    # Binned mappability file
+    map_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.map.ws_125_to_500000.wig
+
+    smoothing_function: loess
+
+    exclude_list: null
+
+# Reference genome to align to in fasta format. Should be indexed by aligner and samtools
+ref_genome: /shahlab/pipelines/reference/mm10_build38_mouse.fasta
+
+# Chromosomes for copy number analysis
+chromosomes: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', 'X', 'Y']
+
+mutationseq: /shahlab/pipelines/apps_centos6/mutationSeq_4.3.7_anaconda/
+
+mutationseq_model: /shahlab/pipelines/apps_centos6/mutationSeq_4.3.7_anaconda/model_v4.1.2_anaconda_sk_0.13.1.npz
+
+heatmap_plot_mad_threshold: 0.2
+
+heatmap_plot_numreads_threshold: 100000
+
+gc_windows: null
+
+one_split_job: False
+
+memory:
+  low: 2
+
+  med: 6
+
+  high: 15
+
+max_cores: 8
+
+aligner: bwa-mem
+
+adapter: 'CTGTCTCTTATACACATCTCCGAGCCCACGAGAC'
+
+adapter2: 'CTGTCTCTTATACACATCTGACGCTGCCGACGA'
