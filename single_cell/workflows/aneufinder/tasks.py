@@ -77,6 +77,7 @@ def run_aneufinder(
         open(segments, 'w').close()
         open(reads, 'w').close()
         file(dnacopy_plot, 'w').close()
+        return
 
     # Copy out the plot files. Grabs the first bin size that it sees
     all_plots = os.listdir(os.path.join(temp_output, 'PLOTS', 'method-dnacopy'))
