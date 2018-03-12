@@ -57,7 +57,7 @@ def get_fastqs(fastqs_file):
     data = load_yaml(fastqs_file)
 
     for cell in data.keys():
-        assert "fastqs" in data[cell], "couldnt extract fastq file paths from yaml input"
+        assert "fastqs" in data[cell], "couldnt extract fastq file paths from yaml input for cell: {}".format(cell)
 
     fastq_1_filenames = dict()
     fastq_2_filenames = dict()
@@ -75,7 +75,7 @@ def get_seqinfo(fastqs_file):
     data = load_yaml(fastqs_file)
 
     for cell in data.keys():
-        assert "fastqs" in data[cell], "couldnt extract fastq file paths from yaml input"
+        assert "fastqs" in data[cell], "couldnt extract fastq file paths from yaml input for cell: {}".format(cell)
 
     seqinfo = dict()
     for cell in data.keys():
@@ -85,7 +85,7 @@ def get_seqinfo(fastqs_file):
         for lane,paths in fastqs.iteritems():
 
             if "source" not in paths:
-                raise Exception(paths)
+                raise Exception("source key missing in cell: {}".format(cell))
             seqinfo[(cell,lane)] = paths["source"]
 
     return seqinfo
@@ -117,7 +117,7 @@ def get_bams(fastqs_file):
     data = load_yaml(fastqs_file)
 
     for cell in data.keys():
-        assert "bam" in data[cell], "couldnt extract fastq file paths from yaml input"
+        assert "bam" in data[cell], "couldnt extract bam file paths from yaml input for cell: {}".format(cell)
 
     bam_filenames = {cell:data[cell]["bam"] for cell in data.keys()}
     bai_filenames = {cell:data[cell]["bam"]+".bai" for cell in data.keys()}
