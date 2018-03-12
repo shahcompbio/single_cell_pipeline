@@ -75,9 +75,20 @@ def get_seqinfo(fastqs_file):
     data = load_yaml(fastqs_file)
 
     for cell in data.keys():
-        assert "source" in data[cell], "couldnt extract source information from yaml input"
-    
-    return {cell: data[cell]["source"] for cell in data.keys()}
+        assert "fastqs" in data[cell], "couldnt extract fastq file paths from yaml input"
+
+    seqinfo = dict()
+    for cell in data.keys():
+        fastqs = data[cell]["fastqs"]
+
+
+        for lane,paths in fastqs.iteritems():
+
+            if "source" not in paths:
+                raise Exception(paths)
+            seqinfo[(cell,lane)] = paths["source"]
+
+    return seqinfo
 
 
 def get_sample_info(fastqs_file):

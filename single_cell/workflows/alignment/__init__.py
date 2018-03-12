@@ -48,7 +48,7 @@ def create_alignment_workflow(
     )
 
     workflow.setobj(
-        obj=mgd.TempOutputObj('seqinfo', 'sample_id', axes_origin=[]),
+        obj=mgd.TempOutputObj('seqinfo', 'sample_id', 'lane', axes_origin=[]),
         value=seqinfo)
 
 
@@ -67,7 +67,7 @@ def create_alignment_workflow(
             mgd.OutputFile(flagstat_metrics, 'sample_id', 'lane'),
             mgd.TempSpace('alignment_temp', 'sample_id', 'lane'),
             ref_genome,
-            mgd.TempInputObj('seqinfo', 'sample_id'),
+            mgd.TempInputObj('seqinfo', 'sample_id', 'lane'),
             mgd.InputInstance('sample_id'),
             mgd.InputInstance('lane'),
             args['library_id'],
