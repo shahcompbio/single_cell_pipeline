@@ -24,7 +24,7 @@ def main():
         workflow = hmmcopy_workflow(workflow, args)
         pyp.run(workflow)
 
-    if args["which"] == 'aneufinder' or args["which"]=="all" or args["which"]=="qc":
+    if args["which"] == 'aneufinder' or args["which"]=="all":
         workflow = pypeliner.workflow.Workflow()
         workflow = aneufinder_workflow(workflow, args)
         pyp.run(workflow)
