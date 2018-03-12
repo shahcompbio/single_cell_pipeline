@@ -1,6 +1,8 @@
 pools:
   standard: null
+
   highmem: null
+
   multicore: null
 
 picard_wgs_params:
@@ -123,6 +125,7 @@ ref_genome: /shahlab/pipelines/reference/GRCh37-lite.fa
 chromosomes: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y']
 
 mutationseq: /shahlab/pipelines/apps_centos6/mutationSeq_4.3.7_anaconda/
+
 mutationseq_model: /shahlab/pipelines/apps_centos6/mutationSeq_4.3.7_anaconda/model_v4.1.2_anaconda_sk_0.13.1.npz
 
 heatmap_plot_mad_threshold: 0.2
@@ -135,8 +138,15 @@ one_split_job: False
 
 memory:
   low: 2
+
   med: 6
+
   high: 18
 
 max_cores: 8
+
 aligner: bwa-mem
+
+adapter: 'CTGTCTCTTATACACATCTCCGAGCCCACGAGAC'
+
+adapter2: 'CTGTCTCTTATACACATCTGACGCTGCCGACGA'
