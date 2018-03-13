@@ -139,7 +139,11 @@ class CorrectReadCount(object):
         q_range = range(10, 91, 1)
         quantiles = np.array(q_range) / 100
         quantile_names = [str(x) for x in q_range]
-        
+
+        #need at least 3 values to compute the quantiles
+        if len(df_regression) < 3:
+            return df_regression
+
         poly2_quantile_model = smf.quantreg('reads ~ gc + I(gc ** 2.0)', data=df_regression)
         poly2_quantile_fit = [poly2_quantile_model.fit(q=q) for q in quantiles]
         poly2_quantile_predict = [poly2_quantile_fit[i].predict(df_regression) for i in range(len(quantiles))]
@@ -215,12 +219,11 @@ class CorrectReadCount(object):
         df_regression = pd.DataFrame.copy(df_non_zero)
         
         df_regression.sort_values(by='gc', inplace=True)
-        
+
         # modal quantile regression
         df_regression = self.modal_quantile_regression(df_regression, lowess_frac=0.2)
             
         # map results back to full data frame
-        
         df.ix[df_regression.index, 'modal_quantile'] = df_regression['modal_quantile']
         df.ix[df_regression.index, 'modal_curve'] = df_regression['modal_curve']
         df.ix[df_regression.index, 'modal_corrected'] = df_regression['modal_corrected']
