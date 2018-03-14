@@ -85,14 +85,15 @@ def plot_hmmcopy(reads, segments, params, metrics, sample_info, ref_genome, read
     plot.main()
 
 
-def filtersamps(samp, metrics, mad_threshold):
+def get_mad_score(samp, metrics):
     mad = metrics[metrics['cell_id'] == samp]['mad_neutral_state'].iloc[0]
-    if mad>mad_threshold:
-        return True
-    return False
-    
+    return mad
 
-def merge_pdf(in_filenames, out_filename, metrics, mad_threshold):
+def get_num_reads(samp, metrics):
+    numreads = metrics[metrics['cell_id'] == samp]['total_mapped_reads'].iloc[0]
+    return numreads
+
+def merge_pdf(in_filenames, out_filename, metrics, mad_threshold, numreads_threshold):
 
     metrics = pd.read_csv(metrics, sep=',')
     expconds = metrics["experimental_condition"].unique()
@@ -105,7 +106,12 @@ def merge_pdf(in_filenames, out_filename, metrics, mad_threshold):
 
         helpers.makedirs(out_file, isfile=True)
 
-        infiles = [infiles[samp] for samp in cells\
-                   if filtersamps(samp, metrics, mad_threshold)]
+        if mad_threshold:
+            cells = [cell for cell in cells if get_mad_score(cell, metrics) <= mad_threshold]
+
+        if numreads_threshold:
+            cells = [cell for cell in cells if get_num_reads(cell, metrics) >= numreads_threshold]
+
+        infiles = [infiles[samp] for samp in cells]
 
         pdfutils.merge_pdfs(infiles, out_file)

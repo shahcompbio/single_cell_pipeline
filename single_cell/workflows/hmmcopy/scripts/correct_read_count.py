@@ -141,7 +141,7 @@ class CorrectReadCount(object):
         quantile_names = [str(x) for x in q_range]
 
         #need at least 3 values to compute the quantiles
-        if len(df_regression) < 3:
+        if len(df_regression) < 10:
             return df_regression
 
         poly2_quantile_model = smf.quantreg('reads ~ gc + I(gc ** 2.0)', data=df_regression)
@@ -209,32 +209,32 @@ class CorrectReadCount(object):
         df['modal_quantile'] = 'NaN'
         df['modal_curve'] = 'NaN'
         df['modal_corrected'] = 'NaN'
-        
+
         # filtering and sorting
-        
         df_valid_gc = df[df['gc']>0]
-        
+
         df_non_zero = df_valid_gc[df_valid_gc['reads']>0]
-        
+
         df_regression = pd.DataFrame.copy(df_non_zero)
-        
+
         df_regression.sort_values(by='gc', inplace=True)
 
         # modal quantile regression
         df_regression = self.modal_quantile_regression(df_regression, lowess_frac=0.2)
-            
+
         # map results back to full data frame
         df.ix[df_regression.index, 'modal_quantile'] = df_regression['modal_quantile']
         df.ix[df_regression.index, 'modal_curve'] = df_regression['modal_curve']
         df.ix[df_regression.index, 'modal_corrected'] = df_regression['modal_corrected']
         
         # filter by mappability
-        
         df['copy'] = df['modal_corrected']
-        df['copy'][df['map'] < self.mappability] = 'NaN'
+        df['copy'][df['map'] < self.mappability] = float('NaN')
 
         df = df.rename(columns=({ "modal_corrected" : "cor_gc"}))
-        
+
+        df["cor_map"] = float("NaN")
+
         # save
         self.write(df)
 
