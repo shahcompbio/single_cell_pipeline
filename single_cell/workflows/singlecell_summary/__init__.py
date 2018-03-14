@@ -22,10 +22,8 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
     plots_dir = os.path.join(results_dir, 'plots')
 
     plot_heatmap_ec_output = os.path.join(plots_dir, '{}_plot_heatmap_ec.pdf'.format(lib))
-    plot_heatmap_ec_mad_output = os.path.join(plots_dir,
-                                              '{}_plot_heatmap_ec_mad.pdf'.format(lib))
-    plot_heatmap_ec_numreads_output = os.path.join(plots_dir,
-                                                   '{}_plot_heatmap_ec_numreads.pdf'.format(lib))
+    plot_heatmap_ec_filt_output = os.path.join(plots_dir,
+                                                   '{}_plot_heatmap_ec_filtered.pdf'.format(lib))
 
     plot_metrics_output = os.path.join(plots_dir, '{}_plot_metrics.pdf'.format(lib))
     plot_kernel_density_output = os.path.join(plots_dir,
@@ -147,40 +145,21 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
     )
  
     workflow.transform(
-        name='plot_heatmap_ec_mad',
+        name='plot_heatmap_ec_filtered',
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.plot_pcolor,
         args=(
             mgd.InputFile(hmm_reads),
             mgd.InputFile(all_metrics_file),
             None,
-            mgd.OutputFile(plot_heatmap_ec_mad_output),
+            mgd.OutputFile(plot_heatmap_ec_filt_output),
         ),
         kwargs={
             'plot_title': 'QC pipeline metrics',
             'column_name': 'integer_copy_number',
             'plot_by_col': 'experimental_condition',
-            'mad_threshold': config['heatmap_plot_mad_threshold'],
-            'chromosomes': chromosomes,
-            'max_cn':hmmparams['num_states'],
-        }
-    )
- 
-    workflow.transform(
-        name='plot_heatmap_ec_nreads',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
-        func=tasks.plot_pcolor,
-        args=(
-            mgd.InputFile(hmm_reads),
-            mgd.InputFile(all_metrics_file),
-            None,
-            mgd.OutputFile(plot_heatmap_ec_numreads_output),
-        ),
-        kwargs={
-            'plot_title': 'QC pipeline metrics',
-            'column_name': 'integer_copy_number',
-            'plot_by_col': 'experimental_condition',
-            'numreads_threshold': config['heatmap_plot_numreads_threshold'],
+            'numreads_threshold': config['plot_numreads_threshold'],
+            'mad_threshold': config['plot_mad_threshold'],
             'chromosomes': chromosomes,
             'max_cn':hmmparams['num_states'],
         }
@@ -227,16 +206,17 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
               mgd.OutputFile(bias_pdf_output),
               mgd.OutputFile(params_pdf_output)],
               mgd.InputFile(all_metrics_file),
-              None
+              None,
+              None,
             )
     )
 
-    reads_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_reads_mad.pdf'.format(lib))
-    segs_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_segs_mad.pdf'.format(lib))
-    bias_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_bias_mad.pdf'.format(lib))
-    params_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_params_mad.pdf'.format(lib))
+    reads_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_reads_filtered.pdf'.format(lib))
+    segs_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_segs_filtered.pdf'.format(lib))
+    bias_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_bias_filtered.pdf'.format(lib))
+    params_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_params_filtered.pdf'.format(lib))
     workflow.transform(
-        name='merge_hmm_copy_mad',
+        name='merge_hmm_copy_filtered',
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.merge_pdf,
         args=(
@@ -249,7 +229,8 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
               mgd.OutputFile(bias_mad_pdf_output),
               mgd.OutputFile(params_mad_pdf_output)],
               mgd.InputFile(all_metrics_file),
-              0.2
+              config['plot_mad_threshold'],
+              config['plot_numreads_threshold']
             )
     )
 
