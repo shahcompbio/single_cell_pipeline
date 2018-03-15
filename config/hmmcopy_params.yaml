@@ -8,6 +8,8 @@ diploid:
 
     e: null
 
+    g: null
+
     s: null
 
 tetraploid:
@@ -19,6 +21,8 @@ tetraploid:
 
     e: null
 
+    g: null
+
     s: null
 
 triploid:
@@ -29,5 +33,7 @@ triploid:
     kappa: 25,100,700,100,25,25,25
 
     e: null
+
+    g: null
 
     s: null

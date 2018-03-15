@@ -89,6 +89,9 @@ def run_hmmcopy(
     if hmmparams['e']:
         cmd.append('--param_e=' + str(hmmparams['e']))
 
+    if hmmparams['g']:
+        cmd.append('--param_g=' + str(hmmparams['g']))
+
     if hmmparams['s']:
         cmd.append('--param_s=' + str(hmmparams['s']))
 

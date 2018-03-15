@@ -28,6 +28,8 @@ hmmcopy_params:
 
     s: null
 
+    g: null
+
     # Optional mappability cutoff
     map_cutoff: 0.9
 
@@ -62,6 +64,8 @@ hmmcopy_params:
 
     s: null
 
+    g: null
+
     # Optional mappability cutoff
     map_cutoff: 0.9
 
@@ -94,6 +98,8 @@ hmmcopy_params:
     e: null
 
     s: null
+
+    g: null
 
     # Optional mappability cutoff
     map_cutoff: 0.9
