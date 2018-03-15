@@ -26,6 +26,8 @@ hmmcopy_params:
 
     e: null
 
+    g: null
+
     s: null
 
     # Optional mappability cutoff
@@ -59,6 +61,8 @@ hmmcopy_params:
 
     e: null
 
+    g: null
+
     s: null
 
     # Optional mappability cutoff
@@ -91,6 +95,8 @@ hmmcopy_params:
     kappa: 25,100,700,100,25,25,25
 
     e: null
+
+    g: null
 
     s: null
 
