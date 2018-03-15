@@ -30,6 +30,12 @@ hmmcopy_params:
 
     s: null
 
+    nu: null
+
+    eta: null
+
+    lambda: null
+
     # Optional mappability cutoff
     map_cutoff: 0.9
 
@@ -65,6 +71,12 @@ hmmcopy_params:
 
     s: null
 
+    nu: null
+
+    eta: null
+
+    lambda: null
+
     # Optional mappability cutoff
     map_cutoff: 0.9
 
@@ -99,6 +111,12 @@ hmmcopy_params:
     g: null
 
     s: null
+
+    nu: null
+
+    eta: null
+
+    lambda: null
 
     # Optional mappability cutoff
     map_cutoff: 0.9
