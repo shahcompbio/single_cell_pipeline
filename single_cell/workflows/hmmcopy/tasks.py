@@ -95,6 +95,16 @@ def run_hmmcopy(
     if hmmparams['s']:
         cmd.append('--param_s=' + str(hmmparams['s']))
 
+    if hmmparams['nu']:
+        cmd.append('--param_nu=' + str(hmmparams['nu']))
+
+    if hmmparams['eta']:
+        cmd.append('--param_eta=' + str(hmmparams['eta']))
+
+    if hmmparams['lambda']:
+        cmd.append('--param_l=' + str(hmmparams['lambda']))
+
+
     pypeliner.commandline.execute(*cmd)
 
     # generate the metrics file for hmmcopy

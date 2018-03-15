@@ -46,6 +46,9 @@ spec = matrix(c(
 				"param_e",      "e",    2, "double",    "optional e parameter, suggested probablity of extending a segment",
 				"param_g",      "a",    2, "double",    "optional g parameter, prior shape on lambda, which is gamma distributed",
 				"param_s",      "s",    2, "double",    "optional s parameter, prior scale on lambda, which is gamma distributed",
+				"param_nu",      "nu",    2, "double",    "optional nu parameter",
+				"param_l",      "l",    2, "double",    "optional lambda parameter",
+				"param_eta",      "eta",    2, "character",    "optional eta parameter",
 				"reads_output",      "r",    1, "character", "path to output directory",
                                 "segs_output",      "seg",    1, "character", "path to output directory",
                                 "params_output",      "param",    1, "character", "path to output directory",
@@ -294,6 +297,10 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 
 	new.params <- modify_param(new.params, 'kappa', opt$param_k, opt$num_states)
 
+	new.params <- modify_param(new.params, 'eta', opt$param_eta, opt$num_states)
+
+
+
 	if (!is.null(opt$param_e)) {
 		new.params$e <- as.numeric(opt$param_e)
 	}
@@ -305,6 +312,15 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 	if (!is.null(opt$param_s)) {
 		new.params$S <- as.numeric(opt$param_s)
 	}
+
+	if (!is.null(opt$param_l)) {
+		new.params$lambda <- as.numeric(opt$param_l)
+	}
+
+	if (!is.null(opt$param_nu)) {
+		new.params$nu <- as.numeric(opt$param_nu)
+	}
+
 
 	# segment
 	tryCatch({
