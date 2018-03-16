@@ -58,7 +58,7 @@ hmmcopy_params:
 
     exclude_list: /refdata/repeats.satellite.regions
 
-    smoothing_function: loess
+    smoothing_function: modal
 
     auto_ploidy: true
 
