@@ -50,10 +50,10 @@ hmmcopy_params:
     # Bin size
     bin_size: 500000
 
-    gc_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.gc.ws_500000.wig
+    gc_wig_file: /shahlab/pipelines/reference/mm10_build38_mouse.gc.ws_500000.wig
 
     # Binned mappability file
-    map_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.map.ws_125_to_500000.wig
+    map_wig_file: /shahlab/pipelines/reference/mm10_build38_mouse.map.ws_125_to_50K.wig
 
     exclude_list: null
 

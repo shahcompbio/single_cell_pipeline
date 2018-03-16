@@ -51,12 +51,12 @@ hmmcopy_params:
     bin_size: 500000
 
     # Binned GC content file
-    gc_wig_file: /refdata/GRCh37-lite.gc.ws_500000.wig
+    gc_wig_file: /refdata/mm10_build38_mouse.gc.ws_500000.wig
 
     # Binned mappability file
-    map_wig_file: /refdata/GRCh37-lite.map.ws_125_to_500000.wig
+    map_wig_file: /refdata/mm10_build38_mouse.map.rl_125_ws_500000.wig
 
-    exclude_list: /refdata/repeats.satellite.regions
+    exclude_list: null
 
     smoothing_function: loess
 
