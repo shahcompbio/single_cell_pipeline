@@ -46,6 +46,7 @@ spec = matrix(c(
 				"param_e",      "e",    2, "double",    "optional e parameter, suggested probablity of extending a segment",
 				"param_g",      "a",    2, "double",    "optional g parameter, prior shape on lambda, which is gamma distributed",
 				"param_s",      "s",    2, "double",    "optional s parameter, prior scale on lambda, which is gamma distributed",
+				"param_str",      "str",    2, "double",    "optional str parameter",
 				"param_nu",      "nu",    2, "double",    "optional nu parameter",
 				"param_l",      "l",    2, "double",    "optional lambda parameter",
 				"param_eta",      "eta",    2, "character",    "optional eta parameter",
@@ -299,6 +300,8 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 	new.params <- modify_param(new.params, 'kappa', opt$param_k, opt$num_states)
 
 	new.params <- modify_param(new.params, 'eta', opt$param_eta, opt$num_states)
+
+	new.params <- modify_param(new.params, 'str', opt$param_str, opt$num_states)
 
 
 
