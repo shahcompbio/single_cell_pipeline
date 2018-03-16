@@ -95,6 +95,9 @@ def run_hmmcopy(
     if hmmparams['s']:
         cmd.append('--param_s=' + str(hmmparams['s']))
 
+    if hmmparams['strength']:
+        cmd.append('--param_str=' + str(hmmparams['strength']))
+
     if hmmparams['nu']:
         cmd.append('--param_nu=' + str(hmmparams['nu']))
 
