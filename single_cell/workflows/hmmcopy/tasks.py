@@ -104,6 +104,8 @@ def run_hmmcopy(
     if hmmparams['lambda']:
         cmd.append('--param_l=' + str(hmmparams['lambda']))
 
+    if hmmparams["auto_ploidy"]:
+        cmd.append('--auto_ploidy')
 
     pypeliner.commandline.execute(*cmd)
 
