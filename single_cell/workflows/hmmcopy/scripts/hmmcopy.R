@@ -362,6 +362,7 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 		df.samp.corrected <- as.data.frame(samp.corrected)
 		medsum <- ddply(df.samp.corrected, .(state), summarise, meds = median(copy, na.rm = TRUE), sd = sd(copy, na.rm = TRUE), n = length(copy))
 		medsum$p <- medsum$n / sum(medsum$n)
+                medsum <- subset(medsum, !is.na(meds))
 		medsum <- subset(medsum, p >= 0.001)
 		medsum <- medsum[order(medsum$sd), ]
 		meds <- head(medsum$meds, 3)
