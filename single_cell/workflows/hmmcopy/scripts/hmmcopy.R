@@ -50,10 +50,11 @@ spec = matrix(c(
 				"param_l",      "l",    2, "double",    "optional lambda parameter",
 				"param_eta",      "eta",    2, "character",    "optional eta parameter",
 				"reads_output",      "r",    1, "character", "path to output directory",
-                                "segs_output",      "seg",    1, "character", "path to output directory",
-                                "params_output",      "param",    1, "character", "path to output directory",
-                                "sample_id",	"samplle_id",	1, "character",	"specify sample or cell id",
-                                "post_marginals_output",      "post",    1, "character", "path to output directory",
+				"segs_output",      "seg",    1, "character", "path to output directory",
+				"params_output",      "param",    1, "character", "path to output directory",
+				"sample_id",	"sample_id",	1, "character",	"specify sample or cell id",
+				"post_marginals_output",      "post",    1, "character", "path to output directory",
+				"auto_ploidy",         "z",    0, "logical",   "Automatically detects and corrects for ploidy, REQUIRES DIPLOID + MODAL REGRESSION",
 				"help",         "h",    0, "logical",   "print usage"
 		), byrow=TRUE, ncol=5);
 opt = getopt(spec)
@@ -246,18 +247,18 @@ samp.corrected <- read.table(opt$corrected_data, sep=',', header=TRUE)
 
 #if correct hmmcopy fails then all corrected cols will be NA, just skip hmmcopy in that case
 if (all(is.na(samp.corrected$cor_gc)) & all(is.na(samp.corrected$copy))){
-        err <- "Low coverage sample results in loess regression failure, unable to correct and segment"
+		err <- "Low coverage sample results in loess regression failure, unable to correct and segment"
 	error_exit_clean(samp.corrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_post_marginals, err)
 }
 samp.corrected <- RangedData(ranges = IRanges(start=samp.corrected$start, end=samp.corrected$end), space=samp.corrected$chr,
-                             width=samp.corrected$width, reads=samp.corrected$reads, gc=samp.corrected$gc, map=samp.corrected$map,
-                             cor_gc=samp.corrected$cor_gc, copy=samp.corrected$copy, valid=samp.corrected$valid, ideal=samp.corrected$ideal,
-                             modal_curve=samp.corrected$modal_curve,modal_quantile=samp.corrected$modal_quantile, cor_map=samp.corrected$cor_map)
+							 width=samp.corrected$width, reads=samp.corrected$reads, gc=samp.corrected$gc, map=samp.corrected$map,
+							 cor_gc=samp.corrected$cor_gc, copy=samp.corrected$copy, valid=samp.corrected$valid, ideal=samp.corrected$ideal,
+							 modal_curve=samp.corrected$modal_curve,modal_quantile=samp.corrected$modal_quantile, cor_map=samp.corrected$cor_map)
 
 
 if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.map == Inf))) > 0) {
-        err <- "Low coverage sample results in loess regression failure, unable to correct and segment"
-        error_exit_clean(samp.corrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_post_marginals, err)
+		err <- "Low coverage sample results in loess regression failure, unable to correct and segment"
+		error_exit_clean(samp.corrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_post_marginals, err)
 
 } else {
 
@@ -269,7 +270,7 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 	}
 
 	# apply segmentation parameters
-	default.params <- HMMsegment(samp.corrected, getparam=T)
+	default.params <- HMMsegment(samp.corrected, getparam=T, maxiter = 200)
 	new.params <- default.params
 
 
@@ -324,7 +325,7 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 
 	# segment
 	tryCatch({
-		samp.segmented <- HMMsegment(samp.corrected, new.params, verbose=F)
+		samp.segmented <- HMMsegment(samp.corrected, new.params, verbose=F, maxiter = 200)
 	},
 		error = function(err){
 			error_exit_clean(samp.corrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_post_marginals, as.character(err))
@@ -332,24 +333,54 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 	})
 	samp.corrected$state <- samp.segmented$state
 
-	# convert to integer copy number scale
-	state_2_index <- which(samp.segmented$segs$state == 2)
-	state_3_index <- which(samp.segmented$segs$state == 3)
-	if (length(state_3_index) > 0) {
+	if (is.null(opt$auto_ploidy)) {
+		# convert to integer copy number scale
+		state_2_index <- which(samp.segmented$segs$state == 2)
+		state_3_index <- which(samp.segmented$segs$state == 3)
+		if (length(state_3_index) > 0) {
 
-		state_3_median <- median(samp.segmented$segs$median[state_3_index])
-		samp.corrected$integer_copy_scale <- samp.corrected$copy / (state_3_median / 2)
+			state_3_median <- median(samp.segmented$segs$median[state_3_index])
+			samp.corrected$integer_copy_scale <- samp.corrected$copy / (state_3_median / 2)
 
-	} else if (length(state_2_index) > 0) {
+		} else if (length(state_2_index) > 0) {
 
-		state_2_median <- median(samp.segmented$segs$median[state_2_index])
-		samp.corrected$integer_copy_scale <- samp.corrected$copy / state_2_median
+			state_2_median <- median(samp.segmented$segs$median[state_2_index])
+			samp.corrected$integer_copy_scale <- samp.corrected$copy / state_2_median
 
+		} else {
+
+			warning(paste("Sample had no State 3 or State 2 copy number calls. Unable to produce integer profile for ", opt$tumour_file, sep=""))
+			samp.corrected$integer_copy_scale <- NA
+
+		}
 	} else {
+		medsum <- ddply(samp.corrected, .(state), summarise, meds = median(copy, na.rm = TRUE), sd = sd(copy, na.rm = TRUE), n = length(copy))
+		medsum$p <- medsum$n / sum(medsum$n)
+		medsum <- subset(medsum, p >= 0.001)
+		medsum <- medsum[order(medsum$sd), ]
+		meds <- head(medsum$meds, 3)
+		lowest <- data.frame(state = 0, value = Inf)
+		for (p in 2:7) {
+			multiply <- meds * p
+			delta <- sum(abs(round(multiply, digits = 0) - multiply))
+			if (lowest$value > delta) {
+				lowest <- data.frame(ploidy = p, value = delta)
+			}
+		}
 
-		warning(paste("Sample had no State 3 or State 2 copy number calls. Unable to produce integer profile for ", opt$tumour_file, sep=""))
-		samp.corrected$integer_copy_scale <- NA
+		if (lowest$ploidy != 2) {
+			warning(paste("PLOIDY MISMATCH DETECTED, CORRECTING TO: ", lowest$ploidy))
+			ploidy.params <- new.params
+			ploidy.params$mu <- ploidy.params$mu * 2/lowest$ploidy
+			ploidy.params$m <- ploidy.params$mu
 
+			samp.segmented <- HMMsegment(samp.corrected, ploidy.params, verbose=F)
+			samp.corrected$state <- samp.segmented$state
+		}
+
+		ploidy <- lowest$ploidy + 1
+		ploidy_state_median <- median(subset(samp.corrected, state == ploidy)$copy, na.rm = TRUE)
+		samp.corrected$integer_copy_scale <- samp.corrected$copy / (ploidy_state_median / (ploidy - 1))
 	}
 
 	# recompute segment medians
@@ -365,19 +396,19 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 	# add integer copy number to read count table
 	corrected.table <- adply(corrected.table, 1, get_bin_integer_copy_number, segs=segs.integer.medians)
 	colnames(corrected.table)[ncol(corrected.table)] <- "integer_copy_number"
-        corrected.table$cell_id <- opt$sample_id
+		corrected.table$cell_id <- opt$sample_id
 	# output read count table\
 
-        # names(corrected.table)[names(corrected.table) == 'cor.map'] <- 'cor_map'
-        # names(corrected.table)[names(corrected.table) == 'cor.gc'] <- 'cor_gc'
-        #print(colnames(corrected.table))
+		# names(corrected.table)[names(corrected.table) == 'cor.map'] <- 'cor_map'
+		# names(corrected.table)[names(corrected.table) == 'cor.gc'] <- 'cor_gc'
+		#print(colnames(corrected.table))
 	write.table(format(corrected.table, scientific=F, trim=T), file=out_reads, quote=F, sep=",", col.names=T, row.names=F)
 
 	# format and output segment table
 	segments.table <- merge(samp.segmented$segs, segs.integer.medians, sort=F)
 	segments.table$chr <- factor(segments.table$chr, levels=chromosomes, ordered=T)
 	segments.table <- segments.table[order(segments.table$chr),]
-        segments.table$cell_id <- opt$sample_id
+		segments.table$cell_id <- opt$sample_id
 	write.table(format(segments.table, scientific=F, trim=T), file=out_segs, quote=F, sep=",", col.names=T, row.names=F)
 
 	# format and output parameter and posterior marginal tables
@@ -396,7 +427,7 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 	write.table(format(df.params, scientific=F, trim=T), file=out_params, quote=F, sep=",", col.names=T, row.names=F)
 
 	df.marginals <- format_posterior_marginals_table(samp.corrected, samp.segmented)
-        df.marginals$cell_id <- opt$sample_id
+		df.marginals$cell_id <- opt$sample_id
 	write.table(format(df.marginals, scientific=F, trim=T), file=out_post_marginals, quote=F, sep=",", col.names=T, row.names=F)
 
 }
