@@ -102,7 +102,7 @@ def get_num_reads(samp, metrics):
     return numreads
 
 def get_cell_quality(samp, metrics):
-    quality = metrics[metrics['cell_id'] == samp]['good'].iloc[0]
+    quality = metrics[metrics['cell_id'] == samp]['probablility_good'].iloc[0]
     return quality
 
 def merge_pdf(in_filenames, out_filename, metrics, mad_threshold, numreads_threshold, quality_theshold):

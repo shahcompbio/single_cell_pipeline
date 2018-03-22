@@ -168,7 +168,7 @@ class PlotHeatmap(object):
 
             numreads = int(line[idxs['total_mapped_reads']])
 
-            cell_quality = int(line[idxs['good']])
+            cell_quality = int(line[idxs['probablility_good']])
 
             if self.cellcalls and cc not in self.cellcalls:
                 continue
