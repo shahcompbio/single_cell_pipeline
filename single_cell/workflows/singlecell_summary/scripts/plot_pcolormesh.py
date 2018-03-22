@@ -174,7 +174,7 @@ class PlotPcolor(object):
 
             numreads = int(line[idxs['total_mapped_reads']])
 
-            cell_quality = int(line[idxs['probability_good']])
+            cell_quality = float(line[idxs['probability_good']])
 
             if self.cellcalls and cc not in self.cellcalls:
                 continue
