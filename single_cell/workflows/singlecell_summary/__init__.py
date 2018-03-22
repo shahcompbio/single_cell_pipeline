@@ -82,11 +82,19 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
         args=(
             mgd.TempInputFile("all_metrics.csv"),
             sample_info,
-            mgd.OutputFile(all_metrics_file),
+            mgd.TempOutputFile("all_metrics_annotated.csv"),
         )
     )
 
-
+    workflow.transform(
+        name='annotate_metrics',
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
+        func=tasks.classify,
+        args=(
+            mgd.TempInputFile("all_metrics_annotated.csv"),
+            mgd.OutputFile(all_metrics_file),
+        )
+    )
  
     workflow.transform(
         name='plot_metrics',
