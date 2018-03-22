@@ -77,7 +77,7 @@ def add_column_to_metrics(predictions, metrics):
 
 def write(df, output):
 
-    df.to_csv(output, index=False)
+    df.to_csv(output, index=False, na_rep="NA")
 
 
 def main(metrics, model, output):
