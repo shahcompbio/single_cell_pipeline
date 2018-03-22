@@ -55,7 +55,7 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
         ),
         kwargs={
             'plot_title': 'QC pipeline metrics',
-            'column_name': 'integer_copy_number',
+            'column_name': 'state',
             'chromosomes': chromosomes,
             'max_cn':hmmparams['num_states'],
         }
@@ -145,7 +145,7 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
         ),
         kwargs={
             'plot_title': 'QC pipeline metrics',
-            'column_name': 'integer_copy_number',
+            'column_name': 'state',
             'plot_by_col': 'experimental_condition',
             'chromosomes': chromosomes,
             'max_cn':hmmparams['num_states'],
@@ -164,7 +164,7 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
         ),
         kwargs={
             'plot_title': 'QC pipeline metrics',
-            'column_name': 'integer_copy_number',
+            'column_name': 'state',
             'plot_by_col': 'experimental_condition',
             'numreads_threshold': config['plot_numreads_threshold'],
             'quality_threshold': config['plot_quality_threshold'],
