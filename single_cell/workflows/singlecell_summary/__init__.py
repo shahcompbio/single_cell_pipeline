@@ -87,7 +87,7 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
     )
 
     workflow.transform(
-        name='annotate_metrics',
+        name='classify_cells',
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.classify,
         args=(
