@@ -408,8 +408,8 @@ class PlotPcolor(object):
         self.get_cluster_order(data)
 
         if self.output:
-            mad_scores, sepdata, colordata, numread_data = self.read_metrics(data)
-            data = self.filter_data(data, colordata, mad_scores, numread_data)
+            mad_scores, sepdata, colordata, numread_data, cell_qualities = self.read_metrics(data)
+            data = self.filter_data(data, colordata, mad_scores, numread_data, cell_qualities)
 
             self.plot_heatmap_by_sep(data, sepdata, colordata)
 
