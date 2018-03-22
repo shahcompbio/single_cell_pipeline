@@ -48,6 +48,7 @@ class PlotHeatmap(object):
         self.cellcalls = kwargs.get('cellcalls')
         self.mad_thres = kwargs.get('mad_threshold')
         self.reads_thres = kwargs.get('numreads_threshold')
+        self.quality_thres = kwargs.get('quality_threshold')
         self.high_memory = kwargs.get('high_memory')
         self.plot_title = kwargs.get('plot_title')
 
@@ -135,6 +136,7 @@ class PlotHeatmap(object):
 
         data = {}
         numread_data = {}
+        quality_data = {}
 
         sepdata = defaultdict(list)
         colordata = {}
@@ -166,16 +168,19 @@ class PlotHeatmap(object):
 
             numreads = int(line[idxs['total_mapped_reads']])
 
+            cell_quality = int(line[idxs['good']])
+
             if self.cellcalls and cc not in self.cellcalls:
                 continue
 
             numread_data[sample_id] = numreads
             data[sample_id] = val
+            quality_data[sample_id] = cell_quality
 
             colordata[sample_id] = cc
             sepdata[ec].append(sample_id)
 
-        return data, sepdata, colordata, numread_data
+        return data, sepdata, colordata, numread_data, quality_data
 
     def sort_bins(self, bins):
         """
@@ -295,7 +300,7 @@ class PlotHeatmap(object):
         order = [samps[i] for i in order]
         return order
 
-    def filter_data(self, data, ccdata, mad_scores, numreads_data):
+    def filter_data(self, data, ccdata, mad_scores, numreads_data, cell_quality):
         """
         remove samples that dont pass filtering thresholds
         """
@@ -317,6 +322,10 @@ class PlotHeatmap(object):
             samples = [samp for samp in samples
                        if numreads_data[samp] >= self.reads_thres]
 
+        if self.quality_thres:
+            samples = [samp for samp in samples
+                       if cell_quality[samp] >= self.quality_thres]
+
         data = data.loc[samples]
         return data
 
@@ -331,8 +340,8 @@ class PlotHeatmap(object):
             return
 
         if all((self.cellcalls, self.mad_thres, self.reads_thres)):
-            mad_scores, sepdata, colordata, numread_data = self.read_metrics(data)
-            data = self.filter_data(data, colordata, mad_scores, numread_data)
+            mad_scores, sepdata, colordata, numread_data, cell_qualities = self.read_metrics(data)
+            data = self.filter_data(data, colordata, mad_scores, numread_data, cell_qualities)
         else:
             samples = list(set(data.index))
             sepdata = {'all':samples}
@@ -469,8 +478,8 @@ class PlotHeatmap(object):
         self.get_cluster_order(data)
 
         if self.output:
-            mad_scores, sepdata, colordata, numread_data = self.read_metrics(data)
-            data = self.filter_data(data, colordata, mad_scores, numread_data)
+            mad_scores, sepdata, colordata, numread_data, cell_qualities = self.read_metrics(data)
+            data = self.filter_data(data, colordata, mad_scores, numread_data, cell_qualities)
 
             self.plot_heatmap_by_sep(data, chr_idxs, sepdata, colordata)
 
@@ -522,7 +531,12 @@ def parse_args():
     parser.add_argument('--numreads_threshold',
                         type=int,
                         default=None,
-                        help='''all cells that have low MAD won't be plotted''')
+                        help='''all cells that have low reads won't be plotted''')
+
+    parser.add_argument('--quality_threshold',
+                        type=int,
+                        default=None,
+                        help='''all cells that have low quality won't be plotted''')
 
     parser.add_argument('--plot_by_col',
                         default='all',
@@ -547,7 +561,7 @@ def parse_args():
 if __name__ == '__main__':
     ARGS = parse_args()
     m = PlotHeatmap(ARGS.input, ARGS.metrics, ARGS.order_data, ARGS.output, column_name=ARGS.column_name,
-                    cellcalls=ARGS.cellcalls, mad_threshold=ARGS.mad_threshold,
+                    cellcalls=ARGS.cellcalls, mad_threshold=ARGS.mad_threshold, quality_threshold = ARGS.quality_threshold,
                     numreads_threshold=ARGS.numreads_threshold, separator = ARGS.separator,
                     high_memory=ARGS.high_memory, plot_title=ARGS.plot_title, color_by_col=ARGS.color_by_col,
                     plot_by_col=ARGS.plot_by_col)

@@ -93,7 +93,11 @@ def get_num_reads(samp, metrics):
     numreads = metrics[metrics['cell_id'] == samp]['total_mapped_reads'].iloc[0]
     return numreads
 
-def merge_pdf(in_filenames, out_filename, metrics, mad_threshold, numreads_threshold):
+def get_cell_quality(samp, metrics):
+    quality = metrics[metrics['cell_id'] == samp]['good'].iloc[0]
+    return quality
+
+def merge_pdf(in_filenames, out_filename, metrics, mad_threshold, numreads_threshold, quality_theshold):
 
     metrics = pd.read_csv(metrics, sep=',')
     expconds = metrics["experimental_condition"].unique()
@@ -111,6 +115,9 @@ def merge_pdf(in_filenames, out_filename, metrics, mad_threshold, numreads_thres
 
         if numreads_threshold:
             cells = [cell for cell in cells if get_num_reads(cell, metrics) >= numreads_threshold]
+
+        if quality_theshold:
+            cells = [cell for cell in cells if get_cell_quality(cell, metrics) >= quality_theshold]
 
         infiles = [infiles[samp] for samp in cells]
 
