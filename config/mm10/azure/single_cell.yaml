@@ -76,6 +76,8 @@ plot_mad_threshold: 0.2
 
 plot_numreads_threshold: 100000
 
+plot_quality_threshold: 0.5
+
 gc_windows: null
 
 one_split_job: True

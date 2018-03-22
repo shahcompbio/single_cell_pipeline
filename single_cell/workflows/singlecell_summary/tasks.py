@@ -3,17 +3,25 @@ Created on Jul 24, 2017
 
 @author: dgrewal
 '''
+import os
 import pandas as pd
 from scripts import SummaryMetrics
 from scripts import PlotKernelDensity
 from scripts import PlotHeatmap
 from scripts import PlotMetrics
 from scripts import PlotPcolor
+from scripts import classifier
+from scripts import GenHmmPlots
 from single_cell.utils import csvutils
 from single_cell.utils import pdfutils
 from single_cell.utils import helpers
-from scripts import GenHmmPlots
 
+
+def classify(metrics, output):
+
+    scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
+    model = os.path.join(scripts_directory, 'model.npz')
+    classifier.main(metrics, model, output)
 
 def annotate_metrics(infile, sample_info, outfile):
     infile = pd.read_csv(infile)
@@ -66,13 +74,13 @@ def plot_heatmap(infile, metrics, order_data, output, plot_title=None,
 
 def plot_pcolor(infile, metrics, order_data, output, plot_title=None,
                  column_name=None, plot_by_col=None, numreads_threshold=None,
-                 mad_threshold=None, chromosomes=None, max_cn=None):
+                 mad_threshold=None, chromosomes=None, max_cn=None, quality_threshold=None):
 
     plot = PlotPcolor(infile, metrics, order_data, output, plot_title=plot_title,
                        column_name=column_name, plot_by_col=plot_by_col,
                        numreads_threshold=numreads_threshold,
                        mad_threshold=mad_threshold, chromosomes=chromosomes,
-                       max_cn = max_cn)
+                       max_cn = max_cn, quality_threshold = quality_threshold)
     plot.main()
 
 
