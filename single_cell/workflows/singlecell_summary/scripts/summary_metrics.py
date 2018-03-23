@@ -32,6 +32,9 @@ class SummaryMetrics(object):
         where another col (grp_col) is equal to some value for all values
         """
 
+        if val_col not in df.columns.values:
+            df[val_col] = float('nan')
+
         if grp_col:
             df = df.groupby(grp_col)
             for gc in df.groups.keys():

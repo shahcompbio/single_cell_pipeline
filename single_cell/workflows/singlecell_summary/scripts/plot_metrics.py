@@ -116,7 +116,10 @@ class PlotMetrics(object):
                     'xtick.labelsize': 12,
                     'ytick.labelsize': 12,
                     'legend.fontsize': 12})
-    
+
+        if metric not in df.columns.values:
+            return
+
         fig = plt.figure(figsize=(len(df['cell_id']) / 4, 5))
     
         ax = fig.gca()
@@ -170,7 +173,14 @@ class PlotMetrics(object):
                     'xtick.labelsize': 12,
                     'ytick.labelsize': 12,
                     'legend.fontsize': 12})
-    
+
+        if numerator_metric not in df.columns.values:
+            return
+
+        if denominator_metric not in df.columns.values:
+            return
+
+
         fig = plt.figure(figsize=(len(df['cell_id']) / 4, 5))
     
         ax = fig.gca()
@@ -212,7 +222,10 @@ class PlotMetrics(object):
                     'xtick.labelsize': 12,
                     'ytick.labelsize': 12,
                     'legend.fontsize': 12})
-    
+
+        if metric not in df.columns.values:
+            return
+
         if text_spacing > max(df[metric]):
             warnings.warn('default text spacing is very high, overriding')
             text_spacing = 0.2 * max(df[metric])
@@ -252,6 +265,9 @@ class PlotMetrics(object):
         # will only happen if merge_pipeline and plate info is not provided
         if df['sample_plate'].unique()[0] == ['R1-C1'] and \
                 len(df['sample_plate'].unique()) == 1:
+            return
+
+        if metric not in df.columns.values:
             return
 
         matrix = np.empty((size, size,))
@@ -312,6 +328,10 @@ class PlotMetrics(object):
         plt.close()
     
     def plot_metric_factorplot(self, df, metric, ylab, pdf, plot_title):
+
+        if metric not in df.columns.values:
+            return
+
         df_melt = pd.melt(df, id_vars=['cell_id', 'experimental_condition',
                                        'cell_call'], value_vars=[metric])
     
@@ -622,7 +642,10 @@ class PlotMetrics(object):
                     'xtick.labelsize': 12,
                     'ytick.labelsize': 12,
                     'legend.fontsize': 12})
-    
+
+        if metric not in df.columns.values:
+            return
+
         df_melt = pd.melt(df, id_vars=['cell_id', 'i5_barcode', 'i7_barcode'],
                           value_vars=[metric],)
     

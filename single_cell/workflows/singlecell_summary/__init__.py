@@ -59,7 +59,6 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
             'chromosomes': chromosomes,
             'max_cn':hmmparams['num_states'],
         }
- 
     )
 
     workflow.transform(
@@ -95,7 +94,7 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
             mgd.OutputFile(all_metrics_file),
         )
     )
- 
+
     workflow.transform(
         name='plot_metrics',
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
@@ -108,7 +107,7 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
             config['gc_windows'],
         )
     )
- 
+
     workflow.transform(
         name='plot_kernel_density',
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
@@ -121,7 +120,7 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
             'QC pipeline metrics'
         )
     )
- 
+
     workflow.transform(
         name='summary_metrics',
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
@@ -131,8 +130,7 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
             mgd.OutputFile(summary_metrics_output),
         )
     )
- 
- 
+
     workflow.transform(
         name='plot_heatmap_ec',
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
@@ -151,7 +149,7 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
             'max_cn':hmmparams['num_states'],
         }
     )
- 
+
     workflow.transform(
         name='plot_heatmap_ec_filtered',
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
@@ -174,6 +172,8 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
         }
     )
 
+    if hmm_params:
+        hmm_params=mgd.InputFile(hmm_params),
 
     workflow.transform(
         name='plot_hmm_copy',
@@ -183,7 +183,7 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
         args=(
             mgd.InputFile(hmm_reads),
             mgd.InputFile(hmm_segments),
-            mgd.InputFile(hmm_params),
+            hmm_params,
             mgd.InputFile(all_metrics_file),
             None,
             config['ref_genome'],
@@ -201,6 +201,9 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
         }
     )
 
+    if params_pdf_output:
+        params_pdf_output = mgd.OutputFile(params_pdf_output),
+
     workflow.transform(
         name='merge_hmm_copy',
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
@@ -213,7 +216,7 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
               [mgd.OutputFile(reads_pdf_output),
               mgd.OutputFile(segs_pdf_output),
               mgd.OutputFile(bias_pdf_output),
-              mgd.OutputFile(params_pdf_output)],
+              params_pdf_output],
               mgd.InputFile(all_metrics_file),
               None,
               None,
@@ -221,10 +224,14 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
             )
     )
 
-    reads_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_reads_filtered.pdf'.format(lib))
-    segs_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_segs_filtered.pdf'.format(lib))
-    bias_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_bias_filtered.pdf'.format(lib))
-    params_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_params_filtered.pdf'.format(lib))
+    params_mad_pdf_output = None
+    if hmm_params:
+        params_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_params_mad.pdf'.format(lib))
+        params_mad_pdf_output = mgd.OutputFile(params_mad_pdf_output)
+
+    reads_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_reads_mad.pdf'.format(lib))
+    segs_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_segs_mad.pdf'.format(lib))
+    bias_mad_pdf_output = os.path.join(results_dir, 'plots', '{}_bias_mad.pdf'.format(lib))
     workflow.transform(
         name='merge_hmm_copy_filtered',
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
@@ -237,14 +244,12 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
               [mgd.OutputFile(reads_mad_pdf_output),
               mgd.OutputFile(segs_mad_pdf_output),
               mgd.OutputFile(bias_mad_pdf_output),
-              mgd.OutputFile(params_mad_pdf_output)],
+              params_mad_pdf_output],
               mgd.InputFile(all_metrics_file),
               config['plot_mad_threshold'],
               config['plot_numreads_threshold'],
               config['plot_quality_threshold']
             )
     )
-
-
 
     return workflow

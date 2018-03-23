@@ -7,6 +7,7 @@ from aneufinder import aneufinder_workflow
 from summary import summary_workflow
 from pseudo_wgs import pseudo_wgs_workflow
 from variant_calling import variant_calling_workflow
+from copyclone import copyclone_workflow
 
 def main():
 
@@ -23,6 +24,12 @@ def main():
         workflow = pypeliner.workflow.Workflow()
         workflow = hmmcopy_workflow(workflow, args)
         pyp.run(workflow)
+
+    if args["which"] == "copyclone" or args["which"]=="all" or args["which"]=="qc":
+        workflow = pypeliner.workflow.Workflow()
+        workflow = copyclone_workflow(workflow, args)
+        pyp.run(workflow)
+
 
     if args["which"] == 'aneufinder' or args["which"]=="all":
         workflow = pypeliner.workflow.Workflow()

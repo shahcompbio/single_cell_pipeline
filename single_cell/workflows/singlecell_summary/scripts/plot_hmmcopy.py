@@ -4,7 +4,6 @@ Created on Nov 16, 2016
 @author: dgrewal
 '''
 from __future__ import division
-
 import argparse
 import pandas as pd
 import matplotlib
@@ -17,7 +16,6 @@ import utils as utl
 import math
 import warnings
 from matplotlib.patches import Patch
-import statsmodels.nonparametric.api as smnp
 
 from matplotlib.colors import rgb2hex
 import matplotlib.gridspec as gridspec
@@ -59,7 +57,6 @@ def parse_args():
                         help='''Path to HMMcopy segments output .csv file.''')
 
     parser.add_argument('--params',
-                        required=True,
                         help='''Path to HMMcopy params output .csv file.''')
 
     parser.add_argument('--quality_metrics',
@@ -188,6 +185,9 @@ class GenHmmPlots(object):
         """
 
         """
+        #no params if data is from copyclone
+        if not self.params:
+            return
 
         df = self.load_data_pandas(self.params, self.sample_id)
 
@@ -200,6 +200,13 @@ class GenHmmPlots(object):
         dtype = {"chr": str}
 
         df = self.load_data_pandas_lowmem(self.reads, self.sample_id, dtypes=dtype)
+
+        if not df['state'].any() and df["integer_copy_number"].any():
+            df["state"] = df["integer_copy_number"] + 1
+
+
+        if not df['integer_copy_scale'].any() and df["copy"].any():
+            df["integer_copy_scale"] = df["copy"]
 
         df = utl.normalize_reads(df)
         df = utl.compute_chromosome_coordinates(df, self.ref_genome)
@@ -453,6 +460,10 @@ class GenHmmPlots(object):
     def plot_dist(self, fig, reads, params, plot_title,
                       annotations, cmap, num_states=7, vertical=False):
 
+
+        #no params for copyclone
+        if not params:
+            return
 
         #no data to plot
         if reads['integer_copy_scale'].isnull().all():

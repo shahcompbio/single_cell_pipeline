@@ -116,6 +116,9 @@ def merge_pdf(in_filenames, out_filename, metrics, mad_threshold, numreads_thres
 
     for infiles, out_file in zip(in_filenames, out_filename):
 
+        if not out_file:
+            continue
+
         helpers.makedirs(out_file, isfile=True)
 
         if mad_threshold:

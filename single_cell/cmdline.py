@@ -65,6 +65,16 @@ def parse_args():
                         help='''Library id.''')
 
 
+    #hmmcopy command
+    copyclone = subparsers.add_parser("copyclone")
+    copyclone.set_defaults(which='copyclone')
+
+    copyclone.add_argument('input_yaml',
+                        help='''Path to input fastq table CSV.''')
+    copyclone.add_argument('library_id',
+                        help='''Library id.''')
+
+
     #aneufinder command
     aneufinder = subparsers.add_parser("aneufinder")
     aneufinder.set_defaults(which='aneufinder')
