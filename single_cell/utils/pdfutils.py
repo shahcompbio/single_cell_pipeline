@@ -16,7 +16,9 @@ def merge_pdfs(infiles, outfile):
     merger = PdfFileMerger()
 
     for infile in infiles:
-        merger.append(open(infile, 'rb'))
+        #add it to list if not empty. skip empty files to avoid errors later
+        if os.path.getsize(infile):
+            merger.append(open(infile, 'rb'))
 
     if not os.path.exists(os.path.dirname(outfile)):
         os.makedirs(os.path.dirname(outfile))
