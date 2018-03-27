@@ -106,6 +106,11 @@ def concatenate_csv_lowmem(in_filenames, out_filename):
 
     if not writer:
         warnings.warn("no data to merge, generating an empty file")
-        writer = csv.DictWriter(open(out_filename, "w"),
-                                fieldnames=reader._fieldnames)
-        writer.writeheader()
+
+        #if inputs have headers write header to output
+        if reader._fieldnames:
+            writer = csv.DictWriter(open(out_filename, "w"),
+                                    fieldnames=reader._fieldnames)
+            writer.writeheader()
+        else:
+            open(out_filename, 'w').close()
