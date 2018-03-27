@@ -254,6 +254,12 @@ class PlotMetrics(object):
                 len(df['sample_plate'].unique()) == 1:
             return
 
+        # add row and column cols to df
+        df[['row', 'col']] = df.sample_plate.str.extract('[R](\d*)_[C](\d*)').apply(pd.Series).astype(int)
+
+        #set size based on the R-C in sample_plate
+        size = max(size, max(df.row), max(df.col))
+
         matrix = np.empty((size, size,))
         matrix[:] = np.nan
 
