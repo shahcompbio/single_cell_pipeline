@@ -5,3 +5,5 @@
 *.pydevproject
 build
 dist
+*.csv
+*.pdf
