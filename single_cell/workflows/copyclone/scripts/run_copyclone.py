@@ -1,12 +1,10 @@
 from __future__ import division
-
 import argparse
 import numpy as np
 import pandas as pd
+import copyclone_metrics as ccmetrics
 from copyclone.hmm import BayesianStudentsTHMM
 from copyclone.mixture import BayesianMixtureOfHMMs
-from statsmodels.robust.scale import stand_mad
-from statsmodels.tsa.stattools import acf
 
 
 def parse_args():
@@ -32,6 +30,80 @@ def parse_args():
                         help='path to the output csv file'
                         )
 
+    parser.add_argument('--a',
+                        default=0.994,
+                        type=float,
+                        help='copy clone a param'
+                        )
+
+    parser.add_argument('--alpha_a',
+                        default=1000,
+                        type=float,
+                        help='copy clone alpha_a param'
+                        )
+
+    parser.add_argument('--pi',
+                        default=[0.05, 0.1, 0.5, 0.2, 0.05, 0.05, 0.05],
+                        type=float,
+                        nargs="*",
+                        help='copy clone pi param'
+                        )
+
+    parser.add_argument('--alpha_pi',
+                        default=[2, 2, 50, 2, 2, 2, 2],
+                        type=float,
+                        nargs="*",
+                        help='copy clone alpha_pi param'
+                        )
+
+    parser.add_argument('--tau',
+                        default=[500, 25, 25, 25, 25, 25, 15],
+                        type=float,
+                        nargs="*",
+                        help='copy clone tau param'
+                        )
+
+    parser.add_argument('--nu',
+                        default=[5, 5, 5, 5, 5, 5, 5],
+                        type=float,
+                        nargs="*",
+                        help='copy clone nu param'
+                        )
+
+    parser.add_argument('--eta',
+                        default=[5000, 5000, 5000, 5000, 5000, 5000, 5000],
+                        type=float,
+                        nargs="*",
+                        help='copy clone params'
+                        )
+
+    parser.add_argument('--shape',
+                        default=[3, 30, 30, 30, 30, 30, 20],
+                        type=float,
+                        nargs="*",
+                        help='copy clone shape'
+                        )
+
+    parser.add_argument('--rate',
+                        default=[0.01, 1, 1, 1, 1, 1, 1],
+                        type=float,
+                        nargs="*",
+                        help='copy clone rate'
+                        )
+
+    parser.add_argument('--ploidy_states',
+                        type=int,
+                        nargs="*",
+                        default=[2,3,4],
+                        help='json object with all states and their corresponding labels'
+                        )
+
+    parser.add_argument('--num_states',
+                        default=7,
+                        type=int,
+                        help='number of hmmcopy states'
+                        )
+
     args = parser.parse_args()
 
     return args
@@ -39,168 +111,30 @@ def parse_args():
 
 class RunCopyClone(object):
 
-    def __init__(self, corrected_reads, reads_out, segments, metrics):
+    def __init__(self, corrected_reads, reads_out, segments, metrics, A=None, alpha_A=None, pi=None, alpha_pi=None,
+                  tau=None, nu=None, eta=None, shape=None, rate=None, ploidy_states=None, num_states=None):
 
         self.corrected_reads = corrected_reads
         self.reads_out = reads_out
         self.segments = segments
         self.metrics = metrics
 
+        self.A = A
+        self.alpha_A = alpha_A
+        self.pi = pi
+        self.alpha_pi = alpha_pi
+        self.tau = tau
+        self.nu = nu
+        self.eta = eta
+        self.shape = shape
+        self.rate = rate
+        self.ploidy_states = ploidy_states
+        self.num_states = num_states
+
         self.chromosomes = map(str, range(1, 23)) + ["X", "Y"]
 
-    def compute_total_reads_hmmcopy(self, df):
 
-        data = {}
-        for cell, reads in df:
-            total_reads_hmmcopy = sum(reads['reads'][~reads['copy'].isnull()])
-
-            data[cell] = total_reads_hmmcopy
-
-        return data
-
-    def compute_mad_hmmcopy(self, df):
-
-        data = {}
-        for cell, reads in df:
-            df_hmmcopy = reads[~reads['copy'].isnull()]
-
-            if len(df_hmmcopy) > 0:
-                mad_hmmcopy = stand_mad(df_hmmcopy['copy'], c=1)
-            else:
-                mad_hmmcopy = float('NaN')
-
-            data[cell] = mad_hmmcopy
-
-        return data
-
-    def compute_mad_autosomes(self, df):
-
-        data = {}
-        for cell, reads in df:
-            df_autosomes = reads[(reads['chr'] != 'X') & (reads['chr'] != 'Y')]
-
-            if len(df_autosomes) > 0:
-                mad_autosomes = stand_mad(df_autosomes['copy'], c=1)
-            else:
-                mad_autosomes = float('NaN')
-
-            data[cell] = mad_autosomes
-        return data
-
-    def compute_cv_hmmcopy(self, df):
-
-        data = {}
-        for cell, reads in df:
-
-            df_hmmcopy = reads[~reads['copy'].isnull()]
-
-            if len(df_hmmcopy) > 0:
-                df_mean = np.mean(df_hmmcopy['copy'])
-
-                df_sd = np.std(df_hmmcopy['copy'])
-
-                cv_hmmcopy = df_sd / df_mean
-
-            else:
-                cv_hmmcopy = float('NaN')
-
-            data[cell] = cv_hmmcopy
-
-        return data
-
-    def compute_cv_neutral_state(self, df):
-
-        data = {}
-        for cell, reads in df:
-
-            df_neutral_state = reads[
-                (reads['integer_copy_number'] == 2) & (
-                    ~reads['copy'].isnull())]
-
-            if len(df_neutral_state) > 0:
-                df_mean = np.mean(df_neutral_state['copy'])
-
-                df_sd = np.std(df_neutral_state['copy'])
-
-                cv_neutral_state = df_sd / df_mean
-
-            else:
-                cv_neutral_state = float('NaN')
-
-            data[cell] = cv_neutral_state
-        return data
-
-    def compute_autocorrelation_hmmcopy(self, df):
-
-        data = {}
-        for cell, reads in df:
-
-            df_hmmcopy = reads[~reads['copy'].isnull()]
-
-            if len(df_hmmcopy) > 0:
-                acf_hmmcopy = acf(df_hmmcopy['copy'], nlags=1)
-
-                ac_hmmcopy = acf_hmmcopy[1]
-
-            else:
-                ac_hmmcopy = float('NaN')
-
-            data[cell] = ac_hmmcopy
-        return data
-
-    def compute_mean_median_std_hmmcopy_reads_per_bin(self, df):
-
-        mean = {}
-        median = {}
-        std = {}
-        for cell, reads in df:
-
-            df_hmmcopy = reads[~reads['copy'].isnull()]
-
-            mean_hmmcopy_reads_per_bin = np.mean(df_hmmcopy['reads'])
-
-            median_hmmcopy_reads_per_bin = np.median(df_hmmcopy['reads'])
-
-            std_hmmcopy_reads_per_bin = np.std(df_hmmcopy['reads'])
-
-            mean[cell] = mean_hmmcopy_reads_per_bin
-            median[cell] = median_hmmcopy_reads_per_bin
-            std[cell] = std_hmmcopy_reads_per_bin
-
-        return mean, median, std
-
-    def compute_num_empty_bins(self, df):
-
-        data = {}
-        for cell, reads in df:
-
-            df_hmmcopy = reads[~reads['copy'].isnull()]
-
-            empty_bins_hmmcopy = len(df_hmmcopy[df_hmmcopy['reads'] == 0])
-
-            data[cell] = empty_bins_hmmcopy
-
-        return data
-
-    def compute_mad_neutral_state(self, df):
-        data = {}
-
-        for cell, reads in df:
-            df_neutral_state = reads[
-                (reads['integer_copy_number'] == 2) & (
-                    ~reads['copy'].isnull())]
-
-            if len(df_neutral_state) > 0:
-                mad_neutral_state = stand_mad(df_neutral_state['copy'], c=1)
-
-            else:
-                mad_neutral_state = float('NaN')
-
-            data[cell] = mad_neutral_state
-
-        return data
-
-    def compute_segments(self, data, state_column='integer_copy_number'):
+    def compute_segments(self, data, state_column='state'):
         """
         compute segments from read data
 
@@ -260,7 +194,7 @@ class RunCopyClone(object):
 
         return df_segments
 
-    def fill_chromosome(self, df, column='integer_copy_number'):
+    def fill_chromosome(self, df, column='state'):
         """
         apply this to single cell df where the viterbi paths have been
         mapped back to genomic coordinates (column 'copy_number'), but some
@@ -285,72 +219,49 @@ class RunCopyClone(object):
 
         return df_concat
 
-    def initialize_naive_diploid_bayesian_hmm(self, verbose=False):
-        alpha_pi = [2, 2, 50, 2, 2, 2, 2]
-        alpha_A = [[1000, 2, 2, 2, 2, 2, 2],
-                   [2, 1000, 2, 2, 2, 2, 2],
-                   [2, 2, 10000, 2, 2, 2, 2],
-                   [2, 2, 2, 1000, 2, 2, 2],
-                   [2, 2, 2, 2, 1000, 2, 2],
-                   [2, 2, 2, 2, 2, 1000, 2],
-                   [2, 2, 2, 2, 2, 2, 1000]]
-        pi = [0.05, 0.1, 0.5, 0.2, 0.05, 0.05, 0.05]
-        A = [[0.994, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001],
-             [0.001, 0.994, 0.001, 0.001, 0.001, 0.001, 0.001],
-             [0.0001, 0.0001, 0.9994, 0.0001, 0.0001, 0.0001, 0.0001],
-             [0.001, 0.001, 0.001, 0.994, 0.001, 0.001, 0.001],
-             [0.001, 0.001, 0.001, 0.001, 0.994, 0.001, 0.001],
-             [0.001, 0.001, 0.001, 0.001, 0.001, 0.994, 0.001],
-             [0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.994]]
-        mu = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
-        tau = [500, 25, 25, 25, 25, 25, 15]
-        nu = [5, 5, 5, 5, 5, 5, 5]
-        m = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
-        eta = [5000, 5000, 5000, 5000, 5000, 5000, 5000]
-        shape = [3, 30, 30, 30, 30, 30, 20]
-        rate = [0.01, 1, 1, 1, 1, 1, 1]
-        hmm_diploid = BayesianStudentsTHMM(pi, A, mu, tau, nu, alpha_pi, alpha_A, m,
-                                           eta, shape, rate, name='Diploid', verbose=verbose)
-        return hmm_diploid
+    def get_param_matrix(self, val, num_states, fill_val=None):
 
-    def initialize_naive_triploid_bayesian_hmm(self, verbose=False):
-        alpha_pi = [2, 2, 2, 50, 2, 2, 2]
-        alpha_A = [[1000, 2, 2, 2, 2, 2, 2],
-                   [2, 1000, 2, 2, 2, 2, 2],
-                   [2, 2, 1000, 2, 2, 2, 2],
-                   [2, 2, 2, 10000, 2, 2, 2],
-                   [2, 2, 2, 2, 1000, 2, 2],
-                   [2, 2, 2, 2, 2, 1000, 2],
-                   [2, 2, 2, 2, 2, 2, 1000]]
-        pi = [0.05, 0.05, 0.1, 0.5, 0.2, 0.05, 0.05]
-        A = [[0.994, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001],
-             [0.001, 0.994, 0.001, 0.001, 0.001, 0.001, 0.001],
-             [0.001, 0.001, 0.994, 0.001, 0.001, 0.001, 0.001],
-             [0.0001, 0.0001, 0.0001, 0.9994, 0.0001, 0.0001, 0.0001],
-             [0.001, 0.001, 0.001, 0.001, 0.994, 0.001, 0.001],
-             [0.001, 0.001, 0.001, 0.001, 0.001, 0.994, 0.001],
-             [0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.994]]
-        mu = [0.0, 1 / 3, 2 / 3, 1.0, 4 / 3, 5 / 3, 2.0]
-        tau = [500, 25, 25, 25, 25, 25, 15]
-        nu = [5, 5, 5, 5, 5, 5, 5]
-        m = [0.0, 1 / 3, 2 / 3, 1.0, 4 / 3, 5 / 3, 2.0]
-        eta = [5000, 5000, 5000, 5000, 5000, 5000, 5000]
-        shape = [3, 30, 30, 30, 30, 30, 20]
-        rate = [0.01, 1, 1, 1, 1, 1, 1]
-        hmm_triploid = BayesianStudentsTHMM(pi, A, mu, tau, nu, alpha_pi, alpha_A, m,
-                                            eta, shape, rate, name='Triploid', verbose=verbose)
-        return hmm_triploid
+        if not fill_val:
+            fill_val = (1-val)/(num_states-1)
+
+        param = np.full([num_states, num_states], fill_val)
+
+        np.fill_diagonal(param,val)
+
+        return param
+
+    def initialize_naive_bayesian_hmm(self, verbose=False):
+
+        A = self.get_param_matrix(self.A, self.num_states)
+        alpha_A = self.get_param_matrix(self.alpha_A, self.num_states, fill_val=2)
+
+        hmms = []
+
+        for val in self.ploidy_states:
+            
+            mu = [0.0, 1 / val, 2 / val, 1.0, 4 / val, 5 / val, 2.0]
+            m = [0.0, 1 / val, 2 / val, 1.0, 4 / val, 5 / val, 2.0]
+
+            hmm = BayesianStudentsTHMM(self.pi, A, mu, self.tau, self.nu, self.alpha_pi, alpha_A, m,
+                                        self.eta, self.shape, self.rate, name=str(val), verbose=verbose)
+
+            hmms.append(hmm)
+
+        return hmms
 
     def initialize_naive_bayesian_mixture(self, verbose=True):
         """
         initialize a 50 50 mixture of triploid and diploid
         """
-        phi = [0.5, 0.5]
-        alpha_phi = [2, 2]
-        hmm_diploid = self.initialize_naive_diploid_bayesian_hmm()
-        hmm_triploid = self.initialize_naive_triploid_bayesian_hmm()
-        hmms = [hmm_diploid, hmm_triploid]
+
+        num_states = len(self.ploidy_states)
+        
+        phi = [1 / num_states] * num_states
+        alpha_phi = [2] * num_states
+
+        hmms = self.initialize_naive_bayesian_hmm(verbose=verbose)
         mixture = BayesianMixtureOfHMMs(hmms, phi, alpha_phi, verbose=verbose)
+
         return mixture
 
     def read_csv_pandas(self, infile):
@@ -410,7 +321,7 @@ class RunCopyClone(object):
 
         return dataset
 
-    def parse_viterbi_paths(self, cells, viterbi_paths, bins, data):
+    def parse_viterbi_paths(self, cells, viterbi_paths, bins, data, state_col="state"):
         """
         add viterbi paths vals to the corrected data as a new col
         :param cells: list of cells, should be in same order as input dataset
@@ -444,7 +355,7 @@ class RunCopyClone(object):
                 for chrbin, vitpath in zip(chrom_bins, cell_viterbi):
                     copydata[cell][chrbin] = vitpath
 
-        data["integer_copy_number"] = data.apply(
+        data[state_col] = data.apply(
             lambda x: get_val(
                 copydata,
                 x),
@@ -452,117 +363,48 @@ class RunCopyClone(object):
 
         return data
 
-    def median_of_bin_residuals_from_segment_median(self, df, df_seg):
-        '''
-        MBRSM: This measures "dispersion", but not "integerness".
-        '''
-        residuals = []
 
-        for seg_index in range(len(df_seg)):
-            seg_chr = df_seg['chr'][seg_index]
 
-            seg_start = df_seg['start'][seg_index]
 
-            seg_end = df_seg['end'][seg_index]
-
-            seg_median = df_seg['median'][seg_index]
-
-            df_seg_bins = df[(df['chr'] == seg_chr) &
-                             (df['start'] >= seg_start) &
-                             (df['end'] <= seg_end)]
-
-            df_seg_bins_hmmcopy = df_seg_bins[~df_seg_bins['copy'].isnull()]
-
-            seg_residuals = [
-                np.abs(
-                    x -
-                    seg_median) for x in df_seg_bins_hmmcopy['integer_copy_scale']]
-
-            residuals.extend(seg_residuals)
-
-        median_bin_residuals_median = np.median(residuals)
-
-        return median_bin_residuals_median
-
-    def median_of_segment_residuals_from_segment_integer(self, df_seg):
-        '''
-        MSRSI: This measures "integerness", but not "dispersion".
-        '''
-        data = {}
-
-        for cell, segs in df_seg:
-
-            residuals = np.abs(
-                segs['integer_median'] -
-                segs['integer_copy_number'])
-
-            if len(residuals):
-                median_seg_residuals_integer = np.median(residuals)
-            else:
-                median_seg_residuals_integer = float('nan')
-
-            data[cell] = median_seg_residuals_integer
-
-        return data
-
-    def median_of_bin_residuals_from_segment_integer(self, df):
-        '''
-        MBRSI: This measures both "dispersion" and "integerness".
-        '''
-        data = {}
-
-        for cell, reads in df:
-            df_hmmcopy = reads[~reads['copy'].isnull()]
-
-            residuals = np.abs(
-                df_hmmcopy['integer_copy_scale'] -
-                df_hmmcopy['integer_copy_number'])
-
-            median_bin_residuals_integer = np.median(residuals)
-
-            data[cell] = median_bin_residuals_integer
-        return data
-
-    def parse_labels(self, reads, segs, cells, labels, names):
+    def parse_labels(self, reads, segs, cells, names):
 
         reads = reads.groupby("cell_id")
 
         segs = segs.groupby("cell_id")
 
-        total_reads_hmmcopy = self.compute_total_reads_hmmcopy(reads)
+        total_reads_hmmcopy = ccmetrics.compute_total_reads_hmmcopy(reads)
 
-        mad_hmmcopy = self.compute_mad_hmmcopy(reads)
+        mad_hmmcopy = ccmetrics.compute_mad_hmmcopy(reads)
 
-        mad_neutral_state = self.compute_mad_neutral_state(reads)
+        mad_neutral_state = ccmetrics.compute_mad_neutral_state(reads)
 
-        mad_autosomes = self.compute_mad_autosomes(reads)
+        mad_autosomes = ccmetrics.compute_mad_autosomes(reads)
 
-        cv_hmmcopy = self.compute_cv_hmmcopy(reads)
+        cv_hmmcopy = ccmetrics.compute_cv_hmmcopy(reads)
 
-        cv_neutral_state = self.compute_cv_neutral_state(reads)
+        cv_neutral_state = ccmetrics.compute_cv_neutral_state(reads)
 
-        autocorrelation_hmmcopy = self.compute_autocorrelation_hmmcopy(reads)
+        autocorrelation_hmmcopy = ccmetrics.compute_autocorrelation_hmmcopy(reads)
 
-        mean_hmmcopy_reads_per_bin, median_hmmcopy_reads_per_bin, std_hmmcopy_reads_per_bin = self.compute_mean_median_std_hmmcopy_reads_per_bin(
+        mean_hmmcopy_reads_per_bin, median_hmmcopy_reads_per_bin, std_hmmcopy_reads_per_bin = ccmetrics.compute_mean_median_std_hmmcopy_reads_per_bin(
             reads)
 
-        empty_bins_hmmcopy = self.compute_num_empty_bins(reads)
+        empty_bins_hmmcopy = ccmetrics.compute_num_empty_bins(reads)
 
-#         MBRSI_dispersion_non_integerness = self.median_of_bin_residuals_from_segment_integer(reads)
+        MBRSI_dispersion_non_integerness = ccmetrics.median_of_bin_residuals_from_segment_integer(reads)
 
-#         MBRSM_dispersion = self.median_of_bin_residuals_from_segment_median(reads, segs)
-#
-        MSRSI_non_integerness = self.median_of_segment_residuals_from_segment_integer(
+        MBRSM_dispersion = ccmetrics.median_of_bin_residuals_from_segment_median(reads, segs)
+
+        MSRSI_non_integerness = ccmetrics.median_of_segment_residuals_from_segment_integer(
             segs)
 
         metrics = pd.DataFrame()
         for i, cell in enumerate(cells):
 
-            label = labels[i]
             name = names[i]
 
-            cellmetrics = pd.Series({'cell_id': cell, 'label': label,
-                                     'name': name,
+            cellmetrics = pd.Series({'cell_id': cell,
+                                     'ploidy': name,
                                      'total_reads_hmmcopy': total_reads_hmmcopy[cell],
                                      'mad_hmmcopy': mad_hmmcopy[cell],
                                      'mad_neutral_state': mad_neutral_state[cell],
@@ -574,17 +416,21 @@ class RunCopyClone(object):
                                      'median_hmmcopy_reads_per_bin': median_hmmcopy_reads_per_bin[cell],
                                      'std_hmmcopy_reads_per_bin': std_hmmcopy_reads_per_bin[cell],
                                      'MSRSI_non_integerness': MSRSI_non_integerness[cell],
+                                     'MBRSI_dispersion_non_integerness': MBRSI_dispersion_non_integerness[cell],
+                                     'MBRSM_dispersion':MBRSM_dispersion[cell],
                                      'empty_bins_hmmcopy': empty_bins_hmmcopy[cell]})
 
             metrics = pd.concat(
                 [metrics, pd.DataFrame(cellmetrics).transpose()])
+
+        metrics["log_likelihood"] = float("nan")
 
         return metrics
 
     def dummy_results(self, dataset):
         predicted_labels = [float('nan')] * len(dataset[0])
 
-        predicted_names = ['NA'] * len(dataset[0])
+        predicted_names = ['nan'] * len(dataset[0])
 
         for chrval in dataset:
             np.place(chrval, chrval, float('nan'))
@@ -599,7 +445,7 @@ class RunCopyClone(object):
             cells = df.index
             bins = self.get_bins_by_chromosomes(df)
             dataset = self.create_dataset_copyclone(df, bins)
-            predicted_labels, predicted_names, viterbi_paths = self.dummy_results(
+            _, predicted_names, viterbi_paths = self.dummy_results(
                 dataset)
         else:
             cells = df_na.index
@@ -610,29 +456,31 @@ class RunCopyClone(object):
 
             naive_mixture.fit(dataset)
 
-            predicted_labels, predicted_names, viterbi_paths = naive_mixture.predict(
+            _, predicted_names, viterbi_paths = naive_mixture.predict(
                 dataset)
 
-        predicted_labels[predicted_labels == 0] = 2
-        predicted_labels[predicted_labels == 1] = 3
 
-        return cells, bins, predicted_labels, predicted_names, viterbi_paths
+        predicted_names = map(float, predicted_names)
+
+        return cells, bins, predicted_names, viterbi_paths
 
     def add_integer_copy_scale(self, df, cells, labels):
-
+ 
         df = df.groupby("cell_id")
-
+ 
         outdata = []
         for i, cell in enumerate(cells):
             df_cell = df.get_group(cell)
             cell_label = labels[i]
-
+ 
             df_cell["integer_copy_scale"] = df_cell["copy"] * cell_label
-
+ 
             outdata.append(df_cell)
-
+ 
         outdata = pd.concat(outdata)
-
+ 
+        outdata["integer_copy_number"] = outdata["state"]
+ 
         return outdata
 
     def main(self):
@@ -646,14 +494,14 @@ class RunCopyClone(object):
 
         df = df.pivot(index='cell_id', columns='bin', values='cor_gc')
 
-        cells, bins, predicted_labels, predicted_names, viterbi_paths = self.fit(
+        cells, bins, predicted_names, viterbi_paths = self.fit(
             df)
 
         data = self.parse_viterbi_paths(cells, viterbi_paths, bins, data)
 
         data = self.fill_chromosome(data)
 
-        data = self.add_integer_copy_scale(data, cells, predicted_labels)
+        data = self.add_integer_copy_scale(data, cells, predicted_names)
 
         self.write_csv(data, self.reads_out)
 
@@ -665,7 +513,6 @@ class RunCopyClone(object):
             data,
             segments,
             cells,
-            predicted_labels,
             predicted_names)
 
         self.write_csv(metrics, self.metrics)
@@ -674,9 +521,9 @@ class RunCopyClone(object):
 if __name__ == "__main__":
 
     args = parse_args()
-    rc = RunCopyClone(
-        args.corrected_reads,
-        args.reads,
-        args.segments,
-        args.metrics)
+
+    rc = RunCopyClone(args.corrected_reads, args.reads, args.segments, args.metrics,
+                      A = args.a, alpha_A=args.alpha_a, pi=args.pi, alpha_pi=args.alpha_pi,
+                      tau=args.tau, nu=args.nu, eta=args.eta, shape=args.shape, rate=args.rate,
+                      ploidy_states=args.ploidy_states, num_states=args.num_states )
     rc.main()

@@ -6,7 +6,8 @@ infile <- args[1]
 gc <- args[2]
 map <- args[3]
 outfile <- args[4]
-sample <- args[5]
+map_cutoff <- as.numeric(args[5])
+sample <- args[6]
 
 chromosomes <- c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y")
 
@@ -51,6 +52,13 @@ samp.corrected["cell_id"] <- sample
 samp.corrected["state"] <- NA
 samp.corrected["integer_copy_number"] <- NA
 samp.corrected["integer_copy_scale"] <- NA
+
+samp.corrected["copy"] <- samp.corrected["cor_gc"]
+
+# if mappability cutoff given, remove bins with mappability below cutoff value
+if (!is.null(map_cutoff)) {
+        samp.corrected$copy[samp.corrected$map < map_cutoff] <- NA
+}
 
 
 write.table(samp.corrected, file = outfile, col.names = TRUE, row.names = FALSE, quote = FALSE, sep =",")

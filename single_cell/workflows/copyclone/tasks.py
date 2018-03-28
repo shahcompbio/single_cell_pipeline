@@ -46,8 +46,10 @@ def correct_reads(
              ccparams['gc_wig_file'],
              ccparams['map_wig_file'],
              reads_filename,
+             ccparams["map_cutoff"],
              sample_id
              ]
+
         pypeliner.commandline.execute(*cmd)
     elif ccparams["smoothing_function"] == 'modal':
         CorrectReadCount(ccparams["gc_wig_file"],
@@ -60,7 +62,9 @@ def correct_reads(
         raise Exception("smoothing function %s not supported. pipeline supports loess and modal" %ccparams["smoothing_function"])
 
 
-def run_copyclone(corrected_data, reads, segments, metrics):
-    rc = RunCopyClone(corrected_data, reads, segments, metrics)
+def run_copyclone(corrected_data, reads, segments, metrics, A=None, alpha_A=None, pi=None, alpha_pi=None,
+                  tau=None, nu=None, eta=None, shape=None, rate=None, ploidy_states=None, num_states=None):
+    rc = RunCopyClone(corrected_data, reads, segments, metrics, A=A, alpha_A=alpha_A, pi=pi, alpha_pi=alpha_pi,
+                  tau=tau, nu=nu, eta=eta, shape=shape, rate=rate, ploidy_states=ploidy_states, num_states=num_states)
     rc.main()
 

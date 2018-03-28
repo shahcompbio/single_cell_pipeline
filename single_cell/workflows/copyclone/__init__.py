@@ -54,6 +54,19 @@ def create_copyclone_workflow(bam_file, bai_file, reads, segments, metrics, samp
             mgd.OutputFile(segments),
             mgd.OutputFile(metrics),
         ),
+        kwargs={
+            "A": config["copyclone"]["A"],
+            "alpha_A": config["copyclone"]["alpha_A"],
+            "pi": config["copyclone"]["pi"],
+            "alpha_pi": config["copyclone"]["alpha_pi"],
+            "tau": config["copyclone"]["tau"],
+            "nu": config["copyclone"]["nu"],
+            "eta": config["copyclone"]["eta"],
+            "shape": config["copyclone"]["shape"],
+            "rate": config["copyclone"]["rate"],
+            "ploidy_states": config["copyclone"]["ploidy_states"],
+            "num_states": config["copyclone"]["num_states"],
+        }
     )
 
     return workflow
