@@ -57,7 +57,6 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
             'plot_title': 'QC pipeline metrics',
             'column_name': 'state',
             'chromosomes': chromosomes,
-            'max_cn':hmmparams['num_states'],
         }
     )
 
@@ -173,7 +172,7 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
     )
 
     if hmm_params:
-        hmm_params=mgd.InputFile(hmm_params),
+        hmm_params=mgd.InputFile(hmm_params)
 
     workflow.transform(
         name='plot_hmm_copy',
@@ -202,7 +201,7 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
     )
 
     if params_pdf_output:
-        params_pdf_output = mgd.OutputFile(params_pdf_output),
+        params_pdf_output = mgd.OutputFile(params_pdf_output)
 
     workflow.transform(
         name='merge_hmm_copy',

@@ -201,13 +201,6 @@ class GenHmmPlots(object):
 
         df = self.load_data_pandas_lowmem(self.reads, self.sample_id, dtypes=dtype)
 
-        if not df['state'].any() and df["integer_copy_number"].any():
-            df["state"] = df["integer_copy_number"] + 1
-
-
-        if not df['integer_copy_scale'].any() and df["copy"].any():
-            df["integer_copy_scale"] = df["copy"]
-
         df = utl.normalize_reads(df)
         df = utl.compute_chromosome_coordinates(df, self.ref_genome)
 
@@ -400,7 +393,7 @@ class GenHmmPlots(object):
         ax.set_title(plot_title)
         ax.set_ylabel('Copy number')
 
-        states = range(1, num_states+1)
+        states = range(0, num_states)
         colors = ['#006ba4', '#5f9ed1', '#ababab', '#ffbc79', '#ff800e', '#c85200']
         #last color is same for all states > 6
         colors += (['#8c3900'] * (len(states) - len(colors)) )
@@ -414,9 +407,10 @@ class GenHmmPlots(object):
             cols = df["state"].replace(cmap)
             cols = cols[~df['copy'].isnull()]
             
+            plotdf = df[~df['copy'].isnull()]
             plt.scatter(
-                df['plot_coord'],
-                df['integer_copy_scale'],
+                plotdf['plot_coord'],
+                plotdf['integer_copy_scale'],
                 facecolors=cols,
                 edgecolors='none',
                 s=4,
@@ -462,7 +456,7 @@ class GenHmmPlots(object):
 
 
         #no params for copyclone
-        if not params:
+        if not isinstance(params, pd.DataFrame) and not params:
             return
 
         #no data to plot
