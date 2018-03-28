@@ -15,6 +15,49 @@ picard_wgs_params:
   # Count unpaired reads for wgs metrics
   count_unpaired: false
 
+copyclone:
+
+  map_cutoff: 0.9
+
+  # Bin size
+  bin_size: 500000
+
+  # Binned GC content file
+  gc_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.gc.ws_500000.wig
+
+  # Binned mappability file
+  map_wig_file: /genesis/extscratch/shahlab/pipelines/reference/GRCh37-lite.map.ws_125_to_500000.wig
+
+  smoothing_function: modal
+
+  exclude_list: /shahlab/amcpherson/projects/ith3/data/ref_db/destruct/repeats.satellite.regions
+
+  # Minimum mapping quality to count a read
+  min_mqual: 20
+
+  A: 0.994
+
+  alpha_A: 1000
+
+  alpha_pi:  [2, 2, 50, 2, 2, 2, 2]
+
+  pi: [0.05, 0.1, 0.5, 0.2, 0.05, 0.05, 0.05]
+
+  tau: [500, 25, 25, 25, 25, 25, 15]
+
+  nu: [5, 5, 5, 5, 5, 5, 5]
+
+  eta: [5000, 5000, 5000, 5000, 5000, 5000, 5000]
+
+  shape: [3, 30, 30, 30, 30, 30, 20]
+
+  rate: [0.01, 1, 1, 1, 1, 1, 1]
+
+  ploidy_states: [2,3,4]
+
+  num_states: 7
+
+
 # HMMcopy parameters
 hmmcopy_params:
   autoploidy:
@@ -58,7 +101,7 @@ hmmcopy_params:
 
     exclude_list: /refdata/repeats.satellite.regions
 
-    smoothing_function: loess
+    smoothing_function: modal
 
     auto_ploidy: true
 
