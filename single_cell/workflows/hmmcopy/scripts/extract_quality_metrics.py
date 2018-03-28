@@ -203,9 +203,7 @@ class ExtractHmmMetrics(object):
             #total_reads = compute_total_reads(df)
             
             total_reads_hmmcopy = self.compute_total_reads_hmmcopy(df)
-            
-            mad_chr19 = self.compute_chr_mad_hmmcopy(df, '19')
-            
+
             mad_hmmcopy = self.compute_mad_hmmcopy(df)
             
             mad_neutral_state = self.compute_mad_neutral_state(df)
@@ -220,7 +218,7 @@ class ExtractHmmMetrics(object):
             
             mean_hmmcopy_reads_per_bin, median_hmmcopy_reads_per_bin, std_hmmcopy_reads_per_bin = self.compute_mean_median_std_hmmcopy_reads_per_bin(df)
             
-            empty_bins_hmmcopy, empty_bins_hmmcopy_chrY = self.compute_num_empty_bins(df)
+            empty_bins_hmmcopy, _ = self.compute_num_empty_bins(df)
             
             MBRSI_dispersion_non_integerness = self.median_of_bin_residuals_from_segment_integer(df)
             
@@ -236,7 +234,6 @@ class ExtractHmmMetrics(object):
             
             metrics = pd.Series({'cell_id': sample_id, 
                                  'total_reads_hmmcopy': total_reads_hmmcopy,
-                                 'mad_chr19': mad_chr19, 
                                  'mad_hmmcopy': mad_hmmcopy, 
                                  'mad_neutral_state': mad_neutral_state, 
                                  'mad_autosomes': mad_autosomes, 
@@ -247,7 +244,6 @@ class ExtractHmmMetrics(object):
                                  'median_hmmcopy_reads_per_bin': median_hmmcopy_reads_per_bin, 
                                  'std_hmmcopy_reads_per_bin': std_hmmcopy_reads_per_bin, 
                                  'empty_bins_hmmcopy': empty_bins_hmmcopy, 
-                                 'empty_bins_hmmcopy_chrY': empty_bins_hmmcopy_chrY, 
                                  'MBRSI_dispersion_non_integerness': MBRSI_dispersion_non_integerness,
                                  'MBRSM_dispersion': MBRSM_dispersion,
                                  'MSRSI_non_integerness': MSRSI_non_integerness})
@@ -255,7 +251,6 @@ class ExtractHmmMetrics(object):
         else: 
             metrics = pd.Series({'cell_id': sample_id, 
                                  'total_reads_hmmcopy': float('NaN'),
-                                 'mad_chr19': float('NaN'), 
                                  'mad_hmmcopy': float('NaN'), 
                                  'mad_neutral_state': float('NaN'), 
                                  'mad_autosomes': float('NaN'), 
@@ -266,7 +261,6 @@ class ExtractHmmMetrics(object):
                                  'median_hmmcopy_reads_per_bin': float('NaN'), 
                                  'std_hmmcopy_reads_per_bin': float('NaN'), 
                                  'empty_bins_hmmcopy': float('NaN'), 
-                                 'empty_bins_hmmcopy_chrY': float('NaN'), 
                                  'MBRSI_dispersion_non_integerness': float('NaN'),
                                  'MBRSM_dispersion': float('NaN'),
                                  'MSRSI_non_integerness': float('NaN')})
