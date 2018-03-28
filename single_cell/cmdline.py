@@ -7,117 +7,35 @@ import argparse
 import pypeliner
 
 
+def check_args(args):
+
+    for mode in args["modes"]:
+        if mode in ["align","hmmcopy","aneufinder", "copyclone"]:
+            assert args["input_yaml"]
+            assert args["library_id"]
+
+        elif mode in ["pseudo_wgs"]:
+            assert args["input_yaml"]
+            assert args["merged_wgs"]
+
+        elif mode in ["variant_calling"]:
+            assert args["matched_normal"]
+            assert args["input_yaml"]
+            assert args["merged_wgs"]
+
+        else:
+            raise Exception()
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     pypeliner.app.add_arguments(parser)
 
-    subparsers = parser.add_subparsers()
 
-    #All subcommands
-    all_commands = subparsers.add_parser("all")
-    all_commands.set_defaults(which='all')
-
-    all_commands.add_argument('input_yaml',
-                        help='''Path to input fastq table CSV.''')
-
-    all_commands.add_argument('library_id',
-                        help='''Library id.''')
-
-    all_commands.add_argument('matched_normal',
-                        help='''Path to matched wgs normal.''')
-
-    all_commands.add_argument('merged_wgs',
-                        help='''Per sample meta data CSV''')
-
-
-
-    #All subcommands
-    qc = subparsers.add_parser("qc")
-    qc.set_defaults(which='qc')
-
-    qc.add_argument('input_yaml',
-                        help='''Path to input fastq table CSV.''')
-
-    qc.add_argument('library_id',
-                        help='''Library id.''')
-
-
-    #Align subcommand
-    align = subparsers.add_parser("align")
-    align.set_defaults(which='align')
-
-    align.add_argument('input_yaml',
-                        help='''Path to input fastq table CSV.''')
-
-    align.add_argument('library_id',
-                        help='''Library id.''')
-
-
-    #hmmcopy command
-    hmmcopy = subparsers.add_parser("hmmcopy")
-    hmmcopy.set_defaults(which='hmmcopy')
-
-    hmmcopy.add_argument('input_yaml',
-                        help='''Path to input fastq table CSV.''')
-    hmmcopy.add_argument('library_id',
-                        help='''Library id.''')
-
-
-    #hmmcopy command
-    copyclone = subparsers.add_parser("copyclone")
-    copyclone.set_defaults(which='copyclone')
-
-    copyclone.add_argument('input_yaml',
-                        help='''Path to input fastq table CSV.''')
-    copyclone.add_argument('library_id',
-                        help='''Library id.''')
-
-
-    #aneufinder command
-    aneufinder = subparsers.add_parser("aneufinder")
-    aneufinder.set_defaults(which='aneufinder')
-
-    aneufinder.add_argument('input_yaml',
-                        help='''Path to input fastq table CSV.''')
-    aneufinder.add_argument('library_id',
-                        help='''Library id.''')
-
-
-    #hmmcopy command
-    summary = subparsers.add_parser("summary")
-    summary.set_defaults(which='summary')
-
-    summary.add_argument('input_yaml',
-                        help='''Per sample meta data CSV''')
-    summary.add_argument('library_id',
-                        help='''Library id.''')
-
-
-    #hmmcopy command
-    pseudo_wgs = subparsers.add_parser("pseudo_wgs")
-    pseudo_wgs.set_defaults(which='pseudo_wgs')
-
-    pseudo_wgs.add_argument('input_yaml',
-                        help='''Per sample meta data CSV''')
-
-    pseudo_wgs.add_argument('merged_wgs',
-                        help='''Per sample meta data CSV''')
-
-    
-    #generate wgs bam command
-    #variant calling command
-    varcall = subparsers.add_parser("variant_calling")
-    varcall.set_defaults(which='variant_calling')
-
-    varcall.add_argument('matched_normal',
-                        help='''Path to matched wgs normal.''')
-    varcall.add_argument('input_yaml',
-                        help='''Per sample meta data CSV''')
-    varcall.add_argument('merged_wgs',
-                        help='''Per sample meta data CSV''')
-
+    parser.add_argument('modes',
+                        help='''modes to run, separated by comma.''')
 
     # common options
     parser.add_argument('out_dir',
@@ -126,15 +44,29 @@ def parse_args():
     parser.add_argument('config_file',
                         help='''Path to yaml config file.''')
 
-    parser.add_argument('--generate_pseudo_wgs',
-                        action='store_true',
-                        help='''Lanes to analyze.''')
+    parser.add_argument('--input_yaml',
+                        help='''yaml file with fastq files, output bams and cell metadata''')
+
+    parser.add_argument('--library_id',
+                        help='''Library id.''')
+
+    parser.add_argument('--matched_normal',
+                        help='''Path to matched wgs normal.''')
+
+    parser.add_argument('--merged_wgs',
+                        help='''Path to pseudo whole genome bam file''')
 
     parser.add_argument('--realign',
                         action='store_true',
-                        help='''will run local realignment on all cells in batch''')
+                        help='''will run local realignment on all cells in batch mode''')
 
 
     args = vars(parser.parse_args())
+
+
+    args["modes"] = args["modes"].split(',')
+
+
+    check_args(args)
 
     return args

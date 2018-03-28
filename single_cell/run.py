@@ -4,7 +4,6 @@ from cmdline import parse_args
 from align import align_workflow
 from hmmcopy import hmmcopy_workflow
 from aneufinder import aneufinder_workflow
-from summary import summary_workflow
 from pseudo_wgs import pseudo_wgs_workflow
 from variant_calling import variant_calling_workflow
 from copyclone import copyclone_workflow
@@ -15,38 +14,32 @@ def main():
 
     pyp = pypeliner.app.Pypeline(config=args)
 
-    if args["which"] == "align" or args["which"]=="all" or args["which"]=="qc":
+    if "align" in args["modes"]:
         workflow = pypeliner.workflow.Workflow()
         workflow = align_workflow(workflow, args)
         pyp.run(workflow)
 
-    if args["which"] == "hmmcopy" or args["which"]=="all" or args["which"]=="qc":
+    if "hmmcopy" in args["modes"]:
         workflow = pypeliner.workflow.Workflow()
         workflow = hmmcopy_workflow(workflow, args)
         pyp.run(workflow)
 
-    if args["which"] == "copyclone" or args["which"]=="all" or args["which"]=="qc":
+    if "copyclone" in args["modes"]:
         workflow = pypeliner.workflow.Workflow()
         workflow = copyclone_workflow(workflow, args)
         pyp.run(workflow)
 
-
-    if args["which"] == 'aneufinder' or args["which"]=="all":
+    if "aneufinder" in args["modes"]:
         workflow = pypeliner.workflow.Workflow()
         workflow = aneufinder_workflow(workflow, args)
         pyp.run(workflow)
-    
-    if args["which"] == "summary" or args["which"]=="all" or args["which"]=="qc":
-        workflow = pypeliner.workflow.Workflow()
-        workflow = summary_workflow(workflow, args)
-        pyp.run(workflow)
         
-    if args["which"] == "pseudo_wgs" or args["which"]=="all":
+    if "pseudo_wgs" in args["modes"]:
         workflow = pypeliner.workflow.Workflow()
         workflow = pseudo_wgs_workflow(workflow, args)
         pyp.run(workflow)
 
-    if args["which"] == "variant_calling" or args["which"]=="all":
+    if "variant_calling" in args["modes"]:
         workflow = pypeliner.workflow.Workflow()
         workflow = variant_calling_workflow(workflow, args)
         pyp.run(workflow)
