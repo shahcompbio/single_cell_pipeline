@@ -327,18 +327,18 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 		new.params$nu <- as.numeric(opt$param_nu)
 	}
 
-
-	# segment
-	tryCatch({
-		samp.segmented <- HMMsegment(samp.corrected, new.params, verbose=F, maxiter = 200)
-	},
-		error = function(err){
-			error_exit_clean(samp.corrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_post_marginals, as.character(err))
-			quit()
-	})
-	samp.corrected$state <- samp.segmented$state
-
 	if (is.null(opt$auto_ploidy)) {
+
+		# segment
+		tryCatch({
+			samp.segmented <- HMMsegment(samp.corrected, new.params, verbose=F, maxiter = 200)
+		},
+			error = function(err){
+				error_exit_clean(samp.corrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_post_marginals, as.character(err))
+				quit()
+		})
+		samp.corrected$state <- samp.segmented$state
+
 		# convert to integer copy number scale
 		state_2_index <- which(samp.segmented$segs$state == 2)
 		state_3_index <- which(samp.segmented$segs$state == 3)
@@ -359,35 +359,81 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 
 		}
 	} else {
-		df.samp.corrected <- as.data.frame(samp.corrected)
-		medsum <- ddply(df.samp.corrected, .(state), summarise, meds = median(copy, na.rm = TRUE), sd = sd(copy, na.rm = TRUE), n = length(copy))
-		medsum$p <- medsum$n / sum(medsum$n)
-                medsum <- subset(medsum, !is.na(meds))
-		medsum <- subset(medsum, p >= 0.001)
-		medsum <- medsum[order(medsum$sd), ]
-		meds <- head(medsum$meds, 3)
-		lowest <- data.frame(state = 0, value = Inf)
-		for (p in 2:7) {
-			multiply <- meds * p
-			delta <- sum(abs(round(multiply, digits = 0) - multiply))
-			if (lowest$value > delta) {
-				lowest <- data.frame(ploidy = p, value = delta)
+
+		MAXMODE <- 4
+
+		seg.best <- data.frame(MODAL = numeric(), meandiff = numeric())
+		best.corrected <- list()
+		best.segmented <- list()
+
+		for (MODAL in 1:MAXMODE) {
+
+			test.corrected <- samp.corrected
+			test.corrected$copy <- test.corrected$copy * MODAL
+			tryCatch({
+				samp.segmented <- HMMsegment(samp.corrected, new.params, verbose=F, maxiter = 200)
+			},
+				error = function(err){
+					error_exit_clean(samp.corrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_post_marginals, as.character(err))
+					quit()
+			})
+
+			# BASED 0 STATE
+			test.corrected$state <- samp.segmented$state - 1 
+
+			MODAL_STATE <- as.numeric(names(sort(table(subset(test.corrected)$state), decreasing = TRUE))[1])
+			modal_median <- median(subset(test.corrected, state == MODAL_STATE)$copy, na.rm = TRUE)
+			test.corrected$copy <- (test.corrected$copy / modal_median)
+
+			# PLOIDY SCALING
+			N <- 5
+			medsum <- ddply(as.data.frame(test.corrected), .(state), summarise, meds = median(copy, na.rm = TRUE), sd = sd(copy, na.rm = TRUE), n = length(copy))
+			medsum$perc <- medsum$n / sum(medsum$n)
+			medsum <- subset(medsum, !is.na(meds) & perc >= 0.01)
+			medsum <- medsum[order(medsum$sd), ]
+			meds <- head(medsum$meds, N)
+			lowest <- data.frame(state = 0, value = Inf)
+			df <- data.frame(base = c(meds, 0))
+			rownames(df) <- c(head(medsum$state, N), "delta")
+			for (p in 2:5) {
+				multiply <- meds * p
+				delta <- sum(abs(round(multiply, digits = 0) - multiply))
+				df <- cbind(df, data.frame(p = c(multiply, delta)))
+				colnames(df)[ncol(df)] <- p
+				if (lowest$value > delta) {
+					lowest <- data.frame(ploidy = p, value = delta)
+				}
 			}
+
+			# EVALUATING INTEGER FIT
+			test.corrected$copy <- test.corrected$copy * lowest$ploidy
+			modal_seg <- samp.segmented$segs
+			modal_seg$state <- as.numeric(modal_seg$state) - 1
+			modal_seg$median <- modal_seg$median * (lowest$ploidy / modal_median)
+			modal_seg$closest_int <- abs(modal_seg$median - as.numeric(as.character(modal_seg$state)))
+			modal_seg$halfway <- abs(modal_seg$closest_int - 0.5)
+			modal_seg <- modal_seg[order(modal_seg$halfway), ]
+
+			halfway <- subset(modal_seg, state < 4 & halfway <= 0.1) # LOL
+			halfway$penalty <- abs(halfway$halfway - 0.1)
+			halfway$width <- halfway$end - halfway$start
+			halfway$score <- halfway$penalty
+			halfiness <- sum(halfway$score)
+
+			medians <- ddply(modal_seg, .(state), summarise, med = median(median))
+			medians$diff <- abs(medians$state - medians$med)
+			meandiff <- mean(subset(medians, state %in% 0:4)$diff)
+
+			# SAVING RESULTS
+			seg.best <- rbind.fill(seg.best, data.frame(MODAL, meandiff, halfiness, delta = lowest$value))
+			best.corrected[[MODAL]] <- test.corrected
+			best.segmented[[MODAL]] <- samp.segmented
+
 		}
 
-		if (lowest$ploidy != 2) {
-			warning(paste("PLOIDY MISMATCH DETECTED, CORRECTING TO: ", lowest$ploidy))
-			ploidy.params <- new.params
-			ploidy.params$mu <- ploidy.params$mu * 2/lowest$ploidy
-			ploidy.params$m <- ploidy.params$mu
-
-			samp.segmented <- HMMsegment(samp.corrected, ploidy.params, verbose=F)
-			samp.corrected$state <- samp.segmented$state
-		}
-
-		ploidy <- lowest$ploidy + 1
-		ploidy_state_median <- median(subset(samp.corrected, state == ploidy)$copy, na.rm = TRUE)
-		samp.corrected$integer_copy_scale <- samp.corrected$copy / (ploidy_state_median / (ploidy - 1))
+		seg.best <- seg.best[order(seg.best$meandiff, seg.best$MODAL, decreasing = FALSE), ]
+		samp.corrected <- best.corrected[[seg.best$MODAL[1]]]
+		samp.segmented <- best.segmented[[seg.best$MODAL[1]]]
 	}
 
 	# recompute segment medians
