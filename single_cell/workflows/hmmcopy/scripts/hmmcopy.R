@@ -378,8 +378,8 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 					quit()
 			})
 
-			# BASED 0 STATE
-			test.corrected$state <- samp.segmented$state - 1 
+			# # BASED 0 STATE
+			# test.corrected$state <- samp.segmented$state - 1 
 
 			MODAL_STATE <- as.numeric(names(sort(table(subset(test.corrected)$state), decreasing = TRUE))[1])
 			modal_median <- median(subset(test.corrected, state == MODAL_STATE)$copy, na.rm = TRUE)
@@ -408,7 +408,7 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 			# EVALUATING INTEGER FIT
 			test.corrected$copy <- test.corrected$copy * lowest$ploidy
 			modal_seg <- samp.segmented$segs
-			modal_seg$state <- as.numeric(modal_seg$state) - 1
+			# modal_seg$state <- as.numeric(modal_seg$state) - 1
 			modal_seg$median <- modal_seg$median * (lowest$ploidy / modal_median)
 			modal_seg$closest_int <- abs(modal_seg$median - as.numeric(as.character(modal_seg$state)))
 			modal_seg$halfway <- abs(modal_seg$closest_int - 0.5)
