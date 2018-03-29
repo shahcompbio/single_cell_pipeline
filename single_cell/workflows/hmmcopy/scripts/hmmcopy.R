@@ -24,11 +24,6 @@
 #    [4] File with posterior marginals for all positions and states (.csv)
 
 
-
-
-
-
-
 suppressPackageStartupMessages(library("getopt"))
 suppressPackageStartupMessages(library("HMMcopy"))
 suppressPackageStartupMessages(library("plyr"))
@@ -63,6 +58,53 @@ opt = getopt(spec)
 if (!is.null(opt$help)) {
 	cat(getopt(spec, usage=TRUE))
 	q(status=1)
+}
+
+DEBUG <- FALSE
+if (DEBUG) {
+	# SET DEBUG TO TRUE, then source("hmmcopy.R")
+
+	library(ggplot2)
+	library(RColorBrewer)
+
+	cols <- c(rev(brewer.pal(n = 3, "Blues"))[1:2], "#CCCCCC", tail(brewer.pal(n = 5, "OrRd"), 4))
+	cols <- c(cols, cols[rep(length(cols), 5)])
+	names(cols) <- 0:11
+
+	plotme <- function(test.corrected, cell = NA, segs = NULL) {
+		forplotting <- as.data.frame(test.corrected)
+		forplotting$chr <- factor(forplotting$space, levels = c(1:22, "X", "Y"))
+		forplotting$state <- factor(forplotting$state, levels = 0:11)
+		gc <- ggplot(forplotting, aes(start, copy, col = state)) + geom_point(size = 0.5) + facet_grid(. ~ chr, scales = "free_x", space = "free_x", switch = "x") + scale_x_continuous(expand = c(0, 0), breaks = NULL, "Chromosomal Position") + theme(panel.spacing = unit(0.1, "lines")) + scale_y_continuous("Copy Number", breaks = seq(1, 20, by = 1), limit = c(0, 15)) + scale_color_manual(values = cols, "") + ggtitle(paste(cell, date()))
+		if (!is.null(segs)) {
+			segs$chr <- factor(segs$chr, levels = c(1:22, "X", "Y"))
+			gc <- gc + geom_segment(inherit.aes = FALSE, data = segs, aes(x = start, y = median, xend = end, yend = median))
+		}
+
+		return(gc)
+	}
+
+	opt$corrected_data <- "corrected_reads.csv"
+	opt$reads_output <- "reads.csv.tmp"
+	opt$segs_output <- "segs.csv.tmp"
+	opt$params_output <- "params.csv.tmp"
+	opt$post_marginals_output <- "posteriors.csv.tmp"
+	opt$sample_id <- "SA922-A90707B-R07-C61"
+	opt$map_cutoff <- 0.9
+	opt$num_states <- 7
+	opt$param_mu <- "0,0.5,1.0,1.5,2.0,2.5,3.0"
+	opt$param_m <- "0,0.5,1.0,1.5,2.0,2.5,3.0"
+	opt$param_k <- "25,100,700,100,25,25,25"
+	opt$param_e <- 0.995
+	opt$param_g <- 10
+	opt$param_s <- 0.02
+	opt$param_str <- 1000
+	opt$param_nu <- 2.1
+	opt$param_eta <- "0.5,0.5,5.0,0.5,0.5,0.5,0.5"
+	opt$param_l <- 20
+	opt$auto_ploidy <- TRUE
+
+	stop("DEBUG MODE")
 }
 
 #=======================================================================================================================
@@ -243,7 +285,6 @@ out_segs <- opt$segs_output
 out_params <- opt$params_output
 out_post_marginals <- opt$post_marginals_output
 
-
 samp.corrected <- read.table(opt$corrected_data, sep=',', header=TRUE)
 
 #if correct hmmcopy fails then all corrected cols will be NA, just skip hmmcopy in that case
@@ -383,7 +424,9 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 
 			MODAL_STATE <- as.numeric(names(sort(table(subset(test.corrected)$state), decreasing = TRUE))[1])
 			modal_median <- median(subset(test.corrected, state == MODAL_STATE)$copy, na.rm = TRUE)
-			test.corrected$copy <- (test.corrected$copy / modal_median)
+			if(modal_median == 0) {
+				modal_median <- 1
+			}
 
 			# PLOIDY SCALING
 			N <- 5
@@ -397,9 +440,12 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 			rownames(df) <- c(head(medsum$state, N), "delta")
 			for (p in 2:5) {
 				multiply <- meds * p
-				delta <- sum(abs(round(multiply, digits = 0) - multiply))
+				delta <- sum(abs(round(multiply, digits = 0) - multiply), na.rm=TRUE)
 				df <- cbind(df, data.frame(p = c(multiply, delta)))
 				colnames(df)[ncol(df)] <- p
+                                
+
+
 				if (lowest$value > delta) {
 					lowest <- data.frame(ploidy = p, value = delta)
 				}
@@ -408,6 +454,7 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 			# EVALUATING INTEGER FIT
 			test.corrected$copy <- test.corrected$copy * lowest$ploidy
 			modal_seg <- samp.segmented$segs
+			modal_seg$chr <- as.character(modal_seg$chr)
 			modal_seg$state <- as.numeric(modal_seg$state) - 1
 			modal_seg$median <- modal_seg$median * (lowest$ploidy / modal_median)
 			modal_seg$closest_int <- abs(modal_seg$median - as.numeric(as.character(modal_seg$state)))
@@ -434,6 +481,7 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 		seg.best <- seg.best[order(seg.best$meandiff, seg.best$MODAL, decreasing = FALSE), ]
 		samp.corrected <- best.corrected[[seg.best$MODAL[1]]]
 		samp.segmented <- best.segmented[[seg.best$MODAL[1]]]
+		samp.corrected$integer_copy_scale <- samp.corrected$copy
 		samp.corrected$state <-  samp.corrected$state + 1
 		samp.segmented$state <- samp.segmented$state + 1
 
