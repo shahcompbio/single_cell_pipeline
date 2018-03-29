@@ -427,6 +427,7 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 			if(modal_median == 0) {
 				modal_median <- 1
 			}
+			test.corrected$copy <- (test.corrected$copy / modal_median)
 
 			# PLOIDY SCALING
 			N <- 5
