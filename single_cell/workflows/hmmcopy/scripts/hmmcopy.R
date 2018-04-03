@@ -456,7 +456,7 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 			test.corrected$copy <- test.corrected$copy * lowest$ploidy
 			modal_seg <- samp.segmented$segs
 			modal_seg$chr <- as.character(modal_seg$chr)
-			modal_seg$state <- as.numeric(modal_seg$state) - 1
+			modal_seg$state <- as.numeric(as.character(modal_seg$state)) - 1
 			modal_seg$median <- modal_seg$median * (lowest$ploidy / modal_median)
 			modal_seg$closest_int <- abs(modal_seg$median - as.numeric(as.character(modal_seg$state)))
 			modal_seg$halfway <- abs(modal_seg$closest_int - 0.5)
