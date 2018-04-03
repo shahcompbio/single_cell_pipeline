@@ -291,6 +291,7 @@ samp.corrected <- read.table(opt$corrected_data, sep=',', header=TRUE)
 if (all(is.na(samp.corrected$cor_gc)) & all(is.na(samp.corrected$copy))){
 		err <- "Low coverage sample results in loess regression failure, unable to correct and segment"
 	error_exit_clean(samp.corrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_post_marginals, err)
+	quit()
 }
 samp.corrected <- RangedData(ranges = IRanges(start=samp.corrected$start, end=samp.corrected$end), space=samp.corrected$chr,
 							 width=samp.corrected$width, reads=samp.corrected$reads, gc=samp.corrected$gc, map=samp.corrected$map,
@@ -415,8 +416,7 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 				samp.segmented <- HMMsegment(samp.corrected, new.params, verbose=F, maxiter = 200)
 			},
 				error = function(err){
-					error_exit_clean(samp.corrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_post_marginals, as.character(err))
-					quit()
+					next
 			})
 
 			# BASED 0 STATE
