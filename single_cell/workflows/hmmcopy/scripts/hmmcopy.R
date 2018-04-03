@@ -413,7 +413,7 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 			test.corrected <- samp.corrected
 			test.corrected$copy <- test.corrected$copy * MODAL
 			tryCatch({
-				samp.segmented <- HMMsegment(samp.corrected, new.params, verbose=F, maxiter = 200)
+				samp.segmented <- HMMsegment(test.corrected, new.params, verbose=F, maxiter = 200)
 			},
 				error = function(err){
 					next
