@@ -380,7 +380,7 @@ class GenHmmPlots(object):
         if df is not None and remove_y:
             df = df[df['chr'] != 'Y']
 
-        ylim = 12
+        ylim = num_states + 2
 
         # standard: 15,4
         # SA501X3F xenograft heatmap: 20.4, 4

@@ -47,7 +47,7 @@ class PlotPcolor(object):
         self.cellcalls = kwargs.get('cellcalls')
         self.mad_thres = kwargs.get('mad_threshold')
         self.reads_thres = kwargs.get('numreads_threshold')
-        self.quality_thres = kwargs.get('quality_threshold')
+        self.median_hmmcopy_reads_per_bin_thres = kwargs.get('median_hmmcopy_reads_per_bin_threshold')
         self.high_memory = kwargs.get('high_memory')
         self.plot_title = kwargs.get('plot_title')
 
@@ -141,7 +141,7 @@ class PlotPcolor(object):
 
         data = {}
         numread_data = {}
-        quality_data = {}
+        reads_per_bin_data = {}
 
 
         sepdata = defaultdict(list)
@@ -174,19 +174,19 @@ class PlotPcolor(object):
 
             numreads = int(line[idxs['total_mapped_reads']])
 
-            cell_quality = float(line[idxs['probability_good']])
+            reads_per_bin = float(line[idxs['median_hmmcopy_reads_per_bin']])
 
             if self.cellcalls and cc not in self.cellcalls:
                 continue
 
             numread_data[sample_id] = numreads
             data[sample_id] = val
-            quality_data[sample_id] = cell_quality
+            reads_per_bin_data[sample_id] = reads_per_bin
 
             colordata[sample_id] = cc
             sepdata[ec].append(sample_id)
 
-        return data, sepdata, colordata, numread_data, quality_data
+        return data, sepdata, colordata, numread_data, reads_per_bin_data
 
     def sort_bins(self, bins):
         """
@@ -253,7 +253,7 @@ class PlotPcolor(object):
         order = [samps[i] for i in order]
         return order
 
-    def filter_data(self, data, ccdata, mad_scores, numreads_data, cell_quality):
+    def filter_data(self, data, ccdata, mad_scores, numreads_data, reads_per_bin):
         """
         remove samples that dont pass filtering thresholds
         """
@@ -275,9 +275,9 @@ class PlotPcolor(object):
             samples = [samp for samp in samples
                        if numreads_data[samp] >= self.reads_thres]
 
-        if self.quality_thres:
+        if self.median_hmmcopy_reads_per_bin_thres:
             samples = [samp for samp in samples
-                       if cell_quality[samp] >= self.quality_thres]
+                       if reads_per_bin[samp] >= self.median_hmmcopy_reads_per_bin_thres]
 
 
         data = data.loc[samples]
@@ -408,8 +408,8 @@ class PlotPcolor(object):
         self.get_cluster_order(data)
 
         if self.output:
-            mad_scores, sepdata, colordata, numread_data, cell_qualities = self.read_metrics(data)
-            data = self.filter_data(data, colordata, mad_scores, numread_data, cell_qualities)
+            mad_scores, sepdata, colordata, numread_data, reads_per_bin = self.read_metrics(data)
+            data = self.filter_data(data, colordata, mad_scores, numread_data, reads_per_bin)
 
             self.plot_heatmap_by_sep(data, sepdata, colordata)
 
@@ -464,7 +464,7 @@ def parse_args():
                         default=None,
                         help='''all cells that have low MAD won't be plotted''')
 
-    parser.add_argument('--quality_threshold',
+    parser.add_argument('--median_hmmcopy_reads_per_bin_threshold',
                         type=int,
                         default=None,
                         help='''all cells that have low quality won't be plotted''')
@@ -497,7 +497,7 @@ if __name__ == '__main__':
     ARGS = parse_args()
     m = PlotPcolor(ARGS.input, ARGS.metrics, ARGS.order_data, ARGS.output, column_name=ARGS.column_name,
                     cellcalls=ARGS.cellcalls, mad_threshold=ARGS.mad_threshold, numreads_threshold=ARGS.numreads_threshold,
-                    quality_threshold = ARGS.quality_threshold, high_memory=ARGS.high_memory, plot_title=ARGS.plot_title,
+                    median_hmmcopy_reads_per_bin_threshold = ARGS.median_hmmcopy_reads_per_bin_threshold, high_memory=ARGS.high_memory, plot_title=ARGS.plot_title,
                     color_by_col=ARGS.color_by_col, plot_by_col=ARGS.plot_by_col,
                     separator = ARGS.separator, max_cn = ARGS.max_cn)
     m.main()

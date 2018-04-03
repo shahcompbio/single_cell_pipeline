@@ -82,16 +82,6 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
         args=(
             mgd.TempInputFile("all_metrics.csv"),
             sample_info,
-            mgd.TempOutputFile("all_metrics_annotated.csv"),
-        )
-    )
-
-    workflow.transform(
-        name='classify_cells',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
-        func=tasks.classify,
-        args=(
-            mgd.TempInputFile("all_metrics_annotated.csv"),
             mgd.OutputFile(all_metrics_file),
         )
     )
@@ -167,7 +157,7 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
             'column_name': 'state',
             'plot_by_col': 'experimental_condition',
             'numreads_threshold': config['plot_numreads_threshold'],
-            'quality_threshold': config['plot_quality_threshold'],
+            'quality_threshold': config['plot_median_hmmcopy_reads_per_bin_threshold'],
             'mad_threshold': config['plot_mad_threshold'],
             'chromosomes': chromosomes,
             'max_cn':hmmparams['num_states'],
@@ -241,7 +231,7 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
               mgd.InputFile(all_metrics_file),
               config['plot_mad_threshold'],
               config['plot_numreads_threshold'],
-              config['plot_quality_threshold']
+              config['plot_median_hmmcopy_reads_per_bin_threshold']
             )
     )
 
