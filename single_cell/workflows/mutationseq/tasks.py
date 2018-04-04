@@ -5,15 +5,11 @@ Created on Jul 24, 2017
 '''
 import os
 import pypeliner
-import warnings
-import multiprocessing
 
 from scripts import ParseMuseq
 
 from single_cell.utils import helpers
 from single_cell.utils import vcfutils
-
-import subprocess 
 
 
 def run_museq(tumour, tumour_bai, normal, normal_bai, out, log, config, region_idx, all_regions):
