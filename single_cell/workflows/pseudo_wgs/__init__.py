@@ -18,18 +18,23 @@ import tasks
 
 
 def create_wgs_workflow(
-    bam,
-    bam_filename,
-    bam_index_filename,
-    ref_genome,
+    input_bams,
+    merged_bams,
+    merged_bais,
     sample_ids,
     config,
-    out_dir):
+    regions):
  
-    metrics_dir = os.path.join(out_dir, 'pseudo_wgs')
-    markdups_metrics_filename = os.path.join(metrics_dir, 'markdups_metrics', 'markdups_metrics.txt')
+ 
+    merged_bams = dict([(region, merged_bams[region])
+                         for region in regions])
+
+    merged_bais = dict([(region, merged_bais[region])
+                         for region in regions])
 
 
+    raise Exception(merged_bais)
+ 
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
@@ -37,48 +42,23 @@ def create_wgs_workflow(
         value=sample_ids,
     )
 
+    workflow.setobj(
+        obj=mgd.OutputChunks('regions'),
+        value=regions,
+    )
+
+
     workflow.transform(
         name='merge_bams',
-        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
+        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':config["max_cores"]},
         func=tasks.merge_bams,
         args=(
-            mgd.InputFile('bam', 'sample_id', fnames=bam),
-            mgd.TempOutputFile('merged.bam'),
-            mgd.TempSpace("temp_wgs_merge_bams")
+            mgd.InputFile('bam', 'sample_id', fnames=input_bams),
+            mgd.OutputFile('merged.bam', "regions", fnames=merged_bams, axes_origin=[]),
+            mgd.TempOutputFile('merged.bam.bai', "regions", fnames=merged_bais, axes_origin=[]),
+            regions
         ),
-    )
-
-    workflow.transform(
-        name='bam_sort',
-        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
-        func=tasks.bam_sort,
-        args=(
-            mgd.TempInputFile('merged.bam'),
-            mgd.TempOutputFile('sorted.bam'),
-            mgd.TempSpace("temp_wgs_sort_bam")
-        ),
-    )
-
-    workflow.transform(
-        name='bam_markdups',
-        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
-        func=tasks.bam_markdups,
-        args=(
-            mgd.TempInputFile('sorted.bam'),
-            mgd.OutputFile(bam_filename),
-            mgd.OutputFile(markdups_metrics_filename),
-            mgd.TempSpace("temp_wgs_mkdup_bam")
-        ),
-    )
-
-    workflow.transform(
-        name='bam_index',
-        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard'], 'ncpus':1},
-        func=tasks.index_bam,
-        args=(
-            mgd.InputFile(bam_filename),
-            mgd.OutputFile(bam_index_filename),
-        ),
+        kwargs = {"ncores": config["max_cores"]}
     )
 
     return workflow
