@@ -6,21 +6,16 @@ Created on Nov 1, 2015
 from __future__ import division
 
 from collections import OrderedDict
-import subprocess
 
 from scripts import ParseStrelka
-import os
 import csv
 import ConfigParser
 import math
 import pandas as pd
 import pypeliner
-import re
 import vcf
-import vcf_tasks
-import pysam
 
-import multiprocessing
+import re
 from single_cell.utils import helpers
 from strelkautils import default_chromosomes
 
@@ -42,11 +37,11 @@ def _get_files_for_chrom(infiles, intervals, chrom):
 
     outfiles = {}
     
-    for interval in intervals:
-        ival_chrom = interval.split("_")[0]
+    for ival_idx, interval in intervals.iteritems():
+        ival_chrom = interval.split(":")[0]
         
         if ival_chrom==chrom:
-            outfiles[interval] = infiles[interval]
+            outfiles[interval] = infiles[ival_idx]
     
     return outfiles
 
@@ -77,17 +72,35 @@ def count_fasta_bases(ref_genome_fasta_file, out_file):
     pypeliner.commandline.execute(*cmd)
 
 
-def _somatic_variant_call_worker(normal_bam_file, tumour_bam_file, ref_genome,
-                                 indel_file, snv_file, indel_window_file, stats_file,
-                                interval, known_chrom_sizes, max_input_depth,
-                                min_tier_one_mapq, min_tier_two_mapq,
-                                sindel_noise, sindel_prior,
-                                ssnv_noise, ssnv_noise_strand_bias_frac,
-                                ssnv_prior):
+def call_somatic_variants(
+        normal_bam_file,
+        normal_bai_file,
+        tumour_bam_file,
+        tumour_bai_file,
+        known_sizes,
+        ref_genome,
+        indel_file,
+        indel_window_file,
+        snv_file,
+        stats_file,
+        region_idx,
+        all_regions,
+        ncores=None,
+        max_input_depth=10000,
+        min_tier_one_mapq=20,
+        min_tier_two_mapq=5,
+        sindel_noise=0.000001,
+        sindel_prior=0.000001,
+        ssnv_noise=0.0000005,
+        ssnv_noise_strand_bias_frac=0.5,
+        ssnv_prior=0.000001):
 
-    chrom,beg,end = interval.split('_')
 
-    known_chrom_sizes = known_chrom_sizes[chrom]
+    region = all_regions[region_idx]
+
+    chrom,beg,end = re.split(":|-", region)
+
+    known_chrom_sizes = known_sizes[chrom]
 
     beg = int(beg)
     beg = beg+1 if beg==0 else beg
@@ -139,78 +152,7 @@ def _somatic_variant_call_worker(normal_bam_file, tumour_bam_file, ref_genome,
         '--tier2-single-align-score-rescue-mode'
     ]
 
-    cmd = map(str,cmd)
-
-    subprocess.call(cmd)
-
-def call_somatic_variants(
-        normal_bam_file,
-        normal_bai_file,
-        tumour_bam_file,
-        tumour_bai_file,
-        known_sizes,
-        ref_genome,
-        indel_file,
-        indel_window_file,
-        snv_file,
-        stats_file,
-        intervals,
-        ncores=None,
-        max_input_depth=10000,
-        min_tier_one_mapq=20,
-        min_tier_two_mapq=5,
-        sindel_noise=0.000001,
-        sindel_prior=0.000001,
-        ssnv_noise=0.0000005,
-        ssnv_noise_strand_bias_frac=0.5,
-        ssnv_prior=0.000001):
-
-
-    indel_file = {ival:indel_file[ival] for ival in intervals}
-    indel_window_file = {ival:indel_window_file[ival] for ival in intervals}
-    snv_file = {ival:snv_file[ival] for ival in intervals}
-    stats_file = {ival:stats_file[ival] for ival in intervals}
-
-    count = multiprocessing.cpu_count()
-    
-    if ncores:
-        count = min(ncores, count)
-    
-    pool = multiprocessing.Pool(processes=count)
-
-    tasks = []
-
-    for interval in intervals:
-
-        ival_indel = indel_file[interval]
-        ival_indel_win = indel_window_file[interval]
-        ival_snv = snv_file[interval]
-        ival_stats = stats_file[interval]
-
-
-        task = pool.apply_async(_somatic_variant_call_worker,
-                                args=(normal_bam_file, tumour_bam_file,
-                                      ref_genome, ival_indel, ival_snv,
-                                      ival_indel_win, ival_stats,
-                                      interval,
-                                      known_sizes,
-                                      max_input_depth,
-                                      min_tier_one_mapq,
-                                      min_tier_two_mapq,
-                                      sindel_noise,
-                                      sindel_prior,
-                                      ssnv_noise,
-                                      ssnv_noise_strand_bias_frac,
-                                      ssnv_prior))
-        tasks.append(task)
-
-    pool.close()
-    pool.join()
-
-    [task.get() for task in tasks]
-
-
-    return known_sizes
+    pypeliner.commandline.execute(*cmd)
 
 #=======================================================================================================================
 # SNV filtering

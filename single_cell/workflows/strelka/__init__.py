@@ -23,7 +23,7 @@ def create_strelka_workflow(
         parsed_indel_csv,
         parsed_snv_csv,
         config,
-        intervals,
+        regions,
         chromosomes=default_chromosomes,
         split_size=int(1e7),
         use_depth_thresholds=True):
@@ -36,8 +36,8 @@ def create_strelka_workflow(
     )
     
     workflow.setobj(
-        obj=pypeliner.managed.OutputChunks('interval'),
-        value=intervals,
+        obj=pypeliner.managed.OutputChunks('regions'),
+        value=regions,
     )
               
     workflow.transform(
@@ -64,22 +64,23 @@ def create_strelka_workflow(
      
     workflow.transform(
         name='call_somatic_variants',
-        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'ncpus':8, 'pool_id': config['pools']['multicore']},
+        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'ncpus':1, 'pool_id': config['pools']['standard']},
         func=tasks.call_somatic_variants,
+        axes=('regions',),
         args=(
             pypeliner.managed.InputFile(normal_bam_file),
             pypeliner.managed.InputFile(normal_bai_file),
-            pypeliner.managed.InputFile(tumour_bam_file),
-            pypeliner.managed.InputFile(tumour_bai_file),
+            pypeliner.managed.InputFile("merged_bam", "regions", fnames=tumour_bam_file),
+            pypeliner.managed.InputFile("merged_bai", "regions", fnames=tumour_bai_file),
             pypeliner.managed.TempInputObj('known_sizes'),
             ref_genome_fasta_file,
-            pypeliner.managed.TempOutputFile('somatic.indels.unfiltered.vcf', 'interval', axes_origin=[]),
-            pypeliner.managed.TempOutputFile('somatic.indels.unfiltered.vcf.window', 'interval', axes_origin=[]),
-            pypeliner.managed.TempOutputFile('somatic.snvs.unfiltered.vcf', 'interval', axes_origin=[]),
-            pypeliner.managed.TempOutputFile('strelka.stats', 'interval', axes_origin=[]),
-            intervals,
+            pypeliner.managed.TempOutputFile('somatic.indels.unfiltered.vcf', 'regions'),
+            pypeliner.managed.TempOutputFile('somatic.indels.unfiltered.vcf.window', 'regions'),
+            pypeliner.managed.TempOutputFile('somatic.snvs.unfiltered.vcf', 'regions'),
+            pypeliner.managed.TempOutputFile('strelka.stats', 'regions'),
+            pypeliner.managed.InputInstance("regions"),
+            regions,
         ),
-        kwargs={"ncores": config["max_cores"]},
     )
  
     workflow.transform(
@@ -88,17 +89,17 @@ def create_strelka_workflow(
         ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
         func=tasks.filter_indel_file_list,
         args=(
-            pypeliner.managed.TempInputFile('somatic.indels.unfiltered.vcf', 'interval', axes_origin=[]),
-            pypeliner.managed.TempInputFile('strelka.stats', 'interval', axes_origin=[]),
-            pypeliner.managed.TempInputFile('somatic.indels.unfiltered.vcf.window', 'interval', axes_origin=[]),
+            pypeliner.managed.TempInputFile('somatic.indels.unfiltered.vcf', 'regions'),
+            pypeliner.managed.TempInputFile('strelka.stats', 'regions'),
+            pypeliner.managed.TempInputFile('somatic.indels.unfiltered.vcf.window', 'regions'),
             pypeliner.managed.TempOutputFile('somatic.indels.filtered.vcf', 'chrom'),
             pypeliner.managed.InputInstance("chrom"),
             pypeliner.managed.TempInputObj('known_sizes'),
-            intervals
+            regions
         ),
         kwargs={'use_depth_filter': use_depth_thresholds}
     )
- 
+  
     workflow.transform(
         name='add_snv_filters',
         axes=('chrom',),
@@ -114,7 +115,7 @@ def create_strelka_workflow(
         ),
         kwargs={'use_depth_filter': use_depth_thresholds}
     )
-   
+    
     workflow.transform(
         name='merge_indels',
         ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
@@ -124,7 +125,7 @@ def create_strelka_workflow(
             pypeliner.managed.TempOutputFile('somatic.indels.filtered.vcf.gz')
         )
     )
-   
+    
     workflow.transform(
         name='merge_snvs',
         ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
@@ -134,7 +135,7 @@ def create_strelka_workflow(
             pypeliner.managed.TempOutputFile('somatic.snvs.filtered.vcf.gz')
         )
     )
-   
+    
     workflow.transform(
         name='filter_indels',
         ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
@@ -144,7 +145,7 @@ def create_strelka_workflow(
             pypeliner.managed.TempOutputFile('somatic.indels.passed.vcf')
         )
     )
-   
+    
     workflow.transform(
         name='filter_snvs',
         ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
@@ -154,7 +155,7 @@ def create_strelka_workflow(
             pypeliner.managed.TempOutputFile('somatic.snvs.passed.vcf')
         )
     )
-   
+    
     workflow.transform(
         name='finalise_indels',
         ctx={'pool_id': config['pools']['standard'], 'ncpus':1},
@@ -164,7 +165,7 @@ def create_strelka_workflow(
             pypeliner.managed.OutputFile(indel_vcf_file)
         )
     )
-   
+    
     workflow.transform(
         name='finalise_snvs',
         ctx={'pool_id': config['pools']['standard'], 'ncpus':1},
@@ -174,7 +175,7 @@ def create_strelka_workflow(
             pypeliner.managed.OutputFile(snv_vcf_file)
         )
     )
-   
+    
     workflow.transform(
         name='parse_strelka_snv',
         ctx={'mem': 10, 'pool_id': config['pools']['standard'], 'ncpus':1},
@@ -184,7 +185,7 @@ def create_strelka_workflow(
               pypeliner.managed.OutputFile(parsed_snv_csv),
               )
         )
-   
+    
     workflow.transform(
         name='parse_strelka_indel',
         ctx={'mem': 10, 'pool_id': config['pools']['standard'], 'ncpus':1},
