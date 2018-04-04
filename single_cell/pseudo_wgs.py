@@ -21,8 +21,6 @@ def pseudo_wgs_workflow(workflow, args):
     wgs_bam_template = os.path.join(wgs_bam_dir, "{regions}_merged.bam")
     wgs_bai_template = os.path.join(wgs_bam_dir, "{regions}_merged.bam.bai")
 
-    
-
 
     workflow.setobj(
         obj=mgd.OutputChunks('sample_id'),

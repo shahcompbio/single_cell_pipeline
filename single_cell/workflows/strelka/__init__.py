@@ -68,8 +68,9 @@ def create_strelka_workflow(
         func=tasks.call_somatic_variants,
         axes=('regions',),
         args=(
-            pypeliner.managed.InputFile(normal_bam_file),
-            pypeliner.managed.InputFile(normal_bai_file),
+
+            pypeliner.managed.InputFile("normal.split.bam", "regions", fnames=normal_bam_file),
+            pypeliner.managed.InputFile("normal.split.bam.bai", "regions", fnames=normal_bai_file),
             pypeliner.managed.InputFile("merged_bam", "regions", fnames=tumour_bam_file),
             pypeliner.managed.InputFile("merged_bai", "regions", fnames=tumour_bai_file),
             pypeliner.managed.TempInputObj('known_sizes'),
