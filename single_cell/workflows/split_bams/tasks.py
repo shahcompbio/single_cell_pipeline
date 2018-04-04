@@ -5,10 +5,9 @@ Created on Nov 21, 2017
 '''
 import pypeliner
 
-def split_bam_file(bam, bai, outbam, outbai, interval):
+def split_bam_file(bam, bai, outbam, outbai, interval_idx, all_intervals):
 
-    interval = interval.split('_')
-    interval = interval[0] +':'+interval[1] +'-'+interval[2]
+    interval = all_intervals[interval_idx]
 
     pypeliner.commandline.execute(
         'samtools', 'view', '-b', bam, interval,
@@ -20,12 +19,9 @@ def split_bam_file(bam, bai, outbam, outbai, interval):
 
 def split_bam_file_one_job(bam, bai, outbam, outbai, intervals):
 
-    for interval in intervals:
-        output_bam = outbam(interval)
-        output_bai = outbai(interval)
-
-        interval = interval.split('_')
-        interval = interval[0] +':'+interval[1] +'-'+interval[2]
+    for interval_idx, interval in intervals.iteritems():
+        output_bam = outbam(interval_idx)
+        output_bai = outbai(interval_idx)
 
         pypeliner.commandline.execute(
             'samtools', 'view', '-b', bam, interval,

@@ -58,7 +58,8 @@ def create_split_workflow(
                 mgd.InputFile(normal_bai),
                 mgd.OutputFile("normal.split.bam", "interval", fnames=normal_split_bam),
                 mgd.OutputFile("normal.split.bam.bai", "interval", fnames=normal_split_bai),
-                mgd.InputInstance('interval')
+                mgd.InputInstance('interval'),
+                intervals
             )
         )
 
