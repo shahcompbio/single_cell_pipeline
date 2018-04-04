@@ -111,7 +111,7 @@ def create_strelka_workflow(
             pypeliner.managed.TempOutputFile('somatic.snvs.filtered.vcf', 'chrom'),
             pypeliner.managed.InputInstance("chrom"),
             pypeliner.managed.TempInputObj('known_sizes'),
-            intervals,
+            regions,
         ),
         kwargs={'use_depth_filter': use_depth_thresholds}
     )

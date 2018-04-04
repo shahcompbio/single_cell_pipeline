@@ -9,6 +9,7 @@ import pypeliner
 import pypeliner.managed as mgd
 from workflows import snv_postprocessing
 from workflows import mutationseq 
+from workflows import split_bams
 from workflows import strelka
 from single_cell.utils import helpers
 
@@ -45,6 +46,20 @@ def variant_calling_workflow(workflow, args):
               config["chromosomes"],
         )
     )
+
+
+    workflow.subworkflow(
+        name="split_normal",
+        func=split_bams.create_split_workflow,
+        args = (
+            mgd.InputFile(args['matched_normal']),
+            mgd.InputFile(args['matched_normal'] + ".bai"),
+            mgd.TempOutputFile("normal.split.bam", "regions", axes_origin=[]),
+            mgd.TempOutputFile("normal.split.bam.bai", "regions", axes_origin=[]),
+            pypeliner.managed.TempInputObj('regions'),
+            config,
+        )
+    )
      
     museq_vcf = os.path.join(varcalls_dir, 'museq_snv.vcf')
     museq_csv = os.path.join(varcalls_dir, 'museq_snv.csv')
@@ -52,15 +67,14 @@ def variant_calling_workflow(workflow, args):
         name='museq',
         func=mutationseq.create_museq_workflow,
         args=(
+            mgd.TempInputFile("normal.split.bam", "regions"),
+            mgd.TempInputFile("normal.split.bam.bai", "regions"),
             mgd.InputFile("merged_bam", "regions", template=wgs_bam_template, axes_origin=[]),
             mgd.InputFile("merged_bam", "regions", template=wgs_bai_template, axes_origin=[]),
-            mgd.InputFile(args['matched_normal']),
-            mgd.InputFile(args['matched_normal'] + ".bai"),
             config['ref_genome'],
             mgd.OutputFile(museq_vcf),
             mgd.OutputFile(museq_csv),
             config,
-            args,
             mgd.TempInputObj('regions')
         ),
     )
@@ -73,17 +87,17 @@ def variant_calling_workflow(workflow, args):
         name='strelka',
         func=strelka.create_strelka_workflow,
         args=(
-            mgd.InputFile(args['matched_normal']),
-            mgd.InputFile(args['matched_normal'] + ".bai"),
-            mgd.InputFile(pseudo_wgs_bam),
-            mgd.InputFile(pseudo_wgs_bai),
+            mgd.TempInputFile("normal.split.bam", "regions"),
+            mgd.TempInputFile("normal.split.bam.bai", "regions"),
+            mgd.InputFile("merged_bam", "regions", template=wgs_bam_template, axes_origin=[]),
+            mgd.InputFile("merged_bam", "regions", template=wgs_bai_template, axes_origin=[]),
             config['ref_genome'],
             mgd.OutputFile(strelka_indel_vcf),
             mgd.OutputFile(strelka_snv_vcf),
             mgd.OutputFile(strelka_indel_csv),
             mgd.OutputFile(strelka_snv_csv),
             config,
-            mgd.TempInputObj('intervals')
+            mgd.TempInputObj('regions')
         ),
     )
       

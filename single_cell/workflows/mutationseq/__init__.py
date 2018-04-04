@@ -8,8 +8,8 @@ import pypeliner
 import pypeliner.managed as mgd
 import tasks
 
-def create_museq_workflow(tumour_bam, tumour_bai, normal_bam, normal_bai, ref_genome, snv_vcf, snv_csv,
-                          config, args, regions):
+def create_museq_workflow(normal_bam, normal_bai, tumour_bam, tumour_bai, ref_genome, snv_vcf, snv_csv,
+                          config, regions):
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -20,7 +20,7 @@ def create_museq_workflow(tumour_bam, tumour_bai, normal_bam, normal_bai, ref_ge
 
 
     workflow.transform(name='run_museq',
-                         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['multicore'], 'ncpus':8},
+                         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
                          axes=('regions',),
                          func=tasks.run_museq,
                          args=(
@@ -37,7 +37,7 @@ def create_museq_workflow(tumour_bam, tumour_bai, normal_bam, normal_bai, ref_ge
     )
 
     workflow.transform(name='concatenate_vcfs',
-                         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['multicore'], 'ncpus':8},
+                         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
                          func=tasks.concatenate_vcfs,
                          args=(
                                mgd.TempInputFile("museq.vcf", "regions"),
