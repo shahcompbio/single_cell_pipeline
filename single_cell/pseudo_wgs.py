@@ -15,26 +15,42 @@ def pseudo_wgs_workflow(workflow, args):
     bam_files, _  = helpers.get_bams(args['input_yaml'])
     sampleids = helpers.get_samples(args['input_yaml'])
 
-    pseudo_wgs_bam = args["merged_wgs"]
-    pseudo_wgs_bai = args["merged_wgs"]+".bai"
+
+    wgs_bam_dir = args["merged_wgs"]
+
+    wgs_bam_template = os.path.join(wgs_bam_dir, "{regions}_merged.bam")
+    wgs_bai_template = os.path.join(wgs_bam_dir, "{regions}_merged.bam.bai")
+
+    
 
 
     workflow.setobj(
         obj=mgd.OutputChunks('sample_id'),
         value=sampleids,
     )
-    
+
+    workflow.transform(
+        name="get_regions",
+        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        func=helpers.get_bam_regions,
+        ret=pypeliner.managed.TempOutputObj('regions'),
+        args=(
+              config["ref_genome"],
+              int(10**7),
+              config["chromosomes"],
+        )
+    )
+
     workflow.subworkflow(
         name='wgs_workflow',
         func=pseudo_wgs.create_wgs_workflow,
         args=(
             mgd.InputFile('bam_markdups', 'sample_id', fnames=bam_files),
-            mgd.OutputFile(pseudo_wgs_bam),
-            mgd.OutputFile(pseudo_wgs_bai),
-            config['ref_genome'],
+            mgd.OutputFile("merged_bam", "regions", axes_origin=[], template=wgs_bam_template),
+            mgd.OutputFile("merged_bai", "regions", axes_origin=[], template=wgs_bai_template),
             sampleids,
             config,
-            args['out_dir'],
+            mgd.TempInputObj("regions"),
         )
     )
 

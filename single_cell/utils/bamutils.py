@@ -109,3 +109,15 @@ def bam_flagstat(bam, metrics):
         metrics
     )
 
+
+def bam_merge(bams, output, region=None):
+
+    cmd = ['samtools', 'merge']
+    if region:
+        cmd.extend(['-R', region])
+
+    cmd.append(output)
+    cmd.extend(bams)
+
+    pypeliner.commandline.execute(*cmd)
+

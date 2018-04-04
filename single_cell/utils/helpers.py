@@ -13,6 +13,8 @@ import pysam
 
 import shutil
 
+from collections import OrderedDict
+
 def load_yaml(path):
     try:
         with open(path) as infile:
@@ -33,24 +35,46 @@ def copy_file(infile, output):
     shutil.copy(infile, output)
 
 
-def generate_intervals(ref, size=100000000):
-    fasta = pysam.FastaFile(ref)
-    lengths = fasta.lengths
-    names = fasta.references
- 
-    intervals = []
- 
-    for name, length in zip(names, lengths):
-        if 'GL' in name:
-            continue
-        if 'MT' in name:
+def get_regions(chromosome_lengths, split_size):
+    if split_size is None:
+        return dict(enumerate(chromosome_lengths.keys()))
+
+    regions = {}
+    region_index = 0
+
+    for chrom, length in chromosome_lengths.iteritems():
+        lside_interval = range(1, length + 1, split_size)
+        rside_interval = range(split_size, length + split_size, split_size)
+
+        for beg, end in zip(lside_interval, rside_interval):
+            end = min(end, length)
+
+            regions[region_index] = '{}:{}-{}'.format(chrom, beg, end)
+            region_index += 1
+
+    return regions
+
+
+def load_bam_chromosome_lengths(file_name, chromosomes=None):
+
+    chromosome_lengths = OrderedDict()
+
+    bam = pysam.Fastafile(file_name)
+
+    for chrom, length in zip(bam.references, bam.lengths):
+        if chromosomes and chrom not in chromosomes:
             continue
 
-        for i in range((length/size)+1):
-            intervals.append( name+ "_" + str(i*size) +"_"+ str((i+1)*size)) 
- 
+        chromosome_lengths[str(chrom)] = int(length)
 
-    return intervals
+    return chromosome_lengths
+
+
+def get_bam_regions(bam_file, split_size, chromosomes):
+    chromosome_lengths = load_bam_chromosome_lengths(bam_file, chromosomes=chromosomes)
+    return get_regions(chromosome_lengths, split_size)
+
+
 
 def get_fastqs(fastqs_file):
 
