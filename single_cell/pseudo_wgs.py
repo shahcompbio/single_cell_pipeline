@@ -36,7 +36,7 @@ def pseudo_wgs_workflow(workflow, args):
         ret=pypeliner.managed.TempOutputObj('regions'),
         args=(
               config["ref_genome"],
-              int(10**7),
+              config["split_size"],
               config["chromosomes"],
         )
     )
