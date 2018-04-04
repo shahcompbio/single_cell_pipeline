@@ -6,7 +6,7 @@ from hmmcopy import hmmcopy_workflow
 from aneufinder import aneufinder_workflow
 from pseudo_wgs import pseudo_wgs_workflow
 from variant_calling import variant_calling_workflow
-from copyclone import copyclone_workflow
+# from copyclone import copyclone_workflow
 
 def main():
 
@@ -24,10 +24,10 @@ def main():
         workflow = hmmcopy_workflow(workflow, args)
         pyp.run(workflow)
 
-    if "copyclone" in args["modes"]:
-        workflow = pypeliner.workflow.Workflow()
-        workflow = copyclone_workflow(workflow, args)
-        pyp.run(workflow)
+#     if "copyclone" in args["modes"]:
+#         workflow = pypeliner.workflow.Workflow()
+#         workflow = copyclone_workflow(workflow, args)
+#         pyp.run(workflow)
 
     if "aneufinder" in args["modes"]:
         workflow = pypeliner.workflow.Workflow()
