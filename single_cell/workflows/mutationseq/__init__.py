@@ -26,8 +26,8 @@ def create_museq_workflow(normal_bam, normal_bai, tumour_bam, tumour_bai, ref_ge
                          args=(
                                mgd.InputFile("merged_bam", "regions", fnames=tumour_bam),
                                mgd.InputFile("merged_bai", "regions", fnames=tumour_bai),
-                               mgd.InputFile(normal_bam),
-                               mgd.InputFile(normal_bai),
+                               mgd.InputFile("normal.split.bam", "regions", fnames=normal_bam),
+                               mgd.InputFile("normal.split.bam.bai", "regions", fnames=normal_bai),
                                mgd.TempOutputFile("museq.vcf", "regions"),
                                mgd.TempOutputFile("museq.log", "regions"),
                                config,
