@@ -32,9 +32,6 @@ def create_wgs_workflow(
     merged_bais = dict([(region, merged_bais[region])
                          for region in regions])
 
-
-    raise Exception(merged_bais)
- 
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
@@ -55,7 +52,7 @@ def create_wgs_workflow(
         args=(
             mgd.InputFile('bam', 'sample_id', fnames=input_bams),
             mgd.OutputFile('merged.bam', "regions", fnames=merged_bams, axes_origin=[]),
-            mgd.TempOutputFile('merged.bam.bai', "regions", fnames=merged_bais, axes_origin=[]),
+            mgd.OutputFile('merged.bam.bai', "regions", fnames=merged_bais, axes_origin=[]),
             regions
         ),
         kwargs = {"ncores": config["max_cores"]}

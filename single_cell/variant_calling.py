@@ -16,12 +16,18 @@ def variant_calling_workflow(workflow, args):
 
     config = helpers.load_config(args)
 
-    pseudo_wgs_bam = args["merged_wgs"]
-    pseudo_wgs_bai = args["merged_wgs"]+".bai"
 
     bam_files, bai_files  = helpers.get_bams(args['input_yaml'])
 
     sampleids = helpers.get_samples(args['input_yaml'])
+
+    varcalls_dir = os.path.join(args['out_dir'], 'results',
+                                'variant_calling')
+
+
+    wgs_bam_dir = args["merged_wgs"]
+    wgs_bam_template = os.path.join(wgs_bam_dir, "{regions}_merged.bam")
+    wgs_bai_template = os.path.join(wgs_bam_dir, "{regions}_merged.bam.bai")
 
     workflow.setobj(
         obj=mgd.OutputChunks('sample_id'),
@@ -29,25 +35,25 @@ def variant_calling_workflow(workflow, args):
     )
 
     workflow.transform(
-        name='generate_intervals',
-        func=helpers.generate_intervals,
-        ctx={'ncpus':1},
-        ret=pypeliner.managed.TempOutputObj('intervals'),
+        name="get_regions",
+        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        func=helpers.get_bam_regions,
+        ret=pypeliner.managed.TempOutputObj('regions'),
         args=(
-            config["ref_genome"],
+              config["ref_genome"],
+              config["split_size"],
+              config["chromosomes"],
         )
     )
      
-    varcalls_dir = os.path.join(args['out_dir'], 'results',
-                                'variant_calling')
     museq_vcf = os.path.join(varcalls_dir, 'museq_snv.vcf')
     museq_csv = os.path.join(varcalls_dir, 'museq_snv.csv')
     workflow.subworkflow(
         name='museq',
         func=mutationseq.create_museq_workflow,
         args=(
-            mgd.InputFile(pseudo_wgs_bam),
-            mgd.InputFile(pseudo_wgs_bai),
+            mgd.InputFile("merged_bam", "regions", template=wgs_bam_template, axes_origin=[]),
+            mgd.InputFile("merged_bam", "regions", template=wgs_bai_template, axes_origin=[]),
             mgd.InputFile(args['matched_normal']),
             mgd.InputFile(args['matched_normal'] + ".bai"),
             config['ref_genome'],
@@ -55,7 +61,7 @@ def variant_calling_workflow(workflow, args):
             mgd.OutputFile(museq_csv),
             config,
             args,
-            mgd.TempInputObj('intervals')
+            mgd.TempInputObj('regions')
         ),
     )
      
@@ -80,7 +86,7 @@ def variant_calling_workflow(workflow, args):
             mgd.TempInputObj('intervals')
         ),
     )
-     
+      
     countdata = os.path.join(varcalls_dir, 'counts.csv')
     olp_calls = os.path.join(varcalls_dir, 'overlapping_calls.csv')
     workflow.subworkflow(

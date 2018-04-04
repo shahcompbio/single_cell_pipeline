@@ -16,7 +16,7 @@ from single_cell.utils import vcfutils
 import subprocess 
 
 
-def _run_museq_worker(tumour, normal, out, log, config, interval):
+def run_museq(tumour, tumour_bai, normal, normal_bai, out, log, config, region_idx, all_regions):
     '''
     Run museq script for each chromosome
 
@@ -28,8 +28,7 @@ def _run_museq_worker(tumour, normal, out, log, config, interval):
     :param chrom: chromosome number
     '''
 
-    interval = interval.split('_')
-    interval = interval[0]+':'+interval[1]+"-"+interval[2]
+    region = all_regions[region_idx]
 
     script = os.path.join(config['mutationseq'], 'classify.py')
     conf = os.path.join(config['mutationseq'], 'metadata.config')
@@ -38,60 +37,15 @@ def _run_museq_worker(tumour, normal, out, log, config, interval):
 
     cmd = ['python', script, 'normal:' + normal, 'tumour:' + tumour,
            'reference:' + reference, 'model:' + model, '--out', out,
-           '--log', log, '--config', conf, '--interval', interval]
+           '--log', log, '--config', conf, '--interval', region]
 
-
-    subprocess.call(cmd)
-
-
-def run_museq(tumour, tumour_bai, normal, normal_bai, out, log, tempdir, config, intervals, ncores=None):
-    '''
-    Run museq script for all chromosomes and merge VCF files
-
-    :param tumour: path to tumour bam
-    :param normal: path to normal bam
-    :param out: path to the temporary output VCF file for the merged VCF files
-    :param log: path to the log file
-    :param config: path to the config YAML file
-    '''
-
-    helpers.makedirs(os.path.dirname(log))
-    helpers.makedirs(tempdir)
-
-    count = multiprocessing.cpu_count()
     
-    if ncores:
-        count = min(ncores, count)
-    
-    pool = multiprocessing.Pool(processes=count)
+    pypeliner.commandline.execute(*cmd)
 
-    output_vcf = {}
 
-    tasks = []
+def concatenate_vcfs(inputs, output):
+    vcfutils.concatenate_vcf(inputs, output)
 
-    for interval in intervals:
-        outfile = os.path.join(tempdir, str(interval) + '.vcf.tmp')
-
-        task = pool.apply_async(_run_museq_worker,
-                                args=(
-                                        tumour,
-                                        normal,
-                                        outfile,
-                                        log,
-                                        config,
-                                        interval,
-                                    )
-                                )
-
-        tasks.append(task)
-        output_vcf[interval] = outfile
-
-    pool.close()
-    pool.join()
-
-    [task.get() for task in tasks]
-
-    vcfutils.concatenate_vcf(output_vcf, out)
 
 def parse_museq(infile, output):
     parser = ParseMuseq(infile=infile, tid='NA', nid='NA', output=output,
