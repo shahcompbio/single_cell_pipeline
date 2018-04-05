@@ -20,7 +20,7 @@ def variant_calling_workflow(workflow, args):
 
     bam_files, bai_files  = helpers.get_bams(args['input_yaml'])
 
-    sampleids = helpers.get_samples(args['input_yaml'])
+    cellids = helpers.get_samples(args['input_yaml'])
 
     varcalls_dir = os.path.join(args['out_dir'], 'results',
                                 'variant_calling')
@@ -34,8 +34,8 @@ def variant_calling_workflow(workflow, args):
 
 
     workflow.setobj(
-        obj=mgd.OutputChunks('sample_id'),
-        value=sampleids,
+        obj=mgd.OutputChunks('cell_id'),
+        value=cellids,
     )
 
     workflow.transform(
@@ -110,13 +110,13 @@ def variant_calling_workflow(workflow, args):
         name='postprocessing',
         func=snv_postprocessing.create_snv_postprocessing_workflow,
         args=(
-            mgd.InputFile('bam_markdups', 'sample_id', fnames=bam_files),
-            mgd.InputFile('bam_markdups_index', 'sample_id', fnames=bai_files),
+            mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files),
+            mgd.InputFile('bam_markdups_index', 'cell_id', fnames=bai_files),
             mgd.InputFile(museq_csv),
             mgd.InputFile(strelka_snv_csv),
             mgd.OutputFile(countdata),
             mgd.OutputFile(olp_calls),
-            sampleids,
+            cellids,
             config,
         )
     )

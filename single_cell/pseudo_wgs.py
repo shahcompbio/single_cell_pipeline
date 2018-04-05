@@ -13,7 +13,7 @@ def pseudo_wgs_workflow(workflow, args):
 
     config = helpers.load_config(args)
     bam_files, _  = helpers.get_bams(args['input_yaml'])
-    sampleids = helpers.get_samples(args['input_yaml'])
+    cellids = helpers.get_samples(args['input_yaml'])
 
     wgs_bam_template = args["merged_wgs_template"]
     wgs_bai_template = args["merged_wgs_template"] + ".bai"
@@ -21,8 +21,8 @@ def pseudo_wgs_workflow(workflow, args):
 
 
     workflow.setobj(
-        obj=mgd.OutputChunks('sample_id'),
-        value=sampleids,
+        obj=mgd.OutputChunks('cell_id'),
+        value=cellids,
     )
 
     workflow.transform(
@@ -41,10 +41,10 @@ def pseudo_wgs_workflow(workflow, args):
         name='wgs_workflow',
         func=pseudo_wgs.create_wgs_workflow,
         args=(
-            mgd.InputFile('bam_markdups', 'sample_id', fnames=bam_files),
+            mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files),
             mgd.OutputFile("merged_bam", "regions", axes_origin=[], template=wgs_bam_template),
             mgd.OutputFile("merged_bai", "regions", axes_origin=[], template=wgs_bai_template),
-            sampleids,
+            cellids,
             config,
             mgd.TempInputObj("regions"),
         )

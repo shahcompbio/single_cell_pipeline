@@ -43,7 +43,7 @@ def convert_reads_to_hmmcopy_format(
 def run_aneufinder(
     bam_file,
     working_dir,
-    sample_id,
+    cell_id,
     aneufinder_output,
     segments,
     reads,
@@ -98,8 +98,8 @@ def run_aneufinder(
 
     pypeliner.commandline.execute(*cmd)
 
-    convert_segments_to_hmmcopy_format(segments, sample_id)
-    convert_reads_to_hmmcopy_format(reads, sample_id)
+    convert_segments_to_hmmcopy_format(segments, cell_id)
+    convert_reads_to_hmmcopy_format(reads, cell_id)
 
 
 def merge_pdf(in_filenames, out_filename):

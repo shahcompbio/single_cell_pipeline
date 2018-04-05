@@ -28,7 +28,7 @@ def run_hmmcopy(
     parameters_filename,
     posterior_marginals_filename,
     hmm_metrics,
-    sample_id,
+    cell_id,
     config,
     hmmparams,
     tempdir,):
@@ -69,7 +69,7 @@ def run_hmmcopy(
         '--segs_output=' + segments_filename,
         '--params_output=' + parameters_filename,
         '--post_marginals_output=' + posterior_marginals_filename,
-        '--sample_id=' + sample_id]
+        '--sample_id=' + cell_id]
 
     if hmmparams['map_cutoff']:
         cmd.append('--map_cutoff=' + str(hmmparams['map_cutoff']))
@@ -114,7 +114,7 @@ def run_hmmcopy(
 
     # generate the metrics file for hmmcopy
     metrics = ExtractHmmMetrics(parameters_filename, corrected_reads_filename,
-                                segments_filename, hmm_metrics, sample_id)
+                                segments_filename, hmm_metrics, cell_id)
     metrics.main()
 
 
@@ -148,10 +148,10 @@ def generate_cn_matrix(infiles, output, tempdir):
         os.mkdir(tempdir)
     
     matrix_files = []
-    for sample_id, infile in infiles.iteritems():
-        outfile= os.path.join(tempdir, sample_id+'_matrix.csv')
+    for cell_id, infile in infiles.iteritems():
+        outfile= os.path.join(tempdir, cell_id+'_matrix.csv')
         gen_gc = GenerateCNMatrix(infile, outfile, ',', 'integer_copy_number',
-                                  sample_id, 'hmmcopy_corrected_reads')
+                                  cell_id, 'hmmcopy_corrected_reads')
         gen_gc.main()
         matrix_files.append(outfile)
 
