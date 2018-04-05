@@ -36,7 +36,7 @@ def create_split_workflow(
     if one_split_job:
         workflow.transform(
             name='split_normal_bam',
-            ctx={'mem': config['memory']['low']},
+            ctx={'mem': config['memory']['low'], 'pool_id': config['pools']['standard'], 'ncpus':config["max_cores"]},
             func=tasks.split_bam_file_one_job,
             args=(
                 mgd.InputFile(normal_bam),
@@ -59,7 +59,6 @@ def create_split_workflow(
                 mgd.OutputFile("normal.split.bam", "interval", fnames=normal_split_bam),
                 mgd.OutputFile("normal.split.bam.bai", "interval", fnames=normal_split_bai),
                 mgd.InputInstance('interval'),
-                intervals
             )
         )
 

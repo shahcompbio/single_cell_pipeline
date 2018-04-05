@@ -47,7 +47,7 @@ def create_wgs_workflow(
 
     workflow.transform(
         name='merge_bams',
-        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':config["max_cores"]},
+        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['multicore'], 'ncpus':config["max_cores"]},
         func=tasks.merge_bams,
         args=(
             mgd.InputFile('bam', 'cell_id', fnames=input_bams),

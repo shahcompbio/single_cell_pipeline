@@ -48,7 +48,7 @@ def get_regions(chromosome_lengths, split_size):
         for beg, end in zip(lside_interval, rside_interval):
             end = min(end, length)
 
-            regions.append('{}_{}_{}'.format(chrom, beg, end))
+            regions.append('{}-{}-{}'.format(chrom, beg, end))
 
     return regions
 

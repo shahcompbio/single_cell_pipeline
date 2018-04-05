@@ -5,9 +5,7 @@ Created on Nov 21, 2017
 '''
 import pypeliner
 
-def split_bam_file(bam, bai, outbam, outbai, interval_idx, all_intervals):
-
-    interval = all_intervals[interval_idx]
+def split_bam_file(bam, bai, outbam, outbai, interval):
 
     pypeliner.commandline.execute(
         'samtools', 'view', '-b', bam, interval,

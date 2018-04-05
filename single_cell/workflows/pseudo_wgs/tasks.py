@@ -45,6 +45,7 @@ def merge_bams(inputs, outputs, output_index, regions, ncores=None):
         output_bam = outputs[region]
         output_bai = output_index[region]
 
+        region = '{}:{}-{}'.format(*region.split('-'))
         task = pool.apply_async(merge_bam_worker,
                          args=(inputs, output_bam, output_bai, region)
                         )
