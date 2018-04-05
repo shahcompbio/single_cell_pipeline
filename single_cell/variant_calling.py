@@ -50,7 +50,6 @@ def variant_calling_workflow(workflow, args):
         )
     )
 
-
     workflow.subworkflow(
         name="split_normal",
         func=split_bams.create_split_workflow,
@@ -63,7 +62,7 @@ def variant_calling_workflow(workflow, args):
             config,
         )
     )
-     
+
     museq_vcf = os.path.join(varcalls_dir, 'museq_snv.vcf')
     museq_csv = os.path.join(varcalls_dir, 'museq_snv.csv')
     workflow.subworkflow(
@@ -81,7 +80,7 @@ def variant_calling_workflow(workflow, args):
             mgd.TempInputObj('regions')
         ),
     )
-     
+
     strelka_snv_vcf = os.path.join(varcalls_dir, 'strelka_snv.vcf')
     strelka_indel_vcf = os.path.join(varcalls_dir, 'strelka_indel.vcf')
     strelka_snv_csv = os.path.join(varcalls_dir, 'strelka_snv.csv')
@@ -103,7 +102,29 @@ def variant_calling_workflow(workflow, args):
             mgd.TempInputObj('regions')
         ),
     )
-      
+
+    germline_snv_vcf = os.path.join(varcalls_dir, 'germline_snv.vcf')
+    germline_indel_vcf = os.path.join(varcalls_dir, 'germline_indel.vcf')
+    germline_snv_csv = os.path.join(varcalls_dir, 'germline_snv.csv')
+    germline_indel_csv = os.path.join(varcalls_dir, 'germline_indel.csv')
+    workflow.subworkflow(
+        name='germline',
+        func=germline.create_germline_workflow,
+        args=(
+            mgd.TempInputFile("normal.split.bam", "regions"),
+            mgd.TempInputFile("normal.split.bam.bai", "regions"),
+            mgd.InputFile("merged_bam", "regions", template=wgs_bam_template, axes_origin=[]),
+            mgd.InputFile("merged_bam", "regions", template=wgs_bai_template, axes_origin=[]),
+            config['ref_genome'],
+            mgd.OutputFile(germline_indel_vcf),
+            mgd.OutputFile(germline_snv_vcf),
+            mgd.OutputFile(germline_indel_csv),
+            mgd.OutputFile(germline_snv_csv),
+            config,
+            mgd.TempInputObj('regions')
+        ),
+    )
+
     countdata = os.path.join(varcalls_dir, 'counts.csv')
     olp_calls = os.path.join(varcalls_dir, 'overlapping_calls.csv')
     workflow.subworkflow(

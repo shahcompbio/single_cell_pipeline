@@ -3,25 +3,104 @@ from pypeliner.workflow import Workflow
 import csv
 import pypeliner
 import pysam
-
-from strelkautils import default_chromosomes
-
-import strelkautils as utils
 import vcf_tasks
 import tasks
 import os
 
 
-def create_strelka_workflow(
-        normal_bam_file,
-        normal_bai_file,
-        tumour_bam_file,
-        tumour_bai_file,
+def create_snv_allele_counts_for_vcf_targets_workflow(
+        bam_file,
+        vcf_file,
+        out_file,
+        chromosomes=default_chromosomes,
+        count_duplicates=False,
+        hdf5_output=True,
+        min_bqual=0,
+        min_mqual=0,
+        split_size=int(1e7),
+        table_name='snv_allele_counts',
+        vcf_to_bam_chrom_map=None):
+
+    if hdf5_output:
+        merged_file = mgd.File(out_file)
+
+    else:
+        merged_file = mgd.TempFile('merged.h5')
+
+    workflow = pypeliner.workflow.Workflow()
+
+    workflow.transform(
+        name='get_regions',
+        ret=mgd.TempOutputObj('regions_obj', 'regions'),
+        func=utils.get_vcf_regions,
+        args=(
+            mgd.InputFile(vcf_file),
+            split_size,
+        ),
+        kwargs={
+            'chromosomes': chromosomes,
+        },
+    )
+
+    workflow.transform(
+        name='get_snv_allele_counts_for_vcf_targets',
+        axes=('regions',),
+        ctx=med_ctx,
+        func=tasks.get_snv_allele_counts_for_vcf_targets,
+        args=(
+            mgd.InputFile(bam_file),
+            mgd.InputFile(vcf_file),
+            mgd.TempOutputFile('counts.h5', 'regions'),
+            table_name
+        ),
+        kwargs={
+            'count_duplicates': count_duplicates,
+            'min_bqual': min_bqual,
+            'min_mqual': min_mqual,
+            'region': mgd.TempInputObj('regions_obj', 'regions'),
+            'vcf_to_bam_chrom_map': vcf_to_bam_chrom_map,
+        }
+    )
+
+    workflow.transform(
+        name='merge_snv_allele_counts',
+        ctx=med_ctx,
+        func=hdf5_tasks.concatenate_tables,
+        args=(
+            mgd.TempInputFile('counts.h5', 'regions'),
+            merged_file.as_output(),
+        ),
+        kwargs={
+            'in_memory': False,
+        }
+    )
+
+    if not hdf5_output:
+        workflow.transform(
+            name='convert_to_tsv',
+            ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
+            func=hdf5_tasks.convert_hdf5_to_tsv,
+            args=(
+                merged_file.as_input(),
+                table_name,
+                mgd.OutputFile(out_file),
+            ),
+            kwargs={
+                'compress': True,
+            }
+        )
+
+    return workflow
+
+
+def create_germline_workflow(
+        normal_bam_files,
+        normal_bai_files,
+        tumour_bam_files,
+        tumour_bai_files,
         ref_genome_fasta_file,
-        indel_vcf_file,
-        snv_vcf_file,
-        parsed_indel_csv,
-        parsed_snv_csv,
+        vcf_file,
+        parsed_csv,
         config,
         regions,
         chromosomes=default_chromosomes,
@@ -36,7 +115,7 @@ def create_strelka_workflow(
     )
     
     workflow.setobj(
-        obj=pypeliner.managed.OutputChunks('region'),
+        obj=pypeliner.managed.OutputChunks('regions'),
         value=regions,
     )
               
@@ -60,37 +139,65 @@ def create_strelka_workflow(
               chromosomes
         )
     )
-     
-    workflow.transform(
-        name='call_somatic_variants',
-        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'ncpus':1, 'pool_id': config['pools']['standard']},
-        func=tasks.call_somatic_variants,
-        axes=('region',),
-        args=(
 
-            pypeliner.managed.InputFile("normal.split.bam", "region", fnames=normal_bam_file),
-            pypeliner.managed.InputFile("normal.split.bam.bai", "region", fnames=normal_bai_file),
-            pypeliner.managed.InputFile("merged_bam", "region", fnames=tumour_bam_file),
-            pypeliner.managed.InputFile("merged_bai", "region", fnames=tumour_bai_file),
-            pypeliner.managed.TempInputObj('known_sizes'),
-            ref_genome_fasta_file,
-            pypeliner.managed.TempOutputFile('somatic.indels.unfiltered.vcf', 'region'),
-            pypeliner.managed.TempOutputFile('somatic.indels.unfiltered.vcf.window', 'region'),
-            pypeliner.managed.TempOutputFile('somatic.snvs.unfiltered.vcf', 'region'),
-            pypeliner.managed.TempOutputFile('strelka.stats', 'region'),
-            pypeliner.managed.InputInstance("region"),
+    workflow.transform(
+        name='run_samtools_variant_calling',
+        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'ncpus':1, 'pool_id': config['pools']['standard']},
+        axes=('regions',),
+        func=tasks.run_samtools_variant_calling,
+        args=(
+            pypeliner.managed.InputFile('normal.bam', 'regions', fnames=normal_bam_files),
+            pypeliner.managed.InputFile('normal.bam.bai', 'regions', fnames=normal_bai_files),
+            pypeliner.managed.InputFile(ref_genome_fasta_file),
+            pypeliner.managed.TempOutputFile('variants.vcf.gz', 'regions'),
+        ),
+        kwargs={
+            'region': pypeliner.managed.InputInstance('regions'),
+        },
+    )
+
+    workflow.transform(
+        name='concatenate_variants',
+        ctx={'mem': 2},
+        func=vcf_tasks.concatenate_vcf,
+        args=(
+            pypeliner.managed.TempInputFile('variants.vcf.gz', 'regions'),
+            pypeliner.managed.OutputFile(vcf_file),
         ),
     )
- 
+
+    workflow.subworkflow(
+        name='read_counts',
+        axes=('sample_id',),
+        func=biowrappers.components.variant_calling.snv_allele_counts.create_snv_allele_counts_for_vcf_targets_workflow,
+        args=(
+            mgd.InputFile('bam', 'sample_id', fnames=bam_filenames),
+            mgd.InputFile(germline_vcf_filename),
+            mgd.OutputFile(counts_template, 'sample_id'),
+        ),
+        kwargs={
+            'table_name': mgd.Template('/counts/{sample_id}', 'sample_id'),
+        },
+    )
+    
+
+
+
+
+
+
+
+
+
     workflow.transform(
         name='add_indel_filters',
         axes=('chrom',),
         ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
         func=tasks.filter_indel_file_list,
         args=(
-            pypeliner.managed.TempInputFile('somatic.indels.unfiltered.vcf', 'region'),
-            pypeliner.managed.TempInputFile('strelka.stats', 'region'),
-            pypeliner.managed.TempInputFile('somatic.indels.unfiltered.vcf.window', 'region'),
+            pypeliner.managed.TempInputFile('somatic.indels.unfiltered.vcf', 'regions'),
+            pypeliner.managed.TempInputFile('strelka.stats', 'regions'),
+            pypeliner.managed.TempInputFile('somatic.indels.unfiltered.vcf.window', 'regions'),
             pypeliner.managed.TempOutputFile('somatic.indels.filtered.vcf', 'chrom'),
             pypeliner.managed.InputInstance("chrom"),
             pypeliner.managed.TempInputObj('known_sizes'),
@@ -105,8 +212,8 @@ def create_strelka_workflow(
         ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
         func=tasks.filter_snv_file_list,
         args=(
-            pypeliner.managed.TempInputFile('somatic.snvs.unfiltered.vcf', 'region'),
-            pypeliner.managed.TempInputFile('strelka.stats', 'region'),
+            pypeliner.managed.TempInputFile('somatic.snvs.unfiltered.vcf', 'interval', axes_origin=[]),
+            pypeliner.managed.TempInputFile('strelka.stats', 'interval', axes_origin=[]),
             pypeliner.managed.TempOutputFile('somatic.snvs.filtered.vcf', 'chrom'),
             pypeliner.managed.InputInstance("chrom"),
             pypeliner.managed.TempInputObj('known_sizes'),
