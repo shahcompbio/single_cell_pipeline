@@ -8,9 +8,7 @@ import os
 import pypeliner
 import pypeliner.managed as mgd
 from workflows import snv_postprocessing
-from workflows import mutationseq 
-from workflows import split_bams
-from workflows import strelka
+from workflows import germline
 from single_cell.utils import helpers
 
 
