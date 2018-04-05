@@ -14,25 +14,24 @@ def create_museq_workflow(normal_bam, normal_bai, tumour_bam, tumour_bai, ref_ge
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
-        obj=mgd.OutputChunks('regions'),
+        obj=mgd.OutputChunks('region'),
         value=regions,
     )
 
 
     workflow.transform(name='run_museq',
                          ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
-                         axes=('regions',),
+                         axes=('region',),
                          func=tasks.run_museq,
                          args=(
-                               mgd.InputFile("merged_bam", "regions", fnames=tumour_bam),
-                               mgd.InputFile("merged_bai", "regions", fnames=tumour_bai),
-                               mgd.InputFile("normal.split.bam", "regions", fnames=normal_bam),
-                               mgd.InputFile("normal.split.bam.bai", "regions", fnames=normal_bai),
-                               mgd.TempOutputFile("museq.vcf", "regions"),
-                               mgd.TempOutputFile("museq.log", "regions"),
+                               mgd.InputFile("merged_bam", "region", fnames=tumour_bam),
+                               mgd.InputFile("merged_bai", "region", fnames=tumour_bai),
+                               mgd.InputFile("normal.split.bam", "region", fnames=normal_bam),
+                               mgd.InputFile("normal.split.bam.bai", "region", fnames=normal_bai),
+                               mgd.TempOutputFile("museq.vcf", "region"),
+                               mgd.TempOutputFile("museq.log", "region"),
                                config,
-                               mgd.InputInstance("regions"),
-                               regions,
+                               mgd.InputInstance("region"),
         ),
     )
 
@@ -40,7 +39,7 @@ def create_museq_workflow(normal_bam, normal_bai, tumour_bam, tumour_bai, ref_ge
                          ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
                          func=tasks.concatenate_vcfs,
                          args=(
-                               mgd.TempInputFile("museq.vcf", "regions"),
+                               mgd.TempInputFile("museq.vcf", "region"),
                                mgd.OutputFile(snv_vcf)
         ),
     )

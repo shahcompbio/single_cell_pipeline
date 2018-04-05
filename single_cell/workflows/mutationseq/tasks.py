@@ -12,7 +12,7 @@ from single_cell.utils import helpers
 from single_cell.utils import vcfutils
 
 
-def run_museq(tumour, tumour_bai, normal, normal_bai, out, log, config, region_idx, all_regions):
+def run_museq(tumour, tumour_bai, normal, normal_bai, out, log, config, region):
     '''
     Run museq script for each chromosome
 
@@ -23,8 +23,6 @@ def run_museq(tumour, tumour_bai, normal, normal_bai, out, log, config, region_i
     :param config: path to the config YAML file
     :param chrom: chromosome number
     '''
-
-    region = all_regions[region_idx]
 
     script = os.path.join(config['mutationseq'], 'classify.py')
     conf = os.path.join(config['mutationseq'], 'metadata.config')

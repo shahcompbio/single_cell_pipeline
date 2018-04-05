@@ -83,8 +83,7 @@ def call_somatic_variants(
         indel_window_file,
         snv_file,
         stats_file,
-        region_idx,
-        all_regions,
+        region,
         ncores=None,
         max_input_depth=10000,
         min_tier_one_mapq=20,
@@ -95,8 +94,6 @@ def call_somatic_variants(
         ssnv_noise_strand_bias_frac=0.5,
         ssnv_prior=0.000001):
 
-
-    region = all_regions[region_idx]
 
     chrom,beg,end = re.split(":|-", region)
 

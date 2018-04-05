@@ -26,9 +26,12 @@ def variant_calling_workflow(workflow, args):
                                 'variant_calling')
 
 
-    wgs_bam_dir = args["merged_wgs"]
-    wgs_bam_template = os.path.join(wgs_bam_dir, "{regions}_merged.bam")
-    wgs_bai_template = os.path.join(wgs_bam_dir, "{regions}_merged.bam.bai")
+    wgs_bam_template = args["merged_wgs_template"]
+    wgs_bai_template = args["merged_wgs_template"]
+
+    normal_bam_template = args["normal_split_template"]
+    normal_bai_template = args["normal_split_template"]
+
 
     workflow.setobj(
         obj=mgd.OutputChunks('sample_id'),
@@ -54,8 +57,8 @@ def variant_calling_workflow(workflow, args):
         args = (
             mgd.InputFile(args['matched_normal']),
             mgd.InputFile(args['matched_normal'] + ".bai"),
-            mgd.TempOutputFile("normal.split.bam", "regions", axes_origin=[]),
-            mgd.TempOutputFile("normal.split.bam.bai", "regions", axes_origin=[]),
+            mgd.OutputFile("normal.split.bam", "regions", template=normal_bam_template, axes_origin=[]),
+            mgd.TempOutputFile("normal.split.bam.bai", "regions", template=normal_bai_template, axes_origin=[]),
             pypeliner.managed.TempInputObj('regions'),
             config,
         )

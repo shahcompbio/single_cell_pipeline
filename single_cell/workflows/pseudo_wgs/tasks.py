@@ -41,9 +41,9 @@ def merge_bams(inputs, outputs, output_index, regions, ncores=None):
 
     inputs = inputs.values()
 
-    for region_idx,region in regions.iteritems():
-        output_bam = outputs[region_idx]
-        output_bai = output_index[region_idx]
+    for region in regions:
+        output_bam = outputs[region]
+        output_bai = output_index[region]
 
         task = pool.apply_async(merge_bam_worker,
                          args=(inputs, output_bam, output_bai, region)
