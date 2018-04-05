@@ -11,7 +11,8 @@ def arg_exists(args, key, mode):
     error_string = "option {} is required in {} mode"
 
     if key not in args:
-        raise Exception(error_string.format("input_yaml", mode))
+
+        raise Exception(error_string.format(key, mode))
     
 
 def check_update_args(args):
@@ -33,11 +34,12 @@ def check_update_args(args):
 
         elif mode in ["pseudo_wgs"]:
             arg_exists(args, "input_yaml", mode)
-            arg_exists(args, "merged_wgs", mode)
+            arg_exists(args, "merged_wgs_template", mode)
 
         elif mode in ["variant_calling"]:
             arg_exists(args, "matched_normal", mode)
             arg_exists(args, "input_yaml", mode)
+            arg_exists(args, "matched_normal", mode)
 
             arg_exists(args, "merged_wgs_template", mode)
             arg_exists(args, "normal_split_template", mode)
