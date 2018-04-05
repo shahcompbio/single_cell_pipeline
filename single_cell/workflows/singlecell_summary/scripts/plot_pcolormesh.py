@@ -174,7 +174,9 @@ class PlotPcolor(object):
 
             numreads = int(line[idxs['total_mapped_reads']])
 
-            reads_per_bin = float(line[idxs['median_hmmcopy_reads_per_bin']])
+            reads_per_bin = line[idxs['median_hmmcopy_reads_per_bin']]
+
+            reads_per_bin = 0 if reads_per_bin == "NA" else float(reads_per_bin)
 
             if self.cellcalls and cc not in self.cellcalls:
                 continue
