@@ -103,28 +103,6 @@ def variant_calling_workflow(workflow, args):
         ),
     )
 
-    germline_snv_vcf = os.path.join(varcalls_dir, 'germline_snv.vcf')
-    germline_indel_vcf = os.path.join(varcalls_dir, 'germline_indel.vcf')
-    germline_snv_csv = os.path.join(varcalls_dir, 'germline_snv.csv')
-    germline_indel_csv = os.path.join(varcalls_dir, 'germline_indel.csv')
-    workflow.subworkflow(
-        name='germline',
-        func=germline.create_germline_workflow,
-        args=(
-            mgd.TempInputFile("normal.split.bam", "regions"),
-            mgd.TempInputFile("normal.split.bam.bai", "regions"),
-            mgd.InputFile("merged_bam", "regions", template=wgs_bam_template, axes_origin=[]),
-            mgd.InputFile("merged_bam", "regions", template=wgs_bai_template, axes_origin=[]),
-            config['ref_genome'],
-            mgd.OutputFile(germline_indel_vcf),
-            mgd.OutputFile(germline_snv_vcf),
-            mgd.OutputFile(germline_indel_csv),
-            mgd.OutputFile(germline_snv_csv),
-            config,
-            mgd.TempInputObj('regions')
-        ),
-    )
-
     countdata = os.path.join(varcalls_dir, 'counts.csv')
     olp_calls = os.path.join(varcalls_dir, 'overlapping_calls.csv')
     workflow.subworkflow(
@@ -133,8 +111,10 @@ def variant_calling_workflow(workflow, args):
         args=(
             mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files),
             mgd.InputFile('bam_markdups_index', 'cell_id', fnames=bai_files),
-            mgd.InputFile(museq_csv),
-            mgd.InputFile(strelka_snv_csv),
+            [
+                mgd.InputFile(museq_csv),
+                mgd.InputFile(strelka_snv_csv),
+            ],
             mgd.OutputFile(countdata),
             mgd.OutputFile(olp_calls),
             cellids,
