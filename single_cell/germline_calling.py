@@ -9,6 +9,7 @@ import pypeliner
 import pypeliner.managed as mgd
 from workflows import snv_postprocessing
 from workflows import germline
+from workflows import split_bams
 from single_cell.utils import helpers
 
 
@@ -23,7 +24,7 @@ def germline_calling_workflow(workflow, args):
     varcalls_dir = os.path.join(args['out_dir'], 'results',
                                 'germline_calling')
 
-    wgs_bam_dir = args["merged_wgs"]
+    wgs_bam_dir = args["merged_wgs_template"]
     wgs_bam_template = os.path.join(wgs_bam_dir, "{regions}_merged.bam")
     wgs_bai_template = os.path.join(wgs_bam_dir, "{regions}_merged.bam.bai")
 

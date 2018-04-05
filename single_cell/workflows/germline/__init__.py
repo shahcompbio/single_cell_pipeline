@@ -11,7 +11,7 @@ import os
 default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 
 
-def create_germline_workflow(
+def create_samtools_germline_workflow(
         normal_bam_files,
         normal_bai_files,
         ref_genome_fasta_file,
