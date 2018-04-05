@@ -44,6 +44,9 @@ def check_update_args(args):
             arg_exists(args, "merged_wgs_template", mode)
             arg_exists(args, "normal_split_template", mode)
 
+        elif mode in ["germline_calling"]:
+            pass
+
         else:
             raise Exception("unknown mode: {}".format(mode))
 
