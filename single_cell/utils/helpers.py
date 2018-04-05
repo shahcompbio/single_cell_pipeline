@@ -39,8 +39,7 @@ def get_regions(chromosome_lengths, split_size):
     if split_size is None:
         return dict(enumerate(chromosome_lengths.keys()))
 
-    regions = {}
-    region_index = 0
+    regions = []
 
     for chrom, length in chromosome_lengths.iteritems():
         lside_interval = range(1, length + 1, split_size)
@@ -49,8 +48,7 @@ def get_regions(chromosome_lengths, split_size):
         for beg, end in zip(lside_interval, rside_interval):
             end = min(end, length)
 
-            regions[region_index] = '{}:{}-{}'.format(chrom, beg, end)
-            region_index += 1
+            regions.append('{}:{}-{}'.format(chrom, beg, end))
 
     return regions
 

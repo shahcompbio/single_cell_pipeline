@@ -7,25 +7,45 @@ import argparse
 import pypeliner
 
 
-def check_args(args):
+def arg_exists(args, key, mode):
+    error_string = "option {} is required in {} mode"
+
+    if key not in args:
+        raise Exception(error_string.format("input_yaml", mode))
+    
+
+def check_update_args(args):
+
+    if args["modes"] == "qc":
+        args["modes"] = ["align","hmmcopy","aneufinder","copyclone"]
+
+    if args["modes"] == "all":
+        args["modes"] = ["align", "hmmcopy", "aneufinder", "copyclone",\
+                         "pseudo_wgs", "variant_calling"]
+
+    args["merged_wgs_template"] = args["merged_wgs_template"].replace("{}","{regions}")
+    args["normal_split_template"] = args["normal_split_template"].replace("{}","{regions}")
 
     for mode in args["modes"]:
         if mode in ["align","hmmcopy","aneufinder", "copyclone"]:
-            assert args["input_yaml"]
-            assert args["library_id"]
+            arg_exists(args, "input_yaml", mode)
+            arg_exists(args, "library_id", mode)
 
         elif mode in ["pseudo_wgs"]:
-            assert args["input_yaml"]
-            assert args["merged_wgs"]
+            arg_exists(args, "input_yaml", mode)
+            arg_exists(args, "merged_wgs", mode)
 
         elif mode in ["variant_calling"]:
-            assert args["matched_normal"]
-            assert args["input_yaml"]
-            assert args["merged_wgs"]
+            arg_exists(args, "matched_normal", mode)
+            arg_exists(args, "input_yaml", mode)
+
+            arg_exists(args, "merged_wgs_template", mode)
+            arg_exists(args, "normal_split_template", mode)
 
         else:
-            raise Exception()
+            raise Exception("unknown mode: {}".format(mode))
 
+    return args
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -53,7 +73,10 @@ def parse_args():
     parser.add_argument('--matched_normal',
                         help='''Path to matched wgs normal.''')
 
-    parser.add_argument('--merged_wgs',
+    parser.add_argument('--normal_split_template',
+                        help='''Path to matched wgs normal.''')
+
+    parser.add_argument('--merged_wgs_template',
                         help='''Path to pseudo whole genome bam file''')
 
     parser.add_argument('--realign',
@@ -67,6 +90,6 @@ def parse_args():
     args["modes"] = args["modes"].split(',')
 
 
-    check_args(args)
+    args = check_update_args(args)
 
     return args

@@ -15,11 +15,9 @@ def pseudo_wgs_workflow(workflow, args):
     bam_files, _  = helpers.get_bams(args['input_yaml'])
     sampleids = helpers.get_samples(args['input_yaml'])
 
+    wgs_bam_template = args["merged_wgs_template"]
+    wgs_bai_template = args["merged_wgs_template"] + ".bai"
 
-    wgs_bam_dir = args["merged_wgs"]
-
-    wgs_bam_template = os.path.join(wgs_bam_dir, "{regions}_merged.bam")
-    wgs_bai_template = os.path.join(wgs_bam_dir, "{regions}_merged.bam.bai")
 
 
     workflow.setobj(

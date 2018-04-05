@@ -40,7 +40,7 @@ def create_wgs_workflow(
     )
 
     workflow.setobj(
-        obj=mgd.OutputChunks('regions'),
+        obj=mgd.OutputChunks('region'),
         value=regions,
     )
 
@@ -51,8 +51,8 @@ def create_wgs_workflow(
         func=tasks.merge_bams,
         args=(
             mgd.InputFile('bam', 'sample_id', fnames=input_bams),
-            mgd.OutputFile('merged.bam', "regions", fnames=merged_bams, axes_origin=[]),
-            mgd.OutputFile('merged.bam.bai', "regions", fnames=merged_bais, axes_origin=[]),
+            mgd.OutputFile('merged.bam', "region", fnames=merged_bams, axes_origin=[]),
+            mgd.OutputFile('merged.bam.bai', "region", fnames=merged_bais, axes_origin=[]),
             regions
         ),
         kwargs = {"ncores": config["max_cores"]}
