@@ -29,6 +29,8 @@ def run_museq(tumour, tumour_bai, normal, normal_bai, out, log, config, region):
     model = config['mutationseq_model']
     reference = config['ref_genome']
 
+    region = '{}:{}-{}'.format(*region.split('-'))
+
     cmd = ['python', script, 'normal:' + normal, 'tumour:' + tumour,
            'reference:' + reference, 'model:' + model, '--out', out,
            '--log', log, '--config', conf, '--interval', region]

@@ -38,7 +38,7 @@ def _get_files_for_chrom(infiles, intervals, chrom):
     outfiles = {}
     
     for ival_idx, interval in intervals.iteritems():
-        ival_chrom = interval.split(":")[0]
+        ival_chrom = interval.split("-")[0]
         
         if ival_chrom==chrom:
             outfiles[interval] = infiles[ival_idx]
@@ -95,7 +95,7 @@ def call_somatic_variants(
         ssnv_prior=0.000001):
 
 
-    chrom,beg,end = re.split(":|-", region)
+    chrom,beg,end = re.split("-", region)
 
     known_chrom_sizes = known_sizes[chrom]
 
