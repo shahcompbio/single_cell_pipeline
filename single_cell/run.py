@@ -6,6 +6,7 @@ from hmmcopy import hmmcopy_workflow
 from aneufinder import aneufinder_workflow
 from pseudo_wgs import pseudo_wgs_workflow
 from variant_calling import variant_calling_workflow
+from germline_calling import germline_calling_workflow
 # from copyclone import copyclone_workflow
 
 def main():
@@ -42,6 +43,11 @@ def main():
     if "variant_calling" in args["modes"]:
         workflow = pypeliner.workflow.Workflow()
         workflow = variant_calling_workflow(workflow, args)
+        pyp.run(workflow)
+
+    if "germline_calling" in args["modes"]:
+        workflow = pypeliner.workflow.Workflow()
+        workflow = germline_calling_workflow(workflow, args)
         pyp.run(workflow)
 
 

@@ -1,5 +1,5 @@
-from biowrappers.components.io.vcf.tasks import index_bcf
 import pypeliner
+import vcf
 
 
 def run_samtools_variant_calling(
@@ -41,3 +41,48 @@ def run_samtools_variant_calling(
     pypeliner.commandline.execute(*cmd)
 
     index_bcf(out_file)
+
+
+nucleotides = ('A', 'C', 'G', 'T')
+
+
+def parse_samtools_vcf(
+        vcf_file,
+        out_file):
+
+    vcf_reader = vcf.Reader(filename=vcf_file)
+
+    data = []
+
+    for record in vcf_reader:
+        ref_base = record.REF
+
+        # Skip record with reference base == N
+        if ref_base not in nucleotides:
+            continue
+
+        for alt_base in record.ALT:
+            alt_base = str(alt_base)
+
+            if (len(ref_base) != 1) or (len(alt_base) != 1):
+                continue
+
+            # Skip record with alt base == N
+            if alt_base not in nucleotides:
+                continue
+
+            # Format output record
+            out_row = {
+                'chromosome': record.CHROM,
+                'start': record.POS,
+                'stop': record.POS,
+                'ref': ref_base,
+                'alt': alt_base,
+            }
+
+            data.append(out_row)
+
+    data = pd.DataFrame(data)
+    data['case_id'] = 'NA'
+
+    data.to_csv(vcf_file, sep=',')
