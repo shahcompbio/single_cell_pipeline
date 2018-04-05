@@ -34,10 +34,10 @@ def merge_bams(inputs, output, output_index):
     bamutils.bam_index(output, output_index)
 
 def merge_realignment(input_filenames, output_filename,
-                      config, input_sample_id):
+                      config, input_cell_id):
     merge_filenames = []
-    for (_, sample_id), filename in input_filenames.iteritems():
-        if input_sample_id != sample_id:
+    for (_, cell_id), filename in input_filenames.iteritems():
+        if input_cell_id != cell_id:
             continue
         merge_filenames.append(filename)
 
@@ -105,16 +105,16 @@ def run_fastqc(fastq1, fastq2, reports, tempdir):
     helpers.make_tarfile(reports, reports_dir)
 
 
-def get_readgroup(run_id, sample_id, library_id, seqinfo):
+def get_readgroup(run_id, cell_id, library_id, seqinfo):
     platform = 'illumina'
     centre = 'UBCBRC' if seqinfo.lower() == 'nextseq' else 'BCCAGSC'
 
     read_group_template = (
-        '@RG\\tID:' + str(library_id) + '_' + sample_id + '_' + str(run_id) +
+        '@RG\\tID:' + str(library_id) + '_' + cell_id + '_' + str(run_id) +
         '\\tPL:' + platform +
         '\\tPU:' + str(run_id) +
-        '\\tLB:' + str(library_id) + '_' + sample_id +
-        '\\tSM:' + sample_id +
+        '\\tLB:' + str(library_id) + '_' + cell_id +
+        '\\tSM:' + cell_id +
         '\\tCN:' + centre)
 
     return read_group_template
@@ -122,9 +122,9 @@ def get_readgroup(run_id, sample_id, library_id, seqinfo):
 
 
 def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
-             reference, source, sample_id, lane_id, library_id, config):
+             reference, source, cell_id, lane_id, library_id, config):
 
-    readgroup = get_readgroup(lane_id, sample_id, library_id, source)
+    readgroup = get_readgroup(lane_id, cell_id, library_id, source)
 
     run_fastqc(fastq1, fastq2, reports, tempdir)
 
@@ -133,7 +133,7 @@ def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
         bamutils.bwa_mem_paired_end(fastq1, fastq2, aln_temp, reference, readgroup)
     elif config["aligner"] == "bwa-aln":
         if not source.lower() == "nextseq":
-            fastq1, fastq2 = trim_fastqs(fastq1, fastq2, sample_id, tempdir, config)
+            fastq1, fastq2 = trim_fastqs(fastq1, fastq2, cell_id, tempdir, config)
         bamutils.bwa_aln_paired_end(fastq1, fastq2, aln_temp, tempdir, reference, readgroup)
     else:
         raise Exception("Aligner %s not supported, pipeline supports bwa-aln and bwa-mem" %config["aligner"])
@@ -165,11 +165,11 @@ def collect_gc(infiles, outfile, tempdir):
     helpers.makedirs(tempdir)
 
     tempouts = []
-    for sample_id,infile in infiles.iteritems():
+    for cell_id,infile in infiles.iteritems():
         tempout = os.path.join(tempdir, os.path.basename(infile)+".parsed.csv") 
         tempouts.append(tempout)
         gen_gc = GenerateCNMatrix(infile, tempout, ',',
-                                  'NORMALIZED_COVERAGE', sample_id,
+                                  'NORMALIZED_COVERAGE', cell_id,
                                   'gcbias')
         gen_gc.main()
 
@@ -206,7 +206,7 @@ def run_trimgalore(seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt, tempdir,
     run_tg.gather_outputs()
 
 
-def trim_fastqs(fastq1, fastq2, sample_id, tempdir, config):
+def trim_fastqs(fastq1, fastq2, cell_id, tempdir, config):
     """
     run fastqc on both fastq files
     run trimgalore if needed, copy if not.
@@ -219,12 +219,12 @@ def trim_fastqs(fastq1, fastq2, sample_id, tempdir, config):
     if not os.path.exists(reports_dir):
         helpers.makedirs(reports_dir)
 
-    rep1 = os.path.join(reports_dir, '{}_trimgalore_R1.html'.format(sample_id))
-    rep2 = os.path.join(reports_dir, '{}_trimgalore_R2.html'.format(sample_id))
-    qcrep1 = os.path.join(reports_dir, '{}_trimgalore_qc_R1.html'.format(sample_id))
-    qcrep2 = os.path.join(reports_dir, '{}_trimgalore_qc_R2.html'.format(sample_id))
-    qczip1 = os.path.join(reports_dir, '{}_trimgalore_qc_R1.zip'.format(sample_id))
-    qczip2 = os.path.join(reports_dir, '{}_trimgalore_qc_R2.zip'.format(sample_id))
+    rep1 = os.path.join(reports_dir, '{}_trimgalore_R1.html'.format(cell_id))
+    rep2 = os.path.join(reports_dir, '{}_trimgalore_R2.html'.format(cell_id))
+    qcrep1 = os.path.join(reports_dir, '{}_trimgalore_qc_R1.html'.format(cell_id))
+    qcrep2 = os.path.join(reports_dir, '{}_trimgalore_qc_R2.html'.format(cell_id))
+    qczip1 = os.path.join(reports_dir, '{}_trimgalore_qc_R1.zip'.format(cell_id))
+    qczip2 = os.path.join(reports_dir, '{}_trimgalore_qc_R2.zip'.format(cell_id))
 
     run_trimgalore(fastq1, fastq2, trim1, trim2, 'trim_galore', 'cutadapt',
                    tempdir, config['adapter'], config['adapter2'],

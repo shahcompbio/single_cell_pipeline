@@ -15,12 +15,12 @@ from single_cell.utils import helpers
 def aneufinder_workflow(workflow, args):
 
     config = helpers.load_config(args)
-    sampleids = helpers.get_samples(args['input_yaml'])
+    cellids = helpers.get_samples(args['input_yaml'])
     bam_files, _  = helpers.get_bams(args['input_yaml'])
 
     workflow.setobj(
-        obj=mgd.OutputChunks('sample_id'),
-        value=sampleids,
+        obj=mgd.OutputChunks('cell_id'),
+        value=cellids,
     )
 
     output = os.path.join(args['out_dir'], 'results', "aneufinder")
@@ -33,8 +33,8 @@ def aneufinder_workflow(workflow, args):
         name='aneufinder_workflow',
         func=aneufinder.create_aneufinder_workflow,
         args=(
-            mgd.InputFile('bam_markdups', 'sample_id', fnames=bam_files),
-            sampleids,
+            mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files),
+            cellids,
             config,
             output,
             mgd.OutputFile(segs_filename),

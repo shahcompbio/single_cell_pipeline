@@ -15,12 +15,12 @@ from workflows import singlecell_summary
 def hmmcopy_workflow(workflow, args):
 
     config = helpers.load_config(args)
-    sampleids = helpers.get_samples(args['input_yaml'])
+    cellids = helpers.get_samples(args['input_yaml'])
     bam_files, bai_files  = helpers.get_bams(args['input_yaml'])
 
     workflow.setobj(
-        obj=mgd.OutputChunks('sample_id'),
-        value=sampleids,
+        obj=mgd.OutputChunks('cell_id'),
+        value=cellids,
     )
 
     for name, params in config["hmmcopy_params"].iteritems():
@@ -34,13 +34,13 @@ def hmmcopy_workflow(workflow, args):
         workflow.subworkflow(
             name='hmmcopy_workflow_' + name,
             func=hmmcopy.create_hmmcopy_workflow,
-            args=(mgd.InputFile('bam_markdups', 'sample_id', fnames=bam_files),
-                mgd.InputFile('bam_markdups_index', 'sample_id', fnames=bai_files),
+            args=(mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files),
+                mgd.InputFile('bam_markdups_index', 'cell_id', fnames=bai_files),
                 mgd.OutputFile(reads_filename),
                 mgd.OutputFile(segs_filename),
                 mgd.OutputFile(metrics_filename),
                 mgd.OutputFile(params_filename),
-                sampleids,
+                cellids,
                 config,
                 args,
                 params,
@@ -76,7 +76,7 @@ def hmmcopy_workflow(workflow, args):
                 params,
                 results_dir,
                 args,
-                sampleids
+                cellids
             ),
         )
 

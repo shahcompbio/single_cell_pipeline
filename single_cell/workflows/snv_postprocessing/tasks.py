@@ -17,6 +17,6 @@ def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', sep=',', suffix
     csvutils.merge_csv(in_filenames, out_filename, how, on, sep=sep, suffixes=suffixes)
 
 
-def get_counts(bam, bai, positions, output, sample_id):
-    counts = GetCounts(bam, positions, output, sample_id)
+def get_counts(bam, bai, positions, output, cell_id):
+    counts = GetCounts(bam, positions, output, cell_id)
     counts.main()

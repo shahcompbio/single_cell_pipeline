@@ -21,7 +21,7 @@ def create_wgs_workflow(
     input_bams,
     merged_bams,
     merged_bais,
-    sample_ids,
+    cell_ids,
     config,
     regions):
  
@@ -35,8 +35,8 @@ def create_wgs_workflow(
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
-        obj=mgd.OutputChunks('sample_id'),
-        value=sample_ids,
+        obj=mgd.OutputChunks('cell_id'),
+        value=cell_ids,
     )
 
     workflow.setobj(
@@ -50,7 +50,7 @@ def create_wgs_workflow(
         ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':config["max_cores"]},
         func=tasks.merge_bams,
         args=(
-            mgd.InputFile('bam', 'sample_id', fnames=input_bams),
+            mgd.InputFile('bam', 'cell_id', fnames=input_bams),
             mgd.OutputFile('merged.bam', "region", fnames=merged_bams, axes_origin=[]),
             mgd.OutputFile('merged.bam.bai', "region", fnames=merged_bais, axes_origin=[]),
             regions

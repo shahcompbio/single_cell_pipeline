@@ -37,7 +37,7 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
-        obj=mgd.OutputChunks('sample_id'),
+        obj=mgd.OutputChunks('cell_id'),
         value=samples,
     )
 
@@ -169,7 +169,7 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
         name='plot_hmm_copy',
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.plot_hmmcopy,
-        axes=('sample_id',),
+        axes=('cell_id',),
         args=(
             mgd.InputFile(hmm_reads),
             mgd.InputFile(hmm_segments),
@@ -177,11 +177,11 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
             mgd.InputFile(all_metrics_file),
             None,
             config['ref_genome'],
-            mgd.TempOutputFile('reads.pdf', 'sample_id'),
-            mgd.TempOutputFile('segs.pdf', 'sample_id'),
-            mgd.TempOutputFile('bias.pdf', 'sample_id'),
-            mgd.TempOutputFile('params.pdf', 'sample_id'),
-            mgd.InputInstance('sample_id'),
+            mgd.TempOutputFile('reads.pdf', 'cell_id'),
+            mgd.TempOutputFile('segs.pdf', 'cell_id'),
+            mgd.TempOutputFile('bias.pdf', 'cell_id'),
+            mgd.TempOutputFile('params.pdf', 'cell_id'),
+            mgd.InputInstance('cell_id'),
         ),
         kwargs={
             'num_states': hmmparams['num_states'],
@@ -196,10 +196,10 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.merge_pdf,
         args=(
-              [mgd.TempInputFile('reads.pdf', 'sample_id'),
-              mgd.TempInputFile('segs.pdf', 'sample_id'),
-              mgd.TempInputFile('bias.pdf', 'sample_id'),
-              mgd.TempInputFile('params.pdf', 'sample_id')],
+              [mgd.TempInputFile('reads.pdf', 'cell_id'),
+              mgd.TempInputFile('segs.pdf', 'cell_id'),
+              mgd.TempInputFile('bias.pdf', 'cell_id'),
+              mgd.TempInputFile('params.pdf', 'cell_id')],
               [mgd.OutputFile(reads_pdf_output),
               mgd.OutputFile(segs_pdf_output),
               mgd.OutputFile(bias_pdf_output),
@@ -220,10 +220,10 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.merge_pdf,
         args=(
-              [mgd.TempInputFile('reads.pdf', 'sample_id'),
-              mgd.TempInputFile('segs.pdf', 'sample_id'),
-              mgd.TempInputFile('bias.pdf', 'sample_id'),
-              mgd.TempInputFile('params.pdf', 'sample_id')],
+              [mgd.TempInputFile('reads.pdf', 'cell_id'),
+              mgd.TempInputFile('segs.pdf', 'cell_id'),
+              mgd.TempInputFile('bias.pdf', 'cell_id'),
+              mgd.TempInputFile('params.pdf', 'cell_id')],
               [mgd.OutputFile(reads_mad_pdf_output),
               mgd.OutputFile(segs_mad_pdf_output),
               mgd.OutputFile(bias_mad_pdf_output),

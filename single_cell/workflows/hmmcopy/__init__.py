@@ -12,7 +12,7 @@ import tasks
 
 def create_hmmcopy_workflow(bam_file, bai_file, reads_file,
                             segments_file, metrics_file, params_file,
-                            sample_ids, config, args, hmmparams, results_dir ):
+                            cell_ids, config, args, hmmparams, results_dir ):
 
     lib = args['library_id']
     reads_filt_filename = os.path.join(results_dir, '{}_filtered_reads.csv'.format(lib))
@@ -26,27 +26,27 @@ def create_hmmcopy_workflow(bam_file, bai_file, reads_file,
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
-        obj=mgd.OutputChunks('sample_id'),
-        value=sample_ids,
+        obj=mgd.OutputChunks('cell_id'),
+        value=cell_ids,
     )
 
     workflow.transform(
         name='run_hmmcopy',
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.run_hmmcopy,
-        axes=('sample_id',),
+        axes=('cell_id',),
         args=(
-            mgd.InputFile('bam_markdups', 'sample_id', fnames=bam_file),
-            mgd.InputFile('bai_markdups', 'sample_id', fnames=bai_file),
-            mgd.TempOutputFile('reads.csv', 'sample_id'),
-            mgd.TempOutputFile('segs.csv', 'sample_id'),
-            mgd.TempOutputFile('params.csv', 'sample_id'),
-            mgd.TempOutputFile('posteriors.csv', 'sample_id'),
-            mgd.TempOutputFile('hmm_metrics.csv', 'sample_id'),
-            mgd.InputInstance('sample_id'),
+            mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_file),
+            mgd.InputFile('bai_markdups', 'cell_id', fnames=bai_file),
+            mgd.TempOutputFile('reads.csv', 'cell_id'),
+            mgd.TempOutputFile('segs.csv', 'cell_id'),
+            mgd.TempOutputFile('params.csv', 'cell_id'),
+            mgd.TempOutputFile('posteriors.csv', 'cell_id'),
+            mgd.TempOutputFile('hmm_metrics.csv', 'cell_id'),
+            mgd.InputInstance('cell_id'),
             config,
             hmmparams,
-            mgd.TempSpace('hmmcopy_temp', 'sample_id')
+            mgd.TempSpace('hmmcopy_temp', 'cell_id')
         ),
     )
 
@@ -56,11 +56,11 @@ def create_hmmcopy_workflow(bam_file, bai_file, reads_file,
         ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.merge_files,
         args=(
-            mgd.TempInputFile('reads.csv', 'sample_id'),
-            mgd.TempInputFile('segs.csv', 'sample_id'),
-            mgd.TempInputFile('hmm_metrics.csv', 'sample_id'),
-            mgd.TempInputFile('params.csv', 'sample_id'),
-            mgd.TempInputFile('posteriors.csv', 'sample_id'),
+            mgd.TempInputFile('reads.csv', 'cell_id'),
+            mgd.TempInputFile('segs.csv', 'cell_id'),
+            mgd.TempInputFile('hmm_metrics.csv', 'cell_id'),
+            mgd.TempInputFile('params.csv', 'cell_id'),
+            mgd.TempInputFile('posteriors.csv', 'cell_id'),
             mgd.OutputFile(segments_file),
             mgd.OutputFile(reads_file),
             mgd.OutputFile(metrics_file),
