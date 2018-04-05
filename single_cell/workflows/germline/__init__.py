@@ -3,9 +3,12 @@ from pypeliner.workflow import Workflow
 import csv
 import pypeliner
 import pysam
-import vcf_tasks
+import single_cell.workflows.strelka.vcf_tasks as vcf_tasks
 import tasks
 import os
+
+
+default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 
 
 def create_germline_workflow(
