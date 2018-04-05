@@ -24,8 +24,8 @@ def check_update_args(args):
         args["modes"] = ["align", "hmmcopy", "aneufinder", "copyclone",\
                          "pseudo_wgs", "variant_calling"]
 
-    args["merged_wgs_template"] = args["merged_wgs_template"].replace("{}","{regions}")
-    args["normal_split_template"] = args["normal_split_template"].replace("{}","{regions}")
+    args["merged_wgs_template"] = args["merged_wgs_template"].replace("{}","{region}")
+    args["normal_split_template"] = args["normal_split_template"].replace("{}","{region}")
 
     for mode in args["modes"]:
         if mode in ["align","hmmcopy","aneufinder", "copyclone"]:

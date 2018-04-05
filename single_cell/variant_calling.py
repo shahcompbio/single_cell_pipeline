@@ -42,7 +42,7 @@ def variant_calling_workflow(workflow, args):
         name="get_regions",
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
         func=helpers.get_bam_regions,
-        ret=pypeliner.managed.TempOutputObj('regions'),
+        ret=pypeliner.managed.TempOutputObj('region'),
         args=(
               config["ref_genome"],
               config["split_size"],
@@ -56,9 +56,9 @@ def variant_calling_workflow(workflow, args):
         args = (
             mgd.InputFile(args['matched_normal']),
             mgd.InputFile(args['matched_normal'] + ".bai"),
-            mgd.OutputFile("normal.split.bam", "regions", template=normal_bam_template, axes_origin=[]),
-            mgd.TempOutputFile("normal.split.bam.bai", "regions", template=normal_bai_template, axes_origin=[]),
-            pypeliner.managed.TempInputObj('regions'),
+            mgd.OutputFile("normal.split.bam", "region", template=normal_bam_template, axes_origin=[]),
+            mgd.TempOutputFile("normal.split.bam.bai", "region", template=normal_bai_template, axes_origin=[]),
+            pypeliner.managed.TempInputObj('region'),
             config,
         )
     )
@@ -69,15 +69,15 @@ def variant_calling_workflow(workflow, args):
         name='museq',
         func=mutationseq.create_museq_workflow,
         args=(
-            mgd.TempInputFile("normal.split.bam", "regions"),
-            mgd.TempInputFile("normal.split.bam.bai", "regions"),
-            mgd.InputFile("merged_bam", "regions", template=wgs_bam_template, axes_origin=[]),
-            mgd.InputFile("merged_bam", "regions", template=wgs_bai_template, axes_origin=[]),
+            mgd.TempInputFile("normal.split.bam", "region"),
+            mgd.TempInputFile("normal.split.bam.bai", "region"),
+            mgd.InputFile("merged_bam", "region", template=wgs_bam_template, axes_origin=[]),
+            mgd.InputFile("merged_bam", "region", template=wgs_bai_template, axes_origin=[]),
             config['ref_genome'],
             mgd.OutputFile(museq_vcf),
             mgd.OutputFile(museq_csv),
             config,
-            mgd.TempInputObj('regions')
+            mgd.TempInputObj('region')
         ),
     )
 
@@ -89,17 +89,17 @@ def variant_calling_workflow(workflow, args):
         name='strelka',
         func=strelka.create_strelka_workflow,
         args=(
-            mgd.TempInputFile("normal.split.bam", "regions"),
-            mgd.TempInputFile("normal.split.bam.bai", "regions"),
-            mgd.InputFile("merged_bam", "regions", template=wgs_bam_template, axes_origin=[]),
-            mgd.InputFile("merged_bam", "regions", template=wgs_bai_template, axes_origin=[]),
+            mgd.TempInputFile("normal.split.bam", "region"),
+            mgd.TempInputFile("normal.split.bam.bai", "region"),
+            mgd.InputFile("merged_bam", "region", template=wgs_bam_template, axes_origin=[]),
+            mgd.InputFile("merged_bam", "region", template=wgs_bai_template, axes_origin=[]),
             config['ref_genome'],
             mgd.OutputFile(strelka_indel_vcf),
             mgd.OutputFile(strelka_snv_vcf),
             mgd.OutputFile(strelka_indel_csv),
             mgd.OutputFile(strelka_snv_csv),
             config,
-            mgd.TempInputObj('regions')
+            mgd.TempInputObj('region')
         ),
     )
 
