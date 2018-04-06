@@ -121,7 +121,8 @@ def create_strelka_workflow(
         func=vcf_tasks.concatenate_vcf,
         args=(
             pypeliner.managed.TempInputFile('somatic.indels.filtered.vcf', 'chrom'),
-            pypeliner.managed.TempOutputFile('somatic.indels.filtered.vcf.gz')
+            pypeliner.managed.TempOutputFile('somatic.indels.filtered.vcf.gz'),
+            pypeliner.managed.TempSpace("merge_indels_temp")
         )
     )
     
@@ -131,7 +132,8 @@ def create_strelka_workflow(
         func=vcf_tasks.concatenate_vcf,
         args=(
             pypeliner.managed.TempInputFile('somatic.snvs.filtered.vcf', 'chrom'),
-            pypeliner.managed.TempOutputFile('somatic.snvs.filtered.vcf.gz')
+            pypeliner.managed.TempOutputFile('somatic.snvs.filtered.vcf.gz'),
+            pypeliner.managed.TempSpace("merge_snvs_temp")
         )
     )
     

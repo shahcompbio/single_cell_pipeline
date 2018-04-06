@@ -118,7 +118,7 @@ def index_vcf(vcf_file, index_file=None):
         shutil.move(vcf_file + '.tbi', index_file)
 
 
-def concatenate_vcf(in_files, out_file, allow_overlap=False, bcf_index_file=None, vcf_index_file=None):
+def concatenate_vcf(in_files, out_file, tempdir, allow_overlap=False, bcf_index_file=None, vcf_index_file=None):
     """ Fast concatenation of VCF file using `bcftools`.
 
     :param in_files: dict with values being files to be concatenated. Files will be concatenated based on sorted order of keys.
@@ -126,13 +126,20 @@ def concatenate_vcf(in_files, out_file, allow_overlap=False, bcf_index_file=None
     :param out_file: path where output file will be written in VCF format.
 
     """
+    os.makedirs(tempdir)
+
+    merged_file = os.path.join(tempdir, "merged.vcf")
     if allow_overlap:
-        cmd = ['bcftools', 'concat', '-a', '-O', 'z', '-o', out_file]
+        cmd = ['bcftools', 'concat', '-a', '-O', 'z', '-o', merged_file]
     else:
-        cmd = ['bcftools', 'concat', '-O', 'z', '-o', out_file]
+        cmd = ['bcftools', 'concat', '-O', 'z', '-o', merged_file]
 
     cmd += flatten_input(in_files)
 
+    pypeliner.commandline.execute(*cmd)
+
+    #sort merged vcf file
+    cmd = ['bcftools', 'sort', '-O', 'z', '-o', out_file,  merged_file]
     pypeliner.commandline.execute(*cmd)
 
     index_vcf(out_file, index_file=vcf_index_file)

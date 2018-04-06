@@ -21,12 +21,11 @@ def germline_calling_workflow(workflow, args):
 
     sampleids = helpers.get_samples(args['input_yaml'])
 
+    normal_bam_template = args["normal_split_template"]
+    normal_bai_template = args["normal_split_template"]
+
     varcalls_dir = os.path.join(args['out_dir'], 'results',
                                 'germline_calling')
-
-    wgs_bam_dir = args["merged_wgs_template"]
-    wgs_bam_template = os.path.join(wgs_bam_dir, "{regions}_merged.bam")
-    wgs_bai_template = os.path.join(wgs_bam_dir, "{regions}_merged.bam.bai")
 
     workflow.setobj(
         obj=mgd.OutputChunks('sample_id'),
@@ -45,27 +44,14 @@ def germline_calling_workflow(workflow, args):
         )
     )
 
-    workflow.subworkflow(
-        name="split_normal",
-        func=split_bams.create_split_workflow,
-        args = (
-            mgd.InputFile(args['matched_normal']),
-            mgd.InputFile(args['matched_normal'] + ".bai"),
-            mgd.TempOutputFile("normal.split.bam", "regions", axes_origin=[]),
-            mgd.TempOutputFile("normal.split.bam.bai", "regions", axes_origin=[]),
-            pypeliner.managed.TempInputObj('regions'),
-            config,
-        )
-    )
-
     samtools_germline_vcf = os.path.join(varcalls_dir, 'samtools_germline.vcf')
     samtools_germline_csv = os.path.join(varcalls_dir, 'samtools_germline.csv')
     workflow.subworkflow(
         name='samtools_germline',
         func=germline.create_samtools_germline_workflow,
         args=(
-            mgd.TempInputFile("normal.split.bam", "regions"),
-            mgd.TempInputFile("normal.split.bam.bai", "regions"),
+            mgd.InputFile("normal.split.bam", "region", template=normal_bam_template, axes_origin=[]),
+            mgd.InputFile("normal.split.bam.bai", "region", template=normal_bai_template, axes_origin=[]),
             config['ref_genome'],
             mgd.OutputFile(samtools_germline_vcf),
             mgd.OutputFile(samtools_germline_csv),

@@ -8,12 +8,67 @@ import errno
 import tarfile
 
 import yaml
-import pandas as pd
 import pysam
 
 import shutil
 
 from collections import OrderedDict
+
+import subprocess
+from subprocess import Popen, PIPE
+
+import multiprocessing
+
+from multiprocessing.pool import ThreadPool
+
+
+def run_in_parallel(worker, args, ncores=None):
+
+    def args_unpack(worker, args):
+        return worker(*args)
+
+    count = multiprocessing.cpu_count()
+
+    if ncores:
+        count = min(ncores, count)
+
+    pool = ThreadPool(processes=count)
+
+    tasks = []
+
+    for arg in args:
+
+        task = pool.apply_async(args_unpack,
+                         args=(worker, arg),
+                        )
+        tasks.append(task)
+
+    pool.close()
+    pool.join()
+
+    [task.get() for task in tasks]
+
+
+    pool.terminate()
+    del pool
+
+
+def run_cmd(cmd, output=None):
+
+    stdout=PIPE
+    if output:
+        stdout=open(output, "w")
+
+    p = Popen(cmd, stdout=stdout, stderr=PIPE)
+
+    cmdout, cmderr = p.communicate()
+    retc  = p.returncode
+
+    if retc:
+        raise Exception("command failed. stderr:{}, stdout:{}".format(cmdout, cmderr))
+
+    if output:
+        stdout.close()
 
 def load_yaml(path):
     try:

@@ -50,27 +50,14 @@ def variant_calling_workflow(workflow, args):
         )
     )
 
-    workflow.subworkflow(
-        name="split_normal",
-        func=split_bams.create_split_workflow,
-        args = (
-            mgd.InputFile(args['matched_normal']),
-            mgd.InputFile(args['matched_normal'] + ".bai"),
-            mgd.OutputFile("normal.split.bam", "region", template=normal_bam_template, axes_origin=[]),
-            mgd.TempOutputFile("normal.split.bam.bai", "region", template=normal_bai_template, axes_origin=[]),
-            pypeliner.managed.TempInputObj('region'),
-            config,
-        )
-    )
-
     museq_vcf = os.path.join(varcalls_dir, 'museq_snv.vcf')
     museq_csv = os.path.join(varcalls_dir, 'museq_snv.csv')
     workflow.subworkflow(
         name='museq',
         func=mutationseq.create_museq_workflow,
         args=(
-            mgd.TempInputFile("normal.split.bam", "region"),
-            mgd.TempInputFile("normal.split.bam.bai", "region"),
+            mgd.InputFile("normal.split.bam", "region", template=normal_bam_template, axes_origin=[]),
+            mgd.InputFile("normal.split.bam.bai", "region", template=normal_bai_template, axes_origin=[]),
             mgd.InputFile("merged_bam", "region", template=wgs_bam_template, axes_origin=[]),
             mgd.InputFile("merged_bam", "region", template=wgs_bai_template, axes_origin=[]),
             config['ref_genome'],
@@ -89,8 +76,8 @@ def variant_calling_workflow(workflow, args):
         name='strelka',
         func=strelka.create_strelka_workflow,
         args=(
-            mgd.TempInputFile("normal.split.bam", "region"),
-            mgd.TempInputFile("normal.split.bam.bai", "region"),
+            mgd.InputFile("normal.split.bam", "region", template=normal_bam_template, axes_origin=[]),
+            mgd.InputFile("normal.split.bam.bai", "region", template=normal_bai_template, axes_origin=[]),
             mgd.InputFile("merged_bam", "region", template=wgs_bam_template, axes_origin=[]),
             mgd.InputFile("merged_bam", "region", template=wgs_bai_template, axes_origin=[]),
             config['ref_genome'],

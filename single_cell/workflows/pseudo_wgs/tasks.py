@@ -8,10 +8,11 @@ import multiprocessing
 from single_cell.utils import bamutils
 from single_cell.utils import helpers
 
+from subprocess import Popen, PIPE
+
 
 def get_bam_regions(bam_file, split_size, chromosomes):
     helpers.get_bam_regions(bam_file, split_size, chromosomes)
-
 
 def merge_bam_worker(input_bam_files, output_bam, output_bai, region):
 
@@ -20,15 +21,15 @@ def merge_bam_worker(input_bam_files, output_bam, output_bai, region):
 #     bamutils.bam_merge(input_bam_files, output_bam, region=region)
 #     bamutils.bam_index(output_bam, output_bai)
 
-    cmd = ['samtools', 'merge', '-R', region]
+    cmd = ['samtools', 'merge', '-f', '-R', region]
     cmd.append(output_bam)
     cmd.extend(input_bam_files)
-    subprocess.call(cmd)
+    helpers.run_cmd(cmd)
 
     cmd = ['samtools',  'index', output_bam, output_bai]
-    subprocess.call(cmd)
+    helpers.run_cmd(cmd)
 
-def merge_bams(inputs, outputs, output_index, regions, ncores=None):
+def merge_bams(bams, bais, outputs, output_index, regions, ncores=None):
 
     count = multiprocessing.cpu_count()
     
@@ -39,7 +40,7 @@ def merge_bams(inputs, outputs, output_index, regions, ncores=None):
 
     tasks = []
 
-    inputs = inputs.values()
+    bams = bams.values()
 
     for region in regions:
         output_bam = outputs[region]
@@ -47,7 +48,7 @@ def merge_bams(inputs, outputs, output_index, regions, ncores=None):
 
         region = '{}:{}-{}'.format(*region.split('-'))
         task = pool.apply_async(merge_bam_worker,
-                         args=(inputs, output_bam, output_bai, region)
+                         args=(bams, output_bam, output_bai, region)
                         )
         tasks.append(task)
 
