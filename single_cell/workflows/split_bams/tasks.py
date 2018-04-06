@@ -16,7 +16,7 @@ def split_bam_worker(bam, output_bam, region):
 
 def index_bam_worker(bam, bai):
     ##TODO: specifying bai file path corrupts bams
-    cmd = ['samtools', 'index', bam]
+    cmd = ['samtools', 'index', bam, bai]
     helpers.run_cmd(cmd)
 
 

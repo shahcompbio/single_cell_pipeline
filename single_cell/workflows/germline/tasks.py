@@ -1,5 +1,40 @@
 import pypeliner
 import vcf
+import pandas as pd
+import shutil
+import os
+
+
+NUCLEOTIDES = ('A', 'C', 'G', 'T')
+
+
+def _rename_index(in_file, index_suffix):
+    if in_file.endswith('.tmp'):
+        index_file = in_file[:-4] + index_suffix
+
+        try:
+            os.remove(index_file)
+        except:
+            pass
+
+        shutil.move(in_file + index_suffix, index_file)
+
+
+def index_bcf(in_file, index_file=None):
+    """ Index a VCF or BCF file with bcftools.
+
+    :param in_file: Path of file to index.
+    :param index_file: Path of index file.
+
+    """
+
+    pypeliner.commandline.execute('bcftools', 'index', in_file)
+
+    if index_file is None:
+        _rename_index(in_file, '.csi')
+
+    else:
+        shutil.move(in_file + '.csi', index_file)
 
 
 def run_samtools_variant_calling(
@@ -23,6 +58,7 @@ def run_samtools_variant_calling(
     ]
 
     if region is not None:
+        region = '{}:{}-{}'.format(*region.split('-'))
         mpileup_cmd.extend(['-r', region])
 
     bcf_cmd = [
@@ -43,8 +79,6 @@ def run_samtools_variant_calling(
     index_bcf(out_file)
 
 
-nucleotides = ('A', 'C', 'G', 'T')
-
 
 def parse_samtools_vcf(
         vcf_file,
@@ -58,7 +92,7 @@ def parse_samtools_vcf(
         ref_base = record.REF
 
         # Skip record with reference base == N
-        if ref_base not in nucleotides:
+        if ref_base not in NUCLEOTIDES:
             continue
 
         for alt_base in record.ALT:
@@ -68,7 +102,7 @@ def parse_samtools_vcf(
                 continue
 
             # Skip record with alt base == N
-            if alt_base not in nucleotides:
+            if alt_base not in NUCLEOTIDES:
                 continue
 
             # Format output record
@@ -85,4 +119,4 @@ def parse_samtools_vcf(
     data = pd.DataFrame(data)
     data['case_id'] = 'NA'
 
-    data.to_csv(vcf_file, sep=',')
+    data.to_csv(out_file, sep=',')
