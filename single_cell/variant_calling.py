@@ -93,7 +93,7 @@ def variant_calling_workflow(workflow, args):
     countdata = os.path.join(varcalls_dir, 'counts.csv')
     olp_calls = os.path.join(varcalls_dir, 'overlapping_calls.csv')
     workflow.subworkflow(
-        name='postprocessing',
+        name='snv_postprocessing',
         func=snv_postprocessing.create_snv_postprocessing_workflow,
         args=(
             mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files),
