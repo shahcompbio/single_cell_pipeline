@@ -37,11 +37,11 @@ def _get_files_for_chrom(infiles, intervals, chrom):
 
     outfiles = {}
     
-    for ival_idx, interval in intervals.iteritems():
+    for interval in intervals:
         ival_chrom = interval.split("-")[0]
         
         if ival_chrom==chrom:
-            outfiles[interval] = infiles[ival_idx]
+            outfiles[interval] = infiles[interval]
     
     return outfiles
 

@@ -63,7 +63,7 @@ class ParseMuseq(object):
                 #write header
                 if not header:
                     colnames = museq.get_info_header()
-                    pau.write_list(outfile, colnames)
+                    pau.write_list(outfile, colnames, sep=",")
                     header=True
                 
                 infos = museq.get_data()

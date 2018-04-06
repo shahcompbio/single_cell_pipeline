@@ -14,14 +14,14 @@ def create_split_workflow(
     normal_bai,
     normal_split_bam,
     normal_split_bai,
-    intervals,
+    regions,
     config):
 
 
     normal_split_bam = dict([(ival, normal_split_bam[ival])
-                         for ival in intervals])
+                         for ival in regions])
     normal_split_bai = dict([(ival, normal_split_bai[ival])
-                         for ival in intervals])
+                         for ival in regions])
 
     one_split_job = config["one_split_job"]
 
@@ -29,8 +29,8 @@ def create_split_workflow(
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
-        obj=mgd.OutputChunks('interval'),
-        value=intervals,
+        obj=mgd.OutputChunks('region'),
+        value=regions,
     )
 
     if one_split_job:
@@ -41,24 +41,25 @@ def create_split_workflow(
             args=(
                 mgd.InputFile(normal_bam),
                 mgd.InputFile(normal_bai),
-                mgd.OutputFile("normal.split.bam", "interval", fnames=normal_split_bam, axes_origin=[]),
-                mgd.OutputFile("normal.split.bam.bai", "interval", fnames=normal_split_bai, axes_origin=[]),
-                intervals
-            )
+                mgd.OutputFile("normal.split.bam", "region", fnames=normal_split_bam, axes_origin=[]),
+                mgd.OutputFile("normal.split.bam.bai", "region", fnames=normal_split_bai, axes_origin=[]),
+                regions
+            ),
+            kwargs = {"ncores": config["max_cores"]}
         )
 
     else:
         workflow.transform(
             name='split_normal_bam',
             ctx={'mem': config['memory']['low']},
-            axes=('interval',),
+            axes=('region',),
             func=tasks.split_bam_file,
             args=(
                 mgd.InputFile(normal_bam),
                 mgd.InputFile(normal_bai),
-                mgd.OutputFile("normal.split.bam", "interval", fnames=normal_split_bam),
-                mgd.OutputFile("normal.split.bam.bai", "interval", fnames=normal_split_bai),
-                mgd.InputInstance('interval'),
+                mgd.OutputFile("normal.split.bam", "region", fnames=normal_split_bam),
+                mgd.OutputFile("normal.split.bam.bai", "region", fnames=normal_split_bai),
+                mgd.InputInstance('region'),
             )
         )
 

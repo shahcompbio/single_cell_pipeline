@@ -57,7 +57,7 @@ class ParseStrelka(object):
 
                 out_info = gr_info[lens.index(max(lens))]
 
-                pau.write_list(outfile, out_info)
+                pau.write_list(outfile, out_info, sep=",")
                 #refresh buffer
                 gr_info = []
 

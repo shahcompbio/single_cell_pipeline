@@ -70,6 +70,7 @@ def make_parent_directory(file_name, mode=0775):
 
 
 def flatten_input(files):
+
     if type(files) == dict:
         parsed_files = [files[x] for x in sorted(files)]
     elif type(files) == str:

@@ -19,6 +19,7 @@ import tasks
 
 def create_wgs_workflow(
     input_bams,
+    input_bais,
     merged_bams,
     merged_bais,
     cell_ids,
@@ -51,6 +52,7 @@ def create_wgs_workflow(
         func=tasks.merge_bams,
         args=(
             mgd.InputFile('bam', 'cell_id', fnames=input_bams),
+            mgd.InputFile('bai', 'cell_id', fnames=input_bais),
             mgd.OutputFile('merged.bam', "region", fnames=merged_bams, axes_origin=[]),
             mgd.OutputFile('merged.bam.bai', "region", fnames=merged_bais, axes_origin=[]),
             regions
