@@ -92,7 +92,7 @@ class ParseStrelka(object):
                 #write header
                 if not header:
                     colnames = strelka.get_info_header()
-                    pau.write_list(outfile, colnames)
+                    pau.write_list(outfile, colnames, sep=',')
                     header=True
 
     
