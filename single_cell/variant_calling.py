@@ -27,10 +27,10 @@ def variant_calling_workflow(workflow, args):
 
 
     wgs_bam_template = args["merged_wgs_template"]
-    wgs_bai_template = args["merged_wgs_template"]
+    wgs_bai_template = args["merged_wgs_template"] + ".bai"
 
     normal_bam_template = args["normal_split_template"]
-    normal_bai_template = args["normal_split_template"]
+    normal_bai_template = args["normal_split_template"] + ".bai"
 
 
     workflow.setobj(

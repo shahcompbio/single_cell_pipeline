@@ -22,7 +22,7 @@ def germline_calling_workflow(workflow, args):
     sampleids = helpers.get_samples(args['input_yaml'])
 
     normal_bam_template = args["normal_split_template"]
-    normal_bai_template = args["normal_split_template"]
+    normal_bai_template = args["normal_split_template"] + ".bai"
 
     varcalls_dir = os.path.join(args['out_dir'], 'results',
                                 'germline_calling')
@@ -31,20 +31,20 @@ def germline_calling_workflow(workflow, args):
         obj=mgd.OutputChunks('sample_id'),
         value=sampleids,
     )
-
+ 
     workflow.transform(
         name="get_regions",
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
         func=helpers.get_bam_regions,
-        ret=pypeliner.managed.TempOutputObj('regions'),
+        ret=pypeliner.managed.TempOutputObj('region'),
         args=(
               config["ref_genome"],
               config["split_size"],
               config["chromosomes"],
         )
     )
-
-    samtools_germline_vcf = os.path.join(varcalls_dir, 'samtools_germline.vcf')
+ 
+    samtools_germline_vcf = os.path.join(varcalls_dir, 'samtools_germline.vcf.gz')
     samtools_germline_csv = os.path.join(varcalls_dir, 'samtools_germline.csv')
     workflow.subworkflow(
         name='samtools_germline',
@@ -56,10 +56,10 @@ def germline_calling_workflow(workflow, args):
             mgd.OutputFile(samtools_germline_vcf),
             mgd.OutputFile(samtools_germline_csv),
             config,
-            mgd.TempInputObj('regions')
+            mgd.TempInputObj('region')
         ),
     )
-
+ 
     countdata = os.path.join(varcalls_dir, 'counts.csv')
     olp_calls = os.path.join(varcalls_dir, 'overlapping_calls.csv')
     workflow.subworkflow(

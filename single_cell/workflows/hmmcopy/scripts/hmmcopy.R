@@ -424,7 +424,7 @@ if (inherits(samp.corrected, "try-error") || length((which(samp.corrected$cor.ma
 
 			MODAL_STATE <- as.numeric(names(sort(table(subset(test.corrected)$state), decreasing = TRUE))[1])
 			modal_median <- median(subset(test.corrected, state == MODAL_STATE)$copy, na.rm = TRUE)
-			if(modal_median == 0 | !is.numeric(modal_median) | is.nan(modal_median) ) {
+			if(modal_median == 0 | !is.numeric(modal_median) | is.nan(modal_median) | is.na(modal_median) ) {
 				modal_median <- 1
 			}
 			test.corrected$copy <- (test.corrected$copy / modal_median)

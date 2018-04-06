@@ -14,7 +14,7 @@ def split_normal_workflow(workflow, args):
     config = helpers.load_config(args)
 
     normal_bam_template = args["normal_split_template"]
-    normal_bai_template = args["normal_split_template"]
+    normal_bai_template = args["normal_split_template"] + ".bai"
 
 
     workflow.transform(

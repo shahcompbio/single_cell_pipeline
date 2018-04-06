@@ -37,31 +37,33 @@ def create_samtools_germline_workflow(
         args=(
             pypeliner.managed.InputFile('normal.bam', 'regions', fnames=normal_bam_files),
             pypeliner.managed.InputFile('normal.bam.bai', 'regions', fnames=normal_bai_files),
-            pypeliner.managed.InputFile(ref_genome_fasta_file),
+            ref_genome_fasta_file,
             pypeliner.managed.TempOutputFile('variants.vcf.gz', 'regions'),
         ),
         kwargs={
             'region': pypeliner.managed.InputInstance('regions'),
         },
     )
-
+ 
     workflow.transform(
         name='concatenate_variants',
-        ctx={'mem': 2},
+        ctx={'mem': 2, 'ncpus':1, 'pool_id': config['pools']['standard']},
         func=vcf_tasks.concatenate_vcf,
         args=(
             pypeliner.managed.TempInputFile('variants.vcf.gz', 'regions'),
             pypeliner.managed.OutputFile(vcf_file),
+            pypeliner.managed.TempSpace("merge_variants_germline")
         ),
     )
-
+ 
     workflow.transform(
         name='parse_samtools_vcf',
         ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.parse_samtools_vcf,
         args=(
-            mgd.InputFile(vcf_file),
-            mgd.OutputFile(parsed_csv),
+            pypeliner.managed.InputFile(vcf_file),
+            pypeliner.managed.OutputFile(parsed_csv),
         ),
     )
 
+    return workflow
