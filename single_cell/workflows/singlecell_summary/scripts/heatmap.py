@@ -15,7 +15,7 @@ import seaborn as sns
 
 class ClusterMap(object):
 
-    def __init__(self, data, colordata, vmax, max_cn, chromosomes=None):
+    def __init__(self, data, colordata, lims, max_cn, chromosomes=None):
         """
         :param data pandas dataframe with bins as columns and samples as rows
         :param colordata: dict with samples and their corresponding type
@@ -39,7 +39,8 @@ class ClusterMap(object):
         #set max for data
         self.data = np.clip(self.data, 0, self.max_cn)
 
-        self.vmax = min(self.max_cn, vmax)
+        self.vmax = min(self.max_cn, lims[1])
+        self.vmin = lims[0]
 
         self.generate_plot()
 
@@ -188,7 +189,11 @@ class ClusterMap(object):
         # Plot color legend
         legend_plc = [0.07, 0.98, 0.18, 0.01]
         axcb = fig.add_axes(legend_plc, frame_on=False)
-        self.plot_legend(axcb, cmap)
+
+
+        ticklabels =  map(int, np.arange(self.vmin, self.vmax))
+        ticklabels = map(str, ticklabels)
+        self.plot_legend(axcb, cmap, ticklabels = ticklabels)
 
     def plot_legend(self, axes, cmap, ticklabels=None):
         """adds legend
