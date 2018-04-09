@@ -110,6 +110,9 @@ class PlotPcolor(object):
 
             val = float('nan') if val == "NA" else float(val)
 
+            if self.column_name == "state":
+                val -= 1
+
             chrom = line[idxs['chr']]
             start = int(line[idxs['start']])
             end = int(line[idxs['end']])
@@ -174,7 +177,9 @@ class PlotPcolor(object):
 
             numreads = int(line[idxs['total_mapped_reads']])
 
-            reads_per_bin = float(line[idxs['median_hmmcopy_reads_per_bin']])
+            reads_per_bin = line[idxs['median_hmmcopy_reads_per_bin']]
+
+            reads_per_bin = 0 if reads_per_bin == "NA" else float(reads_per_bin)
 
             if self.cellcalls and cc not in self.cellcalls:
                 continue
@@ -316,12 +321,12 @@ class PlotPcolor(object):
 
         outfile.close()
 
-    def plot_heatmap(self, data, ccdata, title, vmax, pdfout):
+    def plot_heatmap(self, data, ccdata, title, lims, pdfout):
         """
         generate heatmap, annotate and save
 
         """
-        ClusterMap(data, ccdata, vmax, self.max_cn, chromosomes=self.chromosomes)
+        ClusterMap(data, ccdata, lims, self.max_cn, chromosomes=self.chromosomes)
 
         plt.suptitle(title)
 
@@ -341,7 +346,7 @@ class PlotPcolor(object):
             title = self.plot_title + \
                 ' (%s) n=%s/%s' % (sep, len(samples), num_samples)
 
-            self.plot_heatmap(pltdata, colordata, title, vmax, pdfout)
+            self.plot_heatmap(pltdata, colordata, title, lims, pdfout)
 
         
         if not self.output:
@@ -357,6 +362,8 @@ class PlotPcolor(object):
             return
 
         vmax = np.nanmax(data.values)
+        vmin = np.nanmin(data.values)
+        lims = (vmin, vmax)
 
 
         for sep, samples in sepdata.iteritems():
