@@ -10,6 +10,6 @@ setup(
     description='Single cell pipeline',
     author='Andrew McPherson',
     author_email='andrew.mcpherson@gmail.com',
-    entry_points={'console_scripts': ['single_cell = single_cell.run:main']},
+    entry_points={'console_scripts': ['single_cell = single_cell.main:main']},
     package_data={'':['scripts/*.py', 'scripts/*.R', 'scripts/*.npz']}
 )
