@@ -14,10 +14,10 @@ def main():
 
     args = parse_args()
 
-    if args["which"] == "generate_config":
+    if "generate_config" in args:
         generate_config(args)
 
-    elif args["which"] == "run":
+    else:
         run_pipeline(args)
 
 

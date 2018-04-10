@@ -39,7 +39,7 @@ def run_pipeline(args):
     if "pseudo_wgs" in args:
         pyp = pypeliner.app.Pypeline(config=args["pseudo_wgs"])
         workflow = pypeliner.workflow.Workflow()
-        workflow = pseudo_wgs_workflow(workflow, args, args["merged_wgs_template"], args["input_yaml"])
+        workflow = pseudo_wgs_workflow(workflow, args["pseudo_wgs"], args["pseudo_wgs"]["merged_wgs_template"], args["pseudo_wgs"]["input_yaml"])
         pyp.run(workflow)
 
     if "split_normal" in args:
@@ -48,7 +48,7 @@ def run_pipeline(args):
         if args.get("matched_normal", None):
             workflow = split_normal_workflow(workflow, args)
         else:
-            workflow = pseudo_wgs_workflow(workflow, args, args["normal_split_template"], args["normal_yaml"])
+            workflow = pseudo_wgs_workflow(workflow, args["pseudo_wgs"], args["pseudo_wgs"]["normal_split_template"], args["pseudo_wgs"]["normal_yaml"])
         pyp.run(workflow)
 
     if "variant_calling" in args:
