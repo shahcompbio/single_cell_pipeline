@@ -39,12 +39,16 @@ def main():
         
     if "pseudo_wgs" in args["modes"]:
         workflow = pypeliner.workflow.Workflow()
-        workflow = pseudo_wgs_workflow(workflow, args)
+        workflow = pseudo_wgs_workflow(workflow, args, args["merged_wgs_template"], args["input_yaml"], mode="tumour")
         pyp.run(workflow)
 
     if "split_normal" in args["modes"]:
         workflow = pypeliner.workflow.Workflow()
-        workflow = split_normal_workflow(workflow, args)
+
+        if args.get("matched_normal", None):
+            workflow = split_normal_workflow(workflow, args)
+        else:
+            workflow = pseudo_wgs_workflow(workflow, args, args["normal_split_template"], args["normal_yaml"], mode="normal")
         pyp.run(workflow)
 
     if "variant_calling" in args["modes"]:

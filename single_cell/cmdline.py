@@ -10,19 +10,19 @@ import pypeliner
 def arg_exists(args, key, mode):
     error_string = "option {} is required in {} mode"
 
-    if key not in args:
+    if key not in args or not args[key]:
 
         raise Exception(error_string.format(key, mode))
     
 
 def check_update_args(args):
 
-    if args["modes"] == "qc":
+    if args["modes"] == ["qc"]:
         args["modes"] = ["align","hmmcopy","aneufinder","copyclone"]
 
-    if args["modes"] == "all":
+    if args["modes"] == ["all"]:
         args["modes"] = ["align", "hmmcopy", "aneufinder", "copyclone",\
-                         "pseudo_wgs", "variant_calling"]
+                         "pseudo_wgs", "split_normal", "variant_calling", "germline_calling"]
 
     args["merged_wgs_template"] = args["merged_wgs_template"].replace("{}","{region}")
     args["normal_split_template"] = args["normal_split_template"].replace("{}","{region}")
@@ -42,7 +42,8 @@ def check_update_args(args):
             arg_exists(args, "normal_split_template", mode)
 
         elif mode == "split_normal":
-            arg_exists(args, "matched_normal", mode)
+            if not args["matched_normal"] and not args["normal_yaml"]:
+                raise Exception("matched_normal or normal_yaml required to run split_normal workflow")
             arg_exists(args, "normal_split_template", mode)
 
         elif mode in ["germline_calling"]:
@@ -76,7 +77,12 @@ def parse_args():
     parser.add_argument('--library_id',
                         help='''Library id.''')
 
-    parser.add_argument('--matched_normal',
+    normal_input = parser.add_mutually_exclusive_group()
+
+    normal_input.add_argument('--matched_normal',
+                        help='''Path to matched wgs normal.''')
+
+    normal_input.add_argument('--normal_yaml',
                         help='''Path to matched wgs normal.''')
 
     parser.add_argument('--normal_split_template',
