@@ -9,7 +9,7 @@ import pypeliner.managed as mgd
 from workflows import pseudo_wgs 
 from single_cell.utils import helpers
 
-def pseudo_wgs_workflow(workflow, args, output_template, input_yaml, mode=None):
+def pseudo_wgs_workflow(workflow, args, output_template, input_yaml):
 
     config = helpers.load_config(args)
     bam_files, bai_files  = helpers.get_bams(input_yaml)
@@ -35,12 +35,8 @@ def pseudo_wgs_workflow(workflow, args, output_template, input_yaml, mode=None):
         )
     )
 
-    wfname = "wgs_workflow"
-    if mode:
-        wfname += ("_" + mode)
-    
     workflow.subworkflow(
-        name=wfname,
+        name="wgs_merge_workflow",
         func=pseudo_wgs.create_wgs_workflow,
         args=(
             mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files),
