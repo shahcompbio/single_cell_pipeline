@@ -105,9 +105,11 @@ def run_fastqc(fastq1, fastq2, reports, tempdir):
     helpers.make_tarfile(reports, reports_dir)
 
 
-def get_readgroup(run_id, cell_id, library_id, seqinfo):
+def get_readgroup(run_id, cell_id, library_id, seqinfo, sample_info):
     platform = 'illumina'
     centre = 'UBCBRC' if seqinfo.lower() == 'nextseq' else 'BCCAGSC'
+
+    barcode = sample_info["i7_index"] + "-" + sample_info["i5_index"]
 
     read_group_template = (
         '@RG\\tID:' + str(library_id) + '_' + cell_id + '_' + str(run_id) +
@@ -115,16 +117,17 @@ def get_readgroup(run_id, cell_id, library_id, seqinfo):
         '\\tPU:' + str(run_id) +
         '\\tLB:' + str(library_id) + '_' + cell_id +
         '\\tSM:' + cell_id +
-        '\\tCN:' + centre)
+        '\\tCN:' + centre +
+        '\\tKS:' + barcode)
 
     return read_group_template
 
 
 
 def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
-             reference, source, cell_id, lane_id, library_id, config):
+             reference, source, sample_info, cell_id, lane_id, library_id, config):
 
-    readgroup = get_readgroup(lane_id, cell_id, library_id, source)
+    readgroup = get_readgroup(lane_id, cell_id, library_id, source, sample_info)
 
     run_fastqc(fastq1, fastq2, reports, tempdir)
 

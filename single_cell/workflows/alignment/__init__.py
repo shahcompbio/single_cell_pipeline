@@ -20,6 +20,7 @@ def create_alignment_workflow(
         config,
         args,
         seqinfo,
+        sample_info,
         cell_ids):
 
     out_dir = args['out_dir']
@@ -51,6 +52,10 @@ def create_alignment_workflow(
         obj=mgd.TempOutputObj('seqinfo', 'cell_id', 'lane', axes_origin=[]),
         value=seqinfo)
 
+    workflow.setobj(
+        obj=mgd.TempOutputObj('sampleinfo', 'cell_id', axes_origin=[]),
+        value=sample_info)
+
 
     fastqc_reports = os.path.join(lane_metrics, "fastqc", "{cell_id}_reports.tar.gz")
     flagstat_metrics = os.path.join(lane_metrics, 'flagstat', '{cell_id}.txt')
@@ -68,6 +73,7 @@ def create_alignment_workflow(
             mgd.TempSpace('alignment_temp', 'cell_id', 'lane'),
             ref_genome,
             mgd.TempInputObj('seqinfo', 'cell_id', 'lane'),
+            mgd.TempInputObj('sampleinfo', 'cell_id'),
             mgd.InputInstance('cell_id'),
             mgd.InputInstance('lane'),
             args['library_id'],
