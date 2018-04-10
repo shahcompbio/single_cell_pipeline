@@ -98,9 +98,9 @@ def parse_args():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    subparsers = parser.add_subparsers()
-
     pypeliner.app.add_arguments(parser)
+
+    subparsers = parser.add_subparsers()
 
     #All subcommands
     run = subparsers.add_parser("run")
@@ -155,7 +155,7 @@ def parse_args():
 
     args = vars(parser.parse_args())
 
-    check_required_args(args, parser)
+    check_required_args(parser, args)
 
     args = generate_args_by_mode(args)
 
