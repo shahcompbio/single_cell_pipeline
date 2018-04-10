@@ -36,7 +36,7 @@ def create_split_workflow(
     if one_split_job:
         workflow.transform(
             name='split_normal_bam',
-            ctx={'mem': config['memory']['low'], 'pool_id': config['pools']['standard'], 'ncpus':config["max_cores"]},
+            ctx={'mem': config['memory']['low'], 'pool_id': config['pools']['multicore'], 'ncpus':config["max_cores"]},
             func=tasks.split_bam_file_one_job,
             args=(
                 mgd.InputFile(normal_bam),
@@ -51,7 +51,7 @@ def create_split_workflow(
     else:
         workflow.transform(
             name='split_normal_bam',
-            ctx={'mem': config['memory']['low']},
+            ctx={'mem': config['memory']['low'], 'pool_id': config['pools']['standard'], 'ncpus':1},
             axes=('region',),
             func=tasks.split_bam_file,
             args=(
