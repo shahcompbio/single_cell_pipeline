@@ -19,6 +19,9 @@ from subprocess import Popen, PIPE
 
 import multiprocessing
 
+from single_cell.config import config_generator
+
+
 from multiprocessing.pool import ThreadPool
 
 
@@ -202,7 +205,11 @@ def get_bams(fastqs_file):
     return bam_filenames, bai_filenames
 
 def load_config(args):
-    return load_yaml(args["config_file"])
+
+    if args.get("config_file", None):
+        return load_yaml(args["config_file"])
+    else:
+        return config_generator.main(input_params=args["config_override"])
 
 
 
