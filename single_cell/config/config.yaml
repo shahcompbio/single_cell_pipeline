@@ -1,0 +1,95 @@
+pools: "{$reference:pools}"
+
+picard_wgs_params:
+  # Minimum base quality to count a read
+  min_bqual: 20
+
+  # Minimum mapping quality to count a read
+  min_mqual: 20
+
+  # Count unpaired reads for wgs metrics
+  count_unpaired: false
+
+# HMMcopy parameters
+hmmcopy_params:
+  autoploidy:
+    mu: 0,1,2,3,4,5,6,7,8,9,10,11
+
+    m: 0,1,2,3,4,5,6,7,8,9,10,11
+
+    kappa: 25,100,700,100,25,25,25,25,25,25,25,25
+
+    e: 0.995
+
+    g: 10
+
+    s: 0.02
+
+    nu: 2.1
+
+    eta: 0.05,0.05,0.5,0.05,0.05,0.05,0.05,0.01,0.01,0.01,0.01,0.01
+
+    lambda: 20
+
+    strength: 1000
+
+    # Optional mappability cutoff
+    map_cutoff: 0.9
+
+    # Number of states
+    num_states: 12
+
+    # Minimum mapping quality to count a read
+    min_mqual: 20
+
+    # Bin size
+    bin_size: config.{bin_size}
+
+    # Binned GC content file
+    gc_wig_file: "{$cluster:$reference:gc_wig_file:$bin_size}"
+
+    # Binned mappability file
+    map_wig_file: "{$cluster:$reference:map_wig_file:$bin_size}"
+
+    exclude_list: "{$cluster:$reference:exclude_list}"
+
+    smoothing_function: "{smoothing_function}"
+
+    auto_ploidy: true
+
+# Reference genome to align to in fasta format. Should be indexed by aligner and samtools
+ref_genome: "{$cluster:$reference:ref_genome}"
+
+# Chromosomes for copy number analysis
+chromosomes: "{$reference:chromosomes}"
+
+mutationseq: "{$cluster:mutationseq}"
+
+mutationseq_model: "{$cluster:mutationseq_model}"
+
+plot_mad_threshold: null
+
+plot_numreads_threshold: null
+
+plot_median_hmmcopy_reads_per_bin_threshold: 50
+
+gc_windows: '{$cluster:$reference:gc_windows}'
+
+one_split_job: False
+
+memory:
+  low: 2
+
+  med: 6
+
+  high: 18
+
+max_cores: "{$cluster:max_cores}"
+
+aligner: "{aligner}"
+
+adapter: 'CTGTCTCTTATACACATCTCCGAGCCCACGAGAC'
+
+adapter2: 'CTGTCTCTTATACACATCTGACGCTGCCGACGA'
+
+split_size: 10000000

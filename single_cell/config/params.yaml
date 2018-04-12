@@ -1,0 +1,66 @@
+aligner: bwa-mem
+cluster: "azure"
+reference: grch37
+smoothing_function: modal
+bin_size: 500000
+
+grch37:
+  chromosomes: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y']
+  pools:
+    standard: singlecellgrch37standard
+    highmem: singlecellgrch37high
+    multicore: singlecellgrch37multicore
+mm10:
+  chromosomes: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', 'X', 'Y']
+  pools:
+    standard: singlecellmm10standard
+    highmem: singlecellmm10high
+    multicore: singlecellmm10multicore
+
+azure:
+  max_cores: null
+  mutationseq: /usr/local/museq/ 
+  mutationseq_model:  /usr/local/museq/model_v4.1.2_anaconda_sk_0.13.1.npz
+
+  grch37:
+    gc_wig_file:
+      500000: /refdata/GRCh37-lite.gc.ws_500000.wig
+    map_wig_file:
+      500000: /refdata/GRCh37-lite.map.ws_125_to_500000.wig
+    exclude_list: /refdata/repeats.satellite.regions
+    ref_genome: /refdata/GRCh37-lite.fa
+    gc_windows: /refdata/gc_windows.txt
+
+  mm10:
+    gc_wig_file:
+      500000: /refdata/mm10_build38_mouse.gc.ws_500000.wig
+    map_wig_file:
+      500000: /refdata/mm10_build38_mouse.map.rl_125_ws_500000.wig
+    exclude_list: null
+    ref_genome: /refdata/mm10_build38_mouse.fasta
+    gc_windows: null
+
+
+shahlab:
+  max_cores: 8
+  mutationseq: /shahlab/pipelines/apps_centos6/mutationSeq_4.3.7_anaconda/
+  mutationseq_model: /shahlab/pipelines/apps_centos6/mutationSeq_4.3.7_anaconda//model_v4.1.2_anaconda_sk_0.13.1.npz
+
+
+  grch37:
+    gc_wig_file:
+      500000: /shahlab/pipelines/reference/GRCh37-lite.gc.ws_500000.wig
+    map_wig_file:
+      500000: /shahlab/pipelines/reference/GRCh37-lite.map.ws_125_to_500000.wig
+    exclude_list: /shahlab/pipelines/reference/repeats.satellite.regions
+    ref_genome: /shahlab/pipelines/reference/GRCh37-lite.fa
+    gc_windows: /refdata/gc_windows.txt
+
+  mm10:
+    gc_wig_file:
+      500000: /shahlab/pipelines/reference/mm10_build38_mouse.gc.ws_500000.wig
+    map_wig_file:
+      500000: /shahlab/pipelines/reference/mm10_build38_mouse.map.rl_125_ws_500000.wig
+    exclude_list: null
+    ref_genome: /shahlab/pipelines/reference/mm10_build38_mouse.fasta
+    gc_windows: null
