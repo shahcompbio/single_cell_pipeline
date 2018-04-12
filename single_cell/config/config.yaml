@@ -43,7 +43,7 @@ hmmcopy_params:
     min_mqual: 20
 
     # Bin size
-    bin_size: config.{bin_size}
+    bin_size: "{bin_size}"
 
     # Binned GC content file
     gc_wig_file: "{$cluster:$reference:gc_wig_file:$bin_size}"
