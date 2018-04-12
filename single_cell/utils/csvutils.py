@@ -34,6 +34,7 @@ def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', sep=',', suffix
         in_filenames = in_filenames.values()
 
     for in_filename in in_filenames:
+        print 'merging', in_filename
         with open(in_filename) as f:
             first_line = f.readline()
             if len(first_line) == 0:
