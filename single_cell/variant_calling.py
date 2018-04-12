@@ -6,7 +6,7 @@ Created on Feb 22, 2018
 
 import os
 import pypeliner
-import mgd as mgd
+import pypeliner.managed as mgd
 from workflows import snv_postprocessing
 from workflows import mutationseq 
 from workflows import split_bams
