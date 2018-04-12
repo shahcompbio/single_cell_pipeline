@@ -9,7 +9,11 @@ import pypeliner.managed as mgd
 from workflows import pseudo_wgs 
 from single_cell.utils import helpers
 
-def pseudo_wgs_workflow(workflow, args, output_template, input_yaml):
+def merge_bams_workflow(workflow, args):
+
+    input_yaml = args["input_yaml"]
+    output_template = args["merged_bam_template"]
+    
 
     config = helpers.load_config(args)
     bam_files, bai_files  = helpers.get_bams(input_yaml)

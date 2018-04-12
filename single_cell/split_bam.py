@@ -9,12 +9,12 @@ import pypeliner.managed as mgd
 from workflows import split_bams
 from single_cell.utils import helpers
 
-def split_normal_workflow(workflow, args):
+def split_bam_workflow(workflow, args):
 
     config = helpers.load_config(args)
 
-    normal_bam_template = args["normal_split_template"]
-    normal_bai_template = args["normal_split_template"] + ".bai"
+    normal_bam_template = args["split_bam_template"]
+    normal_bai_template = args["split_bam_template"] + ".bai"
 
 
     workflow.transform(
@@ -33,8 +33,8 @@ def split_normal_workflow(workflow, args):
         name="split_normal",
         func=split_bams.create_split_workflow,
         args = (
-            mgd.InputFile(args['matched_normal']),
-            mgd.InputFile(args['matched_normal'] + ".bai"),
+            mgd.InputFile(args['wgs_bam']),
+            mgd.InputFile(args['wgs_bam'] + ".bai"),
             mgd.OutputFile("normal.split.bam", "region", template=normal_bam_template, axes_origin=[]),
             mgd.OutputFile("normal.split.bam.bai", "region", template=normal_bai_template, axes_origin=[]),
             pypeliner.managed.TempInputObj('region'),

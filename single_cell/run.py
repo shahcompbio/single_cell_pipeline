@@ -3,14 +3,24 @@ from cmdline import parse_args
 from align import align_workflow
 from hmmcopy import hmmcopy_workflow
 from aneufinder import aneufinder_workflow
-from pseudo_wgs import pseudo_wgs_workflow
+from merge_bams import merge_bams_workflow
 from variant_calling import variant_calling_workflow
 from germline_calling import germline_calling_workflow
-from split_normal import split_normal_workflow
+from split_bam import split_bam_workflow
+from generate_config import generate_config
+from clean_sentinels import clean_sentinels
 
 # from copyclone import copyclone_workflow
 
-def run_pipeline(args):
+def main():
+
+    args = parse_args()
+
+    if "generate_config" in args:
+        generate_config(args["generate_config"])
+
+    if "clean_sentinels" in args:
+        clean_sentinels(args["clean_sentinels"])
 
     if "align" in args:
         pyp = pypeliner.app.Pypeline(config=args["align"])
@@ -36,19 +46,16 @@ def run_pipeline(args):
         workflow = aneufinder_workflow(workflow, args["aneufinder"])
         pyp.run(workflow)
         
-    if "pseudo_wgs" in args:
-        pyp = pypeliner.app.Pypeline(config=args["pseudo_wgs"])
+    if "merge_bams" in args:
+        pyp = pypeliner.app.Pypeline(config=args["merge_bams"])
         workflow = pypeliner.workflow.Workflow()
-        workflow = pseudo_wgs_workflow(workflow, args["pseudo_wgs"], args["pseudo_wgs"]["merged_wgs_template"], args["pseudo_wgs"]["input_yaml"])
+        workflow = merge_bams_workflow(workflow, args["merge_bams"])
         pyp.run(workflow)
 
-    if "split_normal" in args:
-        pyp = pypeliner.app.Pypeline(config=args["split_normal"])
+    if "split_bam" in args:
+        pyp = pypeliner.app.Pypeline(config=args["split_bam"])
         workflow = pypeliner.workflow.Workflow()
-        if args.get("matched_normal", None):
-            workflow = split_normal_workflow(workflow, args)
-        else:
-            workflow = pseudo_wgs_workflow(workflow, args["pseudo_wgs"], args["pseudo_wgs"]["normal_split_template"], args["pseudo_wgs"]["normal_yaml"])
+        workflow = split_bam_workflow(workflow, args["split_bam"])
         pyp.run(workflow)
 
     if "variant_calling" in args:
@@ -63,3 +70,5 @@ def run_pipeline(args):
         workflow = germline_calling_workflow(workflow, args["germline_calling"])
         pyp.run(workflow)
 
+if __name__ == "__main__":
+    main()
