@@ -26,11 +26,11 @@ def variant_calling_workflow(workflow, args):
                                 'variant_calling')
 
 
-    wgs_bam_template = args["merged_wgs_template"]
-    wgs_bai_template = args["merged_wgs_template"] + ".bai"
+    wgs_bam_template = args["tumour_template"]
+    wgs_bai_template = args["tumour_template"] + ".bai"
 
-    normal_bam_template = args["normal_split_template"]
-    normal_bai_template = args["normal_split_template"] + ".bai"
+    normal_bam_template = args["normal_template"]
+    normal_bai_template = args["normal_template"] + ".bai"
 
 
     workflow.setobj(
@@ -42,13 +42,19 @@ def variant_calling_workflow(workflow, args):
         name="get_regions",
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
         func=helpers.get_bam_regions,
-        ret=pypeliner.managed.TempOutputObj('region'),
+        ret=pypeliner.managed.TempOutputObj('allregions'),
         args=(
               config["ref_genome"],
               config["split_size"],
               config["chromosomes"],
         )
     )
+
+    workflow.setobj(
+        obj=pypeliner.managed.OutputChunks('region'),
+        value=mgd.TempInputObj('allregions'),
+    )
+
 
     museq_vcf = os.path.join(varcalls_dir, 'museq_snv.vcf')
     museq_csv = os.path.join(varcalls_dir, 'museq_snv.csv')

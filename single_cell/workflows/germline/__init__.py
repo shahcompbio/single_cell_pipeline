@@ -22,6 +22,13 @@ def create_samtools_germline_workflow(
         chromosomes=default_chromosomes,
         split_size=int(1e7)):
 
+    normal_bam_files = [normal_bam_files[region]  for region in regions]
+    normal_bam_files = dict(zip(regions, normal_bam_files))
+
+    normal_bam_files = [normal_bam_files[region]  for region in regions]
+    normal_bam_files = dict(zip(regions, normal_bam_files))
+
+
     workflow = Workflow()
 
     workflow.setobj(
@@ -35,8 +42,8 @@ def create_samtools_germline_workflow(
         axes=('regions',),
         func=tasks.run_samtools_variant_calling,
         args=(
-            pypeliner.managed.InputFile('normal.bam', 'regions', fnames=normal_bam_files),
-            pypeliner.managed.InputFile('normal.bam.bai', 'regions', fnames=normal_bai_files),
+            pypeliner.managed.InputFile('normal.split.bam', 'regions', fnames=normal_bam_files),
+            pypeliner.managed.InputFile('normal.split.bam.bai', 'regions', fnames=normal_bai_files),
             ref_genome_fasta_file,
             pypeliner.managed.TempOutputFile('variants.vcf.gz', 'regions'),
         ),
@@ -44,7 +51,7 @@ def create_samtools_germline_workflow(
             'region': pypeliner.managed.InputInstance('regions'),
         },
     )
- 
+  
     workflow.transform(
         name='concatenate_variants',
         ctx={'mem': 2, 'ncpus':1, 'pool_id': config['pools']['standard']},
@@ -55,7 +62,7 @@ def create_samtools_germline_workflow(
             pypeliner.managed.TempSpace("merge_variants_germline")
         ),
     )
- 
+  
     workflow.transform(
         name='parse_samtools_vcf',
         ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard'], 'ncpus':1},

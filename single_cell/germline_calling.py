@@ -21,8 +21,8 @@ def germline_calling_workflow(workflow, args):
 
     sampleids = helpers.get_samples(args['input_yaml'])
 
-    normal_bam_template = args["normal_split_template"]
-    normal_bai_template = args["normal_split_template"] + ".bai"
+    normal_bam_template = args["input_template"]
+    normal_bai_template = args["input_template"] + ".bai"
 
     varcalls_dir = os.path.join(args['out_dir'], 'results',
                                 'germline_calling')
@@ -36,13 +36,20 @@ def germline_calling_workflow(workflow, args):
         name="get_regions",
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
         func=helpers.get_bam_regions,
-        ret=pypeliner.managed.TempOutputObj('region'),
+        ret=pypeliner.managed.TempOutputObj('allregions'),
         args=(
               config["ref_genome"],
               config["split_size"],
               config["chromosomes"],
         )
     )
+
+
+    workflow.setobj(
+        obj=pypeliner.managed.OutputChunks('region'),
+        value=mgd.TempInputObj('allregions'),
+    )
+
  
     samtools_germline_vcf = os.path.join(varcalls_dir, 'samtools_germline.vcf.gz')
     samtools_germline_csv = os.path.join(varcalls_dir, 'samtools_germline.csv')
@@ -50,13 +57,13 @@ def germline_calling_workflow(workflow, args):
         name='samtools_germline',
         func=germline.create_samtools_germline_workflow,
         args=(
-            mgd.InputFile("normal.split.bam", "region", template=normal_bam_template, axes_origin=[]),
-            mgd.InputFile("normal.split.bam.bai", "region", template=normal_bai_template, axes_origin=[]),
+            mgd.InputFile("normal.split.bam", "region", template=normal_bam_template),
+            mgd.InputFile("normal.split.bam.bai", "region", template=normal_bai_template),
             config['ref_genome'],
             mgd.OutputFile(samtools_germline_vcf),
             mgd.OutputFile(samtools_germline_csv),
             config,
-            mgd.TempInputObj('region')
+            mgd.TempInputObj('allregions')
         ),
     )
  
@@ -66,8 +73,8 @@ def germline_calling_workflow(workflow, args):
         name='germline_postprocessing',
         func=snv_postprocessing.create_snv_postprocessing_workflow,
         args=(
-            mgd.InputFile('bam_markdups', 'sample_id', fnames=bam_files),
-            mgd.InputFile('bam_markdups_index', 'sample_id', fnames=bai_files),
+            mgd.InputFile('bam_markdups', 'sample_id', fnames=bam_files, axes_origin=[]),
+            mgd.InputFile('bam_markdups_index', 'sample_id', fnames=bai_files, axes_origin=[]),
             [
                 mgd.InputFile(samtools_germline_csv),
             ],
