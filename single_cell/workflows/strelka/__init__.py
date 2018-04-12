@@ -20,8 +20,6 @@ def create_strelka_workflow(
         ref_genome_fasta_file,
         indel_vcf_file,
         snv_vcf_file,
-        parsed_indel_csv,
-        parsed_snv_csv,
         config,
         regions,
         chromosomes=default_chromosomes,
@@ -176,26 +174,6 @@ def create_strelka_workflow(
             pypeliner.managed.OutputFile(snv_vcf_file)
         )
     )
-    
-    workflow.transform(
-        name='parse_strelka_snv',
-        ctx={'mem': 10, 'pool_id': config['pools']['standard'], 'ncpus':1},
-        func=tasks.parse_strelka,
-        args=(
-              pypeliner.managed.InputFile(snv_vcf_file),
-              pypeliner.managed.OutputFile(parsed_snv_csv),
-              )
-        )
-    
-    workflow.transform(
-        name='parse_strelka_indel',
-        ctx={'mem': 10, 'pool_id': config['pools']['standard'], 'ncpus':1},
-        func=tasks.parse_strelka,
-        args=(
-              pypeliner.managed.InputFile(indel_vcf_file),
-              pypeliner.managed.OutputFile(parsed_indel_csv),
-              )
-         )
 
     return workflow
 
