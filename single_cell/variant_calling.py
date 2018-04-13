@@ -7,11 +7,14 @@ Created on Feb 22, 2018
 import os
 import pypeliner
 import pypeliner.managed as mgd
+import biowrappers.components.io.vcf.tasks
+import biowrappers.pipelines.snv_call_and_annotate
 from workflows import snv_postprocessing
 from workflows import mutationseq 
 from workflows import split_bams
 from workflows import strelka
 from single_cell.utils import helpers
+from single_cell.utils import vcfutils
 
 def variant_calling_workflow(workflow, args):
 
@@ -39,19 +42,13 @@ def variant_calling_workflow(workflow, args):
         name="get_regions",
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
         func=helpers.get_bam_regions,
-        ret=pypeliner.managed.TempOutputObj('allregions'),
+        ret=mgd.OutputChunks('region'),
         args=(
               config["ref_genome"],
               config["split_size"],
               config["chromosomes"],
         )
     )
-
-    workflow.setobj(
-        obj=pypeliner.managed.OutputChunks('region'),
-        value=mgd.TempInputObj('allregions'),
-    )
-
 
     museq_vcf = os.path.join(varcalls_dir, 'museq_snv.vcf')
     workflow.subworkflow(
@@ -65,7 +62,6 @@ def variant_calling_workflow(workflow, args):
             config['ref_genome'],
             mgd.OutputFile(museq_vcf),
             config,
-            mgd.TempInputObj('region')
         ),
     )
 
@@ -83,14 +79,12 @@ def variant_calling_workflow(workflow, args):
             mgd.OutputFile(strelka_indel_vcf),
             mgd.OutputFile(strelka_snv_vcf),
             config,
-            mgd.TempInputObj('region')
         ),
     )
 
     workflow.transform(
         name='merge_snvs',
-        ctx=big_mem_ctx,
-        func=biowrappers.components.io.vcf.tasks.merge_vcfs,
+        func=vcfutils.merge_vcfs,
         args=(
             [
                 mgd.InputFile(museq_vcf),

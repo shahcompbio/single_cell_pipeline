@@ -4,6 +4,7 @@ Created on Feb 27, 2018
 @author: dgrewal
 '''
 import warnings
+import biowrappers.components.io.vcf.tasks
 
 def _get_header(infile):
     '''
@@ -52,3 +53,10 @@ def concatenate_vcf(infiles, outfile):
 
                 for l in f:
                     print >> ofile, l,
+
+def merge_vcfs(infiles, outfiles):
+    for infile in infiles:
+        biowrappers.components.io.vcf.tasks.index_vcf(infile, infile + '.tbi')
+    biowrappers.components.io.vcf.tasks.merge_vcfs(infiles, outfiles)
+
+
