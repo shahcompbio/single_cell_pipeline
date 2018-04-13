@@ -16,12 +16,15 @@ from workflows import split_bams
 from workflows import strelka
 from single_cell.utils import helpers
 from single_cell.utils import vcfutils
-from single_cell.utils import hdf5utils
+
+
+default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 
 
 def create_snv_allele_counts_for_vcf_targets_workflow(
+        config,
         bam_files,
-        bai_files
+        bai_files,
         vcf_file,
         out_file,
         chromosomes=default_chromosomes,
@@ -42,7 +45,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
     workflow.transform(
         name='get_snv_allele_counts_for_vcf_targets',
         axes=('cell_id',),
-        func=biowrappers.components.io.vcf.tasks.get_snv_allele_counts_for_vcf_targets,
+        func=biowrappers.components.variant_calling.snv_allele_counts.tasks.get_snv_allele_counts_for_vcf_targets,
         args=(
             mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files),
             mgd.InputFile('tumour.bam.bai', 'cell_id', fnames=bai_files),
@@ -174,9 +177,10 @@ def variant_calling_workflow(workflow, args):
     )
 
     workflow.subworkflow(
-        name='snv_postprocessing',
-        func=snv_postprocessing.create_snv_postprocessing_workflow,
+        name='count_alleles',
+        func=create_snv_allele_counts_for_vcf_targets_workflow,
         args=(
+            config,
             mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files),
             mgd.InputFile('bam_markdups_index', 'cell_id', fnames=bai_files),
             mgd.TempInputFile('all.snv.vcf.gz'),
