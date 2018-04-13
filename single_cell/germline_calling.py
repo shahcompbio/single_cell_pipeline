@@ -11,6 +11,9 @@ from workflows import snv_postprocessing
 from workflows import germline
 from workflows import split_bams
 from single_cell.utils import helpers
+from single_cell.workflows.germline import tasks
+import biowrappers.components.variant_calling.mappability
+import variant_calling
 
 
 def germline_calling_workflow(workflow, args):
@@ -24,35 +27,33 @@ def germline_calling_workflow(workflow, args):
     normal_bam_template = args["input_template"]
     normal_bai_template = args["input_template"] + ".bai"
 
-    varcalls_dir = os.path.join(args['out_dir'], 'results',
-                                'germline_calling')
+    varcalls_dir = os.path.join(
+        args['out_dir'], 'results', 'germline_calling')
+
+    samtools_germline_vcf = os.path.join(varcalls_dir, 'raw', 'samtools_germline.vcf.gz')
+    snpeff_vcf_filename = os.path.join(varcalls_dir, 'snpeff.vcf')
+    normal_genotype_filename = os.path.join(varcalls_dir, 'raw', 'normal_genotype.h5')
+    mappability_filename = os.path.join(varcalls_dir, 'raw', 'mappability.h5')
+    counts_template = os.path.join(varcalls_dir, 'counts', 'raw', 'counts.h5')
+    germline_h5_filename = os.path.join(varcalls_dir, 'germline.h5')
 
     workflow.setobj(
-        obj=mgd.OutputChunks('sample_id'),
-        value=sampleids,
+        obj=mgd.OutputChunks('cell_id'),
+        value=bam_files.keys(),
     )
  
     workflow.transform(
         name="get_regions",
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
         func=helpers.get_bam_regions,
-        ret=pypeliner.managed.TempOutputObj('allregions'),
+        ret=pypeliner.managed.OutputChunks('region'),
         args=(
-              config["ref_genome"],
-              config["split_size"],
-              config["chromosomes"],
+            config["ref_genome"],
+            config["split_size"],
+            config["chromosomes"],
         )
     )
-
-
-    workflow.setobj(
-        obj=pypeliner.managed.OutputChunks('region'),
-        value=mgd.TempInputObj('allregions'),
-    )
-
  
-    samtools_germline_vcf = os.path.join(varcalls_dir, 'samtools_germline.vcf.gz')
-    samtools_germline_csv = os.path.join(varcalls_dir, 'samtools_germline.csv')
     workflow.subworkflow(
         name='samtools_germline',
         func=germline.create_samtools_germline_workflow,
@@ -60,29 +61,92 @@ def germline_calling_workflow(workflow, args):
             mgd.InputFile("normal.split.bam", "region", template=normal_bam_template),
             mgd.InputFile("normal.split.bam.bai", "region", template=normal_bai_template),
             config['ref_genome'],
-            mgd.OutputFile(samtools_germline_vcf),
-            mgd.OutputFile(samtools_germline_csv),
+            mgd.OutputFile(samtools_germline_vcf, extensions=['.tbi']),
             config,
-            mgd.TempInputObj('allregions')
         ),
     )
- 
-    countdata = os.path.join(varcalls_dir, 'counts.csv')
-    olp_calls = os.path.join(varcalls_dir, 'overlapping_calls.csv')
+
     workflow.subworkflow(
-        name='germline_postprocessing',
-        func=snv_postprocessing.create_snv_postprocessing_workflow,
+        name='annotate_mappability',
+        func=biowrappers.components.variant_calling.mappability.create_vcf_mappability_annotation_workflow,
         args=(
-            mgd.InputFile('bam_markdups', 'sample_id', fnames=bam_files, axes_origin=[]),
-            mgd.InputFile('bam_markdups_index', 'sample_id', fnames=bai_files, axes_origin=[]),
-            [
-                mgd.InputFile(samtools_germline_csv),
-            ],
-            mgd.OutputFile(countdata),
-            mgd.OutputFile(olp_calls),
-            sampleids,
-            config,
-        )
+            config['databases']['mappability']['local_path'],
+            mgd.InputFile(samtools_germline_vcf, extensions=['.tbi']),
+            mgd.OutputFile(mappability_filename),
+        ),
     )
 
+    workflow.transform(
+        name='annotate_genotype',
+        func=tasks.annotate_normal_genotype,
+        args=(
+            mgd.InputFile(samtools_germline_vcf, extensions=['.tbi']),
+            mgd.OutputFile(normal_genotype_filename),
+            config["chromosomes"],
+        ),
+    )
+
+    workflow.subworkflow(
+        name='snpeff',
+        func=biowrappers.components.variant_calling.snpeff.create_snpeff_annotation_workflow,
+        args=(
+            config['databases']['snpeff']['db'],
+            mgd.InputFile(samtools_germline_vcf, extensions=['.tbi']),
+            mgd.OutputFile(snpeff_vcf_filename),
+        ),
+        kwargs={
+            'hdf5_output': False,
+        }
+    )
+
+    workflow.subworkflow(
+        name='read_counts',
+        func=variant_calling.create_snv_allele_counts_for_vcf_targets_workflow,
+        args=(
+            config,
+            mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files),
+            mgd.InputFile('tumour.bam.bai', 'cell_id', fnames=bai_files),
+            mgd.InputFile(samtools_germline_vcf, extensions=['.tbi']),
+            mgd.OutputFile(counts_template),
+        ),
+        kwargs={
+            'table_name': '/germline_allele_counts',
+        },
+    )
+
+    workflow.transform(
+        name='build_results_file',
+        func=biowrappers.components.io.hdf5.tasks.concatenate_tables,
+        args=([
+                mgd.InputFile(counts_template),
+                mgd.InputFile(mappability_filename),
+                mgd.InputFile(normal_genotype_filename),
+            ],
+            pypeliner.managed.OutputFile(germline_h5_filename),
+        ),
+        kwargs={
+            'drop_duplicates' : True,
+        }
+    )
+
+
+    # countdata = os.path.join(varcalls_dir, 'counts.csv')
+    # olp_calls = os.path.join(varcalls_dir, 'overlapping_calls.csv')
+    # workflow.subworkflow(
+    #     name='germline_postprocessing',
+    #     func=snv_postprocessing.create_snv_postprocessing_workflow,
+    #     args=(
+    #         mgd.InputFile('bam_markdups', 'sample_id', fnames=bam_files),
+    #         mgd.InputFile('bam_markdups_index', 'sample_id', fnames=bai_files),
+    #         [
+    #             mgd.InputFile(samtools_germline_csv),
+    #         ],
+    #         mgd.OutputFile(countdata),
+    #         mgd.OutputFile(olp_calls),
+    #         sampleids,
+    #         config,
+    #     )
+    # )
+
     return workflow
+

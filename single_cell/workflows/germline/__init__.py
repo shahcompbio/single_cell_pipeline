@@ -16,18 +16,10 @@ def create_samtools_germline_workflow(
         normal_bai_files,
         ref_genome_fasta_file,
         vcf_file,
-        parsed_csv,
         config,
-        regions,
-        chromosomes=default_chromosomes,
-        split_size=int(1e7)):
+        chromosomes=default_chromosomes):
 
-    normal_bam_files = [normal_bam_files[region]  for region in regions]
-    normal_bam_files = dict(zip(regions, normal_bam_files))
-
-    normal_bam_files = [normal_bam_files[region]  for region in regions]
-    normal_bam_files = dict(zip(regions, normal_bam_files))
-
+    regions = normal_bam_files.keys()
 
     workflow = Workflow()
 
@@ -58,18 +50,8 @@ def create_samtools_germline_workflow(
         func=vcf_tasks.concatenate_vcf,
         args=(
             pypeliner.managed.TempInputFile('variants.vcf.gz', 'regions'),
-            pypeliner.managed.OutputFile(vcf_file),
+            pypeliner.managed.OutputFile(vcf_file, extensions=['.tbi']),
             pypeliner.managed.TempSpace("merge_variants_germline")
-        ),
-    )
-  
-    workflow.transform(
-        name='parse_samtools_vcf',
-        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard'], 'ncpus':1},
-        func=tasks.parse_samtools_vcf,
-        args=(
-            pypeliner.managed.InputFile(vcf_file),
-            pypeliner.managed.OutputFile(parsed_csv),
         ),
     )
 

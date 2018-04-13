@@ -3,6 +3,7 @@ import vcf
 import pandas as pd
 import shutil
 import os
+import scipy.stats
 
 
 NUCLEOTIDES = ('A', 'C', 'G', 'T')
@@ -79,44 +80,57 @@ def run_samtools_variant_calling(
     index_bcf(out_file)
 
 
+def annotate_normal_genotype(vcf_filename, results_filename, chromosomes):
+    """ Extract het call for SNPs.
+    """
+    vcf_reader = vcf.Reader(filename=vcf_filename)
 
-def parse_samtools_vcf(
-        vcf_file,
-        out_file):
+    hdf_store = pd.HDFStore(results_filename, 'w', complevel=9, complib='blosc')
+    table_name = '/genotype'
+    
+    nucleotides = ['A', 'C', 'T', 'G']
+    
+    chunk_size = 100000
+    
+    num_rows = 0
+    genotype_table = []
+    
+    def store_table(genotype_table, num_rows):
+        if len(genotype_table) > 0:
+            df = pd.DataFrame(
+                genotype_table,
+                index=xrange(num_rows, num_rows + len(genotype_table)),
+                columns=['chrom', 'coord', 'ref', 'alt', 'is_het'])
 
-    vcf_reader = vcf.Reader(filename=vcf_file)
+            df['chrom'] = df['chrom'].astype('category', categories=chromosomes)
+            df['ref'] = df['ref'].astype('category', categories=nucleotides)
+            df['alt'] = df['alt'].astype('category', categories=nucleotides)
 
-    data = []
+            hdf_store.append(table_name, df)
+            
+            num_rows += len(genotype_table)
+
+        return num_rows
 
     for record in vcf_reader:
-        ref_base = record.REF
+        chrom, coord, ref, alt = record.CHROM, record.POS, record.REF, str(record.ALT[0])
+        is_het = (record.samples[0].gt_alleles[0] != record.samples[0].gt_alleles[1]) * 1
 
-        # Skip record with reference base == N
-        if ref_base not in NUCLEOTIDES:
+        if chrom not in chromosomes:
+            continue
+        if ref not in nucleotides:
+            continue
+        if alt not in nucleotides:
             continue
 
-        for alt_base in record.ALT:
-            alt_base = str(alt_base)
+        genotype_table.append([chrom, coord, ref, alt, is_het])
 
-            if (len(ref_base) != 1) or (len(alt_base) != 1):
-                continue
+        if len(genotype_table) >= chunk_size:
+            num_rows = store_table(genotype_table, num_rows)
+            genotype_table = []
 
-            # Skip record with alt base == N
-            if alt_base not in NUCLEOTIDES:
-                continue
+    num_rows = store_table(genotype_table, num_rows)
 
-            # Format output record
-            out_row = {
-                'chromosome': record.CHROM,
-                'start': record.POS,
-                'stop': record.POS,
-                'ref': ref_base,
-                'alt': alt_base,
-            }
+    hdf_store.close()
 
-            data.append(out_row)
 
-    data = pd.DataFrame(data)
-    data['case_id'] = 'NA'
-
-    data.to_csv(out_file, sep=',')
