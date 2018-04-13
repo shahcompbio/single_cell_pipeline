@@ -8,6 +8,7 @@ import pandas as pd
 from scripts import CollectMetrics
 from scripts import GenerateCNMatrix
 from scripts import RunTrimGalore
+from scripts import PlotMetrics
 
 from single_cell.utils import picardutils
 from single_cell.utils import bamutils
@@ -15,6 +16,12 @@ from single_cell.utils import helpers
 from single_cell.utils import csvutils
 from single_cell.utils import gatkutils
 
+def annotate_metrics(infile, sample_info, outfile):
+    csvutils.annotate_metrics(infile, sample_info, outfile)
+
+def plot_metrics(metrics, output, plot_title, gcbias_matrix, gc_content):
+    plot = PlotMetrics(metrics, output, plot_title, gcbias_matrix, gc_content)
+    plot.main()
 
 def merge_all_metrics(infiles, outfile):
     csvutils.merge_csv(infiles, outfile, "outer", "cell_id")

@@ -23,8 +23,12 @@ def align_workflow(workflow, args):
     cellids = helpers.get_samples(args['input_yaml'])
     bam_files, bai_files  = helpers.get_bams(args['input_yaml'])
 
-    alignment_metrics = os.path.join(args["out_dir"], "metrics",'alignment_metrics.txt')
-    gc_metrics = os.path.join(args["out_dir"], "metrics",'gc_metrics.txt')
+    outdir = os.path.join(args["out_dir"], "alignment")
+    lib = args["library_id"]
+    alignment_metrics = os.path.join(outdir, '{}_alignment_metrics.txt'.format(lib))
+    gc_metrics = os.path.join(outdir, '{}_gc_metrics.txt'.format(lib))
+    plot_metrics_output = os.path.join(outdir, '{}_plot_metrics.pdf'.format(lib))
+
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id', 'lane'),
@@ -41,6 +45,7 @@ def align_workflow(workflow, args):
             mgd.OutputFile('bai_markdups', 'cell_id', fnames = bai_files, axes_origin=[]),
             mgd.OutputFile(alignment_metrics),
             mgd.OutputFile(gc_metrics),
+            mgd.OutputFile(plot_metrics_output),
             config['ref_genome'],
             config,
             args,

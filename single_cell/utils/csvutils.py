@@ -9,6 +9,25 @@ import csv
 import warnings
 
 
+def annotate_metrics(infile, sample_info, outfile):
+    infile = pd.read_csv(infile)
+
+    cols = ["cell_call", "experimental_condition", "sample_type",
+            "i5_barcode", "i7_barcode", "sample_plate", "sample_well"]
+
+    for col in cols:
+        infile[col] = "NA"
+
+    cells = infile["cell_id"]
+
+    for col in cols:
+        coldata = [sample_info[cell][col] for cell in cells]
+        infile[col] = coldata
+
+    infile.to_csv(outfile, index=False, na_rep="NA")
+
+
+
 def concatenate_csv(in_filenames, out_filename, nan_val='NA'):
     data = []
 
