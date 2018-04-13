@@ -23,8 +23,9 @@ def align_workflow(workflow, args):
     cellids = helpers.get_samples(args['input_yaml'])
     bam_files, bai_files  = helpers.get_bams(args['input_yaml'])
 
-    outdir = os.path.join(args["out_dir"], "alignment")
     lib = args["library_id"]
+
+    outdir = os.path.join(args["out_dir"], "results", "alignment")
     alignment_metrics = os.path.join(outdir, '{}_alignment_metrics.txt'.format(lib))
     gc_metrics = os.path.join(outdir, '{}_gc_metrics.txt'.format(lib))
     plot_metrics_output = os.path.join(outdir, '{}_plot_metrics.pdf'.format(lib))
