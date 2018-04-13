@@ -14,6 +14,8 @@ from single_cell.utils import helpers
 
 def aneufinder_workflow(workflow, args):
 
+    args = helpers.generate_configs_in_temp(args)
+
     config = helpers.load_config(args)
     cellids = helpers.get_samples(args['input_yaml'])
     bam_files, _  = helpers.get_bams(args['input_yaml'])

@@ -76,6 +76,8 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
 
 def variant_calling_workflow(workflow, args):
 
+    args = helpers.generate_configs_in_temp(args)
+
     config = helpers.load_config(args)
 
     bam_files, bai_files  = helpers.get_bams(args['input_yaml'])

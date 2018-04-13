@@ -20,7 +20,7 @@ mm10:
 
 azure:
   max_cores: null
-  mutationseq: /usr/local/museq/ 
+  mutationseq: /usr/local/museq/
   mutationseq_model:  /usr/local/museq/model_v4.1.2_anaconda_sk_0.13.1.npz
 
   grch37:
