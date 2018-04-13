@@ -60,6 +60,9 @@ def check_required_args(allcommands, parser):
             arg_exists(args, "input_yaml", mode, parser)
             arg_exists(args, "input_template", mode, parser)
 
+        elif mode in ["breakpoint_calling"]:
+            arg_exists(args, "input_yaml", mode, parser)
+
         elif mode in ["generate_config", "clean_sentinels"]:
             continue
         else:
@@ -178,6 +181,9 @@ def parse_args():
                                   action=parseRegionTemplate,
                                   help='''template for saving the bams merged by region, use {} as place holder for genomic region''')
 
+    # subparser to align bams
+    breakpoint_calling = subparsers.add_parser("breakpoint_calling")
+    breakpoint_calling.set_defaults(which='breakpoint_calling')
 
     # subparser to align bams
     generate_config = subparsers.add_parser("generate_config")

@@ -85,6 +85,11 @@ def variant_calling_workflow(workflow, args):
     varcalls_dir = os.path.join(args['out_dir'], 'results',
                                 'variant_calling')
 
+    museq_vcf = os.path.join(varcalls_dir, 'museq_snv.vcf')
+    strelka_snv_vcf = os.path.join(varcalls_dir, 'strelka_snv.vcf')
+    strelka_indel_vcf = os.path.join(varcalls_dir, 'strelka_indel.vcf')
+    snv_h5_filename = os.path.join(varcalls_dir, 'snv_annotations.h5')
+
     wgs_bam_template = args["tumour_template"]
     wgs_bai_template = args["tumour_template"] + ".bai"
 
@@ -108,7 +113,6 @@ def variant_calling_workflow(workflow, args):
         )
     )
 
-    museq_vcf = os.path.join(varcalls_dir, 'museq_snv.vcf')
     workflow.subworkflow(
         name='museq',
         func=mutationseq.create_museq_workflow,
@@ -123,8 +127,6 @@ def variant_calling_workflow(workflow, args):
         ),
     )
 
-    strelka_snv_vcf = os.path.join(varcalls_dir, 'strelka_snv.vcf')
-    strelka_indel_vcf = os.path.join(varcalls_dir, 'strelka_indel.vcf')
     workflow.subworkflow(
         name='strelka',
         func=strelka.create_strelka_workflow,
@@ -188,4 +190,19 @@ def variant_calling_workflow(workflow, args):
         )
     )
 
+    workflow.transform(
+        name='build_results_file',
+        func=biowrappers.components.io.hdf5.tasks.concatenate_tables,
+        args=([
+                mgd.TempInputFile('snv_counts.h5'),
+                mgd.TempInputFile('snv_annotations.h5'),
+            ],
+            pypeliner.managed.OutputFile(snv_h5_filename),
+        ),
+        kwargs={
+            'drop_duplicates' : True,
+        }
+    )
+
     return workflow
+

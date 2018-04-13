@@ -6,6 +6,7 @@ from aneufinder import aneufinder_workflow
 from merge_bams import merge_bams_workflow
 from variant_calling import variant_calling_workflow
 from germline_calling import germline_calling_workflow
+from breakpoint_calling import breakpoint_calling_workflow
 from split_bam import split_bam_workflow
 from generate_config import generate_config
 from clean_sentinels import clean_sentinels
@@ -68,6 +69,12 @@ def main():
         pyp = pypeliner.app.Pypeline(config=args["germline_calling"])
         workflow = pypeliner.workflow.Workflow()
         workflow = germline_calling_workflow(workflow, args["germline_calling"])
+        pyp.run(workflow)
+
+    if "breakpoint_calling" in args:
+        pyp = pypeliner.app.Pypeline(config=args["breakpoint_calling"])
+        workflow = pypeliner.workflow.Workflow()
+        workflow = breakpoint_calling_workflow(workflow, args["breakpoint_calling"])
         pyp.run(workflow)
 
 if __name__ == "__main__":
