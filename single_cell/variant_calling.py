@@ -8,6 +8,7 @@ import os
 import pypeliner
 import pypeliner.managed as mgd
 import biowrappers.components.io.vcf.tasks
+import biowrappers.components.io.hdf5.tasks
 import biowrappers.pipelines.snv_call_and_annotate
 from workflows import snv_postprocessing
 from workflows import mutationseq 
@@ -15,6 +16,60 @@ from workflows import split_bams
 from workflows import strelka
 from single_cell.utils import helpers
 from single_cell.utils import vcfutils
+from single_cell.utils import hdf5utils
+
+
+def create_snv_allele_counts_for_vcf_targets_workflow(
+        bam_files,
+        bai_files
+        vcf_file,
+        out_file,
+        chromosomes=default_chromosomes,
+        count_duplicates=False,
+        min_bqual=0,
+        min_mqual=0,
+        split_size=int(1e7),
+        table_name='snv_allele_counts',
+        vcf_to_bam_chrom_map=None):
+
+    workflow = pypeliner.workflow.Workflow(default_ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 })
+
+    workflow.setobj(
+        obj=mgd.OutputChunks('cell_id'),
+        value=bam_files.keys(),
+    )
+
+    workflow.transform(
+        name='get_snv_allele_counts_for_vcf_targets',
+        axes=('cell_id',),
+        func=biowrappers.components.io.vcf.tasks.get_snv_allele_counts_for_vcf_targets,
+        args=(
+            mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files),
+            mgd.InputFile('tumour.bam.bai', 'cell_id', fnames=bai_files),
+            mgd.InputFile(vcf_file),
+            mgd.TempOutputFile('counts.h5', 'cell_id'),
+            table_name,
+        ),
+        kwargs={
+            'count_duplicates': count_duplicates,
+            'min_bqual': min_bqual,
+            'min_mqual': min_mqual,
+            'vcf_to_bam_chrom_map': vcf_to_bam_chrom_map,
+            'cell_id': mgd.Instance('cell_id'),
+        }
+    )
+
+    workflow.transform(
+        name='merge_snv_allele_counts',
+        func=biowrappers.components.io.hdf5.tasks.concatenate_tables,
+        args=(
+            mgd.TempInputFile('counts.h5', 'cell_id'),
+            mgd.OutputFile(out_file),
+        ),
+    )
+
+    return workflow
+
 
 def variant_calling_workflow(workflow, args):
 
@@ -118,23 +173,15 @@ def variant_calling_workflow(workflow, args):
         }
     )
 
-    # countdata = os.path.join(varcalls_dir, 'counts.csv')
-    # olp_calls = os.path.join(varcalls_dir, 'overlapping_calls.csv')
-    # workflow.subworkflow(
-    #     name='snv_postprocessing',
-    #     func=snv_postprocessing.create_snv_postprocessing_workflow,
-    #     args=(
-    #         mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files),
-    #         mgd.InputFile('bam_markdups_index', 'cell_id', fnames=bai_files),
-    #         [
-    #             mgd.InputFile(museq_csv),
-    #             mgd.InputFile(strelka_snv_csv),
-    #         ],
-    #         mgd.OutputFile(countdata),
-    #         mgd.OutputFile(olp_calls),
-    #         cellids,
-    #         config,
-    #     )
-    # )
+    workflow.subworkflow(
+        name='snv_postprocessing',
+        func=snv_postprocessing.create_snv_postprocessing_workflow,
+        args=(
+            mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files),
+            mgd.InputFile('bam_markdups_index', 'cell_id', fnames=bai_files),
+            mgd.TempInputFile('all.snv.vcf.gz'),
+            mgd.TempOutputFile('snv_counts.h5'),
+        )
+    )
 
     return workflow
