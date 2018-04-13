@@ -12,15 +12,14 @@ from single_cell.utils import helpers
 
 def align_workflow(workflow, args):
 
+    args = helpers.generate_configs_in_temp(args)
+
     config = helpers.load_config(args)
-
-
 
     fastq1_files, fastq2_files  = helpers.get_fastqs(args['input_yaml'])
     seqinfo = helpers.get_seqinfo(args['input_yaml'])
     sampleinfo = helpers.get_sample_info(args['input_yaml'])
 
-    
     cellids = helpers.get_samples(args['input_yaml'])
     bam_files, bai_files  = helpers.get_bams(args['input_yaml'])
 

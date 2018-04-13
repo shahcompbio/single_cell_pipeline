@@ -189,7 +189,11 @@ def parse_args():
     generate_config = subparsers.add_parser("generate_config")
     generate_config.set_defaults(which='generate_config')
 
-    generate_config.add_argument("--output",
+    generate_config.add_argument("--pipeline_config",
+                                  required=True,
+                                  help='''output yaml file''')
+
+    generate_config.add_argument("--batch_config",
                                   required=True,
                                   help='''output yaml file''')
 

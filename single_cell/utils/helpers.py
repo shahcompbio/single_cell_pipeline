@@ -13,7 +13,7 @@ import pysam
 import shutil
 
 from collections import OrderedDict
-
+import warnings
 import subprocess
 from subprocess import Popen, PIPE
 
@@ -24,6 +24,52 @@ from single_cell.config import config_generator
 
 from multiprocessing.pool import ThreadPool
 
+from single_cell.config import generate_pipeline_config
+from single_cell.config import generate_batch_config
+
+def get_incrementing_filename(path):
+    """
+    avoid overwriting files. if path exists then return path
+    otherwise generate a path that doesnt exist.
+    """
+
+    if not os.path.exists(path):
+        return path
+
+    i = 0
+    while os.path.exists("{}.{}".format(path, i)):
+        i += 1
+
+    return "{}.{}".format(path, i)
+
+
+def generate_configs_in_temp(args):
+
+    config_yaml = "config.yaml"
+    batch_yaml = "batch.yaml"
+
+    #use pypeliner tmpdir to store yaml
+    if args['tmpdir']:
+        config_yaml = os.path.join(args["tmpdir"], config_yaml)
+        batch_yaml = os.path.join(args["tmpdir"], batch_yaml)
+    else:
+        warnings.warn("no tmpdir specified, generating configs in working dir")
+        config_yaml = os.path.join(os.getcwd(), config_yaml)
+        batch_yaml = os.path.join(os.getcwd(), batch_yaml)
+
+    config_yaml = get_incrementing_filename(config_yaml)
+    batch_yaml = get_incrementing_filename(batch_yaml)
+
+    params_override = args["config_override"]
+
+    generate_pipeline_config.main(output=config_yaml, input_params = params_override)
+
+    generate_batch_config.main(output=batch_yaml, input_params = params_override)
+
+    args["config_file"] = config_yaml
+    args["batch_yaml"] = batch_yaml
+
+    return args
 
 def run_in_parallel(worker, args, ncores=None):
 
@@ -206,11 +252,7 @@ def get_bams(fastqs_file):
 
 def load_config(args):
 
-    if args.get("config_file", None):
-        return load_yaml(args["config_file"])
-    else:
-        return config_generator.main(input_params=args["config_override"])
-
+    return load_yaml(args["config_file"])
 
 
 def makedirs(directory, isfile=False):

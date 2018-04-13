@@ -14,6 +14,8 @@ from workflows import singlecell_summary
 
 def hmmcopy_workflow(workflow, args):
 
+    args = helpers.generate_configs_in_temp(args)
+
     config = helpers.load_config(args)
     cellids = helpers.get_samples(args['input_yaml'])
     bam_files, bai_files  = helpers.get_bams(args['input_yaml'])
