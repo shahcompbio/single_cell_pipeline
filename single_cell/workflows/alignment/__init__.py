@@ -16,6 +16,7 @@ def create_alignment_workflow(
         bai_filename,
         alignment_metrics,
         gc_metrics,
+        plot_metrics,
         ref_genome,
         config,
         args,
@@ -214,8 +215,32 @@ def create_alignment_workflow(
             mgd.InputFile(insert_metrics_filename, 'cell_id', axes_origin=[]),
             mgd.InputFile(wgs_metrics_filename, 'cell_id', axes_origin=[]),
             mgd.TempSpace("tempdir_collect_metrics"),
-            mgd.OutputFile(alignment_metrics),
+            mgd.TempOutputFile("alignment_metrics.csv"),
         ),
+    )
+
+    workflow.transform(
+        name='annotate_metrics',
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
+        func=tasks.annotate_metrics,
+        args=(
+            mgd.TempInputFile("alignment_metrics.csv"),
+            sample_info,
+            mgd.OutputFile(alignment_metrics),
+        )
+    )
+
+    workflow.transform(
+        name='plot_metrics',
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
+        func=tasks.plot_metrics,
+        args=(
+            mgd.InputFile(alignment_metrics),
+            mgd.OutputFile(plot_metrics),
+            'QC pipeline metrics',
+            mgd.InputFile(gc_metrics),
+            config['gc_windows'],
+        )
     )
 
     return workflow
