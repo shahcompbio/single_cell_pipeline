@@ -8,6 +8,7 @@ From: ubuntu:latest
     cp -r single_cell_pipeline /tmp/
     cp -r museq /tmp/
     cp -r boost_1_57_0 /tmp/
+    cp -r biowrappers /tmp/
 
 %environment
     export PATH=/usr/local/miniconda2/bin:$PATH
@@ -31,5 +32,6 @@ From: ubuntu:latest
     cd /usr/local/museq/
     make clean
     make PYTHON=python BOOSTPATH=/tmp/boost_1_57_0/
+    cd /tmp/biowrappers/; python setup.py install
     pip install scikit-learn==0.13.1
     conda install strelka==1.0.14 -y

@@ -30,3 +30,6 @@ pypdf2
 networkx
 bioconductor-aneufinder
 bioconductor-bsgenome.hsapiens.ucsc.hg19
+bioconductor-titan
+biowrappers
+remixt
