@@ -62,7 +62,7 @@ def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', sep=',', suffix
 
     data = merge_frames(data, how, on, suffixes = suffixes)
     data = data.fillna(nan_val)
-    data.to_csv(out_filename, index=False)
+    data.to_csv(out_filename, index=False, sep=sep)
 
 
 def merge_frames(frames, how, on, suffixes=None):

@@ -10,6 +10,26 @@ picard_wgs_params:
   # Count unpaired reads for wgs metrics
   count_unpaired: false
 
+titan_params:
+
+  normal_contamination: [0.2, 0.4, 0.6, 0.8]
+
+  num_clusters: [1, 2]
+
+  ploidy: [1, 2, 3, 4]
+
+  chrom_info_filename: /refdata/chromInfo.txt.gz
+
+  window_size: 1000
+
+  ref_data_dir: /refdata/remixt/remixt
+
+  # Binned GC content file
+  gc_wig: "{$cluster:$reference:gc_wig_file:$bin_size}"
+
+  # Binned mappability file
+  mappability_wig: "{$cluster:$reference:map_wig_file:$bin_size}"
+
 # HMMcopy parameters
 hmmcopy_params:
   autoploidy:

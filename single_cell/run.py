@@ -10,6 +10,8 @@ from breakpoint_calling import breakpoint_calling_workflow
 from split_bam import split_bam_workflow
 from generate_config import generate_config
 from clean_sentinels import clean_sentinels
+from copy_number import copy_number_calling_workflow
+
 
 # from copyclone import copyclone_workflow
 
@@ -63,6 +65,12 @@ def main():
         pyp = pypeliner.app.Pypeline(config=args["variant_calling"])
         workflow = pypeliner.workflow.Workflow()
         workflow = variant_calling_workflow(workflow, args["variant_calling"])
+        pyp.run(workflow)
+
+    if "copy_number_calling" in args:
+        pyp = pypeliner.app.Pypeline(config=args["copy_number_calling"])
+        workflow = pypeliner.workflow.Workflow()
+        workflow = copy_number_calling_workflow(workflow, args["copy_number_calling"])
         pyp.run(workflow)
 
     if "germline_calling" in args:
