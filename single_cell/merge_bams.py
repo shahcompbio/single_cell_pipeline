@@ -12,8 +12,6 @@ from single_cell.utils import helpers
 def merge_bams_workflow(workflow, args):
 
 
-    args = helpers.generate_configs_in_temp(args)
-
     input_yaml = args["input_yaml"]
     output_template = args["merged_bam_template"]
     

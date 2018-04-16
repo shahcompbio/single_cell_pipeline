@@ -13,8 +13,6 @@ from single_cell.utils import helpers
 
 def copy_number_calling_workflow(workflow, args):
 
-    args = helpers.generate_configs_in_temp(args)
-
     config = helpers.load_config(args)
 
     tumour_bam_files, tumour_bai_files  = helpers.get_bams(args['tumour_yaml'])

@@ -12,12 +12,15 @@ from generate_config import generate_config
 from clean_sentinels import clean_sentinels
 from copy_number import copy_number_calling_workflow
 
+from single_cell.utils import helpers
 
 # from copyclone import copyclone_workflow
 
 def main():
 
     args = parse_args()
+
+    args = helpers.generate_configs_in_temp(args)
 
     if "generate_config" in args:
         generate_config(args["generate_config"])

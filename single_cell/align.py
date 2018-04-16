@@ -12,8 +12,6 @@ from single_cell.utils import helpers
 
 def align_workflow(workflow, args):
 
-    args = helpers.generate_configs_in_temp(args)
-
     config = helpers.load_config(args)
 
     fastq1_files, fastq2_files  = helpers.get_fastqs(args['input_yaml'])
