@@ -18,8 +18,6 @@ import variant_calling
 
 def germline_calling_workflow(workflow, args):
 
-    args = helpers.generate_configs_in_temp(args)
-
     config = helpers.load_config(args)
 
     bam_files, bai_files  = helpers.get_bams(args['input_yaml'])

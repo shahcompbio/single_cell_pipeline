@@ -64,8 +64,9 @@ def generate_configs_in_temp(args):
 
     generate_batch_config.main(output=batch_yaml, input_params = params_override)
 
-    args["config_file"] = config_yaml
-    args["batch_yaml"] = batch_yaml
+    for mode, mode_args in args.iteritems():
+        mode_args["config_file"] = config_yaml
+        mode_args["batch_yaml"] = batch_yaml
 
     return args
 

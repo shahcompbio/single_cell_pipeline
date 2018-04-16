@@ -11,8 +11,6 @@ from single_cell.utils import helpers
 
 def split_bam_workflow(workflow, args):
 
-    args = helpers.generate_configs_in_temp(args)
-
     config = helpers.load_config(args)
 
     normal_bam_template = args["split_bam_template"]
