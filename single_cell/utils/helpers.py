@@ -19,8 +19,6 @@ from subprocess import Popen, PIPE
 
 import multiprocessing
 
-from single_cell.config import config_generator
-
 
 from multiprocessing.pool import ThreadPool
 
