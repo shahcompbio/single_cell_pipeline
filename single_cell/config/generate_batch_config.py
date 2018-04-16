@@ -4,22 +4,22 @@ import yaml
 import json
 import re
 import copy
+import single_cell
 
 
 def get_version(reference):
     if reference.get("version", None):
         version = reference["version"].replace('.', '_')
-        return version
+    else:
+        version = single_cell.__version__
 
-    version = single_cell.__version__
+        # strip setuptools metadata
+        version = version.split("+")[0]
 
-    # strip setuptools metadata
-    version = version.split("+")[0]
+        # batch doesnt support . in pool names
+        version = version.replace('.', '_')
 
-    # batch doesnt support . in pool names
-    version = version.replace('.', '_')
-
-    return version
+    reference["version"] = version
 
 
 def eval_expression(fields, reference):
@@ -88,6 +88,8 @@ def main(output=None, input_params=None):
 
     if input_params:
         params.update(input_params)
+
+    get_version(params)
 
     resolvedpaths = go_to_leafs(config, params)
 
