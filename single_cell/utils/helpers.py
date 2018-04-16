@@ -46,10 +46,13 @@ def generate_configs_in_temp(args):
     config_yaml = "config.yaml"
     batch_yaml = "batch.yaml"
 
+    pipelineargs = args[args.keys()[0]]
+
+    tmpdir = pipelineargs.get("tmpdir", None)
     #use pypeliner tmpdir to store yaml
-    if args['tmpdir']:
-        config_yaml = os.path.join(args["tmpdir"], config_yaml)
-        batch_yaml = os.path.join(args["tmpdir"], batch_yaml)
+    if tmpdir:
+        config_yaml = os.path.join(tmpdir, config_yaml)
+        batch_yaml = os.path.join(tmpdir, batch_yaml)
     else:
         warnings.warn("no tmpdir specified, generating configs in working dir")
         config_yaml = os.path.join(os.getcwd(), config_yaml)
@@ -58,13 +61,13 @@ def generate_configs_in_temp(args):
     config_yaml = get_incrementing_filename(config_yaml)
     batch_yaml = get_incrementing_filename(batch_yaml)
 
-    params_override = args["config_override"]
+    params_override = pipelineargs["config_override"]
 
     generate_pipeline_config.main(output=config_yaml, input_params = params_override)
 
     generate_batch_config.main(output=batch_yaml, input_params = params_override)
 
-    for mode, mode_args in args.iteritems():
+    for _, mode_args in args.iteritems():
         mode_args["config_file"] = config_yaml
         mode_args["batch_yaml"] = batch_yaml
 
