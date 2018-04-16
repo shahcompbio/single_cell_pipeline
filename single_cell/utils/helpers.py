@@ -69,7 +69,7 @@ def generate_configs_in_temp(args):
 
     for _, mode_args in args.iteritems():
         mode_args["config_file"] = config_yaml
-        mode_args["batch_yaml"] = batch_yaml
+        mode_args["submit_config"] = batch_yaml
 
     return args
 
