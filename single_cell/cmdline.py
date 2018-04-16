@@ -63,7 +63,7 @@ def check_required_args(allcommands, parser):
         elif mode in ["breakpoint_calling"]:
             arg_exists(args, "input_yaml", mode, parser)
 
-        elif mode in ["generate_config", "clean_sentinels"]:
+        elif mode in ["generate_config", "clean_sentinels", "copy_number_calling"]:
             continue
         else:
             raise parser.error("unknown mode: {}".format(mode))
@@ -171,6 +171,20 @@ def parse_args():
                                  required=True,
                                  action=parseRegionTemplate,
                                  help='''template for saving the bams merged by region, use {} as place holder for genomic region''')
+
+
+    # subparser to align bams
+    copy_number_calling = subparsers.add_parser("copy_number_calling")
+    copy_number_calling.set_defaults(which='copy_number_calling')
+
+    copy_number_calling.add_argument("--tumour_yaml",
+                                 required=True,
+                                 help='''template for saving the bams merged by region, use {} as place holder for genomic region''')
+
+    copy_number_calling.add_argument("--normal_yaml",
+                                 required=True,
+                                 help='''template for saving the bams merged by region, use {} as place holder for genomic region''')
+
 
     # subparser to align bams
     germline_calling = subparsers.add_parser("germline_calling")

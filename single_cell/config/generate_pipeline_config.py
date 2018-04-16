@@ -22,6 +22,9 @@ def get_version(reference):
 
 def eval_expression(fields, reference):
 
+    if type(fields) in [int, float, bool] or not fields:
+        return fields
+
     if not fields.startswith('{') or not fields.endswith('}'):
         return fields
 
