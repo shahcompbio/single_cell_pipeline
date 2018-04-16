@@ -8,7 +8,8 @@ import copy
 
 def get_version(reference):
     if reference.get("version", None):
-        return reference["version"]
+        version = reference["version"].replace('.', '_')
+        return version
 
     version = single_cell.__version__
 
