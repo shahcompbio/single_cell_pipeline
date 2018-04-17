@@ -42,7 +42,7 @@ def get_incrementing_filename(path):
     return "{}.{}".format(path, i)
 
 
-def generate_pipeline_config(args):
+def generate_pipeline_config_in_temp(args):
 
     pipelineargs = args[args.keys()[0]]
 
@@ -72,7 +72,7 @@ def generate_pipeline_config(args):
     return args
 
 
-def generate_submit_config(args):
+def generate_submit_config_in_temp(args):
 
     pipelineargs = args[args.keys()[0]]
 
@@ -103,9 +103,9 @@ def generate_submit_config(args):
 
 def generate_configs_in_temp(args):
 
-    args = generate_pipeline_config(args)
+    args = generate_pipeline_config_in_temp(args)
 
-    args = generate_batch_config(args)
+    args = generate_submit_config_in_temp(args)
 
     return args
 
