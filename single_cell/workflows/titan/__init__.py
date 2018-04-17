@@ -4,69 +4,18 @@ Created on Apr 13, 2018
 @author: dgrewal
 '''
 import os
+import tasks
 import pypeliner
 import pypeliner.managed as mgd
-import biowrappers
-import tasks
-
-import remixt.workflow
 from biowrappers.components.copy_number_calling import titan
 import biowrappers.components.io.hdf5.tasks as hdf5_tasks
 
 default_chromosomes = [str(a) for a in xrange(1, 23)] + ['X']
 
 
-
-def create_extract_seqdata_workflow(
-     bam_filename,
-     seqdata_filename,
-     config,
-     ref_data_dir
-):
-    chromosomes = remixt.config.get_chromosomes(config, ref_data_dir)
-    snp_positions_filename = remixt.config.get_filename(config, ref_data_dir, 'snp_positions')
-
-    bam_max_fragment_length = remixt.config.get_param(config, 'bam_max_fragment_length')
-    bam_max_soft_clipped = remixt.config.get_param(config, 'bam_max_soft_clipped')
-    bam_check_proper_pair = remixt.config.get_param(config, 'bam_check_proper_pair')
-
-    workflow = pypeliner.workflow.Workflow()
-
-    workflow.setobj(obj=mgd.OutputChunks('chromosome'), value=chromosomes)
-
-    workflow.transform(
-        name='create_chromosome_seqdata',
-        ctx={'mem': 16},
-        func=tasks.create_chromosome_seqdata,
-        args=(
-            mgd.TempOutputFile('seqdata', 'chromosome', axes_origin=[]),
-            mgd.InputFile(bam_filename),
-            snp_positions_filename,
-            chromosomes,
-            bam_max_fragment_length,
-            bam_max_soft_clipped,
-            bam_check_proper_pair,
-        ),
-    )
-
-    workflow.transform(
-        name='merge_seqdata',
-        ctx={'mem': 16},
-        func=remixt.seqdataio.merge_seqdata,
-        args=(
-            mgd.OutputFile(seqdata_filename),
-            mgd.TempInputFile('seqdata', 'chromosome'),
-        ),
-    )
-
-    return workflow
-
-
-
-def create_titan_workflow(
-        normal_bam, normal_bai, tumour_bam, tumour_bai, ref_genome,
-        out_file, raw_data_dir,
-        config, args, tumour_cells, normal_cells):
+def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
+                          raw_data_dir, out_file, config, args,
+                          tumour_cells, normal_cells, cloneid):
 
     results_files = os.path.join(raw_data_dir, 'results', 'sample.h5')
 
@@ -82,44 +31,20 @@ def create_titan_workflow(
         value=normal_cells,
     )
 
-
-    workflow.subworkflow(
-        name='extract_seqdata_workflow_normal',
-        axes=('normal_cell_id',),
-        func=create_extract_seqdata_workflow,
-        args=(
-            pypeliner.managed.InputFile('bam', 'normal_cell_id', fnames=normal_bam),
-            pypeliner.managed.TempOutputFile('normal_sample.h5', 'normal_cell_id'),
-            config['titan_params'].get('extract_seqdata', {}),
-            config['titan_params']['ref_data_dir'],
-        ),
-    )
-
-    workflow.subworkflow(
-        name='extract_seqdata_workflow_tumour',
-        axes=('tumour_cell_id',),
-        func=create_extract_seqdata_workflow,
-        args=(
-            pypeliner.managed.InputFile('bam', 'tumour_cell_id', fnames=tumour_bam),
-            pypeliner.managed.TempOutputFile('tumour_sample.h5', 'tumour_cell_id'),
-            config['titan_params'].get('extract_seqdata', {}),
-            config['titan_params']['ref_data_dir'],
-        ),
-    )
-
-#     normal_seqdata = "/temp/titan_workflow/normal_cell_id/{normal_cell_id}/normal_sample.h5"
-#     tumour_seqdata = "/temp/titan_workflow/tumour_cell_id/{tumour_cell_id}/tumour_sample.h5"
-
     workflow.transform(
         name='prepare_normal_data',
         ctx={'mem': 16, 'num_retry': 3, 'mem_retry_increment': 4},
         axes=('normal_cell_id',),
         func=titan.tasks.prepare_normal_data,
         args=(
-#               pypeliner.managed.InputFile('normal_sample.h5', 'normal_cell_id', template=normal_seqdata),
-            pypeliner.managed.TempInputFile('normal_sample.h5', 'normal_cell_id'),
+            pypeliner.managed.InputFile(
+                'normal_sample.h5',
+                'normal_cell_id',
+                fnames=normal_seqdata),
             pypeliner.managed.TempOutputFile('normal.wig', 'normal_cell_id'),
-            pypeliner.managed.TempOutputFile('het_positions.tsv', 'normal_cell_id'),
+            pypeliner.managed.TempOutputFile(
+                'het_positions.tsv',
+                'normal_cell_id'),
             config["titan_params"],
         ),
     )
@@ -129,11 +54,12 @@ def create_titan_workflow(
         ctx={'mem': 16, 'num_retry': 3, 'mem_retry_increment': 4},
         func=tasks.merge_het_positions,
         args=(
-            pypeliner.managed.TempInputFile('het_positions.tsv', 'normal_cell_id'),
+            pypeliner.managed.TempInputFile(
+                'het_positions.tsv',
+                'normal_cell_id'),
             pypeliner.managed.TempOutputFile('het_positions.tsv'),
         ),
     )
-
 
     workflow.transform(
         name='prepare_tumour_data',
@@ -141,11 +67,15 @@ def create_titan_workflow(
         ctx={'mem': 20},
         func=titan.tasks.prepare_tumour_data,
         args=(
-#               pypeliner.managed.InputFile('tumour_sample.h5', 'tumour_cell_id', template=tumour_seqdata),
-            pypeliner.managed.TempInputFile('tumour_sample.h5', 'tumour_cell_id'),
+            pypeliner.managed.InputFile(
+                'tumour_sample.h5',
+                'tumour_cell_id',
+                fnames=tumour_seqdata),
             pypeliner.managed.TempInputFile('het_positions.tsv'),
             pypeliner.managed.TempOutputFile('tumour.wig', 'tumour_cell_id'),
-            pypeliner.managed.TempOutputFile('tumour_alleles.tsv', 'tumour_cell_id'),
+            pypeliner.managed.TempOutputFile(
+                'tumour_alleles.tsv',
+                'tumour_cell_id'),
             config["titan_params"],
         ),
     )
@@ -155,7 +85,9 @@ def create_titan_workflow(
         ctx={'mem': 16, 'num_retry': 3, 'mem_retry_increment': 4},
         func=tasks.merge_tumour_alleles,
         args=(
-            pypeliner.managed.TempInputFile('tumour_alleles.tsv', 'tumour_cell_id'),
+            pypeliner.managed.TempInputFile(
+                'tumour_alleles.tsv',
+                'tumour_cell_id'),
             pypeliner.managed.TempOutputFile('tumour_alleles.tsv'),
         ),
     )
@@ -188,7 +120,6 @@ def create_titan_workflow(
         args=(config["titan_params"],),
     )
 
-
     workflow.transform(
         name='run_titan',
         axes=('init_param_id',),
@@ -214,52 +145,70 @@ def create_titan_workflow(
             pypeliner.managed.TempInputFile('cn.tsv', 'init_param_id'),
             pypeliner.managed.TempInputFile('params.tsv', 'init_param_id'),
             pypeliner.managed.OutputFile('results', template=results_files),
-            pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', 'cn_loci.tsv')),
+            pypeliner.managed.OutputFile(
+                os.path.join(
+                    raw_data_dir,
+                    'output',
+                    'cn_loci.tsv')),
             pypeliner.managed.OutputFile(
                 os.path.join(raw_data_dir, 'output', 'cn_segments.tsv')),
-            pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', 'cn_igv.tsv')),
-            pypeliner.managed.OutputFile(os.path.join(raw_data_dir, 'output', 'params.tsv')),
+            pypeliner.managed.OutputFile(
+                os.path.join(
+                    raw_data_dir,
+                    'output',
+                    'cn_igv.tsv')),
+            pypeliner.managed.OutputFile(
+                os.path.join(
+                    raw_data_dir,
+                    'output',
+                    'params.tsv')),
             config,
-            "MERGED"
+            cloneid
         ),
         kwargs={
             'breakpoints_filename': None,
         },
     )
 
-#     workflow.setobj(
-#         obj=pypeliner.managed.OutputChunks('sample_id', 'chromosome'),
-#         value=config.get('chromosomes', default_chromosomes),
-#         axes=('sample_id',)
-#     )
-#
-#     workflow.commandline(
-#         name='plot_chromosome',
-#         axes=('sample_id', 'chromosome'),
-#         ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
-#         args=(
-#             'plot_titan_chromosome.R',
-#             pypeliner.managed.Instance('chromosome'),
-#             pypeliner.managed.InputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_cn_loci.tsv'), 'sample_id'),
-#             pypeliner.managed.InputFile(os.path.join(raw_data_dir, 'output', '{sample_id}_params.tsv'), 'sample_id'),
-#             pypeliner.managed.OutputFile(
-#                 os.path.join(raw_data_dir, 'output', '{sample_id}_chr_{chromosome}.png'), 'sample_id', 'chromosome'),
-#         ),
-#     )
-#
-#     workflow.transform(
-#         name='merge_results',
-#         ctx={'mem': 8, 'num_retry': 3, 'mem_retry_increment': 2},
-#         func=hdf5_tasks.merge_hdf5,
-#         args=(
-#             pypeliner.managed.InputFile('results', 'sample_id', template=results_files),
-#             pypeliner.managed.OutputFile(out_file),
-#         ),
-#         kwargs={
-#             'table_names': '/sample_{}',
-#         },
-#     )
+    workflow.setobj(
+        obj=mgd.OutputChunks('chromosome'),
+        value=default_chromosomes,
+    )
 
+    workflow.commandline(
+        name='plot_chromosome',
+        axes=('chromosome',),
+        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
+        args=(
+            'plot_titan_chromosome.R',
+            pypeliner.managed.Instance('chromosome'),
+            pypeliner.managed.InputFile(
+                os.path.join(
+                    raw_data_dir,
+                    'output',
+                    'cn_loci.tsv')),
+            pypeliner.managed.InputFile(
+                os.path.join(
+                    raw_data_dir,
+                    'output',
+                    'params.tsv')),
+            pypeliner.managed.OutputFile(
+                os.path.join(raw_data_dir, 'output', 'chr_{chromosome}.png'), 'chromosome'),
+        ),
+    )
 
+    workflow.transform(
+        name='merge_results',
+        ctx={'mem': 8, 'num_retry': 3, 'mem_retry_increment': 2},
+        func=hdf5_tasks.merge_hdf5,
+        args=(
+            {cloneid: pypeliner.managed.InputFile(
+                'results', template=results_files)},
+            pypeliner.managed.OutputFile(out_file),
+        ),
+        kwargs={
+            'table_names': '/sample_{}'.format(cloneid),
+        },
+    )
 
     return workflow

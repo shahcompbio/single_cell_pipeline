@@ -36,8 +36,23 @@ def merge_het_positions(input_csvs, output):
 
 def merge_tumour_alleles(input_csvs, output):
 
-    with open(output, 'w') as outfile:
-        for _, infile in input_csvs.iteritems():
-            with open(infile) as inputcsv:
-                for line in inputcsv:
-                    outfile.write(line)
+    data = {}
+
+    for _, infile in input_csvs.iteritems():
+
+        with open(infile) as reader:
+            for line in reader:
+                line = line.strip().split()
+                chrom, pos, _, ref, _, alt = line
+                ref = int(ref)
+                alt = int(alt)
+
+                if (chrom, pos) not in data:
+                    data[(chrom, pos)] = (ref, alt)
+                else:
+                    oldref, oldalt = data[(chrom, pos)]
+                    data[(chrom, pos)] = (oldref + ref, oldalt + alt)
+
+    with open(output, "w") as writer:
+        for (chrom, pos), (ref, alt) in data.iteritems():
+            writer.write("{}\t{}\tA\t{}\tT\t{}\n".format(chrom, pos, ref, alt))

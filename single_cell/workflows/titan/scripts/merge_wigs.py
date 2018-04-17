@@ -5,6 +5,7 @@ Created on Apr 13, 2018
 '''
 import numpy as np
 import argparse
+import warnings
 
 
 def read_wig(infile, counts=False):
@@ -25,8 +26,9 @@ def read_wig(infile, counts=False):
 
                 chrom = line[1].split('=')[1]
                 start = int(line[2].split('=')[1])
-                winsize = int(line[3].split('=')[1])
-                chrom_key = (chrom, start, winsize)
+                step = int(line[3].split('=')[1])
+                span = int(line[4].split('=')[1])
+                chrom_key = (chrom, start, step, span)
             else:
                 value = int(line) if counts else float(line)
 
@@ -46,9 +48,11 @@ def merge_two_wigs(wig1, wig2):
         wig2data = wig2.get(chrom_key, None)
 
         if not wig2data:
-            raise Exception(
-                "Chromsome {} missing in wig file".format(
+            warnings.warn(
+                "Chromosome {} missing in wig file".format(
                     chrom_key[0]))
+            #just add zeros if no data
+            wig2data = [0] * len(wig1data)
 
         mergeddata = np.add(wig1data, wig2data)
 
@@ -61,7 +65,7 @@ def write_to_wig(wigdata, wigfile):
 
     with open(wigfile, 'w') as wigout:
         for chrom_key, data in wigdata.iteritems():
-            header = "fixedStep chrom={} start={} span={}".format(*chrom_key)
+            header = "fixedStep chrom={} start={} step={} span={}\n".format(*chrom_key)
             wigout.write(header)
             for binval in data:
 
