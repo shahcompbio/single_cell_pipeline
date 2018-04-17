@@ -191,6 +191,11 @@ def parse_args():
                                      required=True,
                                      help='''template for saving the bams merged by region, use {} as place holder for genomic region''')
 
+    copy_number_calling.add_argument("--clone_id",
+                                     required=True,
+                                     help='''ID to identify the results''')
+
+
     # subparser to align bams
     germline_calling = subparsers.add_parser("germline_calling")
     germline_calling.set_defaults(which='germline_calling')
