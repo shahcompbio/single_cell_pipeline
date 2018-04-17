@@ -136,8 +136,9 @@ compute_run_command: >
 # ----------------------------
 # Post command workaround because azure batch fails to upload outputfiles
 # if there are broken symlinks in the working directory.
-compute_finish_commands: >
+compute_finish_commands: |
   find /datadrive/$AZ_BATCH_TASK_WORKING_DIR/ -xtype l -delete
+  find /datadrive/$AZ_BATCH_TASK_WORKING_DIR/ -type f -delete
 
 no_delete_pool: True
 no_delete_job: False
