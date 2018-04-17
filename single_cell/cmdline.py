@@ -5,10 +5,10 @@ Created on Feb 19, 2018
 '''
 import argparse
 import pypeliner
-import copy
 import os
 import sys
 import json
+
 
 class parseSentinelPattern(argparse.Action):
 
@@ -19,7 +19,7 @@ class parseSentinelPattern(argparse.Action):
         values = values.split("/")
 
         parsed = [values[0], "/".join(values[1:])]
-    
+
         setattr(args, self.dest, parsed)
 
 
@@ -29,17 +29,19 @@ class parseRegionTemplate(argparse.Action):
         values = values.replace("{}", "{region}")
         setattr(args, self.dest, values)
 
+
 def arg_exists(args, key, mode, parser):
     error_string = "option {} is required in {} mode"
 
     if key not in args:
         raise parser.error(error_string.format(key, mode))
 
+
 def check_required_args(allcommands, parser):
 
     for mode, args in allcommands.iteritems():
 
-        if mode in ["align","hmmcopy","aneufinder", "copyclone"]:
+        if mode in ["align", "hmmcopy", "aneufinder", "copyclone"]:
             arg_exists(args, "input_yaml", mode, parser)
             arg_exists(args, "library_id", mode, parser)
 
@@ -68,56 +70,58 @@ def check_required_args(allcommands, parser):
         else:
             raise parser.error("unknown mode: {}".format(mode))
 
+
 def generate_args_by_mode(global_args, commands):
     global_args = vars(global_args)
 
-    
     mode_based_args = {}
 
     for subcommand in commands:
         subcommand = vars(subcommand)
-        
+
         mode = subcommand["which"]
         subcommand.update(global_args)
 
         if subcommand.get("pipelinedir", None):
-            subcommand["pipelinedir"] = os.path.join(subcommand["pipelinedir"], mode) 
-        
+            subcommand["pipelinedir"] = os.path.join(
+                subcommand["pipelinedir"],
+                mode)
+
         mode_based_args[mode] = subcommand
 
     return mode_based_args
 
 
-def print_help(globals, subcommands):
+def print_help(globalargs, subcommands):
     args = sys.argv[1:]
 
     if "-h" in args or "--help" in args:
         try:
             print subcommands.parse_known_args(sys.argv[1:])
         except:
-            print globals.parse_known_args(sys.argv[1:])
+            print globalargs.parse_known_args(sys.argv[1:])
 
-def parse_all_commands(globals, subcommands):
-    globalargs, unknowns = globals.parse_known_args()
 
-    i=0
+def parse_all_commands(globalargs, subcommands, parser):
+    globalargs, unknowns = globalargs.parse_known_args()
+
+    i = 0
     subcommand_args = []
-    while unknowns and i<20:
+    while unknowns and i < 20:
         args, unknowns = subcommands.parse_known_args(unknowns)
         subcommand_args.append(args)
- 
+
     if unknowns:
         parser.error("unrecognized arguments: {}".format(str(unknowns)))
- 
+
     return globalargs, subcommand_args
 
 
-
 def parse_args():
-    subcommands = argparse.ArgumentParser(
+    subcommandargs = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    subparsers = subcommands.add_subparsers()
+    subparsers = subcommandargs.add_subparsers()
 
     # subparser to align bams
     align = subparsers.add_parser("align")
@@ -172,19 +176,17 @@ def parse_args():
                                  action=parseRegionTemplate,
                                  help='''template for saving the bams merged by region, use {} as place holder for genomic region''')
 
-
     # subparser to align bams
     copy_number_calling = subparsers.add_parser("copy_number_calling")
     copy_number_calling.set_defaults(which='copy_number_calling')
 
     copy_number_calling.add_argument("--tumour_yaml",
-                                 required=True,
-                                 help='''template for saving the bams merged by region, use {} as place holder for genomic region''')
+                                     required=True,
+                                     help='''template for saving the bams merged by region, use {} as place holder for genomic region''')
 
     copy_number_calling.add_argument("--normal_yaml",
-                                 required=True,
-                                 help='''template for saving the bams merged by region, use {} as place holder for genomic region''')
-
+                                     required=True,
+                                     help='''template for saving the bams merged by region, use {} as place holder for genomic region''')
 
     # subparser to align bams
     germline_calling = subparsers.add_parser("germline_calling")
@@ -204,56 +206,53 @@ def parse_args():
     generate_config.set_defaults(which='generate_config')
 
     generate_config.add_argument("--pipeline_config",
-                                  required=True,
-                                  help='''output yaml file''')
+                                 required=True,
+                                 help='''output yaml file''')
 
     generate_config.add_argument("--batch_config",
-                                  required=True,
-                                  help='''output yaml file''')
-
+                                 required=True,
+                                 help='''output yaml file''')
 
     clean_sentinels = subparsers.add_parser("clean_sentinels")
     clean_sentinels.set_defaults(which='clean_sentinels')
 
     clean_sentinels.add_argument("--mode",
                                  required=True,
-                                 choices=['list','delete'],
+                                 choices=['list', 'delete'],
                                  help='''list or delete''')
 
     clean_sentinels.add_argument("--pattern",
                                  action=parseSentinelPattern,
-                                  required=True,
-                                  help='''pattern to clean''')
+                                 required=True,
+                                 help='''pattern to clean''')
 
+    globalargs = argparse.ArgumentParser()
+    pypeliner.app.add_arguments(globalargs)
 
-    globals = argparse.ArgumentParser()
-    pypeliner.app.add_arguments(globals)
+    globalargs.add_argument("--input_yaml",
+                            help='''yaml file with fastq files, output bams and cell metadata''')
 
-    globals.add_argument("--input_yaml",
-                         help='''yaml file with fastq files, output bams and cell metadata''')
+    globalargs.add_argument("--library_id",
+                            help='''Library id.''')
 
-    globals.add_argument("--library_id",
-                         help='''Library id.''')
+    globalargs.add_argument("--out_dir",
+                            help='''Path to output directory.''')
 
-    globals.add_argument("--out_dir",
-                         help='''Path to output directory.''')
+    globalargs.add_argument("--config_file",
+                            help='''Path to output directory.''')
 
-    globals.add_argument("--config_file",
-                         help='''Path to output directory.''')
+    globalargs.add_argument("--config_override",
+                            type=json.loads,
+                            help='''json string to override the defaults in config''')
 
-    globals.add_argument("--config_override",
-                         type=json.loads,
-                         help='''json string to override the defaults in config''')
+    # check if -h in args
+    print_help(globalargs, subcommandargs)
 
+    globalargs, subcommandargs = parse_all_commands(
+        globalargs, subcommandargs, subcommandargs)
 
-    #check if -h in args
-    print_help(globals, subcommands)
+    args = generate_args_by_mode(globalargs, subcommandargs)
 
-    globalargs, subcommand_args = parse_all_commands(globals, subcommands)
-
-    args = generate_args_by_mode(globalargs, subcommand_args)
-
-    check_required_args(args, subcommands)
+    check_required_args(args, subcommandargs)
 
     return args
-
