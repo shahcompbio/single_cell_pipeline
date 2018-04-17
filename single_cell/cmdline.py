@@ -9,6 +9,8 @@ import os
 import sys
 import json
 
+from single_cell.utils import helpers
+
 
 class parseSentinelPattern(argparse.Action):
 
@@ -250,6 +252,9 @@ def parse_args():
 
     globalargs, subcommandargs = parse_all_commands(
         globalargs, subcommandargs, subcommandargs)
+
+    # add config paths to global args if needed.
+    globalargs = helpers.generate_configs_in_temp(globalargs)
 
     args = generate_args_by_mode(globalargs, subcommandargs)
 

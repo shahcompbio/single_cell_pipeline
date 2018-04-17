@@ -44,13 +44,12 @@ def get_incrementing_filename(path):
 
 def generate_pipeline_config_in_temp(args):
 
-    pipelineargs = args[args.keys()[0]]
 
-    if pipelineargs.get("config_file", None):
+    if args.get("config_file", None):
         return args
 
     config_yaml = "config.yaml"
-    tmpdir = pipelineargs.get("tmpdir", None)
+    tmpdir = args.get("tmpdir", None)
     # use pypeliner tmpdir to store yaml
     if tmpdir:
         config_yaml = os.path.join(tmpdir, config_yaml)
@@ -60,28 +59,25 @@ def generate_pipeline_config_in_temp(args):
 
     config_yaml = get_incrementing_filename(config_yaml)
 
-    params_override = pipelineargs["config_override"]
+    params_override = args["config_override"]
 
     generate_pipeline_config.main(
         output=config_yaml,
         input_params=params_override)
 
-    for _, mode_args in args.iteritems():
-        mode_args["config_file"] = config_yaml
+    args["config_file"] = config_yaml
 
     return args
 
 
 def generate_submit_config_in_temp(args):
 
-    pipelineargs = args[args.keys()[0]]
-
-    if pipelineargs.get("submit_config", None):
+    if args.get("submit_config", None):
         return args
 
     batch_yaml = "batch.yaml"
 
-    tmpdir = pipelineargs.get("tmpdir", None)
+    tmpdir = args.get("tmpdir", None)
     # use pypeliner tmpdir to store yaml
     if tmpdir:
         batch_yaml = os.path.join(tmpdir, batch_yaml)
@@ -91,7 +87,7 @@ def generate_submit_config_in_temp(args):
 
     batch_yaml = get_incrementing_filename(batch_yaml)
 
-    params_override = pipelineargs["config_override"]
+    params_override = args["config_override"]
 
     generate_batch_config.main(output=batch_yaml, input_params=params_override)
 
