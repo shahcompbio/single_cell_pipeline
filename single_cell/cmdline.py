@@ -74,12 +74,10 @@ def check_required_args(allcommands, parser):
 
 
 def generate_args_by_mode(global_args, commands):
-    global_args = vars(global_args)
 
     mode_based_args = {}
 
     for subcommand in commands:
-        subcommand = vars(subcommand)
 
         mode = subcommand["which"]
         subcommand.update(global_args)
@@ -107,10 +105,13 @@ def print_help(globalargs, subcommands):
 def parse_all_commands(globalargs, subcommands, parser):
     globalargs, unknowns = globalargs.parse_known_args()
 
+    globalargs = vars(globalargs)
+
     i = 0
     subcommand_args = []
     while unknowns and i < 20:
         args, unknowns = subcommands.parse_known_args(unknowns)
+        args = vars(args)
         subcommand_args.append(args)
 
     if unknowns:

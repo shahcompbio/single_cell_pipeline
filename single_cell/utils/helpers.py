@@ -44,7 +44,6 @@ def get_incrementing_filename(path):
 
 def generate_pipeline_config_in_temp(args):
 
-
     if args.get("config_file", None):
         return args
 
@@ -91,8 +90,7 @@ def generate_submit_config_in_temp(args):
 
     generate_batch_config.main(output=batch_yaml, input_params=params_override)
 
-    for _, mode_args in args.iteritems():
-        mode_args["submit_config"] = batch_yaml
+    args["submit_config"] = batch_yaml
 
     return args
 
