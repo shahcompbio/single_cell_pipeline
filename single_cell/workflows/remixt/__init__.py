@@ -12,4 +12,5 @@ import tasks
 
 def create_remixt_workflow():
 
-    raise NotImplementedError()
+    workflow = pypeliner.workflow.Workflow()
+    return workflow
