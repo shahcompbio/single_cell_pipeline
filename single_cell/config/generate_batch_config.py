@@ -3,9 +3,8 @@ import os
 import yaml
 import json
 import re
-import copy
 import single_cell
-
+from single_cell.utils import helpers
 
 def get_version(reference):
     if reference.get("version", None):
@@ -77,6 +76,8 @@ def go_to_leafs(datadict, reference):
 
 
 def main(output=None, input_params=None):
+
+    helpers.makedirs(output, isfile=True)
 
     cfgdir = os.path.realpath(os.path.dirname(__file__))
     config = os.path.join(cfgdir, "batch.yaml")
