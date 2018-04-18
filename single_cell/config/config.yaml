@@ -113,3 +113,8 @@ adapter: 'CTGTCTCTTATACACATCTCCGAGCCCACGAGAC'
 adapter2: 'CTGTCTCTTATACACATCTGACGCTGCCGACGA'
 
 split_size: 10000000
+
+destruct:
+  genome_fasta: '/refdata/GRCh37-lite.fa'
+  genome_fai: '/refdata/GRCh37-lite.fa.fai'
+

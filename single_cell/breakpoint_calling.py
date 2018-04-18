@@ -37,7 +37,7 @@ def breakpoint_calling_workflow(workflow, args):
             mgd.OutputFile(breakpoints_filename),
             mgd.OutputFile(breakpoint_library_filename),
             mgd.OutputFile(breakpoint_read_filename),
-            config['destruct'],
+            config.get('destruct', {}),
             ref_data_directory,
             raw_data_directory,
         ),
