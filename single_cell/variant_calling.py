@@ -159,7 +159,7 @@ def variant_calling_workflow(workflow, args):
         func=biowrappers.components.io.vcf.tasks.finalise_vcf,
         args=(
             mgd.TempInputFile('all.snv.vcf'),
-            mgd.TempOutputFile('all.snv.vcf.gz')
+            mgd.TempOutputFile('all.snv.vcf.gz', extensions=['.tbi'])
         )
     )
 
