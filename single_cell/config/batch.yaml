@@ -19,6 +19,7 @@ pools:
       maxNumberofVMs = 1000;
       pendingTaskSamplePercent = $PendingTasks.GetSamplePercent(180 * TimeInterval_Second);
       pendingTaskSamples = pendingTaskSamplePercent < 70 ? startingNumberOfVMs : avg($PendingTasks.GetSample(180 * TimeInterval_Second));
+      pendingTaskSamples = max(2, pendingTaskSamples);
       cores = $TargetLowPriorityNodes * 2;
       $extraVMs =  (pendingTaskSamples - cores) / 2;
       $extraVMs = min(numAddMax, $extraVMs);
