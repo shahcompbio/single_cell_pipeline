@@ -95,21 +95,11 @@ def copy_number_calling_workflow(workflow, args):
         ),
     )
 
-#     workflow.subworkflow(
-#         name='remixt_workflow',
-#         func=remixt.create_remixt_workflow,
-#         args=(
-#             mgd.TempInputFile("normal.h5", "normal_cell_id"),
-#             mgd.TempInputFile("tumour.h5", "tumour_cell_id"),
-#             config['ref_genome'],
-#             copynumber_dir,
-#             out_file,
-#             config,
-#             args,
-#             tumour_cellids,
-#             normal_cellids,
-#             cloneid
-#         ),
-#     )
+    workflow.subworkflow(
+        name='remixt_workflow',
+        func=remixt.create_remixt_workflow,
+        args=(
+        ),
+    )
 
     return workflow
