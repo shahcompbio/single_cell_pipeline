@@ -21,10 +21,12 @@ def create_strelka_workflow(
         indel_vcf_file,
         snv_vcf_file,
         config,
-        regions,
         chromosomes=default_chromosomes,
         split_size=int(1e7),
         use_depth_thresholds=True):
+
+    regions = normal_bam_file.keys()
+    assert set(tumour_bam_file.keys()) == set(regions)
 
     workflow = Workflow()
 
