@@ -18,17 +18,17 @@ titan_params:
 
   ploidy: [1, 2, 3, 4]
 
-  chrom_info_filename: /refdata/chromInfo.txt.gz
+  chrom_info_filename: "{$cluster:$reference:chrom_info_filename}"
 
-  window_size: 1000
+  window_size: "{copynumber_bin_size}"
 
-  ref_data_dir: /refdata/remixt/remixt
+  ref_data_dir: "{$cluster:$reference:copynumber_ref_data}"
 
   # Binned GC content file
-  gc_wig: "{$cluster:$reference:gc_wig_file:$bin_size}"
+  gc_wig: "{$cluster:$reference:gc_wig_file:$copynumber_bin_size}"
 
   # Binned mappability file
-  mappability_wig: "{$cluster:$reference:map_wig_file:$bin_size}"
+  mappability_wig: "{$cluster:$reference:map_wig_file:$copynumber_bin_size}"
 
 # HMMcopy parameters
 hmmcopy_params:
