@@ -56,8 +56,8 @@ def plot_kernel_density(infile, output, sep, colname, plot_title):
     plot = PlotKernelDensity(infile, output, sep, colname, plot_title)
     plot.main()
 
-def plot_metrics(metrics, output, plot_title, gcbias_matrix, gc_content):
-    plot = PlotMetrics(metrics, output, plot_title, gcbias_matrix, gc_content)
+def plot_metrics(metrics, output, plot_title,):
+    plot = PlotMetrics(metrics, output, plot_title)
     plot.main()
 
 
