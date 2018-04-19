@@ -76,7 +76,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
 
 
 def museq_callback(record):
-    return record.INFO['PS']
+    return record.INFO['PR']
 
 
 def strelka_snv_callback(record):
