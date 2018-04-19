@@ -2,20 +2,9 @@ import yaml
 import json
 import copy
 import os
-import errno
 import single_cell
-
-
-def makedirs(directory, isfile=False):
-
-    if isfile:
-        directory = os.path.dirname(directory)
-
-    try:
-        os.makedirs(directory)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
+import warnings
+from single_cell.utils import helpers
 
 
 def get_version(reference):
@@ -99,9 +88,6 @@ def add_version_to_pools(cfgdict, reference):
 
 
 def main(output=None, input_params=None):
-
-    makedirs(output, isfile=True)
-
     cfgdir = os.path.realpath(os.path.dirname(__file__))
     config = os.path.join(cfgdir, "config.yaml")
     params = os.path.join(cfgdir, "config_params.yaml")
@@ -118,11 +104,39 @@ def main(output=None, input_params=None):
     resolvedpaths = add_version_to_pools(resolvedpaths, params)
 
     if output:
+        helpers.makedirs(output, isfile=True)
         with open(output, 'w') as outfile:
             data = yaml.dump(resolvedpaths, default_flow_style=False)
             outfile.write(data)
     else:
         return resolvedpaths
+
+
+def generate_pipeline_config_in_temp(args):
+
+    if args.get("config_file", None):
+        return args
+
+    config_yaml = "config.yaml"
+    tmpdir = args.get("tmpdir", None)
+    # use pypeliner tmpdir to store yaml
+    if tmpdir:
+        config_yaml = os.path.join(tmpdir, config_yaml)
+    else:
+        warnings.warn("no tmpdir specified, generating configs in working dir")
+        config_yaml = os.path.join(os.getcwd(), config_yaml)
+
+    config_yaml = helpers.get_incrementing_filename(config_yaml)
+
+    params_override = args["config_override"]
+
+    main(output=config_yaml,
+         input_params=params_override)
+
+    args["config_file"] = config_yaml
+
+    return args
+
 
 if __name__ == "__main__":
 
