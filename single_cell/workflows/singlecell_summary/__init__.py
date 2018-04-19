@@ -10,7 +10,7 @@ import tasks
 from single_cell.utils import helpers
 
 
-def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_reads,
+def create_summary_workflow(hmm_segments, hmm_reads,
                             hmm_metrics, hmm_params, reads_pdf_output, segs_pdf_output, bias_pdf_output,
                             params_pdf_output, config, hmmparams, results_dir,
                             args, samples):
@@ -67,8 +67,7 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.merge_tables,
         args=(
-            [mgd.InputFile(alignment_metrics),
-             mgd.InputFile(hmm_metrics),
+            [mgd.InputFile(hmm_metrics),
              mgd.TempInputFile('order_data.csv')],
             mgd.TempOutputFile("all_metrics.csv"),
             ',', 'outer', 'cell_id', 'NA'
@@ -94,8 +93,6 @@ def create_summary_workflow(alignment_metrics, gc_metrics, hmm_segments, hmm_rea
             mgd.InputFile(all_metrics_file),
             mgd.OutputFile(plot_metrics_output),
             'QC pipeline metrics',
-            mgd.InputFile(gc_metrics),
-            config['gc_windows'],
         )
     )
  

@@ -49,9 +49,6 @@ def hmmcopy_workflow(workflow, args):
         )
 
         #assume these exist from prev runs for now
-        alignment_metrics = os.path.join(args["out_dir"], "metrics",'alignment_metrics.txt')
-        gc_metrics = os.path.join(args["out_dir"], "metrics",'gc_metrics.txt')
-
         reads_pdf_output = os.path.join(results_dir, 'plots', '{}_reads.pdf'.format(args['library_id']))
         segs_pdf_output = os.path.join(results_dir, 'plots', '{}_segs.pdf'.format(args['library_id']))
         bias_pdf_output = os.path.join(results_dir, 'plots', '{}_bias.pdf'.format(args['library_id']))
@@ -62,8 +59,6 @@ def hmmcopy_workflow(workflow, args):
             name='summary_workflow_' + name,
             func=singlecell_summary.create_summary_workflow,
             args=(
-                mgd.InputFile(alignment_metrics),
-                mgd.InputFile(gc_metrics),
                 mgd.InputFile(segs_filename),
                 mgd.InputFile(reads_filename),
                 mgd.InputFile(metrics_filename),
