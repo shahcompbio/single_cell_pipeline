@@ -4,7 +4,7 @@ import yaml
 import json
 import re
 import single_cell
-from single_cell.utils import helpers
+
 
 def get_version(reference):
     if reference.get("version", None):
