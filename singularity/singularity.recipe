@@ -29,7 +29,7 @@ From: ubuntu:latest
     snpEff download GRCh37.75
     pip install azure-storage azure-batch futures
     conda install strelka==1.0.14 -y
-    conda create --name museq python=2 numpy scipy
+    conda create --name museq python=2 numpy scipy matplotlib intervaltree
     mv /tmp/museq /usr/local/museq
     cd /usr/local/museq/
     make clean
