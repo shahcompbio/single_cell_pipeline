@@ -10,6 +10,7 @@ import pypeliner.managed as mgd
 import biowrappers.components.io.vcf.tasks
 import biowrappers.components.io.hdf5.tasks
 import biowrappers.pipelines.snv_call_and_annotate
+import biowrappers.components.io.vcf.tasks
 from workflows import snv_postprocessing
 from workflows import mutationseq 
 from workflows import split_bams
@@ -72,6 +73,14 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
     )
 
     return workflow
+
+
+def museq_callback(record):
+    return record.INFO['PS']
+
+
+def strelka_snv_callback(record):
+    return record.INFO['QSS']
 
 
 def variant_calling_workflow(workflow, args):
@@ -143,6 +152,32 @@ def variant_calling_workflow(workflow, args):
     )
 
     workflow.transform(
+        name='convert_museq_to_hdf5',
+        func=biowrappers.components.io.vcf.tasks.convert_vcf_to_hdf5,
+        args=(
+            mgd.InputFile(museq_vcf),
+            mgd.TempOutputFile('museq.h5'),
+            '/museq/vcf/',
+        ),
+        kwargs={
+            'score_callback': museq_callback,
+        }
+    )
+
+    workflow.transform(
+        name='convert_strelka_to_hdf5',
+        func=biowrappers.components.io.vcf.tasks.convert_vcf_to_hdf5,
+        args=(
+            mgd.InputFile(strelka_snv_vcf),
+            mgd.TempOutputFile('strelka_snv.h5'),
+            '/strelka/vcf/',
+        ),
+        kwargs={
+            'score_callback': strelka_snv_callback,
+        }
+    )
+
+    workflow.transform(
         name='merge_snvs',
         func=vcfutils.merge_vcfs,
         args=(
@@ -196,6 +231,8 @@ def variant_calling_workflow(workflow, args):
         args=([
                 mgd.TempInputFile('snv_counts.h5'),
                 mgd.TempInputFile('snv_annotations.h5'),
+                mgd.TempInputFile('museq.h5'),
+                mgd.TempInputFile('strelka_snv.h5'),
             ],
             pypeliner.managed.OutputFile(snv_h5_filename),
         ),
