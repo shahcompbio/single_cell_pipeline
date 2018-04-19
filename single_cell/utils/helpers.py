@@ -13,17 +13,12 @@ import pysam
 import shutil
 
 from collections import OrderedDict
-import warnings
-import subprocess
 from subprocess import Popen, PIPE
 
 import multiprocessing
 
 
 from multiprocessing.pool import ThreadPool
-
-from single_cell.config import generate_pipeline_config
-from single_cell.config import generate_batch_config
 
 
 def get_incrementing_filename(path):
@@ -40,69 +35,6 @@ def get_incrementing_filename(path):
         i += 1
 
     return "{}.{}".format(path, i)
-
-
-def generate_pipeline_config_in_temp(args):
-
-    if args.get("config_file", None):
-        return args
-
-    config_yaml = "config.yaml"
-    tmpdir = args.get("tmpdir", None)
-    # use pypeliner tmpdir to store yaml
-    if tmpdir:
-        config_yaml = os.path.join(tmpdir, config_yaml)
-    else:
-        warnings.warn("no tmpdir specified, generating configs in working dir")
-        config_yaml = os.path.join(os.getcwd(), config_yaml)
-
-    config_yaml = get_incrementing_filename(config_yaml)
-
-    params_override = args["config_override"]
-
-    generate_pipeline_config.main(
-        output=config_yaml,
-        input_params=params_override)
-
-    args["config_file"] = config_yaml
-
-    return args
-
-
-def generate_submit_config_in_temp(args):
-
-    if args.get("submit_config", None):
-        return args
-
-    batch_yaml = "batch.yaml"
-
-    tmpdir = args.get("tmpdir", None)
-    # use pypeliner tmpdir to store yaml
-    if tmpdir:
-        batch_yaml = os.path.join(tmpdir, batch_yaml)
-    else:
-        warnings.warn("no tmpdir specified, generating configs in working dir")
-        batch_yaml = os.path.join(os.getcwd(), batch_yaml)
-
-    batch_yaml = get_incrementing_filename(batch_yaml)
-
-    params_override = args["config_override"]
-
-    generate_batch_config.main(output=batch_yaml, input_params=params_override)
-
-    args["submit_config"] = batch_yaml
-
-    return args
-
-
-def generate_configs_in_temp(args):
-
-    args = generate_pipeline_config_in_temp(args)
-
-    args = generate_submit_config_in_temp(args)
-
-    return args
-
 
 def run_in_parallel(worker, args, ncores=None):
 
