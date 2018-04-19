@@ -6,6 +6,18 @@ import re
 import single_cell
 
 
+def makedirs(directory, isfile=False):
+
+    if isfile:
+        directory = os.path.dirname(directory)
+
+    try:
+        os.makedirs(directory)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+
+
 def get_version(reference):
     if reference.get("version", None):
         version = reference["version"].replace('.', '_')
@@ -77,7 +89,7 @@ def go_to_leafs(datadict, reference):
 
 def main(output=None, input_params=None):
 
-    helpers.makedirs(output, isfile=True)
+    makedirs(output, isfile=True)
 
     cfgdir = os.path.realpath(os.path.dirname(__file__))
     config = os.path.join(cfgdir, "batch.yaml")
