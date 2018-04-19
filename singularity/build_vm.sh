@@ -39,7 +39,7 @@ conda config --add channels https://conda.anaconda.org/aroth85
 conda install --file ~/vmresources/conda_packages.txt -y
 
 gatk-register vmresources/GenomeAnalysisTK.jar
-pip install azure-storage azure-batch futures
+pip install azure-storage azure-batch futures azure-mgmt
 cd ~/vmresources/pypeliner; python setup.py install
 cd ~/vmresources/single_cell_pipeline; python setup.py install
 sudo    mv ~/vmresources/museq /usr/local/museq
@@ -48,8 +48,9 @@ make clean
 make PYTHON=python BOOSTPATH=~/vmresources/boost_1_57_0/
 cd ~
 
-pip install scikit-learn==0.13.1
 conda install strelka==1.0.14 -y
+
+conda install biowrappers remixt destruct -y
 
 
 
