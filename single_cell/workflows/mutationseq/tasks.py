@@ -24,6 +24,7 @@ def run_museq(tumour, tumour_bai, normal, normal_bai, out, log, config, region):
     :param chrom: chromosome number
     '''
 
+    python_bin = config.get('mutationseq_python', 'python')
     script = os.path.join(config['mutationseq'], 'classify.py')
     conf = os.path.join(config['mutationseq'], 'metadata.config')
     model = config['mutationseq_model']
@@ -31,7 +32,7 @@ def run_museq(tumour, tumour_bai, normal, normal_bai, out, log, config, region):
 
     region = '{}:{}-{}'.format(*region.split('-'))
 
-    cmd = ['python', script, 'normal:' + normal, 'tumour:' + tumour,
+    cmd = [python_bin, script, 'normal:' + normal, 'tumour:' + tumour,
            'reference:' + reference, 'model:' + model, '--out', out,
            '--log', log, '--config', conf, '--interval', region]
 
