@@ -94,9 +94,9 @@ def variant_calling_workflow(workflow, args):
     varcalls_dir = os.path.join(args['out_dir'], 'results',
                                 'variant_calling')
 
-    museq_vcf = os.path.join(varcalls_dir, 'museq_snv.vcf')
-    strelka_snv_vcf = os.path.join(varcalls_dir, 'strelka_snv.vcf')
-    strelka_indel_vcf = os.path.join(varcalls_dir, 'strelka_indel.vcf')
+    museq_vcf = os.path.join(varcalls_dir, 'museq_snv.vcf.gz')
+    strelka_snv_vcf = os.path.join(varcalls_dir, 'strelka_snv.vcf.gz')
+    strelka_indel_vcf = os.path.join(varcalls_dir, 'strelka_indel.vcf.gz')
     snv_h5_filename = os.path.join(varcalls_dir, 'snv_annotations.h5')
 
     wgs_bam_template = args["tumour_template"]
@@ -126,10 +126,10 @@ def variant_calling_workflow(workflow, args):
         name='museq',
         func=mutationseq.create_museq_workflow,
         args=(
-            mgd.InputFile("normal.split.bam", "region", template=normal_bam_template, axes_origin=[]),
-            mgd.InputFile("normal.split.bam.bai", "region", template=normal_bai_template, axes_origin=[]),
-            mgd.InputFile("merged_bam", "region", template=wgs_bam_template, axes_origin=[]),
-            mgd.InputFile("merged_bam", "region", template=wgs_bai_template, axes_origin=[]),
+            mgd.InputFile("normal.split.bam", "region", template=normal_bam_template),
+            mgd.InputFile("normal.split.bam.bai", "region", template=normal_bai_template),
+            mgd.InputFile("merged_bam", "region", template=wgs_bam_template),
+            mgd.InputFile("merged_bam", "region", template=wgs_bai_template),
             config['ref_genome'],
             mgd.OutputFile(museq_vcf),
             config,
@@ -140,10 +140,10 @@ def variant_calling_workflow(workflow, args):
         name='strelka',
         func=strelka.create_strelka_workflow,
         args=(
-            mgd.InputFile("normal.split.bam", "region", template=normal_bam_template, axes_origin=[]),
-            mgd.InputFile("normal.split.bam.bai", "region", template=normal_bai_template, axes_origin=[]),
-            mgd.InputFile("merged_bam", "region", template=wgs_bam_template, axes_origin=[]),
-            mgd.InputFile("merged_bam", "region", template=wgs_bai_template, axes_origin=[]),
+            mgd.InputFile("normal.split.bam", "region", template=normal_bam_template),
+            mgd.InputFile("normal.split.bam.bai", "region", template=normal_bai_template),
+            mgd.InputFile("merged_bam", "region", template=wgs_bam_template),
+            mgd.InputFile("merged_bam", "region", template=wgs_bai_template),
             config['ref_genome'],
             mgd.OutputFile(strelka_indel_vcf),
             mgd.OutputFile(strelka_snv_vcf),
