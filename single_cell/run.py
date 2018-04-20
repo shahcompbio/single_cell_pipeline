@@ -18,67 +18,67 @@ def main():
 
     args = parse_args()
 
-    if "generate_config" in args:
+    if args["which"] == "generate_config":
         generate_config(args["generate_config"])
 
-    if "clean_sentinels" in args:
+    if args["which"] == "clean_sentinels":
         clean_sentinels(args["clean_sentinels"])
 
-    if "align" in args:
+    if args["which"] == "align":
         pyp = pypeliner.app.Pypeline(config=args["align"])
         workflow = pypeliner.workflow.Workflow()
         workflow = align_workflow(workflow, args["align"])
         pyp.run(workflow)
 
-    if "hmmcopy" in args:
+    if args["which"] == "hmmcopy":
         pyp = pypeliner.app.Pypeline(config=args["hmmcopy"])
         workflow = pypeliner.workflow.Workflow()
         workflow = hmmcopy_workflow(workflow, args["hmmcopy"])
         pyp.run(workflow)
 
-#     if "copyclone" in args["modes"]:
+#     if args["which"] == "copyclone":
 #         pyp = pypeliner.app.Pypeline(config=args["copyclone"])
 #         workflow = pypeliner.workflow.Workflow()
 #         workflow = copyclone_workflow(workflow, args["copyclone"])
 #         pyp.run(workflow)
 
-    if "aneufinder" in args:
+    if args["which"] == "aneufinder":
         pyp = pypeliner.app.Pypeline(config=args["aneufinder"])
         workflow = pypeliner.workflow.Workflow()
         workflow = aneufinder_workflow(workflow, args["aneufinder"])
         pyp.run(workflow)
         
-    if "merge_bams" in args:
+    if args["which"] == "merge_bams":
         pyp = pypeliner.app.Pypeline(config=args["merge_bams"])
         workflow = pypeliner.workflow.Workflow()
         workflow = merge_bams_workflow(workflow, args["merge_bams"])
         pyp.run(workflow)
 
-    if "split_bam" in args:
+    if args["which"] == "split_bam":
         pyp = pypeliner.app.Pypeline(config=args["split_bam"])
         workflow = pypeliner.workflow.Workflow()
         workflow = split_bam_workflow(workflow, args["split_bam"])
         pyp.run(workflow)
 
-    if "variant_calling" in args:
+    if args["which"] == "variant_calling":
         pyp = pypeliner.app.Pypeline(config=args["variant_calling"])
         workflow = pypeliner.workflow.Workflow()
         workflow = variant_calling_workflow(workflow, args["variant_calling"])
         pyp.run(workflow)
 
-    if "copy_number_calling" in args:
+    if args["which"] == "copy_number_calling":
         pyp = pypeliner.app.Pypeline(config=args["copy_number_calling"])
         workflow = pypeliner.workflow.Workflow()
         workflow = copy_number_calling_workflow(workflow, args["copy_number_calling"])
         pyp.run(workflow)
 
-    if "germline_calling" in args:
+    if args["which"] == "germline_calling":
         pyp = pypeliner.app.Pypeline(config=args["germline_calling"])
         workflow = pypeliner.workflow.Workflow()
         workflow = germline_calling_workflow(workflow, args["germline_calling"])
         pyp.run(workflow)
 
-    if "breakpoint_calling" in args:
+    if args["which"] == "breakpoint_calling":
         pyp = pypeliner.app.Pypeline(config=args["breakpoint_calling"])
         workflow = pypeliner.workflow.Workflow()
         workflow = breakpoint_calling_workflow(workflow, args["breakpoint_calling"])
