@@ -39,10 +39,6 @@ def add_global_args(parser):
                         required=True,
                         help='''yaml file with fastq files, output bams and cell metadata''')
 
-    parser.add_argument("--library_id",
-                        required=True,
-                        help='''Library id.''')
-
     parser.add_argument("--out_dir",
                         required=True,
                         help='''Path to output directory.''')
@@ -71,15 +67,27 @@ def parse_args():
                        action='store_true',
                        required=True,
                        help='''will run local realignment on all cells in batch mode''')
+    align.add_argument("--library_id",
+                       required=True,
+                       help='''Library id.''')
 
     hmmcopy = add_global_args(subparsers.add_parser("hmmcopy"))
     hmmcopy.set_defaults(which='hmmcopy')
+    hmmcopy.add_argument("--library_id",
+                         required=True,
+                         help='''Library id.''')
 
     copyclone = add_global_args(subparsers.add_parser("copyclone"))
     copyclone.set_defaults(which='copyclone')
+    copyclone.add_argument("--library_id",
+                        required=True,
+                        help='''Library id.''')
 
     aneufinder = add_global_args(subparsers.add_parser("aneufinder"))
     aneufinder.set_defaults(which='aneufinder')
+    aneufinder.add_argument("--library_id",
+                            required=True,
+                            help='''Library id.''')
 
     merge_bams = add_global_args(subparsers.add_parser("merge_bams"))
     merge_bams.set_defaults(which='merge_bams')
