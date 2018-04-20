@@ -294,7 +294,7 @@ if (all(is.na(samp.corrected$cor_gc)) & all(is.na(samp.corrected$copy))){
 	quit()
 }
 samp.corrected <- RangedData(ranges = IRanges(start=samp.corrected$start, end=samp.corrected$end), space=samp.corrected$chr,
-							 width=samp.corrected$width, reads=samp.corrected$reads, gc=samp.corrected$gc, map=samp.corrected$map,
+							 reads=samp.corrected$reads, gc=samp.corrected$gc, map=samp.corrected$map,
 							 cor_gc=samp.corrected$cor_gc, copy=samp.corrected$copy, valid=samp.corrected$valid, ideal=samp.corrected$ideal,
 							 modal_curve=samp.corrected$modal_curve,modal_quantile=samp.corrected$modal_quantile, cor_map=samp.corrected$cor_map)
 
