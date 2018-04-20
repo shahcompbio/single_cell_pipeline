@@ -47,65 +47,6 @@ class SummaryMetrics(object):
     
             outfile.write(','.join([str(mean_ump_rds), str(std_ump_rds)])+'\n')
 
-    def get_contamination_summary(self, df, outfile):
-        '''
-        
-        '''
-        num_ntc = df[ (df['experimental_condition'] == 'NTC') | (df['experimental_condition'] == 'NCC') ]
-        num_ntc = len(num_ntc)
-
-        outfile.write('\n#NUMBER OF LIBRARIES WITH CONTAMINATION\n')
-        outfile.write('count\n')
-        outfile.write('%s\n' %str(num_ntc))
-
-        #section heading and header
-        outfile.write('\n#CELL CALL MEAN AND STD DEV\n')
-        outfile.write('cell_call,mean,standard_deviation\n')
-        df['frac_unmapped_reads'] = df['unmapped_reads']/df['total_mapped_reads']
-        self.get_mean_std(df, 'frac_unmapped_reads', outfile, grp_col='cell_call')
-
-
-        #section heading and header
-        outfile.write('\n#EXPERIMENTAL CONDITION MEAN AND STD DEV\n')
-        outfile.write('experimental_condition,mean,standard_deviation\n')
-        self.get_mean_std(df,'unmapped_reads', outfile, grp_col='experimental_condition')
-
-    def get_alignment_summary(self, df, outfile):
-        '''
-        '''
-        #section heading and header
-        outfile.write('\n#TOTAL READS MEAN AND STD DEV\n')
-        outfile.write('mean,standard_deviation\n')
-        self.get_mean_std(df, 'total_mapped_reads', outfile)
-
-        #section heading and header
-        outfile.write('\n#PERCENT_MAPPED_READS MEAN AND STD DEV\n')
-        outfile.write('mean,standard_deviation\n')
-        df['perc_mapped_reads'] = (df['total_mapped_reads']/df['total_reads'])*100
-        self.get_mean_std(df, 'perc_mapped_reads', outfile)
-
-
-        #section heading and header
-        outfile.write('\n#PERCENT_DUPLICATE_READS MEAN AND STD DEV\n')
-        outfile.write('mean,standard_deviation\n')
-        df['perc_dup_reads'] = (df['total_duplicate_reads']/df['total_mapped_reads'])*100
-        self.get_mean_std(df, 'perc_dup_reads', outfile)
-
-        #section heading and header
-        outfile.write('\n#COVERAGE_DEPTH MEAN AND STD DEV\n')
-        outfile.write('mean,standard_deviation\n')
-        self.get_mean_std(df, 'coverage_depth', outfile)
-
-        #section heading and header
-        outfile.write('\n#COVERAGE_BREADTH MEAN AND STD DEV\n')
-        outfile.write('mean,standard_deviation\n')
-        self.get_mean_std(df, 'coverage_breadth', outfile)
-
-        #section heading and header
-        outfile.write('\n#MEAN_INSERT_SIZE MEAN AND STD DEV\n')
-        outfile.write('mean,standard_deviation\n')
-        self.get_mean_std(df, 'mean_insert_size', outfile)
-
     def get_cn_summary(self, df, outfile):
         '''
         '''
@@ -167,12 +108,6 @@ class SummaryMetrics(object):
 
         # library summary
         self.get_lib_summary(df, outfile)
-
-        #calculate contamination summary
-        self.get_contamination_summary(df, outfile)
-        
-        #alignment_metric summary
-        self.get_alignment_summary(df, outfile)
 
         #copy number metric summary
         self.get_cn_summary(df, outfile)

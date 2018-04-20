@@ -110,7 +110,7 @@ def create_summary_workflow(hmm_segments, hmm_reads,
     )
  
     workflow.transform(
-        name='summary_metrics',
+        name='summary_metrics_cn',
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
         func=tasks.get_summary_metrics,
         args=(

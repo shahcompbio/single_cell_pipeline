@@ -200,7 +200,7 @@ class ExtractHmmMetrics(object):
     
     def compute_quality_metrics(self, df, df_seg, sample_id):    
         if 'copy' in df.columns:
-            #total_reads = compute_total_reads(df)
+            total_reads = self.compute_total_reads(df)
             
             total_reads_hmmcopy = self.compute_total_reads_hmmcopy(df)
             
@@ -234,7 +234,8 @@ class ExtractHmmMetrics(object):
                 
                 MSRSI_non_integerness = float('NaN')
             
-            metrics = pd.Series({'cell_id': sample_id, 
+            metrics = pd.Series({'cell_id': sample_id,
+                                 'total_mapped_reads':total_reads,
                                  'total_reads_hmmcopy': total_reads_hmmcopy,
                                  'mad_chr19': mad_chr19, 
                                  'mad_hmmcopy': mad_hmmcopy, 
@@ -253,7 +254,8 @@ class ExtractHmmMetrics(object):
                                  'MSRSI_non_integerness': MSRSI_non_integerness})
         
         else: 
-            metrics = pd.Series({'cell_id': sample_id, 
+            metrics = pd.Series({'cell_id': sample_id,
+                                 'total_mapped_reads': float('NaN'),
                                  'total_reads_hmmcopy': float('NaN'),
                                  'mad_chr19': float('NaN'), 
                                  'mad_hmmcopy': float('NaN'), 
