@@ -83,6 +83,8 @@ ref_genome: "{$cluster:$reference:ref_genome}"
 # Chromosomes for copy number analysis
 chromosomes: "{$reference:chromosomes}"
 
+mutationseq_python: /usr/local/miniconda2/envs/museq/bin/python
+
 mutationseq: "{$cluster:mutationseq}"
 
 mutationseq_model: "{$cluster:mutationseq_model}"
