@@ -12,6 +12,9 @@ import json
 from single_cell.utils import helpers
 
 
+from single_cell.config import generate_batch_config
+from single_cell.config import generate_pipeline_config
+
 class parseSentinelPattern(argparse.Action):
 
     def __call__(self, parser, args, values, option_string=None):
@@ -171,5 +174,12 @@ def parse_args():
                                  help='''pattern to clean''')
 
     args = vars(parser.parse_args())
+
+    # add config paths to global args if needed.
+    globalargs = generate_pipeline_config.generate_pipeline_config_in_temp(
+        globalargs)
+
+    globalargs = generate_batch_config.generate_submit_config_in_temp(
+        globalargs)
 
     return args
