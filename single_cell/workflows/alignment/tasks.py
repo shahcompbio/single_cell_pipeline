@@ -9,12 +9,19 @@ from scripts import CollectMetrics
 from scripts import GenerateCNMatrix
 from scripts import RunTrimGalore
 from scripts import PlotMetrics
+from scripts import SummaryMetrics
 
 from single_cell.utils import picardutils
 from single_cell.utils import bamutils
 from single_cell.utils import helpers
 from single_cell.utils import csvutils
 from single_cell.utils import gatkutils
+
+
+def get_summary_metrics(infile, output):
+    summ = SummaryMetrics(infile, output)
+    summ.main()
+
 
 def annotate_metrics(infile, sample_info, outfile):
     csvutils.annotate_metrics(infile, sample_info, outfile)

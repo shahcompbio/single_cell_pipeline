@@ -149,11 +149,11 @@ databases:
 cosmic_status:
   kwargs:
     split_size: 10000000
-    
+
 dbsnp_status:
   kwargs:
     split_size: 10000000
-        
+
 mappability:
   kwargs:
     split_size: 10000000

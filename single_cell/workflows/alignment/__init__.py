@@ -27,6 +27,8 @@ def create_alignment_workflow(
     out_dir = args['out_dir']
 
     merge_metrics = os.path.join(out_dir, 'metrics')
+    summary_metrics_output = os.path.join(merge_metrics, 'alignment_summary.txt')
+
     lane_metrics = os.path.join(args['out_dir'], 'metrics_per_lane', '{lane}')
 
     bam_filename = dict([(cellid, bam_filename[cellid])
@@ -242,5 +244,16 @@ def create_alignment_workflow(
             config['gc_windows'],
         )
     )
+
+    workflow.transform(
+        name='summary_metrics_alignment',
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
+        func=tasks.get_summary_metrics,
+        args=(
+            mgd.InputFile(alignment_metrics),
+            mgd.OutputFile(summary_metrics_output),
+        )
+    )
+
 
     return workflow
