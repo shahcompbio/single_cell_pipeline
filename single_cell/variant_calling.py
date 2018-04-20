@@ -65,6 +65,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
 
     workflow.transform(
         name='merge_snv_allele_counts',
+        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
         func=biowrappers.components.io.hdf5.tasks.concatenate_tables,
         args=(
             mgd.TempInputFile('counts.h5', 'cell_id'),
@@ -227,6 +228,7 @@ def variant_calling_workflow(workflow, args):
 
     workflow.transform(
         name='build_results_file',
+        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
         func=biowrappers.components.io.hdf5.tasks.concatenate_tables,
         args=([
                 mgd.TempInputFile('snv_counts.h5'),
