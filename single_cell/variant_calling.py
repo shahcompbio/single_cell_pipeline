@@ -71,6 +71,9 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
             mgd.TempInputFile('counts.h5', 'cell_id'),
             mgd.OutputFile(out_file),
         ),
+        kwargs={
+            'in_memory': True,
+        },
     )
 
     return workflow
