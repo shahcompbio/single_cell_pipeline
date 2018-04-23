@@ -48,7 +48,6 @@ def add_global_args(parser):
                         help='''Path to output directory.''')
 
     parser.add_argument("--config_override",
-                        required=True,
                         type=json.loads,
                         help='''json string to override the defaults in config''')
 
