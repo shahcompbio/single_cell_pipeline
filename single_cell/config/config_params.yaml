@@ -35,8 +35,8 @@ azure:
     exclude_list: /refdata/repeats.satellite.regions
     ref_genome: /refdata/GRCh37-lite.fa
     gc_windows: /refdata/gc_windows.txt
-    copynumber_ref_data: /refdata/remixt
-    chrom_info_filename: /refdata/remixt/chromInfo.txt.gz
+    copynumber_ref_data: /refdata/
+    chrom_info_filename: /refdata/chromInfo.txt.gz
 
   mm10:
     gc_wig_file:
@@ -46,7 +46,7 @@ azure:
     exclude_list: null
     ref_genome: /refdata/mm10_build38_mouse.fasta
     gc_windows: null
-    copynumber_ref_data: /refdata/remixt/remixt
+    copynumber_ref_data: /refdata/
     chrom_info_filename: /refdata/chromInfo.txt.gz
 
 shahlab:
