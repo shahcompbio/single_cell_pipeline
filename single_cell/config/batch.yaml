@@ -4,7 +4,7 @@ storage_container_name: 'tasks-container'
 
 pools:
   singlecell${reference}standard_${version}:
-    pool_vm_size: 'STANDARD_A2M_V2'
+    pool_vm_size: 'STANDARD_DS11_V2'
     node_os_publisher: 'Canonical'
     node_os_offer: 'UbuntuServer'
     node_os_sku: '16'
@@ -42,7 +42,7 @@ pools:
       startup.sh: /startup-resources/startup.sh
 
   singlecell${reference}highmem_${version}:
-    pool_vm_size: 'STANDARD_A2M_V2'
+    pool_vm_size: 'STANDARD_DS11_V2'
     node_os_publisher: 'Canonical'
     node_os_offer: 'UbuntuServer'
     node_os_sku: '16'
@@ -57,8 +57,7 @@ pools:
       pendingTaskSamplePercent = $PendingTasks.GetSamplePercent(180 * TimeInterval_Second);
       pendingTaskSamples = pendingTaskSamplePercent < 70 ? startingNumberOfVMs : avg($PendingTasks.GetSample(180 * TimeInterval_Second));
       cores = $TargetLowPriorityNodes ;
-      $extraVMs =  (pendingTaskSamples - cores) / 2;
-      $extraVMs = max(2, $extraVMs);
+      $extraVMs =  pendingTaskSamples - cores;
       $extraVMs = min(numAddMax, $extraVMs);
       $extraVMs = max(-numDelMax, $extraVMs);
       targetVMs = ($TargetLowPriorityNodes + $extraVMs);
@@ -75,7 +74,7 @@ pools:
       startup.sh: /startup-resources/startup.sh
 
   singlecell${reference}multicore_${version}:
-    pool_vm_size: 'STANDARD_D13_V2'
+    pool_vm_size: 'STANDARD_DS13_V2'
     node_os_publisher: 'Canonical'
     node_os_offer: 'UbuntuServer'
     node_os_sku: '16'
@@ -90,7 +89,7 @@ pools:
       pendingTaskSamplePercent = $PendingTasks.GetSamplePercent(180 * TimeInterval_Second);
       pendingTaskSamples = pendingTaskSamplePercent < 70 ? startingNumberOfVMs : avg($PendingTasks.GetSample(180 * TimeInterval_Second));
       cores = $TargetLowPriorityNodes ;
-      $extraVMs =  (pendingTaskSamples - cores) / 2;
+      $extraVMs =  pendingTaskSamples - cores;
       $extraVMs = min(numAddMax, $extraVMs);
       $extraVMs = max(-numDelMax, $extraVMs);
       targetVMs = ($TargetLowPriorityNodes + $extraVMs);
