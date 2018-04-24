@@ -15,14 +15,15 @@ def create_extract_seqdata_workflow(
      bai_filename,
      seqdata_filename,
      config,
+     remixt_config,
      ref_data_dir,
 ):
-    chromosomes = remixt.config.get_chromosomes(config, ref_data_dir)
-    snp_positions_filename = remixt.config.get_filename(config, ref_data_dir, 'snp_positions')
+    chromosomes = remixt.config.get_chromosomes(remixt_config, ref_data_dir)
+    snp_positions_filename = remixt.config.get_filename(remixt_config, ref_data_dir, 'snp_positions')
 
-    bam_max_fragment_length = remixt.config.get_param(config, 'bam_max_fragment_length')
-    bam_max_soft_clipped = remixt.config.get_param(config, 'bam_max_soft_clipped')
-    bam_check_proper_pair = remixt.config.get_param(config, 'bam_check_proper_pair')
+    bam_max_fragment_length = remixt.config.get_param(remixt_config, 'bam_max_fragment_length')
+    bam_max_soft_clipped = remixt.config.get_param(remixt_config, 'bam_max_soft_clipped')
+    bam_check_proper_pair = remixt.config.get_param(remixt_config, 'bam_check_proper_pair')
 
     workflow = pypeliner.workflow.Workflow()
 
