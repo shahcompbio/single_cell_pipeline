@@ -39,7 +39,6 @@ def add_global_args(parser):
     pypeliner.app.add_arguments(parser)
 
     parser.add_argument("--input_yaml",
-                        required=True,
                         help='''yaml file with fastq files, output bams and cell metadata''')
 
     parser.add_argument("--out_dir",
