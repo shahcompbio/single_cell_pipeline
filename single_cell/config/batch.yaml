@@ -13,7 +13,7 @@ pools:
     auto_scale_formula: |
       numAddMax = 20;
       numDelMax = 20;
-      startingNumberOfVMs = 1;
+      startingNumberOfVMs = 0;
       minNumberofVMs = 0;
       maxNumberofVMs = 1000;
       pendingTaskSamplePercent = $PendingTasks.GetSamplePercent(180 * TimeInterval_Second);
@@ -50,7 +50,7 @@ pools:
     auto_scale_formula: |
       numAddMax = 20;
       numDelMax = 20;
-      startingNumberOfVMs = 1;
+      startingNumberOfVMs = 0;
       minNumberofVMs = 0;
       maxNumberofVMs = 1000;
       pendingTaskSamplePercent = $PendingTasks.GetSamplePercent(180 * TimeInterval_Second);
@@ -82,7 +82,7 @@ pools:
     auto_scale_formula: |
       numAddMax = 20;
       numDelMax = 20;
-      startingNumberOfVMs = 1;
+      startingNumberOfVMs = 0;
       minNumberofVMs = 0;
       maxNumberofVMs = 1000;
       pendingTaskSamplePercent = $PendingTasks.GetSamplePercent(180 * TimeInterval_Second);
