@@ -33,7 +33,10 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
 
     workflow.transform(
         name='prepare_normal_data',
-        ctx={'mem': 16, 'num_retry': 3, 'mem_retry_increment': 4},
+        ctx={'mem': config["memory"]['high'],
+             'pool_id': config['pools']['highmem'],
+             'ncpus':1, 'num_retry': 3,
+             'mem_retry_increment': 4},
         axes=('normal_cell_id',),
         func=titan.tasks.prepare_normal_data,
         args=(
@@ -51,7 +54,10 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
 
     workflow.transform(
         name='merge_het_positions',
-        ctx={'mem': 16, 'num_retry': 3, 'mem_retry_increment': 4},
+        ctx={'mem': config["memory"]['high'],
+             'pool_id': config['pools']['highmem'],
+             'ncpus':1, 'num_retry': 3,
+             'mem_retry_increment': 4},
         func=tasks.merge_het_positions,
         args=(
             pypeliner.managed.TempInputFile(
@@ -64,7 +70,9 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
     workflow.transform(
         name='prepare_tumour_data',
         axes=('tumour_cell_id',),
-        ctx={'mem': 20},
+        ctx={'mem': config["memory"]['high'],
+             'pool_id': config['pools']['highmem'],
+             'ncpus':1},
         func=titan.tasks.prepare_tumour_data,
         args=(
             pypeliner.managed.InputFile(
@@ -82,7 +90,10 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
 
     workflow.transform(
         name='merge_tumour_alleles',
-        ctx={'mem': 16, 'num_retry': 3, 'mem_retry_increment': 4},
+        ctx={'mem': config["memory"]['high'],
+             'pool_id': config['pools']['highmem'],
+             'ncpus':1, 'num_retry': 3,
+             'mem_retry_increment': 4},
         func=tasks.merge_tumour_alleles,
         args=(
             pypeliner.managed.TempInputFile(
@@ -94,7 +105,10 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
 
     workflow.transform(
         name='merge_wigs_normal',
-        ctx={'mem': 16, 'num_retry': 3, 'mem_retry_increment': 4},
+        ctx={'mem': config["memory"]['high'],
+             'pool_id': config['pools']['highmem'],
+             'ncpus':1, 'num_retry': 3,
+             'mem_retry_increment': 4},
         func=tasks.merge_wig_files,
         args=(
             pypeliner.managed.TempInputFile('normal.wig', 'normal_cell_id'),
@@ -104,7 +118,10 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
 
     workflow.transform(
         name='merge_wigs_tumour',
-        ctx={'mem': 16, 'num_retry': 3, 'mem_retry_increment': 4},
+        ctx={'mem': config["memory"]['high'],
+             'pool_id': config['pools']['highmem'],
+             'ncpus':1, 'num_retry': 3,
+             'mem_retry_increment': 4},
         func=tasks.merge_wig_files,
         args=(
             pypeliner.managed.TempInputFile('tumour.wig', 'tumour_cell_id'),
@@ -114,7 +131,10 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
 
     workflow.transform(
         name='create_intialization_parameters',
-        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx={'mem': config["memory"]['low'],
+             'pool_id': config['pools']['standard'],
+             'ncpus':1, 'num_retry': 3,
+             'mem_retry_increment': 2},
         func=titan.tasks.create_intialization_parameters,
         ret=pypeliner.managed.TempOutputObj('init_params', 'init_param_id'),
         args=(config["titan_params"],),
@@ -123,7 +143,10 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
     workflow.transform(
         name='run_titan',
         axes=('init_param_id',),
-        ctx={'mem': 16, 'num_retry': 3, 'mem_retry_increment': 4},
+        ctx={'mem': config["memory"]['high'],
+             'pool_id': config['pools']['highmem'],
+             'ncpus':1, 'num_retry': 3,
+             'mem_retry_increment': 4},
         func=titan.tasks.run_titan,
         args=(
             pypeliner.managed.TempInputObj('init_params', 'init_param_id'),
@@ -138,7 +161,10 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
 
     workflow.transform(
         name='select_solution',
-        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx={'mem': config["memory"]['low'],
+             'pool_id': config['pools']['standard'],
+             'ncpus':1, 'num_retry': 3,
+             'mem_retry_increment': 2},
         func=titan.tasks.select_solution,
         args=(
             pypeliner.managed.TempInputObj('init_params', 'init_param_id'),
@@ -178,7 +204,10 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
     workflow.commandline(
         name='plot_chromosome',
         axes=('chromosome',),
-        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx={'mem': config["memory"]['low'],
+             'pool_id': config['pools']['standard'],
+             'ncpus':1, 'num_retry': 3,
+             'mem_retry_increment': 2},
         args=(
             'plot_titan_chromosome.R',
             pypeliner.managed.Instance('chromosome'),
@@ -199,7 +228,10 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
 
     workflow.transform(
         name='merge_results',
-        ctx={'mem': 8, 'num_retry': 3, 'mem_retry_increment': 2},
+        ctx={'mem': config["memory"]['low'],
+             'pool_id': config['pools']['standard'],
+             'ncpus':1, 'num_retry': 3,
+             'mem_retry_increment': 2},
         func=hdf5_tasks.merge_hdf5,
         args=(
             {cloneid: pypeliner.managed.InputFile(
