@@ -30,7 +30,7 @@ def create_extract_seqdata_workflow(
 
     workflow.transform(
         name='create_chromosome_seqdata',
-        ctx={'mem': 16},
+        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
         func=tasks.create_chromosome_seqdata,
         args=(
             mgd.TempOutputFile('seqdata', 'chromosome', axes_origin=[]),
@@ -45,7 +45,7 @@ def create_extract_seqdata_workflow(
 
     workflow.transform(
         name='merge_seqdata',
-        ctx={'mem': 16},
+        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
         func=remixt.seqdataio.merge_seqdata,
         args=(
             mgd.OutputFile(seqdata_filename),
