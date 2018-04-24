@@ -54,6 +54,7 @@ def copy_number_calling_workflow(workflow, args):
                 'tumour_cell_id',
                 fnames=tumour_bai_files),
             mgd.TempOutputFile("tumour.h5", "tumour_cell_id"),
+            config,
             config['titan_params'].get('extract_seqdata', {}),
             config['titan_params']['ref_data_dir'],
         )
@@ -73,6 +74,7 @@ def copy_number_calling_workflow(workflow, args):
                 'normal_cell_id',
                 fnames=normal_bai_files),
             mgd.TempOutputFile("normal.h5", "normal_cell_id"),
+            config,
             config['titan_params'].get('extract_seqdata', {}),
             config['titan_params']['ref_data_dir'],
         )
