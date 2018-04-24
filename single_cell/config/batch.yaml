@@ -35,6 +35,9 @@ pools:
       if [ `sudo blockdev --getsize64 /dev/sdd` -le 900000000000 ]; then sudo mount /dev/sdd /datadrive; else sudo mount /dev/sdc /datadrive; fi
       sudo chmod -R 777 /datadrive /refdata
       export PATH=/usr/local/miniconda2/bin/:$PATH
+      export GIT_SSL_NO_VERIFY=1
+      git clone -b 0.1.3_dgrewal https://dgrewal@svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git; cd single_cell_pipeline; python setup.py install; cd ../
+      git clone -b azure_production_path_remapping https://dgrewal@bitbucket.org/dranew/pypeliner.git; cd pypeliner; python setup.py install; cd ../
     start_resources:
       startup.sh: /startup-resources/startup.sh
 
@@ -65,6 +68,9 @@ pools:
       if [ `sudo blockdev --getsize64 /dev/sdd` -le 900000000000 ]; then sudo mount /dev/sdd /datadrive; else sudo mount /dev/sdc /datadrive; fi
       sudo chmod -R 777 /datadrive /refdata
       export PATH=/usr/local/miniconda2/bin/:$PATH
+      export GIT_SSL_NO_VERIFY=1
+      git clone -b 0.1.3_dgrewal https://dgrewal@svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git; cd single_cell_pipeline; python setup.py install; cd ../
+      git clone -b azure_production_path_remapping https://dgrewal@bitbucket.org/dranew/pypeliner.git; cd pypeliner; python setup.py install; cd ../
     start_resources:
       startup.sh: /startup-resources/startup.sh
 
@@ -94,6 +100,9 @@ pools:
       if [ `sudo blockdev --getsize64 /dev/sdd` -le 900000000000 ]; then sudo mount /dev/sdd /datadrive; else sudo mount /dev/sdc /datadrive; fi
       sudo chmod -R 777 /datadrive /refdata
       export PATH=/usr/local/miniconda2/bin/:$PATH
+      export GIT_SSL_NO_VERIFY=1
+      git clone -b 0.1.3_dgrewal https://dgrewal@svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git; cd single_cell_pipeline; python setup.py install; cd ../
+      git clone -b azure_production_path_remapping https://dgrewal@bitbucket.org/dranew/pypeliner.git; cd pypeliner; python setup.py install; cd ../
     start_resources:
       startup.sh: /startup-resources/startup.sh
 
