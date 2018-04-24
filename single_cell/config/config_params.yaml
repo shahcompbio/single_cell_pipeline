@@ -11,13 +11,13 @@ grch37:
   chromosomes: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y']
   pools:
     standard: singlecellgrch37standard
-    highmem: singlecellgrch37high
+    highmem: singlecellgrch37highmem
     multicore: singlecellgrch37multicore
 mm10:
   chromosomes: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', 'X', 'Y']
   pools:
     standard: singlecellmm10standard
-    highmem: singlecellmm10high
+    highmem: singlecellmm10highmem
     multicore: singlecellmm10multicore
 
 azure:
