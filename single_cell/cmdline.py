@@ -47,7 +47,6 @@ def add_global_args(parser):
                         help='''Path to output directory.''')
 
     parser.add_argument("--config_file",
-                        required=True,
                         help='''Path to output directory.''')
 
     parser.add_argument("--config_override",
@@ -67,7 +66,6 @@ def parse_args():
     align.set_defaults(which='align')
     align.add_argument('--realign',
                        action='store_true',
-                       required=True,
                        help='''will run local realignment on all cells in batch mode''')
     align.add_argument("--library_id",
                        required=True,
@@ -176,10 +174,8 @@ def parse_args():
     args = vars(parser.parse_args())
 
     # add config paths to global args if needed.
-    globalargs = generate_pipeline_config.generate_pipeline_config_in_temp(
-        globalargs)
+    args = generate_pipeline_config.generate_pipeline_config_in_temp(args)
 
-    globalargs = generate_batch_config.generate_submit_config_in_temp(
-        globalargs)
+    args = generate_batch_config.generate_submit_config_in_temp(args)
 
     return args
