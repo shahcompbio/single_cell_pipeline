@@ -31,7 +31,7 @@ pools:
     # including the reference data and the singularity container
     create_vm_commands: |
       if [ `sudo blockdev --getsize64 /dev/sdc` -le 40000000000 ]; then sudo mount /dev/sdc /refdata; else sudo mount /dev/sdd /refdata; fi
-      if [ `sudo blockdev --getsize64 /dev/sdd` -le 900000000000 ]; then sudo mount /dev/sdd /datadrive; else sudo mount /dev/sdc /datadrive; fi
+      if [ `sudo blockdev --getsize64 /dev/sdd` -gt 900000000000 ]; then sudo mount /dev/sdd /datadrive; else sudo mount /dev/sdc /datadrive; fi
       sudo chmod -R 777 /datadrive /refdata
       export PATH=/usr/local/miniconda2/bin/:$PATH
       export GIT_SSL_NO_VERIFY=1
@@ -63,7 +63,7 @@ pools:
       $TargetLowPriorityNodes = max(minNumberofVMs,min(maxNumberofVMs, targetVMs));
     create_vm_commands: |
       if [ `sudo blockdev --getsize64 /dev/sdc` -le 40000000000 ]; then sudo mount /dev/sdc /refdata; else sudo mount /dev/sdd /refdata; fi
-      if [ `sudo blockdev --getsize64 /dev/sdd` -le 900000000000 ]; then sudo mount /dev/sdd /datadrive; else sudo mount /dev/sdc /datadrive; fi
+      if [ `sudo blockdev --getsize64 /dev/sdd` -gt 900000000000 ]; then sudo mount /dev/sdd /datadrive; else sudo mount /dev/sdc /datadrive; fi
       sudo chmod -R 777 /datadrive /refdata
       export PATH=/usr/local/miniconda2/bin/:$PATH
       export GIT_SSL_NO_VERIFY=1
@@ -95,7 +95,7 @@ pools:
       $TargetLowPriorityNodes = max(minNumberofVMs,min(maxNumberofVMs, targetVMs));
     create_vm_commands: |
       if [ `sudo blockdev --getsize64 /dev/sdc` -le 40000000000 ]; then sudo mount /dev/sdc /refdata; else sudo mount /dev/sdd /refdata; fi
-      if [ `sudo blockdev --getsize64 /dev/sdd` -le 900000000000 ]; then sudo mount /dev/sdd /datadrive; else sudo mount /dev/sdc /datadrive; fi
+      if [ `sudo blockdev --getsize64 /dev/sdd` -gt 900000000000 ]; then sudo mount /dev/sdd /datadrive; else sudo mount /dev/sdc /datadrive; fi
       sudo chmod -R 777 /datadrive /refdata
       export PATH=/usr/local/miniconda2/bin/:$PATH
       export GIT_SSL_NO_VERIFY=1
