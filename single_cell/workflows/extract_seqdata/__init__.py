@@ -36,6 +36,7 @@ def create_extract_seqdata_workflow(
         args=(
             mgd.TempOutputFile('seqdata', 'chromosome', axes_origin=[]),
             mgd.InputFile(bam_filename),
+            mgd.InputFile(bai_filename),
             snp_positions_filename,
             chromosomes,
             bam_max_fragment_length,
