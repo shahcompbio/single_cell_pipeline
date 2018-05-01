@@ -43,20 +43,23 @@ def read_wig(infile, counts=False):
 def merge_two_wigs(wig1, wig2):
     merged_wig = {}
 
-    for chrom_key, wig1data in wig1.iteritems():
+    chromosomes = sorted(set(wig1.keys()).union( set(wig2.keys())))
 
-        wig2data = wig2.get(chrom_key, None)
+    for chrom in chromosomes:
+        wig1data = wig1.get(chrom, None)
+        wig2data = wig2.get(chrom, None)
 
-        if not wig2data:
-            warnings.warn(
-                "Chromosome {} missing in wig file".format(
-                    chrom_key[0]))
+        if not isinstance(wig2data, np.ndarray) and not wig2data:
             #just add zeros if no data
             wig2data = [0] * len(wig1data)
 
+        if not isinstance(wig1data, np.ndarray) and not wig1data:
+            #just add zeros if no data
+            wig1data = [0] * len(wig2data)
+
         mergeddata = np.add(wig1data, wig2data)
 
-        merged_wig[chrom_key] = mergeddata
+        merged_wig[chrom] = mergeddata
 
     return merged_wig
 
