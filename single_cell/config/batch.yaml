@@ -19,7 +19,8 @@ pools:
       pendingTaskSamplePercent = $PendingTasks.GetSamplePercent(180 * TimeInterval_Second);
       pendingTaskSamples = pendingTaskSamplePercent < 70 ? startingNumberOfVMs : avg($PendingTasks.GetSample(180 * TimeInterval_Second));
       cores = $TargetLowPriorityNodes * 2;
-      $extraVMs =  (pendingTaskSamples - cores) / 2;
+      $extraVMs = (pendingTaskSamples - cores) / 2;
+      $extraVMs = $extraVMs + 0.5;
       $extraVMs = min(numAddMax, $extraVMs);
       $extraVMs = max(-numDelMax, $extraVMs);
       targetVMs = ($TargetLowPriorityNodes + $extraVMs);
@@ -38,7 +39,6 @@ pools:
       git clone -b 0.1.3 https://dgrewal@svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git; cd single_cell_pipeline; python setup.py install; cd ../
       git clone -b azure_production https://dgrewal@bitbucket.org/dranew/pypeliner.git; cd pypeliner; python setup.py install; cd ../
     start_resources:
-      startup.sh: /startup-resources/startup.sh
 
   singlecell${reference}highmem_${version}:
     pool_vm_size: 'STANDARD_DS11_V2'
@@ -70,7 +70,6 @@ pools:
       git clone -b 0.1.3 https://dgrewal@svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git; cd single_cell_pipeline; python setup.py install; cd ../
       git clone -b azure_production https://dgrewal@bitbucket.org/dranew/pypeliner.git; cd pypeliner; python setup.py install; cd ../
     start_resources:
-      startup.sh: /startup-resources/startup.sh
 
   singlecell${reference}multicore_${version}:
     pool_vm_size: 'STANDARD_DS13_V2'
@@ -102,7 +101,6 @@ pools:
       git clone -b 0.1.3 https://dgrewal@svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git; cd single_cell_pipeline; python setup.py install; cd ../
       git clone -b azure_production https://dgrewal@bitbucket.org/dranew/pypeliner.git; cd pypeliner; python setup.py install; cd ../
     start_resources:
-      startup.sh: /startup-resources/startup.sh
 
 
 # Compute Task Start Commmands
