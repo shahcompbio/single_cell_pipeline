@@ -226,6 +226,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
         ),
     )
 
+    #just leaving it here in case we parallelize by samples later.
     workflow.transform(
         name='merge_results',
         ctx={'mem': config["memory"]['low'],

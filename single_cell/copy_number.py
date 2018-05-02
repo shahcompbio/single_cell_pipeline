@@ -26,7 +26,7 @@ def copy_number_calling_workflow(workflow, args):
 
     copynumber_dir = os.path.join(args["out_dir"], "copynumber")
 
-    out_file = os.path.join(copynumber_dir, "results")
+    out_file = os.path.join(copynumber_dir, "results", "results.h5")
 
     cloneid = args["clone_id"]
 
