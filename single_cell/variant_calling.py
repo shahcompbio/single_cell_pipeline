@@ -87,6 +87,10 @@ def strelka_snv_callback(record):
     return record.INFO['QSS']
 
 
+def vardict_snv_callback(record):
+    raise
+
+
 def variant_calling_workflow(workflow, args):
 
     config = helpers.load_config(args)
@@ -101,6 +105,7 @@ def variant_calling_workflow(workflow, args):
     museq_vcf = os.path.join(varcalls_dir, 'museq_snv.vcf.gz')
     strelka_snv_vcf = os.path.join(varcalls_dir, 'strelka_snv.vcf.gz')
     strelka_indel_vcf = os.path.join(varcalls_dir, 'strelka_indel.vcf.gz')
+    vardict_snv_vcf = os.path.join(varcalls_dir, 'vardict_snv.vcf.gz')
     snv_h5_filename = os.path.join(varcalls_dir, 'snv_annotations.h5')
 
     wgs_bam_template = args["tumour_template"]
@@ -155,6 +160,17 @@ def variant_calling_workflow(workflow, args):
         ),
     )
 
+    workflow.subworkflow(
+        name='vardict',
+        func=vardict.create_vardict_paired_sample_workflow,
+        args=(
+            mgd.InputFile("normal.split.bam", "region", template=normal_bam_template),
+            mgd.InputFile("merged_bam", "region", template=wgs_bam_template),
+            config['ref_genome'],
+            mgd.OutputFile(vardict_snv_vcf),
+        ),
+    )
+
     workflow.transform(
         name='convert_museq_to_hdf5',
         func=biowrappers.components.io.vcf.tasks.convert_vcf_to_hdf5,
@@ -182,12 +198,26 @@ def variant_calling_workflow(workflow, args):
     )
 
     workflow.transform(
+        name='convert_vardict_to_hdf5',
+        func=biowrappers.components.io.vcf.tasks.convert_vcf_to_hdf5,
+        args=(
+            mgd.InputFile(vardict_snv_vcf),
+            mgd.TempOutputFile('vardict_snv.h5'),
+            '/vardict/vcf/',
+        ),
+        kwargs={
+            'score_callback': vardict_snv_callback,
+        }
+    )
+
+    workflow.transform(
         name='merge_snvs',
         func=vcfutils.merge_vcfs,
         args=(
             [
                 mgd.InputFile(museq_vcf),
                 mgd.InputFile(strelka_snv_vcf),
+                mgd.InputFile(vardict_snv_vcf),
             ],
             mgd.TempOutputFile('all.snv.vcf')
         )
@@ -238,6 +268,7 @@ def variant_calling_workflow(workflow, args):
                 mgd.TempInputFile('snv_annotations.h5'),
                 mgd.TempInputFile('museq.h5'),
                 mgd.TempInputFile('strelka_snv.h5'),
+                mgd.TempInputFile('vardict_snv.h5'),
             ],
             pypeliner.managed.OutputFile(snv_h5_filename),
         ),
