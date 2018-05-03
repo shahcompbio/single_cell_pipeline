@@ -111,8 +111,12 @@ def generate_submit_config_in_temp(args):
     batch_yaml = "batch.yaml"
 
     tmpdir = args.get("tmpdir", None)
+    pipelinedir = args.get("pipelinedir", None)
+
     # use pypeliner tmpdir to store yaml
-    if tmpdir:
+    if pipelinedir:
+        batch_yaml = os.path.join(pipelinedir, batch_yaml)
+    elif tmpdir:
         batch_yaml = os.path.join(tmpdir, batch_yaml)
     else:
         warnings.warn("no tmpdir specified, generating configs in working dir")
