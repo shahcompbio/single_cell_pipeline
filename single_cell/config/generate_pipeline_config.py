@@ -119,8 +119,12 @@ def generate_pipeline_config_in_temp(args):
 
     config_yaml = "config.yaml"
     tmpdir = args.get("tmpdir", None)
+    pipelinedir = args.get("pipelinedir", None)
+
     # use pypeliner tmpdir to store yaml
-    if tmpdir:
+    if pipelinedir:
+        config_yaml = os.path.join(pipelinedir, config_yaml)
+    elif tmpdir:
         config_yaml = os.path.join(tmpdir, config_yaml)
     else:
         warnings.warn("no tmpdir specified, generating configs in working dir")

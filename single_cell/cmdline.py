@@ -15,6 +15,7 @@ from single_cell.utils import helpers
 from single_cell.config import generate_batch_config
 from single_cell.config import generate_pipeline_config
 
+
 class parseSentinelPattern(argparse.Action):
 
     def __call__(self, parser, args, values, option_string=None):
@@ -33,6 +34,21 @@ class parseRegionTemplate(argparse.Action):
     def __call__(self, parser, args, values, option_string=None):
         values = values.replace("{}", "{region}")
         setattr(args, self.dest, values)
+
+
+def separate_pipelinedir_by_subcommand(args):
+
+    pipelinedir = args.get("pipelinedir", None)
+
+    if pipelinedir:
+        subcommand_name = args.get("which", None)
+
+        if not subcommand_name:
+            return args
+
+        args["pipelinedir"] = os.path.join(pipelinedir, subcommand_name)
+
+    return args
 
 
 def add_global_args(parser):
@@ -79,8 +95,8 @@ def parse_args():
     copyclone = add_global_args(subparsers.add_parser("copyclone"))
     copyclone.set_defaults(which='copyclone')
     copyclone.add_argument("--library_id",
-                        required=True,
-                        help='''Library id.''')
+                           required=True,
+                           help='''Library id.''')
 
     aneufinder = add_global_args(subparsers.add_parser("aneufinder"))
     aneufinder.set_defaults(which='aneufinder')
@@ -119,7 +135,8 @@ def parse_args():
                                  action=parseRegionTemplate,
                                  help='''template for saving the bams merged by region, use {} as place holder for genomic region''')
 
-    copy_number_calling = add_global_args(subparsers.add_parser("copy_number_calling"))
+    copy_number_calling = add_global_args(
+        subparsers.add_parser("copy_number_calling"))
     copy_number_calling.set_defaults(which='copy_number_calling')
 
     copy_number_calling.add_argument("--tumour_yaml",
@@ -134,8 +151,8 @@ def parse_args():
                                      required=True,
                                      help='''ID to identify the results''')
 
-
-    germline_calling = add_global_args(subparsers.add_parser("germline_calling"))
+    germline_calling = add_global_args(
+        subparsers.add_parser("germline_calling"))
     germline_calling.set_defaults(which='germline_calling')
 
     germline_calling.add_argument("--input_template",
@@ -143,7 +160,8 @@ def parse_args():
                                   action=parseRegionTemplate,
                                   help='''template for saving the bams merged by region, use {} as place holder for genomic region''')
 
-    breakpoint_calling = add_global_args(subparsers.add_parser("breakpoint_calling"))
+    breakpoint_calling = add_global_args(
+        subparsers.add_parser("breakpoint_calling"))
     breakpoint_calling.set_defaults(which='breakpoint_calling')
 
     generate_config = subparsers.add_parser("generate_config")
@@ -176,5 +194,8 @@ def parse_args():
     args = generate_pipeline_config.generate_pipeline_config_in_temp(args)
 
     args = generate_batch_config.generate_submit_config_in_temp(args)
+
+    # separate pipelinedirs of subcommands
+    args = separate_pipelinedir_by_subcommand(args)
 
     return args
