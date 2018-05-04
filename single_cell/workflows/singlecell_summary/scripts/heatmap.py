@@ -15,7 +15,7 @@ import seaborn as sns
 
 class ClusterMap(object):
 
-    def __init__(self, data, colordata, lims, max_cn, chromosomes=None):
+    def __init__(self, data, colordata, lims, max_cn, chromosomes=None, scale_by_cells=False):
         """
         :param data pandas dataframe with bins as columns and samples as rows
         :param colordata: dict with samples and their corresponding type
@@ -27,6 +27,8 @@ class ClusterMap(object):
         else:
             self.chromosomes = [str(v) for v in range(1, 23)] + ['X', 'Y']
 
+        self.scale_by_cells = scale_by_cells
+
         self.max_cn = max_cn
 
         self.colordata = colordata
@@ -36,7 +38,7 @@ class ClusterMap(object):
 
         self.data = data.as_matrix()
 
-        #set max for data
+        # set max for data
         self.data = np.clip(self.data, 0, self.max_cn)
 
         self.vmax = min(self.max_cn, lims[1])
@@ -47,7 +49,7 @@ class ClusterMap(object):
     def get_chr_idxs(self, bins):
         """
         :param bins: sorted bins used for the plot
-        :return chr_idxs: list with the index where chromosome changes 
+        :return chr_idxs: list with the index where chromosome changes
         returns the index where the chromosome changes
         used for marking chr boundaries on the plot
         """
@@ -65,7 +67,7 @@ class ClusterMap(object):
     def get_cmap_colorbar(self):
         """generates listed colormap for colordata
         used to plot a color bar. using seaborn to keep colors same as old code
-        :returns listedcolormap 
+        :returns listedcolormap
         :returns list of string desc for each color
         """
         ccs = list(set(self.colordata.values()))
@@ -74,33 +76,33 @@ class ClusterMap(object):
 
         return ListedColormap(cmap), ccs
 
-    def generate_colormap_heatmap(self, localmax, maxval):
+    def generate_colormap_heatmap(self, local_levels, maxval):
         """generating a custom heatmap 2:gray 0: blue 2+: reds
         :param maxval highest value in the data
         :returns listedcolormap
         """
+        color_reference = {0: '#3498DB', 1: '#85C1E9', 2: '#D3D3D3'}
+
         # all colors 2 and up are red with increasing intensity
-        num_reds = maxval
+        cmap = matplotlib.cm.get_cmap('Reds', maxval + 1)
 
-        if num_reds == self.max_cn:
-            num_reds = num_reds - 1
+        for cn_level in np.arange(3, maxval + 1):
+            cn_level = int(cn_level)
 
-        cmap = matplotlib.cm.get_cmap('Reds', num_reds)
+            if cn_level == self.max_cn:
+                rgb = '#000000'
+            else:
+                rgb = cmap(cn_level)[:3]
 
-        reds_hex = []
-        for i in range(2, cmap.N):
-            # will return rgba, we take only first 3 so we get rgb
-            rgb = cmap(i)[:3]
-            reds_hex.append(rgb2hex(rgb))
+            color_reference[cn_level] = rgb2hex(rgb)
 
-        num_reds = int(localmax-2)
-        reds_hex = reds_hex[:num_reds]
+        colors = [
+            color_reference[val] for val in np.arange(
+                min(local_levels),
+                max(local_levels) +
+                1)]
 
-        #set max_cn to black
-        if (num_reds+2) == self.max_cn:
-            reds_hex.append('#000000')
-
-        cmap = ListedColormap(['#3498DB', '#85C1E9', '#D3D3D3'] + reds_hex)
+        cmap = ListedColormap(colors)
 
         return cmap
 
@@ -114,8 +116,16 @@ class ClusterMap(object):
         # placement of dendrogram on the left of the heatmap
         ax1 = fig.add_axes(placement, frame_on=True)
 
+        # workaround: replace nan with -1 to cluster data with nans
+        mat_no_nan = np.copy(mat)
+        mat_no_nan[np.isnan(mat_no_nan)] = -1
+
         # Compute and plot left dendrogram.
-        linkage = hc.linkage(dist.pdist(mat), method='average')
+        linkage = hc.linkage(
+            dist.pdist(
+                mat_no_nan,
+                "cityblock"),
+            method='ward')
         hc.dendrogram(linkage, orientation='left')
         ax1.set_xticks([])
         ax1.set_yticks([])
@@ -157,21 +167,31 @@ class ClusterMap(object):
         :param placement: list with [x,y,w,h] values for positioning plot
         """
 
-        #sort matrix based on dendrogram order
+        # sort matrix based on dendrogram order
         leaves = hc.leaves_list(linkage)
         mat = mat[leaves, :]
 
-        vmax = np.nanmax(mat)
-        cmap = self.generate_colormap_heatmap(vmax, self.vmax)
+        # get all values we're going to plot later and generate a colormap for
+        # them
+        plot_levels = np.unique(mat[~np.isnan(mat)])
+        cmap = self.generate_colormap_heatmap(plot_levels, self.vmax)
 
-        #calculate appropriate margin to accomodate labels
-        label_len = max([len(self.rows[leaves[i]]) for i in range(mat.shape[0])])
+        # calculate appropriate margin to accomodate labels
+        label_len = max([len(self.rows[leaves[i]])
+                         for i in range(mat.shape[0])])
         right_margin = label_len * 0.005
         placement[-2] -= right_margin
 
         axm = fig.add_axes(placement)
 
-        axm.pcolormesh(mat, cmap=cmap, rasterized=True)
+        mat = np.ma.masked_where(np.isnan(mat), mat)
+
+        axm.pcolormesh(
+            mat,
+            cmap=cmap,
+            rasterized=True,
+            vmin=np.nanmin(mat),
+            vmax=np.nanmax(mat))
 
         axm.set_yticks([])
 
@@ -184,21 +204,26 @@ class ClusterMap(object):
         axm.set_xticklabels(self.chromosomes)
 
         for val in chr_idxs:
-            axm.plot([val,val], [mat.shape[0],0], ':', linewidth=0.5, color='black', )
+            axm.plot(
+                [val, val], [mat.shape[0], 0], ':', linewidth=0.5, color='black', )
 
         # Plot color legend
         legend_plc = [0.07, 0.98, 0.18, 0.01]
         axcb = fig.add_axes(legend_plc, frame_on=False)
 
-
-        ticklabels =  map(int, np.arange(self.vmin, self.vmax))
+        ticklabels = map(
+            int,
+            np.arange(
+                min(plot_levels),
+                max(plot_levels) +
+                1))
         ticklabels = map(str, ticklabels)
-        self.plot_legend(axcb, cmap, ticklabels = ticklabels)
+        self.plot_legend(axcb, cmap, ticklabels=ticklabels)
 
     def plot_legend(self, axes, cmap, ticklabels=None):
         """adds legend
         :param axes: matplotlib figure axes
-        :param cmap: colormap 
+        :param cmap: colormap
         :param ticklabels: tick labels
         """
 
@@ -210,7 +235,8 @@ class ClusterMap(object):
         cbar.set_ticks([v + 0.5 for v in bounds])
 
         if not ticklabels:
-            ticklabels = [str(v).replace(str(self.max_cn), str(self.max_cn-1)+"+") for v in bounds]
+            ticklabels = [
+                str(v).replace(str(self.max_cn), str(self.max_cn - 1) + "+") for v in bounds]
 
         if ticklabels:
             cbar.set_ticklabels(ticklabels)
@@ -220,7 +246,13 @@ class ClusterMap(object):
     def generate_plot(self):
         """generates a figure with dendrogram, colorbar, heatmap and legends
         """
-        fig = plt.figure(figsize=(30, 30))
+
+        figsize = (30,30)
+        if self.scale_by_cells:
+            height = float(len(self.data)) / 7
+            figsize = (30, height)
+
+        fig = plt.figure(figsize=figsize)
 
         # fig's height and starting pos
         y = 0.1
@@ -239,10 +271,8 @@ class ClusterMap(object):
         # heatmap placement
         # x = cbar x + cbar w + margin
         #w = width
-        #right will get scaled based on labels inside plot_heatmap
+        # right will get scaled based on labels inside plot_heatmap
         hmap_plc = [0.117, y, 0.9, h]
         self.plot_heatmap(fig, self.data, linkage, hmap_plc)
-
-
 
         return fig
