@@ -47,22 +47,27 @@ class PlotPcolor(object):
         self.cellcalls = kwargs.get('cellcalls')
         self.mad_thres = kwargs.get('mad_threshold')
         self.reads_thres = kwargs.get('numreads_threshold')
-        self.median_hmmcopy_reads_per_bin_thres = kwargs.get('median_hmmcopy_reads_per_bin_threshold')
+        self.median_hmmcopy_reads_per_bin_thres = kwargs.get(
+            'median_hmmcopy_reads_per_bin_threshold')
         self.high_memory = kwargs.get('high_memory')
         self.plot_title = kwargs.get('plot_title')
 
+        self.scale_by_cells = kwargs.get("scale_by_cells")
 
         self.color_by_col = kwargs.get('color_by_col')
         self.plot_by_col = kwargs.get('plot_by_col')
 
+        self.mappability_threshold = kwargs.get('mappability_threshold')
+
         if not self.color_by_col:
             self.color_by_col = 'cell_call'
 
+
         if not self.plot_by_col:
             self.plot_by_col = 'all'
-            
+
         if self.sep == 'comma':
-            self.sep= ','
+            self.sep = ','
         elif self.sep == 'tab':
             self.sep = '\t'
 
@@ -72,9 +77,9 @@ class PlotPcolor(object):
         self.max_cn = kwargs.get("max_cn")
 
         if self.max_cn:
-            self.max_cn = int(self.max_cn)+1
+            self.max_cn = int(self.max_cn) + 1
         else:
-            self.max_cn=20
+            self.max_cn = 20
 
     def build_label_indices(self, header):
         '''
@@ -110,14 +115,14 @@ class PlotPcolor(object):
 
             val = float('nan') if val == "NA" else float(val)
 
-            if self.column_name == "state":
-                val -= 1
-
             chrom = line[idxs['chr']]
             start = int(line[idxs['start']])
             end = int(line[idxs['end']])
 
             seg = (chrom, start, end)
+
+            if float(line[idxs["map"]]) <= self.mappability_threshold:
+                val = float("nan")
 
             if chrom not in bins:
                 bins[chrom] = set()
@@ -146,7 +151,6 @@ class PlotPcolor(object):
         numread_data = {}
         reads_per_bin_data = {}
 
-
         sepdata = defaultdict(list)
         colordata = {}
 
@@ -171,7 +175,7 @@ class PlotPcolor(object):
 
             val = float('nan') if val == "NA" else float(val)
 
-            ec = 'all' if sep_col=='all' else line[idxs[sep_col]]
+            ec = 'all' if sep_col == 'all' else line[idxs[sep_col]]
 
             cc = line[idxs[color_col]]
 
@@ -179,7 +183,8 @@ class PlotPcolor(object):
 
             reads_per_bin = line[idxs['median_hmmcopy_reads_per_bin']]
 
-            reads_per_bin = 0 if reads_per_bin == "NA" else float(reads_per_bin)
+            reads_per_bin = 0 if reads_per_bin == "NA" else float(
+                reads_per_bin)
 
             if self.cellcalls and cc not in self.cellcalls:
                 continue
@@ -239,8 +244,6 @@ class PlotPcolor(object):
         df = df.T
         df.columns = bins
 
-        #remove cells that dont have any data
-        df = df.dropna()
         return df
 
     @staticmethod
@@ -250,15 +253,20 @@ class PlotPcolor(object):
 
     @staticmethod
     def get_order(data):
-        row_linkage = hc.linkage(sp.distance.pdist(data.values),
-                                 method='average')
+        order_data = np.array(data.values)
+
+        order_data[np.isnan(order_data)] = -1
+
+        row_linkage = hc.linkage(sp.distance.pdist(order_data, "cityblock"),
+                                 method='ward')
         order = hc.leaves_list(row_linkage)
- 
+
         samps = data.index
         order = [samps[i] for i in order]
         return order
 
-    def filter_data(self, data, ccdata, mad_scores, numreads_data, reads_per_bin):
+    def filter_data(
+            self, data, ccdata, mad_scores, numreads_data, reads_per_bin):
         """
         remove samples that dont pass filtering thresholds
         """
@@ -284,7 +292,6 @@ class PlotPcolor(object):
             samples = [samp for samp in samples
                        if reads_per_bin[samp] >= self.median_hmmcopy_reads_per_bin_thres]
 
-
         data = data.loc[samples]
         return data
 
@@ -294,21 +301,26 @@ class PlotPcolor(object):
         get the ordering of the cells in the clustering
         dump order to file
         """
- 
+
         if not self.order_data:
             return
 
         if all((self.cellcalls, self.mad_thres, self.reads_thres)):
-            mad_scores, sepdata, colordata, numread_data, cell_qualities = self.read_metrics(data)
-            data = self.filter_data(data, colordata, mad_scores, numread_data, cell_qualities)
+            mad_scores, sepdata, colordata, numread_data, cell_qualities = self.read_metrics(
+                data)
+            data = self.filter_data(
+                data,
+                colordata,
+                mad_scores,
+                numread_data,
+                cell_qualities)
         else:
             samples = list(set(data.index))
-            sepdata = {'all':samples}
-
+            sepdata = {'all': samples}
 
         outfile = open(self.order_data, 'w')
-        
-        outfile.write('cell_id,%s_heatmap_order\n' %self.plot_by_col)
+
+        outfile.write('cell_id,%s_heatmap_order\n' % self.plot_by_col)
 
         for _, samples in sepdata.iteritems():
             samples = set(samples).intersection(set(data.index))
@@ -326,16 +338,22 @@ class PlotPcolor(object):
         generate heatmap, annotate and save
 
         """
-        ClusterMap(data, ccdata, lims, self.max_cn, chromosomes=self.chromosomes)
+        ClusterMap(
+            data,
+            ccdata,
+            lims,
+            self.max_cn,
+            chromosomes=self.chromosomes,
+            scale_by_cells=self.scale_by_cells)
 
         plt.suptitle(title)
 
         plt.subplots_adjust(right=0.85)
- 
+
         pdfout.savefig(pad_inches=0.2)
 
         plt.close("all")
-        
+
     def plot_heatmap_by_sep(self, data, sepdata, colordata):
         """
         generate and save plot to output
@@ -348,7 +366,6 @@ class PlotPcolor(object):
 
             self.plot_heatmap(pltdata, colordata, title, lims, pdfout)
 
-        
         if not self.output:
             return
 
@@ -365,7 +382,6 @@ class PlotPcolor(object):
         vmin = np.nanmin(data.values)
         lims = (vmin, vmax)
 
-
         for sep, samples in sepdata.iteritems():
 
             num_samples = len(samples)
@@ -376,18 +392,18 @@ class PlotPcolor(object):
                 continue
 
             if len(samples) > 1000 and not self.high_memory:
-                warnings.warn('The output file will only plot 1000 cells per page,'\
+                warnings.warn('The output file will only plot 1000 cells per page,'
                               ' add --high_memory to override')
 
                 samples = sorted(samples)
-                #plot in groups of 1000
-                sample_sets =  [samples[x:x+1000] for x in range(0, len(samples), 1000)]
+                # plot in groups of 1000
+                sample_sets = [samples[x:x + 1000]
+                               for x in range(0, len(samples), 1000)]
                 for samples in sample_sets:
 
                     genplot(data, samples)
             else:
                 genplot(data, samples)
-
 
         pdfout.close()
 
@@ -406,7 +422,7 @@ class PlotPcolor(object):
                 open(self.output, "w").close()
             if self.order_data:
                 ofile = open(self.order_data, "w")
-                ofile.write('cell_id,%s_heatmap_order\n' %self.plot_by_col)
+                ofile.write('cell_id,%s_heatmap_order\n' % self.plot_by_col)
                 ofile.close()
             return
 
@@ -415,11 +431,17 @@ class PlotPcolor(object):
         self.get_cluster_order(data)
 
         if self.output:
-            mad_scores, sepdata, colordata, numread_data, reads_per_bin = self.read_metrics(data)
-            data = self.filter_data(data, colordata, mad_scores, numread_data, reads_per_bin)
+            mad_scores, sepdata, colordata, numread_data, reads_per_bin = self.read_metrics(
+                data)
+
+            data = self.filter_data(
+                data,
+                colordata,
+                mad_scores,
+                numread_data,
+                reads_per_bin)
 
             self.plot_heatmap_by_sep(data, sepdata, colordata)
-
 
 
 def parse_args():
@@ -476,24 +498,33 @@ def parse_args():
                         default=None,
                         help='''all cells that have low quality won't be plotted''')
 
+    parser.add_argument('--mappability_threshold',
+                        type=float,
+                        default=0.9,
+                        help='sets all cells with mappability under threshold to nan')
+
     parser.add_argument('--plot_by_col',
                         default='all',
-                         help='''Column name to use for grouping the heatmaps''')
+                        help='''Column name to use for grouping the heatmaps''')
 
     parser.add_argument('--color_by_col',
                         default='cell_call',
-                         help='''column name to use for coloring the side bar in heatmap''')
+                        help='''column name to use for coloring the side bar in heatmap''')
 
     parser.add_argument('--max_cn',
                         default=20,
-                         help='''maximum copynumber to plot in heatmap''')
+                        help='''maximum copynumber to plot in heatmap''')
+
+    parser.add_argument('--scale_by_cells',
+                        default=False,
+                        action="store_true",
+                        help="scale the height of plot by number of cells")
 
     parser.add_argument('--high_memory',
                         action='store_true',
-                         help='set this flag to override the default limit of 1000 cells'\
-                         ' per plot. The code will use more memory and the pdf file size'\
-                         ' will depend on number of cells')
-
+                        help='set this flag to override the default limit of 1000 cells'
+                        ' per plot. The code will use more memory and the pdf file size'
+                        ' will depend on number of cells')
 
     args = parser.parse_args()
 
@@ -503,8 +534,8 @@ def parse_args():
 if __name__ == '__main__':
     ARGS = parse_args()
     m = PlotPcolor(ARGS.input, ARGS.metrics, ARGS.order_data, ARGS.output, column_name=ARGS.column_name,
-                    cellcalls=ARGS.cellcalls, mad_threshold=ARGS.mad_threshold, numreads_threshold=ARGS.numreads_threshold,
-                    median_hmmcopy_reads_per_bin_threshold = ARGS.median_hmmcopy_reads_per_bin_threshold, high_memory=ARGS.high_memory, plot_title=ARGS.plot_title,
-                    color_by_col=ARGS.color_by_col, plot_by_col=ARGS.plot_by_col,
-                    separator = ARGS.separator, max_cn = ARGS.max_cn)
+                   cellcalls=ARGS.cellcalls, mad_threshold=ARGS.mad_threshold, numreads_threshold=ARGS.numreads_threshold,
+                   median_hmmcopy_reads_per_bin_threshold=ARGS.median_hmmcopy_reads_per_bin_threshold, high_memory=ARGS.high_memory, plot_title=ARGS.plot_title,
+                   color_by_col=ARGS.color_by_col, plot_by_col=ARGS.plot_by_col,
+                   separator=ARGS.separator, max_cn=ARGS.max_cn, scale_by_cells=ARGS.scale_by_cells, mappability_threshold=ARGS.mappability_threshold)
     m.main()
