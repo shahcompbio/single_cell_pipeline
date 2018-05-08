@@ -18,7 +18,6 @@ def create_extract_seqdata_workflow(
      remixt_config,
      ref_data_dir,
 ):
-    chromosomes = remixt.config.get_chromosomes(remixt_config, ref_data_dir)
     snp_positions_filename = remixt.config.get_filename(remixt_config, ref_data_dir, 'snp_positions')
 
     bam_max_fragment_length = remixt.config.get_param(remixt_config, 'bam_max_fragment_length')
@@ -27,7 +26,22 @@ def create_extract_seqdata_workflow(
 
     workflow = pypeliner.workflow.Workflow()
 
-    workflow.setobj(obj=mgd.OutputChunks('chromosome'), value=chromosomes)
+
+    workflow.transform(
+        name="get_chromosomes",
+        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        func=remixt.config.get_chromosomes,
+        ret=mgd.TempOutputObj('chromosomes'),
+        args=(
+              remixt_config,
+              ref_data_dir
+        )
+    )
+
+    workflow.setobj(
+        obj=mgd.OutputChunks('chromosome'),
+        value=mgd.TempInputObj('chromosomes')
+    )
 
     workflow.transform(
         name='create_chromosome_seqdata',
@@ -38,7 +52,7 @@ def create_extract_seqdata_workflow(
             mgd.InputFile(bam_filename),
             mgd.InputFile(bai_filename),
             snp_positions_filename,
-            chromosomes,
+            mgd.TempInputObj('chromosomes'),
             bam_max_fragment_length,
             bam_max_soft_clipped,
             bam_check_proper_pair,
