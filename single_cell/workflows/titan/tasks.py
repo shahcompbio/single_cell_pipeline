@@ -4,6 +4,9 @@ from single_cell.utils import csvutils
 import remixt
 
 
+def merge_overlapping_seqdata(outfile, infiles):
+    raise NotImplementedError()
+
 def create_chromosome_seqdata(seqdata, bam_file, snp_positions, chromosomes,
                               bam_max_fragment_length, bam_max_soft_clipped,
                               bam_check_proper_pair):
