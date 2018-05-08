@@ -9,6 +9,8 @@ import pypeliner
 import pypeliner.managed as mgd
 from biowrappers.components.copy_number_calling import titan
 import biowrappers.components.io.hdf5.tasks as hdf5_tasks
+import remixt
+
 
 default_chromosomes = [str(a) for a in xrange(1, 23)] + ['X']
 
@@ -32,38 +34,31 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
     )
 
     workflow.transform(
+        name='merge_all_normal_seqdata',
+        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
+        func=tasks.merge_overlapping_seqdata,
+        args=(
+            mgd.TempOutputFile("seqdata_normal_all_cells_merged.h5"),
+            pypeliner.managed.InputFile(
+                'normal_sample.h5',
+                'normal_cell_id',
+                fnames=normal_seqdata),
+        ),
+    )
+
+
+    workflow.transform(
         name='prepare_normal_data',
         ctx={'mem': config["memory"]['high'],
              'pool_id': config['pools']['highmem'],
              'ncpus':1, 'num_retry': 3,
              'mem_retry_increment': 4},
-        axes=('normal_cell_id',),
         func=titan.tasks.prepare_normal_data,
         args=(
-            pypeliner.managed.InputFile(
-                'normal_sample.h5',
-                'normal_cell_id',
-                fnames=normal_seqdata),
-            pypeliner.managed.TempOutputFile('normal.wig', 'normal_cell_id'),
-            pypeliner.managed.TempOutputFile(
-                'het_positions.tsv',
-                'normal_cell_id'),
-            config["titan_params"],
-        ),
-    )
-
-    workflow.transform(
-        name='merge_het_positions',
-        ctx={'mem': config["memory"]['high'],
-             'pool_id': config['pools']['highmem'],
-             'ncpus':1, 'num_retry': 3,
-             'mem_retry_increment': 4},
-        func=tasks.merge_het_positions,
-        args=(
-            pypeliner.managed.TempInputFile(
-                'het_positions.tsv',
-                'normal_cell_id'),
+            mgd.TempInputFile("seqdata_normal_all_cells_merged.h5"),
+            pypeliner.managed.TempOutputFile('normal.wig'),
             pypeliner.managed.TempOutputFile('het_positions.tsv'),
+            config["titan_params"],
         ),
     )
 
@@ -100,19 +95,6 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
                 'tumour_alleles.tsv',
                 'tumour_cell_id'),
             pypeliner.managed.TempOutputFile('tumour_alleles.tsv'),
-        ),
-    )
-
-    workflow.transform(
-        name='merge_wigs_normal',
-        ctx={'mem': config["memory"]['high'],
-             'pool_id': config['pools']['highmem'],
-             'ncpus':1, 'num_retry': 3,
-             'mem_retry_increment': 4},
-        func=tasks.merge_wig_files,
-        args=(
-            pypeliner.managed.TempInputFile('normal.wig', 'normal_cell_id'),
-            pypeliner.managed.TempOutputFile('normal.wig'),
         ),
     )
 
