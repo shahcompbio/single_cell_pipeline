@@ -151,6 +151,16 @@ class GenHmmPlots(object):
         self.reads_pdf, self.segs_pdf, self.bias_pdf, self.params_pdf = self.get_pdf_handles(
             reads_out, bias_out, segs_out, params_out)
 
+    def load_data_pandas_hdf(self, infile, sample_id, datatype):
+
+        store = pd.HDFStore(infile, 'r')
+
+        data = store["/{}/{}".format(datatype, sample_id)]
+
+        store.close()
+        
+        return data
+
     def load_data_pandas(self, infile, sample_id):
         """
 
@@ -179,7 +189,9 @@ class GenHmmPlots(object):
 
         """
 
-        df = self.load_data_pandas(self.metrics, self.sample_id)
+        df = self.load_data_pandas_hdf(self.metrics, self.sample_id, 'hmmcopy/metrics')
+
+#         df = self.load_data_pandas(self.metrics, self.sample_id)
 
         return df
 
@@ -188,8 +200,9 @@ class GenHmmPlots(object):
         """
 
         """
+        df = self.load_data_pandas_hdf(self.params, self.sample_id, 'hmmcopy/params')
 
-        df = self.load_data_pandas(self.params, self.sample_id)
+#         df = self.load_data_pandas(self.params, self.sample_id)
 
         return df
 
@@ -199,7 +212,9 @@ class GenHmmPlots(object):
         """
         dtype = {"chr": str}
 
-        df = self.load_data_pandas_lowmem(self.reads, self.sample_id, dtypes=dtype)
+        df = self.load_data_pandas_hdf(self.reads, self.sample_id, 'hmmcopy/reads')
+
+#         df = self.load_data_pandas_lowmem(self.reads, self.sample_id, dtypes=dtype)
 
         df = utl.normalize_reads(df)
         df = utl.compute_chromosome_coordinates(df, self.ref_genome)
@@ -210,9 +225,11 @@ class GenHmmPlots(object):
         """
 
         """
-        dtype = {"chr": str}
+#         dtype = {"chr": str}
 
-        df = self.load_data_pandas_lowmem(self.segments, self.sample_id, dtypes=dtype)
+        df = self.load_data_pandas_hdf(self.segments, self.sample_id, 'hmmcopy/segments')
+
+#         df = self.load_data_pandas_lowmem(self.segments, self.sample_id, dtypes=dtype)
         df = utl.compute_chromosome_coordinates(df, self.ref_genome)
 
         return df

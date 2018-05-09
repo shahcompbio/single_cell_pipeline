@@ -2,7 +2,7 @@
 Plot sequencing metrics based on metric table and SampleSheet files.
 '''
 from __future__ import division
-
+import os
 import argparse
 import matplotlib
 matplotlib.use('Agg')  # required for running on the cluster
@@ -13,8 +13,6 @@ import seaborn as sns
 import warnings
 import re
 
-from matplotlib.lines import Line2D
-from matplotlib.patches import Rectangle
 from matplotlib.backends.backend_pdf import PdfPages
 matplotlib.rcParams['pdf.fonttype'] = 42
 
@@ -274,13 +272,52 @@ class PlotMetrics(object):
         df = df.sort_index(by=['row', 'col'], ascending=[True, True])
     
         return df
+
+    def get_file_format(self, output):
+        _, ext = os.path.splitext(output)
+
+        if ext == ".csv":
+            return "csv"
+        elif ext == ".gz":
+            return "gzip"
+        elif ext == ".h5" or ext == ".hdf5":
+            return "h5"
+        else:
+            warnings.warn(
+                "Couldn't detect output format. extension {}".format(ext))
+            return "csv"
+
+
+    def read_metrics(self):
+
+        fileformat = self.get_file_format(self.metrics)
+
+        if fileformat == "csv":
+            return pd.read_csv(self.metrics)
+
+        else:
+            metrics = []
     
+            with pd.HDFStore(self.metrics, 'r') as metrics_store:
+                tables = metrics_store.keys()
+                for tableid in tables:
+                    data = metrics_store[tableid]
+    
+                    metrics.append(data)
+    
+    
+            metrics = pd.concat(metrics)
+            metrics = metrics.reset_index()
+
+            return metrics
+
     #=========================================================================
     # Run script
     #=========================================================================
     
     def main(self, ):
-        df = pd.read_csv(self.metrics)
+
+        df = self.read_metrics()
     
         df = self.sort_samples(df)
     

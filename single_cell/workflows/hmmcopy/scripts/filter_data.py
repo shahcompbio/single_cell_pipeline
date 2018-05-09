@@ -8,6 +8,7 @@ import warnings
 import argparse
 import pandas as pd
 import math
+import gzip
 
 
 def parse_args():
@@ -49,7 +50,7 @@ class FilterHmmData(object):
     """
 
     def __init__(self, quality_metrics, segments, reads,
-                 mad_threshold, reads_out, segments_out):
+                 mad_threshold, reads_out, segments_out, compression=None):
 
         self.quality_metrics = quality_metrics
         self.segments = segments
@@ -57,6 +58,11 @@ class FilterHmmData(object):
         self.mad_threshold = mad_threshold
         self.reads_out = reads_out
         self.segments_out = segments_out
+
+        if compression and not compression=="gzip":
+            raise Exception("Cannot compress as {}, only supports gzip".format(compression))
+
+        self.compression = compression
 
         if not self.mad_threshold:
             self.mad_threshold = 0
@@ -106,22 +112,28 @@ class FilterHmmData(object):
     def filter_write(self, infile, metrics, outfile):
 
         with open(infile) as inp:
-            with open(outfile, 'w') as output:
 
-                header = inp.readline()
-                #if input file is empty
-                if not header:
-                    warnings.warn("no data to filter")
-                    return
+            if self.compression == "gzip":
+                output = gzip.open(outfile, 'w')
+            else:
+                output = open(outfile, 'w')
 
-                output.write(header)
-                header = header.strip().split(',')
-                samp_idx = header.index('cell_id')
+            header = inp.readline()
+            #if input file is empty
+            if not header:
+                warnings.warn("no data to filter")
+                return
 
-                for line in inp:
-                    samp = line.strip().split(',')[samp_idx]
-                    if self.check_mad_score(samp, metrics):
-                        output.write(line)
+            output.write(header)
+            header = header.strip().split(',')
+            samp_idx = header.index('cell_id')
+
+            for line in inp:
+                samp = line.strip().split(',')[samp_idx]
+                if self.check_mad_score(samp, metrics):
+                    output.write(line)
+
+            output.close()
 
     def main(self):
         """
