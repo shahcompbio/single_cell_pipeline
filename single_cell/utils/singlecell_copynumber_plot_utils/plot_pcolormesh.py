@@ -3,6 +3,7 @@ Created on Sep 8, 2015
 
 @author: dgrewal
 '''
+import os
 import sys
 import math
 import argparse
@@ -11,32 +12,28 @@ matplotlib.use("Agg")
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import scipy.spatial as sp
-import scipy.cluster.hierarchy as hc
 from collections import defaultdict
 from matplotlib import pyplot as plt
-from matplotlib.colors import rgb2hex
-from matplotlib.colors import ListedColormap
 from matplotlib.backends.backend_pdf import PdfPages
-from matplotlib.patches import Patch
 import warnings
+
+
+from heatmap import ClusterMap
 
 sys.setrecursionlimit(2000)
 
 
-class PlotHeatmap(object):
+class PlotPcolor(object):
     '''
     merges files. no overlap queries, simple concatenation
     since columns are different, select header and insert values at proper
     indices. use N/A for missing.
     '''
 
-    def __init__(self, infile, metrics, order_data, output, **kwargs):
+    def __init__(self, infile, metrics, output, **kwargs):
         self.input = infile
         self.metrics = metrics
-        self.order_data = order_data
         self.output = output
-
 
         if kwargs.get("chromosomes"):
             self.chromosomes = kwargs.get("chromosomes")
@@ -48,13 +45,17 @@ class PlotHeatmap(object):
         self.cellcalls = kwargs.get('cellcalls')
         self.mad_thres = kwargs.get('mad_threshold')
         self.reads_thres = kwargs.get('numreads_threshold')
-        self.quality_thres = kwargs.get('quality_threshold')
+        self.median_hmmcopy_reads_per_bin_thres = kwargs.get(
+            'median_hmmcopy_reads_per_bin_threshold')
         self.high_memory = kwargs.get('high_memory')
         self.plot_title = kwargs.get('plot_title')
 
+        self.scale_by_cells = kwargs.get("scale_by_cells")
 
         self.color_by_col = kwargs.get('color_by_col')
         self.plot_by_col = kwargs.get('plot_by_col')
+
+        self.mappability_threshold = kwargs.get('mappability_threshold')
 
         if not self.color_by_col:
             self.color_by_col = 'cell_call'
@@ -63,13 +64,19 @@ class PlotHeatmap(object):
             self.plot_by_col = 'all'
 
         if self.sep == 'comma':
-            self.sep= ','
+            self.sep = ','
         elif self.sep == 'tab':
             self.sep = '\t'
 
         if not self.sep:
             self.sep = ','
 
+        self.max_cn = kwargs.get("max_cn")
+
+        if self.max_cn:
+            self.max_cn = int(self.max_cn) + 1
+        else:
+            self.max_cn = 20
 
     def build_label_indices(self, header):
         '''
@@ -83,7 +90,67 @@ class PlotHeatmap(object):
 
         return lbl_idx
 
+    def sort_bins_hdf(self, bins):
+
+        sortedbins = []
+
+        bins = bins.groupby("chr")
+
+        chromosomes = map(str, range(1, 23)) + ["X", "Y"]
+
+        for chrom in chromosomes:
+            chrom_bins = bins.get_group(chrom)
+            chrom_bins = chrom_bins[["start", "end"]]
+
+            chrom_bins = sorted(chrom_bins.values.tolist())
+
+            chrom_bins = [(chrom, v[0], v[1]) for v in chrom_bins]
+
+            sortedbins += chrom_bins
+
+        return sortedbins
+
     def read_segs(self):
+
+        extension = os.path.splitext(self.input)[-1]
+
+        if extension in ['.hdf', '.h5']:
+            return self.read_segs_hdf()
+        else:
+            return self.read_segs_csv()
+
+    def read_segs_hdf(self):
+        bins = None
+
+        with pd.HDFStore(self.input, 'r') as reads_store:
+
+            data = []
+
+            for tableid in reads_store.keys():
+
+                table = reads_store[tableid]
+
+                if not bins:
+                    bins = table[['chr', 'start', 'end']]
+
+                    bins = self.sort_bins_hdf(bins)
+
+                table["bin"] = list(zip(table.chr, table.start, table.end))
+
+                table = table.pivot(
+                    index='cell_id',
+                    columns='bin',
+                    values='state')
+
+                table = table.sort_values(bins, axis=0)
+
+                data.append(table)
+
+        data = pd.concat(data)
+
+        return data
+
+    def read_segs_csv(self):
         """
         read the input file
         """
@@ -111,6 +178,9 @@ class PlotHeatmap(object):
 
             seg = (chrom, start, end)
 
+            if float(line[idxs["map"]]) <= self.mappability_threshold:
+                val = float("nan")
+
             if chrom not in bins:
                 bins[chrom] = set()
             bins[chrom].add((start, end))
@@ -125,9 +195,32 @@ class PlotHeatmap(object):
             data[sample_id][seg] = val
 
         samples = sorted(data.keys())
-        return data, bins, samples
+        bins = self.sort_bins_csv(bins)
 
-    def read_metrics(self, cndata):
+        data = self.conv_to_matrix(data, bins, samples)
+        data = self.get_pandas_dataframe(data, bins)
+
+        return data
+
+    def sort_bins_csv(self, bins):
+        """
+        sort the bins based on genomic coords
+        """
+        assert set(self.chromosomes) == set(bins.keys())
+
+        sort_bins = []
+        for chrom in self.chromosomes:
+            bin_vals = bins[chrom]
+
+            bin_vals = sorted(bin_vals)
+
+            bin_vals = [(chrom, bin_v[0], bin_v[1]) for bin_v in bin_vals]
+
+            sort_bins += bin_vals
+
+        return sort_bins
+
+    def read_metrics_csv(self, cndata):
         """
         read the input file
         """
@@ -136,7 +229,7 @@ class PlotHeatmap(object):
 
         data = {}
         numread_data = {}
-        quality_data = {}
+        reads_per_bin_data = {}
 
         sepdata = defaultdict(list)
         colordata = {}
@@ -162,43 +255,86 @@ class PlotHeatmap(object):
 
             val = float('nan') if val == "NA" else float(val)
 
-            ec = 'all' if sep_col=='all' else line[idxs[sep_col]]
+            ec = 'all' if sep_col == 'all' else line[idxs[sep_col]]
 
             cc = line[idxs[color_col]]
 
             numreads = int(line[idxs['total_mapped_reads']])
 
-            cell_quality = int(line[idxs['probability_good']])
+            reads_per_bin = line[idxs['median_hmmcopy_reads_per_bin']]
+
+            reads_per_bin = 0 if reads_per_bin == "NA" else float(
+                reads_per_bin)
 
             if self.cellcalls and cc not in self.cellcalls:
                 continue
 
             numread_data[sample_id] = numreads
             data[sample_id] = val
-            quality_data[sample_id] = cell_quality
+            reads_per_bin_data[sample_id] = reads_per_bin
 
             colordata[sample_id] = cc
             sepdata[ec].append(sample_id)
 
-        return data, sepdata, colordata, numread_data, quality_data
+        return data, sepdata, colordata, numread_data, reads_per_bin_data
 
-    def sort_bins(self, bins):
-        """
-        sort the bins based on genomic coords
-        """
-        assert set(self.chromosomes) == set(bins.keys())
+    def read_metrics_hdf(self, cndata):
 
-        sort_bins = []
-        for chrom in self.chromosomes:
-            bin_vals = bins[chrom]
+        samples = cndata.index
 
-            bin_vals = sorted(bin_vals)
+        data = []
 
-            bin_vals = [(chrom, bin_v[0], bin_v[1]) for bin_v in bin_vals]
+        with pd.HDFStore(self.metrics, 'r') as metrics_store:
+            for tableid in metrics_store:
+                table = metrics_store[tableid]
+                data.append(table)
 
-            sort_bins += bin_vals
+        data = pd.concat(data)
+        data = data.reset_index()
 
-        return sort_bins
+        plot_groups = {}
+        color_groups = {}
+        mad_data = {}
+        numreads_data = {}
+        reads_per_bin_data = {}
+
+        for _, row in data.iterrows():
+            cell = row["cell_id"]
+
+            if cell not in samples:
+                continue
+
+            if self.plot_by_col == "all":
+                plot_group_name = "all"
+            else:
+                plot_group_name = row[self.plot_by_col]
+
+            color_group_name = row[self.color_by_col]
+
+            mad_score = row["mad_neutral_state"]
+            nreads = row["total_mapped_reads"]
+            reads_per_bin = row["median_hmmcopy_reads_per_bin"]
+
+            mad_data[cell] = mad_score
+            numreads_data[cell] = nreads
+            reads_per_bin_data[cell] = reads_per_bin
+
+            if plot_group_name not in plot_groups:
+                plot_groups[plot_group_name] = []
+            plot_groups[plot_group_name].append(cell)
+
+            color_groups[cell] = color_group_name
+
+        return mad_data, plot_groups, color_groups, numreads_data, reads_per_bin_data
+
+    def read_metrics(self, cndata):
+
+        extension = os.path.splitext(self.metrics)[-1]
+
+        if extension in ['.h5', '.hdf']:
+            return self.read_metrics_hdf(cndata)
+        else:
+            return self.read_metrics_csv(cndata)
 
     def conv_to_matrix(self, data, bins, samples):
         """
@@ -228,79 +364,10 @@ class PlotHeatmap(object):
         df = df.T
         df.columns = bins
 
-        #remove cells that dont have any data
-        df = df.dropna()
         return df
 
-    def get_chr_idxs(self, bins):
-        """
-        returns the index where the chromosome changes
-        used for marking chr boundaries on the plot
-        """
-        # chr 1 starts at beginning
-        chr_idxs = [0]
-
-        chrom = '1'
-        for i, bin_v in enumerate(bins):
-            if bin_v[0] != chrom:
-                chr_idxs.append(i)
-                chrom = bin_v[0]
-
-        return chr_idxs
-
-    def generate_colormap(self, maxval):
-        """
-        generating a custom heatmap 2:gray 0: blue 2+: reds
-        """
-        if self.column_name != 'integer_copy_number':
-            return matplotlib.cm.coolwarm
-
-        # all colors 2 and up are red with increasing intensity
-        num_reds = maxval
-
-        cmap = matplotlib.cm.get_cmap('Reds', num_reds)
-
-        reds_hex = []
-        for i in range(2, cmap.N):
-            # will return rgba, we take only first 3 so we get rgb
-            rgb = cmap(i)[:3]
-            reds_hex.append(rgb2hex(rgb))
-
-        cmap = ListedColormap(['#3498DB', '#85C1E9', '#D3D3D3'] + reds_hex)
-
-        return cmap
-
-    def get_colors(self, ccdata):
-        """
-        generate row colors based on the cell call column of
-        the metrics dataframe.
-        """
-        if self.cellcalls:
-            ccs = self.cellcalls
-        else:
-            ccs = list(set(ccdata.values()))
-        colmap = sns.color_palette("RdBu_d", len(ccs))
-
-        colmap = {cc: col for cc, col in zip(ccs, colmap)}
-
-        return colmap
-
-    @staticmethod
-    def write_cluster_order(outfile, order):
-        for i, samp in enumerate(order):
-            outfile.write(','.join([samp, str(i)]) + '\n')
-
-    @staticmethod
-    def get_order(data):
-        row_linkage = hc.linkage(sp.distance.pdist(data.values),
-                                 method='average')
-        order = hc.leaves_list(row_linkage)
- 
-        samps = data.index
-        order = [samps[i] for i in order]
-        return order
-
-    def filter_data(self, data, ccdata, mad_scores, numreads_data, cell_quality):
+    def filter_data(
+            self, data, ccdata, mad_scores, numreads_data, reads_per_bin):
         """
         remove samples that dont pass filtering thresholds
         """
@@ -322,89 +389,35 @@ class PlotHeatmap(object):
             samples = [samp for samp in samples
                        if numreads_data[samp] >= self.reads_thres]
 
-        if self.quality_thres:
+        if self.median_hmmcopy_reads_per_bin_thres:
             samples = [samp for samp in samples
-                       if cell_quality[samp] >= self.quality_thres]
+                       if reads_per_bin[samp] >= self.median_hmmcopy_reads_per_bin_thres]
 
         data = data.loc[samples]
         return data
 
-    def get_cluster_order(self, data):
-        """
-        calculate distance matrix for clustering,
-        get the ordering of the cells in the clustering
-        dump order to file
-        """
- 
-        if not self.order_data:
-            return
-
-        if all((self.cellcalls, self.mad_thres, self.reads_thres)):
-            mad_scores, sepdata, colordata, numread_data, cell_qualities = self.read_metrics(data)
-            data = self.filter_data(data, colordata, mad_scores, numread_data, cell_qualities)
-        else:
-            samples = list(set(data.index))
-            sepdata = {'all':samples}
-
-
-        outfile = open(self.order_data, 'w')
-        
-        outfile.write('cell_id,%s_heatmap_order\n' %self.plot_by_col)
-
-        for _, samples in sepdata.iteritems():
-            samples = set(samples).intersection(set(data.index))
-            if len(samples) < 2:
-                continue
-            pltdata = data.loc[samples]
-            order = self.get_order(pltdata)
-
-            self.write_cluster_order(outfile, order)
-
-        outfile.close()
-
-    def plot_heatmap(self, data, chr_idxs, cmap, vmax, ccdata, title, pdfout):
+    def plot_heatmap(self, data, ccdata, title, lims, pdfout):
         """
         generate heatmap, annotate and save
 
         """
-        rowclr = self.get_colors(ccdata)
+        ClusterMap(
+            data,
+            ccdata,
+            lims,
+            self.max_cn,
+            chromosomes=self.chromosomes,
+            scale_by_cells=self.scale_by_cells)
 
-        mask = data.isnull()
-        samples = data.index
-        colors = [rowclr[ccdata[samp]] for samp in samples]
-
-        heatmap = sns.clustermap(data, rasterized=True, mask=mask,
-                                 figsize=(30, 50), cmap=cmap,
-                                 vmin=0, vmax=vmax,
-                                 col_cluster=False,
-                                 row_colors=colors)
-
-        ax_hmap = heatmap.ax_heatmap
-
-        ax_hmap.set(xticks=chr_idxs)
-        ax_hmap.set(xticklabels=self.chromosomes)
-
-        for val in chr_idxs:
-            ax_hmap.plot([val,val], [len(samples),0], ':', linewidth=0.5, color='black', )
-
-        ax_hmap.set(title=title)
-
-        plt.setp(ax_hmap.yaxis.get_majorticklabels(),
-                 rotation=0)
- 
-        # Plot the legend
-        lgnd_patches = [Patch(color=rowclr[k], label=k)
-                        for k in list(set(ccdata.values()))]
-        ax_hmap.legend(handles=lgnd_patches,
-                       bbox_to_anchor=(1, 1.2))
- 
+        plt.suptitle(title)
 
         plt.subplots_adjust(right=0.85)
+
         pdfout.savefig(pad_inches=0.2)
 
         plt.close("all")
 
-    def plot_heatmap_by_sep(self, data, chr_idxs, sepdata, colordata):
+    def plot_heatmap_by_sep(self, data, sepdata, colordata):
         """
         generate and save plot to output
         """
@@ -414,10 +427,8 @@ class PlotHeatmap(object):
             title = self.plot_title + \
                 ' (%s) n=%s/%s' % (sep, len(samples), num_samples)
 
-            self.plot_heatmap(pltdata, chr_idxs, cmap, vmax,
-                              colordata, title, pdfout)
+            self.plot_heatmap(pltdata, colordata, title, lims, pdfout)
 
-        
         if not self.output:
             return
 
@@ -426,9 +437,13 @@ class PlotHeatmap(object):
 
         pdfout = PdfPages(self.output)
 
-        cmap = self.generate_colormap(np.nanmax(data.values))
+        if not data.values.size:
+            warnings.warn("no data to plot")
+            return
 
         vmax = np.nanmax(data.values)
+        vmin = np.nanmin(data.values)
+        lims = (vmin, vmax)
 
         for sep, samples in sepdata.iteritems():
 
@@ -440,13 +455,15 @@ class PlotHeatmap(object):
                 continue
 
             if len(samples) > 1000 and not self.high_memory:
-                warnings.warn('The output file will only plot 1000 cells per page,'\
+                warnings.warn('The output file will only plot 1000 cells per page,'
                               ' add --high_memory to override')
 
                 samples = sorted(samples)
-                #plot in groups of 1000
-                sample_sets =  [samples[x:x+1000] for x in range(0, len(samples), 1000)]
+                # plot in groups of 1000
+                sample_sets = [samples[x:x + 1000]
+                               for x in range(0, len(samples), 1000)]
                 for samples in sample_sets:
+
                     genplot(data, samples)
             else:
                 genplot(data, samples)
@@ -457,31 +474,24 @@ class PlotHeatmap(object):
         '''
         main function
         '''
-        data, bins, samples = self.read_segs()
+        data = self.read_segs()
 
-        bins = self.sort_bins(bins)
-        data = self.conv_to_matrix(data, bins, samples)
-
-        if not data:
+        if data.empty:
             warnings.warn("no data to plot")
-            if self.output:
-                open(self.output, "w").close()
-            if self.order_data:
-                ofile = open(self.order_data, "w")
-                ofile.write('cell_id,%s_heatmap_order\n' %self.plot_by_col)
-                ofile.close()
+            open(self.output, "w").close()
             return
 
-        data = self.get_pandas_dataframe(data, bins)
-        chr_idxs = self.get_chr_idxs(bins)
+        mad_scores, sepdata, colordata, numread_data, reads_per_bin = self.read_metrics(
+            data)
 
-        self.get_cluster_order(data)
+        data = self.filter_data(
+            data,
+            colordata,
+            mad_scores,
+            numread_data,
+            reads_per_bin)
 
-        if self.output:
-            mad_scores, sepdata, colordata, numread_data, cell_qualities = self.read_metrics(data)
-            data = self.filter_data(data, colordata, mad_scores, numread_data, cell_qualities)
-
-            self.plot_heatmap_by_sep(data, chr_idxs, sepdata, colordata)
+        self.plot_heatmap_by_sep(data, sepdata, colordata)
 
 
 def parse_args():
@@ -513,9 +523,6 @@ def parse_args():
     parser.add_argument('--output',
                         help='''path to output file''')
 
-    parser.add_argument('--order_data',
-                        help='''path to output clustering order''')
-
     parser.add_argument('--plot_title',
                         help='''title for the plot''')
 
@@ -531,27 +538,40 @@ def parse_args():
     parser.add_argument('--numreads_threshold',
                         type=int,
                         default=None,
-                        help='''all cells that have low reads won't be plotted''')
+                        help='''all cells that have low MAD won't be plotted''')
 
-    parser.add_argument('--quality_threshold',
+    parser.add_argument('--median_hmmcopy_reads_per_bin_threshold',
                         type=int,
                         default=None,
                         help='''all cells that have low quality won't be plotted''')
 
+    parser.add_argument('--mappability_threshold',
+                        type=float,
+                        default=0.9,
+                        help='sets all cells with mappability under threshold to nan')
+
     parser.add_argument('--plot_by_col',
                         default='all',
-                         help='''Column name to use for grouping the heatmaps''')
+                        help='''Column name to use for grouping the heatmaps''')
 
     parser.add_argument('--color_by_col',
                         default='cell_call',
-                         help='''column name to use for coloring the side bar in heatmap''')
+                        help='''column name to use for coloring the side bar in heatmap''')
+
+    parser.add_argument('--max_cn',
+                        default=20,
+                        help='''maximum copynumber to plot in heatmap''')
+
+    parser.add_argument('--scale_by_cells',
+                        default=False,
+                        action="store_true",
+                        help="scale the height of plot by number of cells")
 
     parser.add_argument('--high_memory',
                         action='store_true',
-                         help='set this flag to override the default limit of 1000 cells'\
-                         ' per plot. The code will use more memory and the pdf file size'\
-                         ' will depend on number of cells')
-
+                        help='set this flag to override the default limit of 1000 cells'
+                        ' per plot. The code will use more memory and the pdf file size'
+                        ' will depend on number of cells')
 
     args = parser.parse_args()
 
@@ -560,10 +580,9 @@ def parse_args():
 
 if __name__ == '__main__':
     ARGS = parse_args()
-    m = PlotHeatmap(ARGS.input, ARGS.metrics, ARGS.order_data, ARGS.output, column_name=ARGS.column_name,
-                    cellcalls=ARGS.cellcalls, mad_threshold=ARGS.mad_threshold, quality_threshold = ARGS.quality_threshold,
-                    numreads_threshold=ARGS.numreads_threshold, separator = ARGS.separator,
-                    high_memory=ARGS.high_memory, plot_title=ARGS.plot_title, color_by_col=ARGS.color_by_col,
-                    plot_by_col=ARGS.plot_by_col)
+    m = PlotPcolor(ARGS.input, ARGS.metrics, ARGS.output, column_name=ARGS.column_name,
+                   cellcalls=ARGS.cellcalls, mad_threshold=ARGS.mad_threshold, numreads_threshold=ARGS.numreads_threshold,
+                   median_hmmcopy_reads_per_bin_threshold=ARGS.median_hmmcopy_reads_per_bin_threshold, high_memory=ARGS.high_memory, plot_title=ARGS.plot_title,
+                   color_by_col=ARGS.color_by_col, plot_by_col=ARGS.plot_by_col,
+                   separator=ARGS.separator, max_cn=ARGS.max_cn, scale_by_cells=ARGS.scale_by_cells, mappability_threshold=ARGS.mappability_threshold)
     m.main()
-

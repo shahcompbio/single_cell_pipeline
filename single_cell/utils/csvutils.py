@@ -7,9 +7,9 @@ Created on Feb 19, 2018
 import pandas as pd
 import csv
 import warnings
+import gzip
 
-
-def annotate_metrics(infile, sample_info, outfile):
+def annotate_metrics(infile, sample_info, outfile, compression=None):
     infile = pd.read_csv(infile)
 
     cols = ["cell_call", "experimental_condition", "sample_type",
@@ -24,11 +24,11 @@ def annotate_metrics(infile, sample_info, outfile):
         coldata = [sample_info[cell][col] for cell in cells]
         infile[col] = coldata
 
-    infile.to_csv(outfile, index=False, na_rep="NA")
+
+    write_to_file(outfile, index=False, compression=compression)
 
 
-
-def concatenate_csv(in_filenames, out_filename, nan_val='NA'):
+def concatenate_csv(in_filenames, out_filename, nan_val='NA', compression=None):
     data = []
 
     if isinstance(in_filenames, dict):
@@ -43,10 +43,11 @@ def concatenate_csv(in_filenames, out_filename, nan_val='NA'):
         data.append(pd.read_csv(in_filename, dtype=str))
     data = pd.concat(data, ignore_index=True)
     data = data.fillna(nan_val)
-    data.to_csv(out_filename, index=False)
+    
+    write_to_file(out_filename, index=False, compression=compression)
 
 
-def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', sep=',', suffixes=None):
+def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', sep=',', suffixes=None, compression=None):
     data = []
 
     if isinstance(in_filenames, dict):
@@ -62,7 +63,15 @@ def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', sep=',', suffix
 
     data = merge_frames(data, how, on, suffixes = suffixes)
     data = data.fillna(nan_val)
-    data.to_csv(out_filename, index=False, sep=sep)
+
+    write_to_file(out_filename, index=False, compression=compression)
+
+
+def write_to_file(df, out_filename, compression=None):
+    if compression == "hdf5":
+        df.to_hdf5(out_filename, index=False)
+    else:
+        df.to_csv(out_filename, index=False, compression=compression)
 
 
 def merge_frames(frames, how, on, suffixes=None):
@@ -100,12 +109,15 @@ def merge_frames(frames, how, on, suffixes=None):
         return merged_frame
 
 
-def concatenate_csv_lowmem(in_filenames, out_filename):
+def concatenate_csv_lowmem(in_filenames, out_filename, compression=None):
     """merge csv files, uses csv module to handle inconsistencies in column
     indexes, pandas uses a lot of memory
     :param in_filenames: input file dict
     :param out_filename: output file
     """
+    if compression and not compression == "gzip":
+        raise Exception("doesn't support {} compression. only supports gzip".format(compression))
+
     writer = None
     
     if isinstance(in_filenames, dict):
@@ -118,8 +130,12 @@ def concatenate_csv_lowmem(in_filenames, out_filename):
 
             for row in reader:
                 if not writer:
-                    writer = csv.DictWriter(open(out_filename, "w"),
-                                            fieldnames=reader._fieldnames)
+                    if compression == "gzip":
+                        writer = csv.DictWriter(gzip.open(out_filename, "w"),
+                                                fieldnames=reader._fieldnames)
+                    else:
+                        writer = csv.DictWriter(open(out_filename, "w"),
+                                                fieldnames=reader._fieldnames)
                     writer.writeheader()
 
                 writer.writerow(row)

@@ -3,6 +3,7 @@ Created on Sep 8, 2015
 
 @author: dgrewal
 '''
+import os
 import pandas
 import argparse
 import matplotlib
@@ -54,10 +55,28 @@ class PlotKernelDensity(object):
         '''
         load tsv file into a pandas data frame
         '''
-        data = pandas.read_csv(fname,
-                               sep=self.sep,
-                               dtype={'chromosome': str, 'start': int}
-                               )
+        extension = os.path.splitext(fname)[-1]
+
+        if extension in [".h5", ".hdf5"]:
+            data = []
+    
+            with pandas.HDFStore(self.input, 'r') as metrics_store:
+                tables = metrics_store.keys()
+                for tableid in tables:
+                    celldata = metrics_store[tableid]
+    
+                    data.append(celldata)
+    
+    
+            data = pandas.concat(data)
+            data = data.reset_index()
+
+        else:
+
+            data = pandas.read_csv(fname,
+                                   sep=self.sep,
+                                   dtype={'chromosome': str, 'start': int}
+                                   )
         return data
 
     def get_ymax(self, data):
