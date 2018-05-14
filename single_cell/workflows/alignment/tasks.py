@@ -1,14 +1,9 @@
-import pypeliner.commandline
 import os
-import errno
 import shutil
 import warnings
-import tarfile
-import pandas as pd
 from scripts import CollectMetrics
 from scripts import GenerateCNMatrix
 from scripts import RunTrimGalore
-from scripts import PlotMetrics
 from scripts import SummaryMetrics
 
 from single_cell.utils import picardutils
@@ -16,6 +11,14 @@ from single_cell.utils import bamutils
 from single_cell.utils import helpers
 from single_cell.utils import csvutils
 from single_cell.utils import gatkutils
+from single_cell.utils import hdfutils
+
+from single_cell.utils.singlecell_copynumber_plot_utils import PlotMetrics
+
+
+def plot_metrics(metrics, output, plot_title,gc_matrix, gc_content):
+    plot = PlotMetrics(metrics, output, plot_title, gcbias_matrix=gc_matrix, gc_content=gc_content)
+    plot.plot_alignment_metrics()
 
 
 def get_summary_metrics(infile, output):
@@ -24,11 +27,8 @@ def get_summary_metrics(infile, output):
 
 
 def annotate_metrics(infile, sample_info, outfile):
-    csvutils.annotate_metrics(infile, sample_info, outfile)
-
-def plot_metrics(metrics, output, plot_title, gcbias_matrix, gc_content):
-    plot = PlotMetrics(metrics, output, plot_title, gcbias_matrix, gc_content)
-    plot.main()
+    
+    hdfutils.annotate_store_with_dict(infile, sample_info, outfile)
 
 def merge_all_metrics(infiles, outfile):
     csvutils.merge_csv(infiles, outfile, "outer", "cell_id")
@@ -190,7 +190,10 @@ def collect_gc(infiles, outfile, tempdir):
                                   'gcbias')
         gen_gc.main()
 
-    csvutils.concatenate_csv(tempouts, outfile)
+    merged_csv = os.path.join(tempdir, "merged_gc_metrics.csv")
+    csvutils.concatenate_csv(tempouts, merged_csv)
+
+    hdfutils.convert_csv_to_hdf(merged_csv, outfile, '/alignment/gc_metrics')
 
 def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
                     wgs_metrics, tempdir, merged_metrics):
@@ -209,8 +212,11 @@ def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
                                  mkdup, outfile, sample)
         collmet.main()
 
-    csvutils.concatenate_csv(sample_outputs, merged_metrics)
 
+    merged_metrics_csv = os.path.join(tempdir, 'merged_alignment_metrics.csv')
+    csvutils.concatenate_csv(sample_outputs, merged_metrics_csv)
+
+    hdfutils.convert_csv_to_hdf(merged_metrics_csv, merged_metrics, '/alignment/metrics/')
 
 def run_trimgalore(seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt, tempdir,
                    adapter, adapter2, report_r1, report_r2, qc_report_r1,
