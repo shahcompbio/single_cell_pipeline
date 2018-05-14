@@ -105,7 +105,7 @@ def get_segment_start_end(segments, remove_y = False):
     
     x = []
     y = []
-    for x_start, x_end, y_med in zip(segments['plot_coord'], segments['plot_coord_end'], segments['integer_median']):
+    for x_start, x_end, y_med in zip(segments['plot_coord'], segments['plot_coord_end'], segments['median']):
         x.append(x_start)
         x.append(x_end)
         x.append(None)

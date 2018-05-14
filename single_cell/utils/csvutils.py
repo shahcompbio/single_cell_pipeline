@@ -10,22 +10,22 @@ import warnings
 import gzip
 
 def annotate_metrics(infile, sample_info, outfile, compression=None):
-    infile = pd.read_csv(infile)
+    metrics_df = pd.read_csv(infile)
 
     cols = ["cell_call", "experimental_condition", "sample_type",
             "i5_barcode", "i7_barcode", "sample_plate", "sample_well"]
 
     for col in cols:
-        infile[col] = "NA"
+        metrics_df[col] = "NA"
 
-    cells = infile["cell_id"]
+    cells = metrics_df["cell_id"]
 
     for col in cols:
         coldata = [sample_info[cell][col] for cell in cells]
-        infile[col] = coldata
+        metrics_df[col] = coldata
 
 
-    write_to_file(outfile, index=False, compression=compression)
+    write_to_file(metrics_df, outfile, index=False, compression=compression)
 
 
 def concatenate_csv(in_filenames, out_filename, nan_val='NA', compression=None):
@@ -44,7 +44,7 @@ def concatenate_csv(in_filenames, out_filename, nan_val='NA', compression=None):
     data = pd.concat(data, ignore_index=True)
     data = data.fillna(nan_val)
     
-    write_to_file(out_filename, index=False, compression=compression)
+    write_to_file(data, out_filename, index=False, compression=compression)
 
 
 def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', sep=',', suffixes=None, compression=None):
@@ -64,14 +64,14 @@ def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', sep=',', suffix
     data = merge_frames(data, how, on, suffixes = suffixes)
     data = data.fillna(nan_val)
 
-    write_to_file(out_filename, index=False, compression=compression)
+    write_to_file(data, out_filename, index=False, compression=compression)
 
 
-def write_to_file(df, out_filename, compression=None):
+def write_to_file(df, out_filename, index=True, compression=None):
     if compression == "hdf5":
-        df.to_hdf5(out_filename, index=False)
+        df.to_hdf5(out_filename, index=index)
     else:
-        df.to_csv(out_filename, index=False, compression=compression)
+        df.to_csv(out_filename, index=index, compression=compression)
 
 
 def merge_frames(frames, how, on, suffixes=None):

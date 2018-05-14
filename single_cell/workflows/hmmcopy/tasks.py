@@ -26,7 +26,10 @@ import scipy.spatial as sp
 import scipy.cluster.hierarchy as hc
 
 
-scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
+scripts_directory = os.path.join(
+    os.path.realpath(
+        os.path.dirname(__file__)),
+    'scripts')
 run_hmmcopy_rscript = os.path.join(scripts_directory, 'hmmcopy.R')
 
 
@@ -64,7 +67,7 @@ def run_correction_hmmcopy(
 
 
 def run_hmmcopy_script(corrected_reads, hmm_reads_out, hmm_segs_out,
-                       hmm_params_out, hmm_posteriors_out, cell_id, hmmparams):
+                       hmm_params_out, hmm_metrics_out, cell_id, hmmparams):
 
     # run hmmcopy
     cmd = ['Rscript', run_hmmcopy_rscript,
@@ -72,47 +75,20 @@ def run_hmmcopy_script(corrected_reads, hmm_reads_out, hmm_segs_out,
            '--reads_output=' + hmm_reads_out,
            '--segs_output=' + hmm_segs_out,
            '--params_output=' + hmm_params_out,
-           '--post_marginals_output=' + hmm_posteriors_out,
+           '--metrics_output=' + hmm_metrics_out,
            '--sample_id=' + cell_id]
 
-    if hmmparams['map_cutoff']:
-        cmd.append('--map_cutoff=' + str(hmmparams['map_cutoff']))
-
-    if hmmparams['num_states']:
-        cmd.append('--num_states=' + str(hmmparams['num_states']))
-
-    if hmmparams['mu']:
-        cmd.append('--param_mu=' + str(hmmparams['mu']))
-
-    if hmmparams['m']:
-        cmd.append('--param_m=' + str(hmmparams['m']))
-
-    if hmmparams['kappa']:
-        cmd.append('--param_k=' + str(hmmparams['kappa']))
-
-    if hmmparams['e']:
-        cmd.append('--param_e=' + str(hmmparams['e']))
-
-    if hmmparams['g']:
-        cmd.append('--param_g=' + str(hmmparams['g']))
-
-    if hmmparams['s']:
-        cmd.append('--param_s=' + str(hmmparams['s']))
-
-    if hmmparams['strength']:
-        cmd.append('--param_str=' + str(hmmparams['strength']))
-
-    if hmmparams['nu']:
-        cmd.append('--param_nu=' + str(hmmparams['nu']))
-
-    if hmmparams['eta']:
-        cmd.append('--param_eta=' + str(hmmparams['eta']))
-
-    if hmmparams['lambda']:
-        cmd.append('--param_l=' + str(hmmparams['lambda']))
-
-    if hmmparams["auto_ploidy"]:
-        cmd.append('--auto_ploidy')
+    cmd.append('--param_str=' + str(hmmparams['strength']))
+    cmd.append('--param_e=' + str(hmmparams['e']))
+    cmd.append('--param_mu=' + str(hmmparams['mu']))
+    cmd.append('--param_l=' + str(hmmparams['lambda']))
+    cmd.append('--param_nu=' + str(hmmparams['nu']))
+    cmd.append('--param_k=' + str(hmmparams['kappa']))
+    cmd.append('--param_m=' + str(hmmparams['m']))
+    cmd.append('--param_eta=' + str(hmmparams['eta']))
+    cmd.append('--param_g=' + str(hmmparams['g']))
+    cmd.append('--param_s=' + str(hmmparams['s']))
+    cmd.append('--param_multiplier='+str(hmmparams['multiplier']))
 
     pypeliner.commandline.execute(*cmd)
 
@@ -123,7 +99,6 @@ def run_hmmcopy(
         corrected_reads_filename,
         segments_filename,
         parameters_filename,
-        posterior_marginals_filename,
         hmm_metrics,
         reads_plot,
         segs_plot,
@@ -149,32 +124,22 @@ def run_hmmcopy(
     hmm_reads_out = os.path.join(tempdir, "hmm_reads.csv")
     hmm_params_out = os.path.join(tempdir, "hmm_params.csv")
     hmm_segs_out = os.path.join(tempdir, "hmm_segs.csv")
-    hmm_posteriors_out = os.path.join(tempdir, "hmm_posteriors.csv")
+    hmm_metrics_out = os.path.join(tempdir, "hmm_metrics.csv")
 
     run_hmmcopy_script(
         corrected_reads,
         hmm_reads_out,
         hmm_segs_out,
         hmm_params_out,
-        hmm_posteriors_out,
+        hmm_metrics_out,
         cell_id,
         hmmparams)
-
-    # generate the metrics file for hmmcopy
-    metrics = ExtractHmmMetrics(hmm_params_out, hmm_reads_out,
-                                hmm_segs_out, hmm_metrics, cell_id,
-                                table_name='hmmcopy/metrics/{}'.format(cell_id))
-    metrics.main()
 
     # convert hmmcopy outputs to h5
     hdfutils.convert_csv_to_hdf(
         hmm_params_out,
         parameters_filename,
         "/hmmcopy/params/{}".format(cell_id))
-    hdfutils.convert_csv_to_hdf(
-        hmm_posteriors_out,
-        posterior_marginals_filename,
-        "/hmmcopy/posteriors/{}".format(cell_id))
     hdfutils.convert_csv_to_hdf(
         hmm_segs_out,
         segments_filename,
@@ -183,6 +148,10 @@ def run_hmmcopy(
         hmm_reads_out,
         corrected_reads_filename,
         "/hmmcopy/reads/{}".format(cell_id))
+    hdfutils.convert_csv_to_hdf(
+        hmm_metrics_out,
+        hmm_metrics,
+        "/hmmcopy/metrics/{}".format(cell_id))
 
     # plot
     annotation_cols = ['cell_call', 'experimental_condition', 'sample_type',
@@ -199,27 +168,15 @@ def annotate_metrics(metrics, sample_info, output):
     """
     adds sample information to metrics in place
     """
-    with pd.HDFStore(output, 'w', complevel=9, complib='blosc') as output, pd.HDFStore(metrics) as metrics:
-        for tableid in metrics.keys():
-            data = metrics[tableid]
-
-            cell_id = data["cell_id"].iloc[0]
-
-            cell_info = sample_info[cell_id]
-
-            for colname, value in cell_info.iteritems():
-                data[colname] = value
-
-                output.put(tableid, data, format="table")
-
-
-def merge_files(reads, segs, hmm_metrics, hmm_params, hmm_posteriors,
+    hdfutils.annotate_per_cell_store_with_dict(metrics, sample_info, output)
+    
+def merge_files(reads, segs, hmm_metrics, hmm_params,
                 merged_segs, merged_reads, merged_hmm_metrics,
-                merged_hmm_params, merged_hmm_posteriors,
+                merged_hmm_params,
                 mad_thres, config, igv_segs, sample_info, tempdir):
 
     helpers.makedirs(tempdir)
-    temp_hmm_metrics = os.path.join(tempdir, "merged_hmm_metrics.csv")
+    temp_hmm_metrics = os.path.join(tempdir, "merged_hmm_metrics.h5")
 
     hdfutils.concat_hdf_tables(
         reads,
@@ -239,10 +196,6 @@ def merge_files(reads, segs, hmm_metrics, hmm_params, hmm_posteriors,
     hdfutils.concat_hdf_tables(
         hmm_params,
         merged_hmm_params,
-        non_numeric_as_category=False)
-    hdfutils.concat_hdf_tables(
-        hmm_posteriors,
-        merged_hmm_posteriors,
         non_numeric_as_category=False)
 
     annotate_metrics(temp_hmm_metrics, sample_info, merged_hmm_metrics)
@@ -397,7 +350,7 @@ def get_hierarchical_clustering_order(reads_filename, cluster_order_output):
 
     samps = data.index
     order = [samps[i] for i in order]
-    order = {v: i for i, v in enumerate(order)}
+    order = {v: {"order":i} for i, v in enumerate(order)}
 
     return order
 
@@ -408,26 +361,13 @@ def add_clustering_order(
         reads_filename,
         cluster_order_output)
 
-    with pd.HDFStore(metrics_filename, 'r') as metrics, pd.HDFStore(cluster_order_output, 'w', complevel=9, complib='blosc') as output:
-
-        for tableid in metrics.keys():
-            data = metrics[tableid]
-
-            cell_id = data["cell_id"].iloc[0]
-
-            data["order"] = order[cell_id]
-
-            output.put(tableid, data, format="table")
-
+    hdfutils.annotate_store_with_dict(metrics_filename, order, cluster_order_output)
 
 def plot_kernel_density(infile, output, sep, colname, plot_title):
     plot = PlotKernelDensity(infile, output, sep, colname, plot_title)
     plot.main()
 
 
-def plot_metrics(metrics, output, plot_title,):
-    plot = PlotMetrics(metrics, output, plot_title)
-    plot.main()
 
 
 def plot_pcolor(infile, metrics, output, plot_title=None,
@@ -443,59 +383,38 @@ def plot_pcolor(infile, metrics, output, plot_title=None,
     plot.main()
 
 
-def merge_cells_in_memory(hdf_input):
-    data = []
-
-    with pd.HDFStore(hdf_input, 'r') as input_store:
-        for tableid in input_store:
-            data.append(input_store[tableid])
-
-    data = pd.concat(data)
-    data = data.reset_index()
-
-    return data
-
-
-def merge_cells_on_disk(hdf_input, output_store_obj, tablename, dtypes={}):
-
-    with pd.HDFStore(hdf_input, 'r') as input_store:
-        for tableid in input_store:
-            celldata = input_store[tableid]
-
-            for col, dtype in dtypes.iteritems():
-                celldata[col] = celldata[col].astype(dtype)
-
-            if tablename not in output_store_obj:
-                output_store_obj.put(tablename, celldata, format='table')
-            else:
-                output_store_obj.append(tablename, celldata, format='table')
-
-
-def merge_stores(reads, segments, metrics, params, posteriors, output):
+def merge_tables(reads, segments, metrics, params, output):
 
     with pd.HDFStore(output, 'w', complevel=9, complib='blosc') as output_store:
-        output_store.put(
+        hdfutils.merge_per_cell_tables(
+            metrics,
+            output_store,
             '/hmmcopy/metrics',
-            merge_cells_in_memory(metrics),
-            format='table')
-        output_store.put(
+            in_memory=True,
+            dtypes={'too_even':float})
+        hdfutils.merge_per_cell_tables(
+            params,
+            output_store,
             '/hmmcopy/params',
-            merge_cells_in_memory(params),
-            format='table')
-        output_store.put(
-            '/hmmcopy/posteriors',
-            merge_cells_in_memory(posteriors),
-            format='table')
+            in_memory=True)
 
-        dtypes = {'integer_copy_number': float, 'valid': bool, 'ideal': bool}
-        merge_cells_on_disk(
+        dtypes = {'valid': bool, 'ideal': bool}
+        hdfutils.merge_per_cell_tables(
             reads,
             output_store,
             '/hmmcopy/reads',
+            in_memory=False,
             dtypes=dtypes)
-        dtypes = {'integer_copy_number': float}
-        merge_cells_on_disk(
+        dtypes = {}
+        hdfutils.merge_per_cell_tables(
             segments,
             output_store,
             '/hmmcopy/segments',
+            in_memory=False,
             dtypes=dtypes)
+
+
+def plot_metrics(metrics, output, plot_title,):
+    plot = PlotMetrics(metrics, output, plot_title)
+    plot.plot_hmmcopy_metrics()
+
