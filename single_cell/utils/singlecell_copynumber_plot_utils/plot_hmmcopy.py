@@ -17,7 +17,6 @@ import utils as utl
 import math
 import warnings
 from matplotlib.patches import Patch
-import statsmodels.nonparametric.api as smnp
 
 from matplotlib.colors import rgb2hex
 import matplotlib.gridspec as gridspec
@@ -410,7 +409,7 @@ class GenHmmPlots(object):
         ax.set_title(plot_title)
         ax.set_ylabel('Copy number')
 
-        states = range(1, num_states+1)
+        states = range(0, num_states)
         colors = ['#006ba4', '#5f9ed1', '#ababab', '#ffbc79', '#ff800e', '#c85200']
         #last color is same for all states > 6
         colors += (['#8c3900'] * (len(states) - len(colors)) )
@@ -423,10 +422,12 @@ class GenHmmPlots(object):
         if df is not None and segments is not None:
             cols = df["state"].replace(cmap)
             cols = cols[~df['copy'].isnull()]
+
+            df = df[np.isfinite(df['copy'])]
             
             plt.scatter(
                 df['plot_coord'],
-                df['integer_copy_scale'],
+                df['copy'],
                 facecolors=cols,
                 edgecolors='none',
                 s=4,
@@ -472,10 +473,10 @@ class GenHmmPlots(object):
 
 
         #no data to plot
-        if reads['integer_copy_scale'].isnull().all():
+        if reads['copy'].isnull().all():
             return
 
-        scale = (reads["integer_copy_scale"]/reads["copy"])
+        scale = (reads["copy"]/reads["copy"])
         scale = scale[~reads['copy'].isnull()].unique()
         #account for floating point errors
         scale =  scale[np.isfinite(scale)]
@@ -484,10 +485,10 @@ class GenHmmPlots(object):
         assert np.nanvar(scale) < 0.0001
         scale = scale[0]
 
-        for state in range(1, num_states+1):
+        for state in range(0, num_states):
             color = cmap[state]
 
-            data = reads[reads["state"] == state]["integer_copy_scale"]
+            data = reads[reads["state"] == state]["copy"]
 
 
             if np.isnan(data).all():
@@ -498,6 +499,8 @@ class GenHmmPlots(object):
                             shade=True, linewidth=0.5,
                             label=state, legend=False,
                             color = color, vertical=vertical)
+
+            print state
 
             x = np.arange(0, np.nanmax(np.array(reads["copy"])), 0.01)
             mu = params[(params["parameter"]=="mus") & (params["state"] == state)]["final"].iloc[0]
@@ -524,7 +527,7 @@ class GenHmmPlots(object):
         
         fig,ax = plt.subplots()
         
-        states = range(1, num_states+1)
+        states = range(0, num_states)
         colors = ['#006ba4', '#5f9ed1', '#ababab', '#ffbc79', '#ff800e', '#c85200']
         #last color is same for all states > 6
         colors += (['#8c3900'] * (len(states) - len(colors)) )
