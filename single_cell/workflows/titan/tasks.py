@@ -1,11 +1,41 @@
+import numpy as np
+import pandas as pd
 from scripts import merge_wigs
 
 from single_cell.utils import csvutils
 import remixt
 
 
+chromosomes = [str(a) for a in xrange(1, 23)] + ['X']
+
+
 def merge_overlapping_seqdata(outfile, infiles):
-    raise NotImplementedError()
+    out_store = pd.HDFStore(outfile, 'w', complevel=9, complib='blosc')
+
+    index_offsets = pd.Series(0, index=chromosomes, dtype=np.int64)
+
+    for _id, infile in infiles.iteritems():
+        store = pd.HDFStore(infile)
+
+        for chromosome in chromosomes:
+            alleles = store['/alleles/chromosome_{}'.format(chromosome)]
+            fragments = store['/fragments/chromosome_{}'.format(chromosome)]
+
+            alleles['fragment_id'] = alleles['fragment_id'].astype(np.int64)
+            fragments['fragment_id'] = fragments['fragment_id'].astype(np.int64)
+
+            alleles['fragment_id'] += index_offsets[chromosome]
+            fragments['fragment_id'] += index_offsets[chromosome]
+
+            index_offsets[chromosome] = max(alleles['fragment_id'].max(), fragments['fragment_id'].max()) + 1
+
+            out_store.append('/alleles/chromosome_{}'.format(chromosome), alleles)
+            out_store.append('/fragments/chromosome_{}'.format(chromosome), fragments)
+
+        store.close()
+
+    out_store.close()
+
 
 def create_chromosome_seqdata(seqdata, bam_file, snp_positions, chromosomes,
                               bam_max_fragment_length, bam_max_soft_clipped,
