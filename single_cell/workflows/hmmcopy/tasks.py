@@ -342,7 +342,7 @@ def sort_bins(bins):
 
 
 def get_hierarchical_clustering_order(
-        reads_filename, cluster_order_output, multiplier):
+        reads_filename, multiplier):
 
     with pd.HDFStore(reads_filename, 'r') as reads_store:
 
@@ -389,7 +389,7 @@ def add_clustering_order(
         for multiplier in multipliers:
             order = get_hierarchical_clustering_order(
                 reads_filename,
-                cluster_order_output, multiplier)
+                multiplier)
 
             tables = [
                 '/hmmcopy/metrics/{}/{}'.format(cell, multiplier) for cell in cells]

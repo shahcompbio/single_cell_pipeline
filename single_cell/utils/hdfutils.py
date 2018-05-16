@@ -146,7 +146,7 @@ def annotate_store_with_dict(infile, annotation_data, output, tables=None):
     if not tables:
         tables = input_store.keys()
 
-    for tableid in input_store.keys():
+    for tableid in tables:
         data = input_store[tableid]
 
         cells = data["cell_id"].unique()
