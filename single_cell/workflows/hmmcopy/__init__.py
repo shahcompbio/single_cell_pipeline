@@ -12,17 +12,19 @@ import tasks
 from single_cell.utils import helpers
 
 
-def create_hmmcopy_workflow(bam_file, bai_file, hmmcopy_data, igv_seg_filename,
-                            reads_pdf, segs_pdf, bias_pdf, params_pdf,
-                            reads_filt_pdf, segs_filt_pdf, bias_filt_pdf, params_filt_pdf,
-                            plot_heatmap_ec_output, plot_heatmap_ec_filt_output,
-                            plot_metrics_output, plot_kernel_density_output,
-                            cell_ids, config, args, hmmparams,
-                            results_dir):
+def create_hmmcopy_workflow(
+        bam_file, bai_file, hmmcopy_data, igv_seg_filename, segs_pdf, bias_pdf,
+        segs_filt_pdf, bias_filt_pdf, plot_heatmap_ec_output,
+        plot_heatmap_ec_filt_output, plot_metrics_output,
+        plot_kernel_density_output, cell_ids, config, args, hmmparams,
+        results_dir):
 
     sample_info = helpers.get_sample_info(args["input_yaml"])
 
     chromosomes = config["chromosomes"]
+
+    multipliers = hmmparams["multipliers"]
+    multipliers.append(0)
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -46,13 +48,12 @@ def create_hmmcopy_workflow(bam_file, bai_file, hmmcopy_data, igv_seg_filename,
             mgd.TempOutputFile('segs.h5', 'cell_id'),
             mgd.TempOutputFile('params.h5', 'cell_id'),
             mgd.TempOutputFile('hmm_metrics.h5', 'cell_id'),
-            mgd.TempOutputFile('reads.pdf', 'cell_id'),
-            mgd.TempOutputFile('segs.pdf', 'cell_id'),
+            mgd.TempOutputFile('segments.pdf', 'cell_id'),
             mgd.TempOutputFile('bias.pdf', 'cell_id'),
-            mgd.TempOutputFile('params.pdf', 'cell_id'),
             mgd.InputInstance('cell_id'),
             config,
             hmmparams,
+            multipliers,
             mgd.TempSpace('hmmcopy_temp', 'cell_id')
         ),
     )
@@ -73,30 +74,31 @@ def create_hmmcopy_workflow(bam_file, bai_file, hmmcopy_data, igv_seg_filename,
             mgd.TempOutputFile("reads.h5"),
             mgd.TempOutputFile("hmmcopy_metrics.h5"),
             mgd.TempOutputFile("params.h5"),
-            0.2,
-            hmmparams,
+            mgd.TempSpace("hmmcopy_merge_files_temp"),
             mgd.OutputFile(igv_seg_filename),
             sample_info,
-            mgd.TempSpace("hmmcopy_merge_files_temp")
+            0.2,
+            hmmparams,
+            multipliers
         ),
     )
 
     workflow.transform(
-        name='merge_hmm_copy',
+        name='merge_hmm_copy_plots',
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
         func=tasks.merge_pdf,
         args=(
-            [mgd.TempInputFile('reads.pdf', 'cell_id'),
-             mgd.TempInputFile('segs.pdf', 'cell_id'),
-             mgd.TempInputFile('bias.pdf', 'cell_id'),
-             mgd.TempInputFile('params.pdf', 'cell_id')],
-            [mgd.OutputFile(reads_pdf),
-             mgd.OutputFile(segs_pdf),
-             mgd.OutputFile(bias_pdf),
-             mgd.OutputFile(params_pdf)],
+            [
+                mgd.TempInputFile('segments.pdf', 'cell_id'),
+                mgd.TempInputFile('bias.pdf', 'cell_id'),
+            ],
+            [
+                mgd.OutputFile(segs_pdf),
+                mgd.OutputFile(bias_pdf),
+            ],
             mgd.TempInputFile("hmmcopy_metrics.h5"),
             None,
             None,
@@ -105,21 +107,21 @@ def create_hmmcopy_workflow(bam_file, bai_file, hmmcopy_data, igv_seg_filename,
     )
 
     workflow.transform(
-        name='merge_hmm_copy_filtered',
+        name='merge_hmm_copy_plots_filtered',
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
         func=tasks.merge_pdf,
         args=(
-            [mgd.TempInputFile('reads.pdf', 'cell_id'),
-             mgd.TempInputFile('segs.pdf', 'cell_id'),
-             mgd.TempInputFile('bias.pdf', 'cell_id'),
-             mgd.TempInputFile('params.pdf', 'cell_id')],
-            [mgd.OutputFile(reads_filt_pdf),
-             mgd.OutputFile(segs_filt_pdf),
-             mgd.OutputFile(bias_filt_pdf),
-             mgd.OutputFile(params_filt_pdf)],
+            [
+                mgd.TempInputFile('segments.pdf', 'cell_id'),
+                mgd.TempInputFile('bias.pdf', 'cell_id'),
+            ],
+            [
+                mgd.OutputFile(segs_filt_pdf),
+                mgd.OutputFile(bias_filt_pdf),
+            ],
             mgd.TempInputFile("hmmcopy_metrics.h5"),
             config['plot_mad_threshold'],
             config['plot_numreads_threshold'],
@@ -138,6 +140,8 @@ def create_hmmcopy_workflow(bam_file, bai_file, hmmcopy_data, igv_seg_filename,
             mgd.TempInputFile('reads.h5'),
             mgd.TempInputFile("hmmcopy_metrics.h5"),
             mgd.TempOutputFile('hmmcopy_metrics_with_cluster_order.h5'),
+            multipliers,
+            cell_ids,
         ),
     )
 
@@ -151,7 +155,9 @@ def create_hmmcopy_workflow(bam_file, bai_file, hmmcopy_data, igv_seg_filename,
         args=(
             mgd.TempInputFile("hmmcopy_metrics_with_cluster_order.h5"),
             mgd.OutputFile(plot_metrics_output),
+            mgd.TempSpace("plot_metrics_temp"),
             'QC pipeline metrics',
+            multipliers
         )
     )
 
@@ -165,9 +171,11 @@ def create_hmmcopy_workflow(bam_file, bai_file, hmmcopy_data, igv_seg_filename,
         args=(
             mgd.TempInputFile('hmmcopy_metrics_with_cluster_order.h5'),
             mgd.OutputFile(plot_kernel_density_output),
+            mgd.TempSpace("hmmcopy_kde_plot_temp"),
             ',',
             'mad_neutral_state',
-            'QC pipeline metrics'
+            'QC pipeline metrics',
+            multipliers
         )
     )
 
@@ -182,6 +190,8 @@ def create_hmmcopy_workflow(bam_file, bai_file, hmmcopy_data, igv_seg_filename,
             mgd.TempInputFile('reads.h5'),
             mgd.TempInputFile('hmmcopy_metrics_with_cluster_order.h5'),
             mgd.OutputFile(plot_heatmap_ec_output),
+            mgd.TempSpace("heatmap_ec_temp"),
+            multipliers
         ),
         kwargs={
             'plot_title': 'QC pipeline metrics',
@@ -203,6 +213,8 @@ def create_hmmcopy_workflow(bam_file, bai_file, hmmcopy_data, igv_seg_filename,
             mgd.TempInputFile('reads.h5'),
             mgd.TempInputFile('hmmcopy_metrics_with_cluster_order.h5'),
             mgd.OutputFile(plot_heatmap_ec_filt_output),
+            mgd.TempSpace("heatmap_ec_filt_temp"),
+            multipliers
         ),
         kwargs={
             'plot_title': 'QC pipeline metrics',
@@ -229,6 +241,8 @@ def create_hmmcopy_workflow(bam_file, bai_file, hmmcopy_data, igv_seg_filename,
             mgd.TempInputFile("hmmcopy_metrics_with_cluster_order.h5"),
             mgd.TempInputFile("params.h5"),
             mgd.OutputFile(hmmcopy_data),
+            multipliers,
+            cell_ids
         )
     )
 

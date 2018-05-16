@@ -14,6 +14,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import warnings
 import numpy as np
 import statsmodels.nonparametric.api as smnp
+import math
 
 
 class PlotKernelDensity(object):
@@ -51,6 +52,8 @@ class PlotKernelDensity(object):
         else:
             self.bw_est = bw_est
 
+        self.multiplier = kwargs.get("multiplier")
+
     def load(self, fname):
         '''
         load tsv file into a pandas data frame
@@ -59,15 +62,20 @@ class PlotKernelDensity(object):
 
         if extension in [".h5", ".hdf5"]:
             data = []
-    
+
             with pandas.HDFStore(self.input, 'r') as metrics_store:
                 tables = metrics_store.keys()
                 for tableid in tables:
+
+                    if self.multiplier:
+                        table_mult = int(tableid.split('/')[-1])
+                        if not table_mult == self.multiplier:
+                            continue
+
                     celldata = metrics_store[tableid]
-    
+
                     data.append(celldata)
-    
-    
+
             data = pandas.concat(data)
             data = data.reset_index()
 
@@ -77,6 +85,9 @@ class PlotKernelDensity(object):
                                    sep=self.sep,
                                    dtype={'chromosome': str, 'start': int}
                                    )
+            if self.multiplier:
+                data = data[data["multiplier"] == self.multiplier]
+
         return data
 
     def get_ymax(self, data):
@@ -85,7 +96,11 @@ class PlotKernelDensity(object):
 
         kde = smnp.KDEUnivariate(data)
         kde.fit()
-        return max(kde.density)
+
+        maxval = np.nanmax(kde.density)
+        if math.isnan(maxval):
+            maxval = 0
+        return maxval
 
     def plot_kernel_density(self, pdfout, mad_scores, exp_cond=None):
         """
@@ -148,6 +163,7 @@ class PlotKernelDensity(object):
             pdfout.savefig(fig.get_figure())
 
         pdfout.close()
+        plt.close()
 
     def main(self):
         '''
