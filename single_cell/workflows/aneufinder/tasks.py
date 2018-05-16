@@ -4,17 +4,22 @@ import pypeliner
 import shutil
 from PyPDF2 import PdfFileMerger
 
-from single_cell.utils import helpers
+from single_cell.utils import helpers, hdfutils
 from single_cell.utils import pdfutils
+from single_cell.utils import csvutils
 
 
-scripts_directory = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'scripts')
+scripts_directory = os.path.join(
+    os.path.realpath(
+        os.path.dirname(__file__)),
+    'scripts')
 run_aneufinder_rscript = os.path.join(scripts_directory, 'Aneufinder.R')
 rdata_to_csv_rscript = os.path.join(scripts_directory, 'Rdatatocsv.R')
 
+
 def convert_segments_to_hmmcopy_format(
-    csv_name,
-    cell_id):
+        csv_name,
+        cell_id):
 
     rdata_df = pd.read_csv(csv_name)
 
@@ -27,8 +32,8 @@ def convert_segments_to_hmmcopy_format(
 
 
 def convert_reads_to_hmmcopy_format(
-    csv_name,
-    cell_id):
+        csv_name,
+        cell_id):
 
     rdata_df = pd.read_csv(csv_name)
 
@@ -41,13 +46,13 @@ def convert_reads_to_hmmcopy_format(
 
 
 def run_aneufinder(
-    bam_file,
-    working_dir,
-    cell_id,
-    aneufinder_output,
-    segments,
-    reads,
-    dnacopy_plot):
+        bam_file,
+        working_dir,
+        cell_id,
+        aneufinder_output,
+        segments,
+        reads,
+        dnacopy_plot):
 
     # Create an output folder for temp storage
     helpers.makedirs(working_dir)
@@ -80,19 +85,31 @@ def run_aneufinder(
         return
 
     # Copy out the plot files. Grabs the first bin size that it sees
-    all_plots = os.listdir(os.path.join(temp_output, 'PLOTS', 'method-dnacopy'))
-    
+    all_plots = os.listdir(
+        os.path.join(
+            temp_output,
+            'PLOTS',
+            'method-dnacopy'))
+
     cell_plot = [x for x in all_plots if x.startswith('profiles')][0]
     cell_plot = os.path.join(temp_output, 'PLOTS', 'method-dnacopy', cell_plot)
 
     shutil.move(cell_plot, dnacopy_plot)
 
     # Get the segment data into a csv
-    segments_rdata = os.listdir(os.path.join(temp_output, 'MODELS', 'method-dnacopy'))
+    segments_rdata = os.listdir(
+        os.path.join(
+            temp_output,
+            'MODELS',
+            'method-dnacopy'))
     if len(segments_rdata) != 1:
         raise Exception("Wrong number of segment files")
     segments_rdata = segments_rdata[0]
-    segments_rdata = os.path.join(temp_output, 'MODELS', 'method-dnacopy', segments_rdata)
+    segments_rdata = os.path.join(
+        temp_output,
+        'MODELS',
+        'method-dnacopy',
+        segments_rdata)
 
     cmd = ['Rscript', rdata_to_csv_rscript, segments_rdata, segments, reads]
 
@@ -105,3 +122,24 @@ def run_aneufinder(
 def merge_pdf(in_filenames, out_filename):
     for in_files, out_file in zip(in_filenames, out_filename):
         pdfutils.merge_pdfs(in_files, out_file)
+
+
+def merge_outputs_to_hdf(
+        reads_files, segs_files, outfile, tempdir):
+
+    helpers.makedirs(tempdir)
+
+    reads_csv_merged = os.path.join(tempdir, "merged_reads.csv")
+
+    csvutils.concatenate_csv_lowmem(reads_files, reads_csv_merged)
+
+    segs_csv_merged = os.path.join(tempdir, "merged_segs.csv")
+
+    csvutils.concatenate_csv_lowmem(segs_files, segs_csv_merged)
+
+    hdfutils.concat_csvs_to_hdf([reads_csv_merged,
+                                 segs_csv_merged],
+                                outfile,
+                                ['/aneufinder/reads/',
+                                 '/aneufinder/segments/'])
+
