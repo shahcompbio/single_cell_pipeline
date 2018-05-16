@@ -46,13 +46,14 @@ def parse_args():
 
 class PlotMetrics(object):
 
-    def __init__(
-            self, metrics, output, plot_title, gcbias_matrix=None, gc_content=None):
+    def __init__(self, metrics, output, plot_title,
+                 gcbias_matrix=None, gc_content=None, multiplier=None):
         self.metrics = metrics
         self.output = output
         self.plot_title = plot_title
         self.gcbias_matrix = gcbias_matrix
         self.gc_content = gc_content
+        self.multiplier = multiplier
 
     def add_legend(self, ax, labels, colours, num_columns, typ='rectangle',
                    location='upper center'):
@@ -293,29 +294,22 @@ class PlotMetrics(object):
             well_labels[:] = np.nan
 
             for i in range(len(df)):
-                row_idx = int(
-                    df.ix[
-                        i,
-                        'sample_plate'].split('_')[0].replace(
-                        'R',
-                        ''))
-                col_idx = int(
-                    df.ix[
-                        i,
-                        'sample_plate'].split('_')[1].replace(
-                        'C',
-                        ''))
+                sample_plate = df.ix[i, 'sample_plate'].split('_')
+                row_idx = int(sample_plate[0].replace('R', ''))
+                col_idx = int(sample_plate[1].replace('C', ''))
 
                 label_value = df.ix[i]["cell_call"]
-                label_value = 0 if label_value == 'NTC' else int(
-                    label_value.replace(
-                        'C',
-                        ''))
+                if label_value == "NTC":
+                    label_value = 0
+                else:
+                    label_value = int(label_value.replace('C', ''))
+
                 well_labels[row_idx - 1, col_idx - 1] = label_value
 
         for i in range(len(df)):
-            row_idx = int(df.ix[i, 'sample_plate'].split('_')[0].replace('R', ''))
-            col_idx = int(df.ix[i, 'sample_plate'].split('_')[1].replace('C', ''))
+            sample_plate = df.ix[i, 'sample_plate'].split('_')
+            row_idx = int(sample_plate[0].replace('R', ''))
+            col_idx = int(sample_plate[1].replace('C', ''))
             matrix_value = float(df.ix[i, metric])
             matrix[row_idx - 1, col_idx - 1] = matrix_value
 
@@ -709,6 +703,12 @@ class PlotMetrics(object):
             with pd.HDFStore(infile, 'r') as metrics_store:
                 tables = metrics_store.keys()
                 for tableid in tables:
+
+                    if self.multiplier:
+                        table_multiplier = int(tableid.split('/')[-1])
+                        if not table_multiplier == self.multiplier:
+                            continue
+
                     data = metrics_store[tableid]
 
                     metrics.append(data)

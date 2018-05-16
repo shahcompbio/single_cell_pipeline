@@ -16,19 +16,20 @@ import pandas as pd
 
 class ConvertCSVToSEG(object):
 
-    def __init__(self, segs, bin_size, metrics, output_seg, mad_threshold):
+    def __init__(
+            self, segs, bin_size, metrics, output_seg, mad_threshold, multiplier):
         self.segs = segs
         self.output_seg = output_seg
         self.bin_size = bin_size
         self.metrics = metrics
         self.mad_threshold = mad_threshold
+        self.multiplier = multiplier
 
     def get_file_format(self, infile):
 
         if infile.endswith('.tmp'):
             infile = infile[:-4]
         _, ext = os.path.splitext(infile)
-
 
         if ext == ".csv":
             return "csv"
@@ -80,6 +81,11 @@ class ConvertCSVToSEG(object):
         if fileformat == "h5":
             with pd.HDFStore(self.metrics) as metrics:
                 for tableid in metrics.keys():
+                    multiplier = tableid.split('/')[-1]
+
+                    if not multiplier == self.multiplier:
+                        continue
+
                     data = metrics[tableid]
                     cellid = data["cell_id"].iloc[0]
                     mad_threshold = data["mad_neutral_state"].iloc[0]
@@ -89,6 +95,8 @@ class ConvertCSVToSEG(object):
 
         else:
             metrics = pd.read_csv(self.metrics)
+            metrics = metrics[metrics["multiplier"] == self.multiplier]
+
             mad_cell_map = {
                 cell: mad for cell,
                 mad in zip(
@@ -110,6 +118,12 @@ class ConvertCSVToSEG(object):
 
         with pd.HDFStore(segs) as segs_store:
             for tableid in segs_store.keys():
+
+                multiplier = tableid.split('/')[-1]
+
+                if not multiplier == self.multiplier:
+                    continue
+
                 data = segs_store[tableid]
                 for _, row in data.iterrows():
                     chrom = row["chr"]
@@ -139,6 +153,9 @@ class ConvertCSVToSEG(object):
 
             # Read the segs file and write to the output file
             for _, row in lines:
+                if not row["multiplier"] == self.multiplier:
+                    continue
+
                 chrom = row[header["chr"]]
                 start = row[header["start"]]
                 end = row[header["end"]]

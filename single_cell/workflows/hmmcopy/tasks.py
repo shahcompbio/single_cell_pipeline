@@ -6,7 +6,6 @@ Created on Jul 24, 2017
 import os
 import pypeliner
 import pandas as pd
-from scripts import ExtractHmmMetrics
 from scripts import ConvertCSVToSEG
 from scripts import ReadCounter
 from scripts import CorrectReadCount
@@ -66,17 +65,15 @@ def run_correction_hmmcopy(
     return correct_reads_out
 
 
-def run_hmmcopy_script(corrected_reads, hmm_reads_out, hmm_segs_out,
-                       hmm_params_out, hmm_metrics_out, cell_id, hmmparams):
+def run_hmmcopy_script(corrected_reads, tempdir, cell_id, hmmparams):
 
     # run hmmcopy
     cmd = ['Rscript', run_hmmcopy_rscript,
            '--corrected_data=' + corrected_reads,
-           '--reads_output=' + hmm_reads_out,
-           '--segs_output=' + hmm_segs_out,
-           '--params_output=' + hmm_params_out,
-           '--metrics_output=' + hmm_metrics_out,
+           '--outdir=' + tempdir,
            '--sample_id=' + cell_id]
+
+    multipliers = ','.join(map(str, hmmparams['multipliers']))
 
     cmd.append('--param_str=' + str(hmmparams['strength']))
     cmd.append('--param_e=' + str(hmmparams['e']))
@@ -88,7 +85,7 @@ def run_hmmcopy_script(corrected_reads, hmm_reads_out, hmm_segs_out,
     cmd.append('--param_eta=' + str(hmmparams['eta']))
     cmd.append('--param_g=' + str(hmmparams['g']))
     cmd.append('--param_s=' + str(hmmparams['s']))
-    cmd.append('--param_multiplier='+str(hmmparams['multiplier']))
+    cmd.append('--param_multiplier=' + multipliers)
 
     pypeliner.commandline.execute(*cmd)
 
@@ -99,14 +96,13 @@ def run_hmmcopy(
         corrected_reads_filename,
         segments_filename,
         parameters_filename,
-        hmm_metrics,
-        reads_plot,
-        segs_plot,
-        bias_plot,
-        params_plot,
+        metrics_filename,
+        segs_pdf_filename,
+        bias_pdf_filename,
         cell_id,
         config,
         hmmparams,
+        multipliers,
         tempdir,):
 
     # generate wig file for hmmcopy
@@ -121,47 +117,69 @@ def run_hmmcopy(
         config,
         hmmparams)
 
-    hmm_reads_out = os.path.join(tempdir, "hmm_reads.csv")
-    hmm_params_out = os.path.join(tempdir, "hmm_params.csv")
-    hmm_segs_out = os.path.join(tempdir, "hmm_segs.csv")
-    hmm_metrics_out = os.path.join(tempdir, "hmm_metrics.csv")
-
     run_hmmcopy_script(
         corrected_reads,
-        hmm_reads_out,
-        hmm_segs_out,
-        hmm_params_out,
-        hmm_metrics_out,
+        tempdir,
         cell_id,
         hmmparams)
 
-    # convert hmmcopy outputs to h5
-    hdfutils.convert_csv_to_hdf(
-        hmm_params_out,
-        parameters_filename,
-        "/hmmcopy/params/{}".format(cell_id))
-    hdfutils.convert_csv_to_hdf(
-        hmm_segs_out,
-        segments_filename,
-        "/hmmcopy/segments/{}".format(cell_id))
-    hdfutils.convert_csv_to_hdf(
-        hmm_reads_out,
-        corrected_reads_filename,
-        "/hmmcopy/reads/{}".format(cell_id))
-    hdfutils.convert_csv_to_hdf(
-        hmm_metrics_out,
-        hmm_metrics,
-        "/hmmcopy/metrics/{}".format(cell_id))
+    hmmcopy_reads_files = []
+    hmmcopy_params_files = []
+    hmmcopy_segs_files = []
+    hmmcopy_metrics_files = []
 
-    # plot
+    hmmcopy_reads_tablenames = []
+    hmmcopy_params_tablenames = []
+    hmmcopy_segs_tablenames = []
+    hmmcopy_metrics_tablenames = []
+
+    for multiplier in multipliers:
+        hmmcopy_outdir = os.path.join(tempdir, str(multiplier))
+
+        hmmcopy_reads_files.append(os.path.join(hmmcopy_outdir, "reads.csv"))
+        hmmcopy_params_files.append(os.path.join(hmmcopy_outdir, "params.csv"))
+        hmmcopy_segs_files.append(os.path.join(hmmcopy_outdir, "segs.csv"))
+        hmmcopy_metrics_files.append(
+            os.path.join(
+                hmmcopy_outdir,
+                "metrics.csv"))
+
+        hmmcopy_reads_tablenames.append(
+            '/hmmcopy/reads/{}/{}'.format(cell_id, multiplier))
+        hmmcopy_params_tablenames.append(
+            '/hmmcopy/params/{}/{}'.format(cell_id, multiplier))
+        hmmcopy_segs_tablenames.append(
+            '/hmmcopy/segments/{}/{}'.format(cell_id, multiplier))
+        hmmcopy_metrics_tablenames.append(
+            '/hmmcopy/metrics/{}/{}'.format(cell_id, multiplier))
+
+    hdfutils.concat_csvs_to_hdf(
+        hmmcopy_reads_files,
+        corrected_reads_filename,
+        hmmcopy_reads_tablenames)
+    hdfutils.concat_csvs_to_hdf(
+        hmmcopy_params_files,
+        parameters_filename,
+        hmmcopy_params_tablenames)
+    hdfutils.concat_csvs_to_hdf(
+        hmmcopy_segs_files,
+        segments_filename,
+        hmmcopy_segs_tablenames)
+    hdfutils.concat_csvs_to_hdf(
+        hmmcopy_metrics_files,
+        metrics_filename,
+        hmmcopy_metrics_tablenames)
+
     annotation_cols = ['cell_call', 'experimental_condition', 'sample_type',
                        'coverage_depth', 'mad_neutral_state',
                        'MSRSI_non_integerness']
+
     plot_hmmcopy(
         corrected_reads_filename, segments_filename, parameters_filename,
-        hmm_metrics, None, config["ref_genome"], reads_plot, segs_plot,
-        bias_plot, params_plot, cell_id, hmmparams['num_states'], "QC", None,
-        annotation_cols)
+        metrics_filename, config["ref_genome"], segs_pdf_filename,
+        bias_pdf_filename, cell_id, multipliers,
+        num_states=hmmparams['num_states'],
+        annotation_cols=annotation_cols)
 
 
 def annotate_metrics(metrics, sample_info, output):
@@ -169,11 +187,12 @@ def annotate_metrics(metrics, sample_info, output):
     adds sample information to metrics in place
     """
     hdfutils.annotate_per_cell_store_with_dict(metrics, sample_info, output)
-    
+
+
 def merge_files(reads, segs, hmm_metrics, hmm_params,
                 merged_segs, merged_reads, merged_hmm_metrics,
-                merged_hmm_params,
-                mad_thres, config, igv_segs, sample_info, tempdir):
+                merged_hmm_params, tempdir, igv_segs, sample_info,
+                mad_thres, config, multipliers):
 
     helpers.makedirs(tempdir)
     temp_hmm_metrics = os.path.join(tempdir, "merged_hmm_metrics.h5")
@@ -201,26 +220,28 @@ def merge_files(reads, segs, hmm_metrics, hmm_params,
     annotate_metrics(temp_hmm_metrics, sample_info, merged_hmm_metrics)
 
     convert_csv_to_seg(merged_segs, config["bin_size"], merged_hmm_metrics, igv_segs,
-                       0.2)
+                       0.2, 0)
 
 
-def convert_csv_to_seg(segs, bin_size, metrics, output_seg, mad_threshold):
+def convert_csv_to_seg(
+        segs, bin_size, metrics, output_seg, mad_threshold, multiplier):
     converter = ConvertCSVToSEG(
         segs,
         bin_size,
         metrics,
         output_seg,
-        mad_threshold)
+        mad_threshold, multiplier)
     converter.main()
 
 
-def plot_hmmcopy(reads, segments, params, metrics, sample_info, ref_genome, reads_out, segs_out,
-                 bias_out, params_out, cell_id, num_states=7, plot_title=None,
-                 mad_threshold=None, annotation_cols=None):
-    plot = GenHmmPlots(reads, segments, params, metrics, sample_info, ref_genome, reads_out, segs_out,
-                       bias_out, params_out, cell_id, num_states=num_states, plot_title=plot_title,
-                       mad_threshold=mad_threshold, annotation_cols=annotation_cols)
-    plot.main()
+def plot_hmmcopy(reads, segments, params, metrics, ref_genome, segs_out,
+                 bias_out, cell_id, multiplier, num_states=7,
+                 annotation_cols=None):
+
+    with GenHmmPlots(reads, segments, params, metrics, ref_genome, segs_out,
+                     bias_out, cell_id, multiplier, num_states=num_states,
+                     annotation_cols=annotation_cols) as plot:
+        plot.main()
 
 
 def get_good_cells(metrics, mad_threshold, numreads_threshold,
@@ -320,13 +341,18 @@ def sort_bins(bins):
     return sortedbins
 
 
-def get_hierarchical_clustering_order(reads_filename, cluster_order_output):
+def get_hierarchical_clustering_order(
+        reads_filename, cluster_order_output, multiplier):
 
     with pd.HDFStore(reads_filename, 'r') as reads_store:
 
         data = []
 
         for tableid in reads_store.keys():
+
+            table_multiplier = int(tableid.split('/')[-1])
+            if not table_multiplier == multiplier:
+                continue
 
             table = reads_store[tableid]
 
@@ -350,71 +376,153 @@ def get_hierarchical_clustering_order(reads_filename, cluster_order_output):
 
     samps = data.index
     order = [samps[i] for i in order]
-    order = {v: {"order":i} for i, v in enumerate(order)}
+    order = {v: {"order": i} for i, v in enumerate(order)}
 
     return order
 
 
 def add_clustering_order(
-        reads_filename, metrics_filename, cluster_order_output):
-    order = get_hierarchical_clustering_order(
-        reads_filename,
-        cluster_order_output)
+        reads_filename, metrics_filename, cluster_order_output, multipliers, cells):
 
-    hdfutils.annotate_store_with_dict(metrics_filename, order, cluster_order_output)
+    with pd.HDFStore(cluster_order_output, 'w', complevel=9, complib='blosc') as out_store:
 
-def plot_kernel_density(infile, output, sep, colname, plot_title):
-    plot = PlotKernelDensity(infile, output, sep, colname, plot_title)
-    plot.main()
+        for multiplier in multipliers:
+            order = get_hierarchical_clustering_order(
+                reads_filename,
+                cluster_order_output, multiplier)
+
+            tables = [
+                '/hmmcopy/metrics/{}/{}'.format(cell, multiplier) for cell in cells]
+
+            hdfutils.annotate_store_with_dict(
+                metrics_filename,
+                order,
+                out_store,
+                tables=tables)
 
 
+def plot_kernel_density(
+        infile, output, tempdir, sep, colname, plot_title, multipliers):
+
+    helpers.makedirs(tempdir)
+
+    multiplier_pdfs = []
+
+    for multiplier in multipliers:
+
+        multiplier_output = os.path.join(tempdir, "{}.pdf".format(multiplier))
+
+        multiplier_pdfs.append(multiplier_output)
+
+        mult_plot_title = '{}({})'.format(plot_title, multiplier)
+
+        plot = PlotKernelDensity(
+            infile,
+            multiplier_output,
+            sep,
+            colname,
+            mult_plot_title,
+            multiplier=multiplier)
+        plot.main()
+
+    pdfutils.merge_pdfs(multiplier_pdfs, output)
 
 
-def plot_pcolor(infile, metrics, output, plot_title=None,
+def plot_pcolor(infile, metrics, output, tempdir, multipliers, plot_title=None,
                 column_name=None, plot_by_col=None, numreads_threshold=None,
-                mad_threshold=None, chromosomes=None, max_cn=None, median_hmmcopy_reads_per_bin_threshold=None):
+                mad_threshold=None, chromosomes=None, max_cn=None,
+                median_hmmcopy_reads_per_bin_threshold=None,
+                ):
 
-    plot = PlotPcolor(infile, metrics, output, plot_title=plot_title,
-                      column_name=column_name, plot_by_col=plot_by_col,
-                      numreads_threshold=numreads_threshold,
-                      mad_threshold=mad_threshold, chromosomes=chromosomes,
-                      max_cn=max_cn,
-                      median_hmmcopy_reads_per_bin_threshold=median_hmmcopy_reads_per_bin_threshold)
-    plot.main()
+    helpers.makedirs(tempdir)
+
+    multiplier_pdfs = []
+
+    for multiplier in multipliers:
+
+        multiplier_output = os.path.join(tempdir, "{}.pdf".format(multiplier))
+
+        multiplier_pdfs.append(multiplier_output)
+
+        mult_plot_title = '{}({})'.format(plot_title, multiplier)
+
+        plot = PlotPcolor(infile, metrics, multiplier_output, plot_title=mult_plot_title,
+                          column_name=column_name, plot_by_col=plot_by_col,
+                          numreads_threshold=numreads_threshold,
+                          mad_threshold=mad_threshold, chromosomes=chromosomes,
+                          max_cn=max_cn, multiplier=multiplier,
+                          median_hmmcopy_reads_per_bin_threshold=median_hmmcopy_reads_per_bin_threshold)
+        plot.main()
+
+    pdfutils.merge_pdfs(multiplier_pdfs, output)
 
 
-def merge_tables(reads, segments, metrics, params, output):
+def merge_tables(reads, segments, metrics, params, output, multipliers, cells):
 
     with pd.HDFStore(output, 'w', complevel=9, complib='blosc') as output_store:
-        hdfutils.merge_per_cell_tables(
+
+        for multiplier in multipliers:
+
+            tables_to_merge = [
+                '/hmmcopy/metrics/{}/{}'.format(cell, multiplier) for cell in cells]
+            hdfutils.merge_per_cell_tables(
+                metrics,
+                output_store,
+                '/hmmcopy/metrics/{}'.format(multiplier),
+                in_memory=True,
+                dtypes={'too_even': float},
+                tables_to_merge=tables_to_merge)
+
+            tables_to_merge = [
+                '/hmmcopy/params/{}/{}'.format(cell, multiplier) for cell in cells]
+            hdfutils.merge_per_cell_tables(
+                params,
+                output_store,
+                '/hmmcopy/params/{}'.format(multiplier),
+                in_memory=True,
+                tables_to_merge=tables_to_merge)
+
+            dtypes = {'valid': bool, 'ideal': bool}
+            tables_to_merge = [
+                '/hmmcopy/reads/{}/{}'.format(cell, multiplier) for cell in cells]
+            hdfutils.merge_per_cell_tables(
+                reads,
+                output_store,
+                '/hmmcopy/reads/{}'.format(multiplier),
+                in_memory=False,
+                dtypes=dtypes,
+                tables_to_merge=tables_to_merge)
+            dtypes = {}
+            tables_to_merge = [
+                '/hmmcopy/segments/{}/{}'.format(cell, multiplier) for cell in cells]
+            hdfutils.merge_per_cell_tables(
+                segments,
+                output_store,
+                '/hmmcopy/segments/{}'.format(multiplier),
+                in_memory=False,
+                dtypes=dtypes,
+                tables_to_merge=tables_to_merge)
+
+
+def plot_metrics(metrics, output, tempdir, plot_title, multipliers):
+
+    helpers.makedirs(tempdir)
+
+    multiplier_pdfs = []
+
+    for multiplier in multipliers:
+
+        multiplier_output = os.path.join(tempdir, "{}.pdf".format(multiplier))
+
+        multiplier_pdfs.append(multiplier_output)
+
+        mult_plot_title = '{}({})'.format(plot_title, multiplier)
+
+        plot = PlotMetrics(
             metrics,
-            output_store,
-            '/hmmcopy/metrics',
-            in_memory=True,
-            dtypes={'too_even':float})
-        hdfutils.merge_per_cell_tables(
-            params,
-            output_store,
-            '/hmmcopy/params',
-            in_memory=True)
+            multiplier_output,
+            mult_plot_title,
+            multiplier=multiplier)
+        plot.plot_hmmcopy_metrics()
 
-        dtypes = {'valid': bool, 'ideal': bool}
-        hdfutils.merge_per_cell_tables(
-            reads,
-            output_store,
-            '/hmmcopy/reads',
-            in_memory=False,
-            dtypes=dtypes)
-        dtypes = {}
-        hdfutils.merge_per_cell_tables(
-            segments,
-            output_store,
-            '/hmmcopy/segments',
-            in_memory=False,
-            dtypes=dtypes)
-
-
-def plot_metrics(metrics, output, plot_title,):
-    plot = PlotMetrics(metrics, output, plot_title)
-    plot.plot_hmmcopy_metrics()
-
+    pdfutils.merge_pdfs(multiplier_pdfs, output)

@@ -78,6 +78,8 @@ class PlotPcolor(object):
         else:
             self.max_cn = 20
 
+        self.multiplier = kwargs.get('multiplier')
+
     def build_label_indices(self, header):
         '''
         gets all the label cols from file and builds
@@ -130,6 +132,12 @@ class PlotPcolor(object):
 
                 table = reads_store[tableid]
 
+                if self.multiplier:
+                    table_multiplier = int(tableid.split('/')[-1])
+                    if not table_multiplier == self.multiplier:
+                        continue
+
+
                 if not bins:
                     bins = table[['chr', 'start', 'end']]
 
@@ -171,6 +179,10 @@ class PlotPcolor(object):
             val = line[idxs[self.column_name]]
 
             val = float('nan') if val == "NA" else float(val)
+
+            if self.multiplier:
+                if not int(line[idxs['multiplier']]) == self.multiplier:
+                    continue
 
             chrom = line[idxs['chr']]
             start = int(line[idxs['start']])
@@ -251,6 +263,11 @@ class PlotPcolor(object):
             if sample_id not in samples:
                 continue
 
+            if self.multiplier:
+                multiplier = int(line[idxs["multiplier"]])
+                if not multiplier == self.multiplier:
+                    continue
+
             val = line[idxs["mad_neutral_state"]]
 
             val = float('nan') if val == "NA" else float(val)
@@ -286,6 +303,13 @@ class PlotPcolor(object):
 
         with pd.HDFStore(self.metrics, 'r') as metrics_store:
             for tableid in metrics_store:
+
+                if self.multiplier:
+                    table_multiplier = int(tableid.split('/')[-1])
+                    if not table_multiplier == self.multiplier:
+                        continue
+
+
                 table = metrics_store[tableid]
                 data.append(table)
 
