@@ -10,8 +10,7 @@ def create_aneufinder_workflow(bam_file,
                                cell_ids,
                                config,
                                aneufinder_output,
-                               aneufinder_segs_filename,
-                               aneufinder_reads_filename,
+                               aneufinder_results_filename,
                                library_id):
 
     workflow = pypeliner.workflow.Workflow()
@@ -38,22 +37,14 @@ def create_aneufinder_workflow(bam_file,
     )
 
     workflow.transform(
-        name='merge_segments',
+        name='merge_outputs',
         ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard'], 'ncpus':1},
-        func=csvutils.concatenate_csv_lowmem,
-        args=(
-            mgd.TempInputFile('segments.csv', 'cell_id'),
-            mgd.OutputFile(aneufinder_segs_filename)
-        ),
-    )
-
-    workflow.transform(
-        name='merge_reads',
-        ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard'], 'ncpus':1},
-        func=csvutils.concatenate_csv_lowmem,
+        func=tasks.merge_outputs_to_hdf,
         args=(
             mgd.TempInputFile('reads.csv', 'cell_id'),
-            mgd.OutputFile(aneufinder_reads_filename)
+            mgd.TempInputFile('segments.csv', 'cell_id'),
+            mgd.OutputFile(aneufinder_results_filename),
+            mgd.TempSpace("aneufinder_merge"),
         )
     )
 

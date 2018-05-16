@@ -6,7 +6,6 @@ Created on Feb 20, 2018
 
 
 import os
-import pypeliner
 import pypeliner.managed as mgd
 from workflows import aneufinder 
 from single_cell.utils import helpers
@@ -27,8 +26,7 @@ def aneufinder_workflow(workflow, args):
 
     helpers.makedirs(output)
 
-    segs_filename = os.path.join(output, '{}_segments.csv'.format(args['library_id']))
-    reads_filename = os.path.join(output, '{}_reads.csv'.format(args['library_id']))
+    results_filename = os.path.join(output, '{}_results.h5'.format(args['library_id']))
     workflow.subworkflow(
         name='aneufinder_workflow',
         func=aneufinder.create_aneufinder_workflow,
@@ -37,8 +35,7 @@ def aneufinder_workflow(workflow, args):
             cellids,
             config,
             output,
-            mgd.OutputFile(segs_filename),
-            mgd.OutputFile(reads_filename),
+            mgd.OutputFile(results_filename),
             args['library_id']
         ),
     )
