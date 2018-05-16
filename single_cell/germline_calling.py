@@ -7,7 +7,6 @@ Created on Feb 22, 2018
 import os
 import pypeliner
 import pypeliner.managed as mgd
-from workflows import snv_postprocessing
 from workflows import germline
 from workflows import split_bams
 from single_cell.utils import helpers
@@ -128,25 +127,6 @@ def germline_calling_workflow(workflow, args):
             'drop_duplicates' : True,
         }
     )
-
-
-    # countdata = os.path.join(varcalls_dir, 'counts.csv')
-    # olp_calls = os.path.join(varcalls_dir, 'overlapping_calls.csv')
-    # workflow.subworkflow(
-    #     name='germline_postprocessing',
-    #     func=snv_postprocessing.create_snv_postprocessing_workflow,
-    #     args=(
-    #         mgd.InputFile('bam_markdups', 'sample_id', fnames=bam_files),
-    #         mgd.InputFile('bam_markdups_index', 'sample_id', fnames=bai_files),
-    #         [
-    #             mgd.InputFile(samtools_germline_csv),
-    #         ],
-    #         mgd.OutputFile(countdata),
-    #         mgd.OutputFile(olp_calls),
-    #         sampleids,
-    #         config,
-    #     )
-    # )
 
     return workflow
 
