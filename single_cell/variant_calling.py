@@ -11,7 +11,6 @@ import biowrappers.components.io.vcf.tasks
 import biowrappers.components.io.hdf5.tasks
 import biowrappers.pipelines.snv_call_and_annotate
 import biowrappers.components.io.vcf.tasks
-from workflows import snv_postprocessing
 from workflows import mutationseq 
 from workflows import split_bams
 from workflows import strelka
