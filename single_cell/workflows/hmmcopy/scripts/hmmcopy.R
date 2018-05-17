@@ -65,7 +65,42 @@ format_parameter_table <- function(samp.segmented, new.params) {
 
 
 
+error_exit_clean <- function(samp.uncorrected, chromosomes, sample_id, out_reads, out_segs, out_params, out_metrics, error) {
 
+        warning(paste(error, opt$tumour_file, sep=""))
+
+        # rename space col in reads
+        samp.uncorrected <- as.data.frame(samp.uncorrected)
+        colnames(samp.uncorrected)[colnames(samp.uncorrected)=="space"] <- "chr"
+
+
+        # uncorrected.table <- format_read_count_table(samp.uncorrected, chromosomes)
+        samp.uncorrected$cell_id <- sample_id
+        samp.uncorrected$cor_gc <- NA
+        samp.uncorrected$cor_map <- NA
+        samp.uncorrected$ideal <- NA
+        samp.uncorrected$valid <- NA
+        samp.uncorrected$state <- NA
+        samp.uncorrected$copy <- NA
+        samp.uncorrected$multiplier <- NA
+        write.table(samp.uncorrected, file=out_reads, quote=F, sep=",", col.names=T, row.names=F)
+
+        #write colnames to the seg file
+        segs <- c("chr","start","end","state","median","integer_median","integer_copy_number")
+        cat(segs, "\n", file=out_segs, sep=",")
+
+        params <- c("initial","1","2","3","4","5","final","state","parameter","cell_id")
+        cat(params, "\n", file=out_params, sep=",")
+
+        metrics <- c("multiplier","MSRSI_non_integerness","MBRSI_dispersion_non_integerness",
+                     "MBRSM_dispersion","autocorrelation_hmmcopy","cv_hmmcopy","empty_bins_hmmcopy",
+                     "mad_hmmcopy","mean_hmmcopy_reads_per_bin","median_hmmcopy_reads_per_bin",
+                     "std_hmmcopy_reads_per_bin","total_mapped_reads","total_halfiness","scaled_halfiness",
+                     "mean_state_mads","mean_state_vars","mad_neutral_state","too_even","breakpoints","mean_copy",
+                     "state_mode","log_likelihood","true_multiplier","cell_id")
+        cat(metrics, "\n", file=out_metrics, sep=",")
+
+}
 
 
 
@@ -73,9 +108,51 @@ run_hmmcopy <- function(cell, corrected_reads_data, param, outdir, multipliers, 
 
     samp.corrected <- fread(corrected_reads_data)
     samp.corrected <- RangedData(ranges = IRanges(start=samp.corrected$start, end=samp.corrected$end), space=samp.corrected$chr,
-                                 width=samp.corrected$width, reads=samp.corrected$reads, gc=samp.corrected$gc, map=samp.corrected$map,
+                                 reads=samp.corrected$reads, gc=samp.corrected$gc, map=samp.corrected$map,
                                  cor_gc=samp.corrected$cor_gc, copy=samp.corrected$copy, valid=samp.corrected$valid, ideal=samp.corrected$ideal,
                                  modal_curve=samp.corrected$modal_curve,modal_quantile=samp.corrected$modal_quantile, cor_map=samp.corrected$cor_map)
+
+
+
+
+
+
+    VALS = as.numeric(strsplit(multipliers, ",")[[1]])
+
+    #Catch and quit if no data to fit.
+    if (all(is.na(samp.corrected$cor_gc)) & all(is.na(samp.corrected$copy))){
+
+        for (VAL in VALS) {
+
+            modal_output = file.path(outdir, VAL, sep='/')
+            dir.create(modal_output, recursive=TRUE)
+
+            out_reads <- file.path(modal_output, "reads.csv")
+            out_segs <- file.path(modal_output, "segs.csv")
+            out_params <- file.path(modal_output, "params.csv")
+            out_metrics <- file.path(modal_output, "metrics.csv")
+
+            err <- "Low coverage sample results in loess regression failure, unable to correct and segment"
+            error_exit_clean(samp.corrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_metrics, err)
+        }
+
+        #create auto ploidy dummy output
+        modal_output = file.path(outdir, '0', sep='/')
+        dir.create(modal_output, recursive=TRUE)
+
+        out_reads <- file.path(modal_output, "reads.csv")
+        out_segs <- file.path(modal_output, "segs.csv")
+        out_params <- file.path(modal_output, "params.csv")
+        out_metrics <- file.path(modal_output, "metrics.csv")
+
+        err <- "Low coverage sample results in loess regression failure, unable to correct and segment"
+        error_exit_clean(samp.corrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_metrics, err)
+
+        quit()
+
+    }
+
+
     new.params <- param
 
     if (nrow(samp.corrected) == 0) {
@@ -90,9 +167,6 @@ run_hmmcopy <- function(cell, corrected_reads_data, param, outdir, multipliers, 
     best.segs <- list()
     best.metrics <- list()
     best.params <- list()
-
-
-    VALS = as.numeric(strsplit(multipliers, ",")[[1]])
 
 
     for (VAL in VALS) {
