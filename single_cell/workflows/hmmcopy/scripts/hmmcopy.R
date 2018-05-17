@@ -291,18 +291,23 @@ run_hmmcopy <- function(cell, corrected_reads_data, param, outdir, multipliers, 
     seg.best$red <- FALSE
     seg.best$red[which(seg.best$scaledpenalty == min(seg.best$scaledpenalty))] <- TRUE
 
-    auto_ploidy.reads <- best.segmented[[subset(seg.best, red)$VAL]]
+
+    pick <- subset(seg.best, red)$VAL
+    if (length(pick) > 1){
+        pick <- pick[1]
+    }
+
+    auto_ploidy.reads <- best.segmented[[pick]]
     write.table(auto_ploidy.reads, sep = ",", quote = FALSE, row.names = FALSE, file = file.path(auto_output, "reads.csv"))
 
-    auto_ploidy.segs <- best.segs[[subset(seg.best, red)$VAL]]
+    auto_ploidy.segs <- best.segs[[pick]]
     write.table(auto_ploidy.segs, sep = ",", quote = FALSE, row.names = FALSE, file = file.path(auto_output, "segs.csv"))
 
-    auto_ploidy.metrics <- best.metrics[[subset(seg.best, red)$VAL]]
+    auto_ploidy.metrics <- best.metrics[[pick]]
     write.table(auto_ploidy.metrics, sep = ",", quote = FALSE, row.names = FALSE, file = file.path(auto_output, "metrics.csv"))
 
-    auto_ploidy.params <- best.params[[subset(seg.best, red)$VAL]]
+    auto_ploidy.params <- best.params[[pick]]
     write.table(auto_ploidy.params, sep = ",", quote = FALSE, row.names = FALSE, file = file.path(auto_output, "params.csv"))
-
 }
 
 get_parameters <- function(str, e, mu, lambda, nu, kappa, m,eta, gamma, S) {

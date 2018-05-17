@@ -46,7 +46,7 @@ class GenerateCNMatrix(object):
                 raise Exception(
                     "Can only accept hmmcopy reads data in hdf format")
             data = pd.HDFStore(
-                self.input)["/hmmcopy_reads/{}".format(self.sample_id)]
+                self.input, 'r')["/hmmcopy_reads/{}".format(self.sample_id)]
         else:
             data = pd.read_csv(self.input)
 

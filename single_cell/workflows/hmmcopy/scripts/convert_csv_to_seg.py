@@ -79,7 +79,7 @@ class ConvertCSVToSEG(object):
         fileformat = self.get_file_format(self.metrics)
 
         if fileformat == "h5":
-            with pd.HDFStore(self.metrics) as metrics:
+            with pd.HDFStore(self.metrics, 'r') as metrics:
                 for tableid in metrics.keys():
                     multiplier = tableid.split('/')[-1]
 
@@ -116,7 +116,7 @@ class ConvertCSVToSEG(object):
 
     def parse_segs_h5(self, segs, metrics):
 
-        with pd.HDFStore(segs) as segs_store:
+        with pd.HDFStore(segs, 'r') as segs_store:
             for tableid in segs_store.keys():
 
                 multiplier = tableid.split('/')[-1]
