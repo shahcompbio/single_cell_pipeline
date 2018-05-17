@@ -257,17 +257,19 @@ def get_good_cells(metrics, mad_threshold, numreads_threshold,
 
             mad_score = data["mad_neutral_state"].iloc[0]
 
-            if mad_score > mad_threshold:
+            if mad_threshold and mad_score > mad_threshold:
                 continue
 
             num_reads = data['total_mapped_reads'].iloc[0]
 
-            if num_reads < numreads_threshold:
+            if numreads_threshold and num_reads < numreads_threshold:
                 continue
 
             reads_per_bin = data['median_hmmcopy_reads_per_bin'].iloc[0]
-            if reads_per_bin < median_hmmcopy_reads_per_bin_threshold:
-                continue
+
+            if median_hmmcopy_reads_per_bin_threshold:
+                if reads_per_bin < median_hmmcopy_reads_per_bin_threshold:
+                    continue
 
             good_cells.append(cellid)
 
