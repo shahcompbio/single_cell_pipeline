@@ -9,6 +9,9 @@ import pypeliner.managed as mgd
 
 import tasks
 
+
+import copy
+
 from single_cell.utils import helpers
 
 
@@ -23,7 +26,7 @@ def create_hmmcopy_workflow(
 
     chromosomes = config["chromosomes"]
 
-    multipliers = hmmparams["multipliers"]
+    multipliers = copy.deepcopy(hmmparams["multipliers"])
     multipliers.append(0)
 
     workflow = pypeliner.workflow.Workflow()
