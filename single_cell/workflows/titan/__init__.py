@@ -20,6 +20,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
                           tumour_cells, normal_cells, cloneid):
 
     results_files = os.path.join(raw_data_dir, 'results', 'sample.h5')
+    tumour_alleles_file = os.path.join(raw_data_dir, 'results', 'het_counts.h5')
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -95,6 +96,21 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
                 'tumour_alleles.tsv',
                 'tumour_cell_id'),
             pypeliner.managed.TempOutputFile('tumour_alleles.tsv'),
+        ),
+    )
+
+    workflow.transform(
+        name='concat_tumour_alleles',
+        ctx={'mem': config["memory"]['high'],
+             'pool_id': config['pools']['highmem'],
+             'ncpus':1, 'num_retry': 3,
+             'mem_retry_increment': 4},
+        func=tasks.concat_tumour_alleles,
+        args=(
+            pypeliner.managed.TempInputFile(
+                'tumour_alleles.tsv',
+                'tumour_cell_id'),
+            pypeliner.managed.OutputFile(tumour_alleles_file),
         ),
     )
 
