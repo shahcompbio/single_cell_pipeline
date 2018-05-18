@@ -24,6 +24,12 @@ def copy_number_calling_workflow(workflow, args):
 
     normal_cellids = helpers.get_samples(args['normal_yaml'])
 
+    if set(tumour_bam_files.keys()) != set(tumour_cellids):
+        raise ValueError()
+
+    if set(normal_bam_files.keys()) != set(normal_cellids):
+        raise ValueError()
+
     copynumber_dir = os.path.join(args["out_dir"], "copynumber")
 
     out_file = os.path.join(copynumber_dir, "results", "results.h5")
@@ -37,7 +43,7 @@ def copy_number_calling_workflow(workflow, args):
 
     workflow.setobj(
         obj=mgd.OutputChunks('normal_cell_id'),
-        value=tumour_cellids,
+        value=normal_cellids,
     )
 
     workflow.subworkflow(
@@ -94,13 +100,6 @@ def copy_number_calling_workflow(workflow, args):
             tumour_cellids,
             normal_cellids,
             cloneid
-        ),
-    )
-
-    workflow.subworkflow(
-        name='remixt_workflow',
-        func=remixt.create_remixt_workflow,
-        args=(
         ),
     )
 
