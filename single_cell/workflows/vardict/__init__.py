@@ -3,11 +3,15 @@ import biowrappers.components.variant_calling.vardict.tasks
 import biowrappers.components.io.vcf.tasks
 
 
+default_chromosomes = [str(a) for a in xrange(1, 23)] + ['X', 'Y']
+
+
 def create_vardict_paired_sample_workflow(
         normal_bam_file,
         tumour_bam_file,
         ref_genome_fasta_file,
         out_file,
+        config,
         chromosomes=default_chromosomes,
         java=False,
         min_allele_frequency=0.01,
@@ -18,7 +22,7 @@ def create_vardict_paired_sample_workflow(
         default_ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 })
 
     workflow.setobj(
-        obj=mgd.OutputChunks('region'),
+        obj=pypeliner.managed.OutputChunks('region'),
         value=normal_bam_file.keys(),
     )
 
