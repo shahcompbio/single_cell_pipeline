@@ -651,7 +651,7 @@ class PlotMetrics(object):
                     'ytick.labelsize': 12,
                     'legend.fontsize': 12})
 
-        df_melt = pd.melt(df, id_vars=['cell_id', 'i5_barcode', 'i7_barcode'],
+        df_melt = pd.melt(df, id_vars=['cell_id', 'i5_index', 'i7_index'],
                           value_vars=[metric],)
 
         fig_height = 6
@@ -802,9 +802,9 @@ class PlotMetrics(object):
                                         pdf, self.plot_title)
             self.plot_metric_factorplot(df, 'estimated_library_size',
                                         'Picard estimated library size', pdf, self.plot_title)
-            self.plot_by_barcodes(df, 'total_reads', 'Total Reads', 'i5_barcode',
+            self.plot_by_barcodes(df, 'total_reads', 'Total Reads', 'i5_index',
                                   pdf, self.plot_title)
-            self.plot_by_barcodes(df, 'total_reads', 'Total Reads', 'i7_barcode',
+            self.plot_by_barcodes(df, 'total_reads', 'Total Reads', 'i7_index',
                                   pdf, self.plot_title)
 
             if self.gcbias_matrix:

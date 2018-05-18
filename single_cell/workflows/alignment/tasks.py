@@ -123,7 +123,7 @@ def get_readgroup(run_id, cell_id, library_id, seqinfo, sample_info):
     platform = 'illumina'
     centre = 'UBCBRC' if seqinfo.lower() == 'nextseq' else 'BCCAGSC'
 
-    barcode = sample_info["i7_index"] + "-" + sample_info["i5_index"]
+    barcode = sample_info["i7_primer"] + "-" + sample_info["i5_primer"]
 
     read_group_template = (
         '@RG\\tID:' + str(library_id) + '_' + cell_id + '_' + str(run_id) +

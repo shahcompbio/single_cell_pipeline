@@ -13,7 +13,7 @@ def annotate_metrics(infile, sample_info, outfile, compression=None):
     metrics_df = pd.read_csv(infile)
 
     cols = ["cell_call", "experimental_condition", "sample_type",
-            "i5_barcode", "i7_barcode", "sample_plate", "sample_well"]
+            "i5_index", "i7_index", "sample_plate", "sample_well"]
 
     for col in cols:
         metrics_df[col] = "NA"
