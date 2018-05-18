@@ -85,3 +85,18 @@ def merge_tumour_alleles(input_csvs, output):
     with open(output, "w") as writer:
         for (chrom, pos), (ref, alt) in data.iteritems():
             writer.write("{}\t{}\tA\t{}\tT\t{}\n".format(chrom, pos, ref, alt))
+
+
+def concat_tumour_alleles(input_csvs, output_filename):
+
+    data = []
+    for cell_id, input_filename in input_csvs.iteritems():
+        cell_data = pd.read_csv(input_filename, sep='\t')
+        cell_data['cell_id'] = cell_id
+        data.append(cell_data)
+
+    data = pd.concat(data, ignore_index=True)
+
+    data.to_csv(output_filename, sep='\t')
+
+
