@@ -16,6 +16,29 @@ def concat_csvs_to_hdf(infiles, outfile, tablenames):
             output.put(tablename, df)
 
 
+def merge_csvs_to_hdf_in_memory(infiles, outfile, tablename):
+
+    data = [pd.read_csv(infile) for infile in infiles]
+
+    data = pd.concat(data)
+
+    with pd.HDFStore(outfile, 'w', complevel=9, complib='blosc') as output:
+        output.put(tablename, data)
+
+
+def merge_csvs_to_hdf_on_disk(infiles, outfile, tablename):
+
+    with pd.HDFStore(outfile, 'w', complevel=9, complib='blosc') as output:
+
+        for infile in infiles:
+            data = pd.read_csv(infile)
+
+            if tablename not in output:
+                output.put(tablename, data, format='table')
+            else:
+                output.append(tablename, data, format='table')
+
+
 def convert_csv_to_hdf(infile, outfile, tablename):
     df = pd.read_csv(infile)
 
