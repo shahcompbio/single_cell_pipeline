@@ -89,14 +89,18 @@ def merge_tumour_alleles(input_csvs, output):
 
 def concat_tumour_alleles(input_csvs, output_filename):
 
-    data = []
+    store = pd.HDFStore(output_filename, 'w', complevel=9, complib='blosc')
+
     for cell_id, input_filename in input_csvs.iteritems():
-        cell_data = pd.read_csv(input_filename, sep='\t')
+        cell_data = pd.read_csv(input_filename, sep='\t', header=None,
+            names=['chromosome', 'coord', 'ref', 'ref_counts', 'alt', 'alt_counts'])
+        cell_data = cell_data.drop(['ref', 'alt'], axis=1)
+        cell_data['chromosome'] = cell_data['chromosome'].astype('category', categories=chromosomes)
         cell_data['cell_id'] = cell_id
-        data.append(cell_data)
+        cell_data['cell_id'] = cell_data['cell_id'].astype('category', categories=input_csvs.keys())
 
-    data = pd.concat(data, ignore_index=True)
+        store.append('/allele_counts', cell_data, data_columns=['cell_id', 'chromosome'])
 
-    data.to_csv(output_filename, sep='\t')
+    store.close()
 
 
