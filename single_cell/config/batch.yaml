@@ -4,13 +4,14 @@ storage_container_name: 'tasks-container'
 
 pools:
   singlecell${reference}standard_${version}:
-    pool_vm_size: 'STANDARD_DS11_V2'
+    pool_vm_size: 'STANDARD_DS12_V2'
     node_os_publisher: 'Canonical'
     node_os_offer: 'UbuntuServer'
     node_os_sku: '16'
     data_disk_sizes:
-    max_tasks_per_node: 2
+    max_tasks_per_node: 4
     auto_scale_formula: |
+      tasksPerNode = 4;
       numAddMax = 20;
       numDelMax = 20;
       startingNumberOfVMs = 0;
@@ -18,9 +19,9 @@ pools:
       maxNumberofVMs = 1000;
       pendingTaskSamplePercent = $PendingTasks.GetSamplePercent(180 * TimeInterval_Second);
       pendingTaskSamples = pendingTaskSamplePercent < 70 ? startingNumberOfVMs : avg($PendingTasks.GetSample(180 * TimeInterval_Second));
-      cores = $TargetLowPriorityNodes * 2;
-      $extraVMs = (pendingTaskSamples - cores) / 2;
-      $extraVMs = $extraVMs + 0.5;
+      cores = $TargetLowPriorityNodes * tasksPerNode;
+      $extraVMs = (pendingTaskSamples - cores) / tasksPerNode;
+      $extraVMs = $extraVMs + (tasksPerNode-1)/tasksPerNode;
       $extraVMs = min(numAddMax, $extraVMs);
       $extraVMs = max(-numDelMax, $extraVMs);
       targetVMs = ($TargetLowPriorityNodes + $extraVMs);
@@ -48,6 +49,7 @@ pools:
     data_disk_sizes:
     max_tasks_per_node: 1
     auto_scale_formula: |
+      tasksPerNode = 1;
       numAddMax = 20;
       numDelMax = 20;
       startingNumberOfVMs = 0;
@@ -55,8 +57,9 @@ pools:
       maxNumberofVMs = 1000;
       pendingTaskSamplePercent = $PendingTasks.GetSamplePercent(180 * TimeInterval_Second);
       pendingTaskSamples = pendingTaskSamplePercent < 70 ? startingNumberOfVMs : avg($PendingTasks.GetSample(180 * TimeInterval_Second));
-      cores = $TargetLowPriorityNodes ;
-      $extraVMs =  pendingTaskSamples - cores;
+      cores = $TargetLowPriorityNodes * tasksPerNode;
+      $extraVMs = (pendingTaskSamples - cores) / tasksPerNode;
+      $extraVMs = $extraVMs + (tasksPerNode-1)/tasksPerNode;
       $extraVMs = min(numAddMax, $extraVMs);
       $extraVMs = max(-numDelMax, $extraVMs);
       targetVMs = ($TargetLowPriorityNodes + $extraVMs);
@@ -79,6 +82,7 @@ pools:
     data_disk_sizes:
     max_tasks_per_node: 1
     auto_scale_formula: |
+      tasksPerNode = 1;
       numAddMax = 20;
       numDelMax = 20;
       startingNumberOfVMs = 0;
@@ -86,8 +90,9 @@ pools:
       maxNumberofVMs = 1000;
       pendingTaskSamplePercent = $PendingTasks.GetSamplePercent(180 * TimeInterval_Second);
       pendingTaskSamples = pendingTaskSamplePercent < 70 ? startingNumberOfVMs : avg($PendingTasks.GetSample(180 * TimeInterval_Second));
-      cores = $TargetLowPriorityNodes ;
-      $extraVMs =  pendingTaskSamples - cores;
+      cores = $TargetLowPriorityNodes * tasksPerNode;
+      $extraVMs = (pendingTaskSamples - cores) / tasksPerNode;
+      $extraVMs = $extraVMs + (tasksPerNode-1)/tasksPerNode;
       $extraVMs = min(numAddMax, $extraVMs);
       $extraVMs = max(-numDelMax, $extraVMs);
       targetVMs = ($TargetLowPriorityNodes + $extraVMs);
