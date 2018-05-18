@@ -164,6 +164,10 @@ def parse_args():
         subparsers.add_parser("breakpoint_calling"))
     breakpoint_calling.set_defaults(which='breakpoint_calling')
 
+    breakpoint_calling.add_argument("--matched_normal",
+                                    required=True,
+                                    help='''normal bam file''')
+
     generate_config = subparsers.add_parser("generate_config")
     generate_config.set_defaults(which='generate_config')
 
