@@ -52,7 +52,7 @@ class PlotKernelDensity(object):
         else:
             self.bw_est = bw_est
 
-        self.multiplier = kwargs.get("multiplier")
+        self.tablename = kwargs.get("tablename")
 
     def load(self, fname):
         '''
@@ -61,22 +61,10 @@ class PlotKernelDensity(object):
         extension = os.path.splitext(fname)[-1]
 
         if extension in [".h5", ".hdf5"]:
-            data = []
 
             with pandas.HDFStore(self.input, 'r') as metrics_store:
-                tables = metrics_store.keys()
-                for tableid in tables:
+                data = metrics_store[self.tablename]
 
-                    if self.multiplier:
-                        table_mult = int(tableid.split('/')[-1])
-                        if not table_mult == self.multiplier:
-                            continue
-
-                    celldata = metrics_store[tableid]
-
-                    data.append(celldata)
-
-            data = pandas.concat(data)
             data = data.reset_index()
 
         else:

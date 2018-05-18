@@ -6,6 +6,10 @@ Created on Jul 24, 2017
 import os
 import pypeliner
 import pandas as pd
+import numpy as np
+import scipy.spatial as sp
+import scipy.cluster.hierarchy as hc
+
 from scripts import ConvertCSVToSEG
 from scripts import ReadCounter
 from scripts import CorrectReadCount
@@ -14,15 +18,10 @@ from single_cell.utils import pdfutils
 from single_cell.utils import helpers
 from single_cell.utils import hdfutils
 
-
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotKernelDensity
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotMetrics
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotPcolor
 from single_cell.utils.singlecell_copynumber_plot_utils import GenHmmPlots
-
-
-import scipy.spatial as sp
-import scipy.cluster.hierarchy as hc
 
 
 scripts_directory = os.path.join(
@@ -182,55 +181,121 @@ def run_hmmcopy(
         annotation_cols=annotation_cols)
 
 
-def annotate_metrics(metrics, sample_info, output):
+def annotate_metrics(reads, metrics, output, sample_info, cells, multipliers):
     """
     adds sample information to metrics in place
     """
-    hdfutils.annotate_per_cell_store_with_dict(metrics, sample_info, output)
+
+    metrics_store = pd.HDFStore(metrics, 'r')
+
+    output_store = pd.HDFStore(output, 'w', complevel=9, complib='blosc')
+
+    for multiplier in multipliers:
+        tablename = '/hmmcopy/reads/{}'.format(multiplier)
+        order = get_hierarchical_clustering_order(reads, tablename)
+
+        for cellid, value in order.iteritems():
+            cellinfo = sample_info[cellid]
+            value.update(cellinfo)
+
+        tablename = '/hmmcopy/metrics/{}'.format(multiplier)
+
+        data = metrics_store[tablename]
+
+        for cellid in cells:
+            cell_info = order[cellid]
+            for colname, value in cell_info.iteritems():
+                data.loc[data["cell_id"] == cellid, colname] = value
+
+        output_store.put(tablename, data, format='table')
+
+    output_store.close()
+    metrics_store.close()
 
 
-def merge_files(reads, segs, hmm_metrics, hmm_params,
-                merged_segs, merged_reads, merged_hmm_metrics,
-                merged_hmm_params, tempdir, igv_segs, sample_info,
-                mad_thres, config, multipliers):
+def merge_hdf_files_on_disk(
+        reads, merged_reads, multipliers, tableprefix, dtypes={}):
 
-    helpers.makedirs(tempdir)
-    temp_hmm_metrics = os.path.join(tempdir, "merged_hmm_metrics.h5")
+    output_store = pd.HDFStore(merged_reads, 'w', complevel=9, complib='blosc')
 
-    hdfutils.concat_hdf_tables(
-        reads,
-        merged_reads,
-        in_memory=False,
-        non_numeric_as_category=False)
-    hdfutils.concat_hdf_tables(
-        segs,
-        merged_segs,
-        in_memory=False,
-        non_numeric_as_category=False)
-    hdfutils.concat_hdf_tables(
-        hmm_metrics,
-        temp_hmm_metrics,
-        non_numeric_as_category=False)
+    for cellid, infile in reads.iteritems():
+        with pd.HDFStore(infile, 'r') as infilestore:
+            for multiplier in multipliers:
+                tablename = '/{}/{}/{}'.format(tableprefix, cellid, multiplier)
+                data = infilestore[tablename]
 
-    hdfutils.concat_hdf_tables(
-        hmm_params,
-        merged_hmm_params,
-        non_numeric_as_category=False)
+                for col, dtype in dtypes.iteritems():
+                    data[col] = data[col].astype(dtype)
 
-    annotate_metrics(temp_hmm_metrics, sample_info, merged_hmm_metrics)
+                out_tablename = '/{}/{}'.format(tableprefix, multiplier)
+                if out_tablename not in output_store:
+                    output_store.put(out_tablename, data, format='table')
+                else:
+                    output_store.append(out_tablename, data, format='table')
 
-    convert_csv_to_seg(merged_segs, config["bin_size"], merged_hmm_metrics, igv_segs,
-                       0.2, 0)
+    output_store.close()
 
 
-def convert_csv_to_seg(
-        segs, bin_size, metrics, output_seg, mad_threshold, multiplier):
-    converter = ConvertCSVToSEG(
-        segs,
-        bin_size,
+def merge_hdf_files_in_memory(
+        reads, merged_reads, multipliers, tableprefix, dtypes={}):
+
+    output_store = pd.HDFStore(merged_reads, 'w', complevel=9, complib='blosc')
+
+    for multiplier in multipliers:
+        all_cells_data = []
+        for cellid, infile in reads.iteritems():
+
+            tablename = '/{}/{}/{}'.format(tableprefix, cellid, multiplier)
+
+            with pd.HDFStore(infile, 'r') as infilestore:
+                data = infilestore[tablename]
+
+            for col, dtype in dtypes.iteritems():
+                data[col] = data[col].astype(dtype)
+
+            all_cells_data.append(data)
+
+        all_cells_data = pd.concat(all_cells_data)
+
+        all_cells_data = all_cells_data.reset_index()
+
+        out_tablename = '/{}/{}'.format(tableprefix, multiplier)
+
+        output_store.put(out_tablename, all_cells_data, format='table')
+
+    output_store.close()
+
+
+def merge_pdf(in_filenames, out_filename, metrics, mad_threshold,
+              numreads_threshold, median_hmmcopy_reads_per_bin_threshold):
+
+    good_cells = get_good_cells(
         metrics,
-        output_seg,
-        mad_threshold, multiplier)
+        mad_threshold,
+        numreads_threshold,
+        median_hmmcopy_reads_per_bin_threshold,
+        '/hmmcopy/metrics/0')
+
+    sorted_cells = sort_cells(metrics, good_cells, '/hmmcopy/metrics/0')
+
+    for infiles, out_file in zip(in_filenames, out_filename):
+
+        helpers.makedirs(out_file, isfile=True)
+
+        infiles = [infiles[samp] for samp in sorted_cells]
+
+        pdfutils.merge_pdfs(infiles, out_file)
+
+
+def create_igv_seg(merged_segs, merged_hmm_metrics,
+                   igv_segs, config):
+
+    converter = ConvertCSVToSEG(
+        merged_segs,
+        config['bin_size'],
+        merged_hmm_metrics,
+        igv_segs,
+        0.2, 0)
     converter.main()
 
 
@@ -245,162 +310,127 @@ def plot_hmmcopy(reads, segments, params, metrics, ref_genome, segs_out,
 
 
 def get_good_cells(metrics, mad_threshold, numreads_threshold,
-                   median_hmmcopy_reads_per_bin_threshold):
-
-    good_cells = []
+                   median_hmmcopy_reads_per_bin_threshold, tableid):
 
     with pd.HDFStore(metrics, 'r') as metrics:
-        for tableid in metrics.keys():
-            data = metrics[tableid]
+        data = metrics[tableid]
 
-            cellid = data["cell_id"].iloc[0]
+        if mad_threshold:
+            data = data[data["mad_neutral_state"] <= mad_threshold]
 
-            mad_score = data["mad_neutral_state"].iloc[0]
+        if numreads_threshold:
+            data = data[data['total_mapped_reads'] >= numreads_threshold]
 
-            if mad_threshold and mad_score > mad_threshold:
-                continue
+        if median_hmmcopy_reads_per_bin_threshold:
+            data = data[
+                data['median_hmmcopy_reads_per_bin'] >= median_hmmcopy_reads_per_bin_threshold]
 
-            num_reads = data['total_mapped_reads'].iloc[0]
-
-            if numreads_threshold and num_reads < numreads_threshold:
-                continue
-
-            reads_per_bin = data['median_hmmcopy_reads_per_bin'].iloc[0]
-
-            if median_hmmcopy_reads_per_bin_threshold:
-                if reads_per_bin < median_hmmcopy_reads_per_bin_threshold:
-                    continue
-
-            good_cells.append(cellid)
+    good_cells = data["cell_id"].unique()
 
     return good_cells
 
 
-def sort_cells(metrics, good_cells):
-
-    cells_by_condition = {}
+def sort_cells(metrics, good_cells, tableid):
 
     with pd.HDFStore(metrics, 'r') as metrics:
-        for tableid in metrics.keys():
-            data = metrics[tableid]
 
-            cellid = data["cell_id"].iloc[0]
-            expcond = data["experimental_condition"].iloc[0]
+        data = metrics[tableid]
 
-            if expcond not in cells_by_condition:
-                cells_by_condition[expcond] = []
+    cells_order = {
+        order: cell for cell,
+        order in zip(
+            data.cell_id,
+            data.order)}
 
-            cells_by_condition[expcond].append(cellid)
+    ordervals = sorted(cells_order.keys())
 
-    sorted_cells = []
-
-    for expcond, cells in cells_by_condition.iteritems():
-        pass_cells = [cell for cell in cells if cell in good_cells]
-
-        sorted_cells += sorted(pass_cells)
+    sorted_cells = [cells_order[ordval] for ordval in ordervals]
 
     return sorted_cells
 
 
-def merge_pdf(in_filenames, out_filename, metrics, mad_threshold,
-              numreads_threshold, median_hmmcopy_reads_per_bin_threshold):
-
-    good_cells = get_good_cells(
-        metrics,
-        mad_threshold,
-        numreads_threshold,
-        median_hmmcopy_reads_per_bin_threshold)
-
-    sorted_cells = sort_cells(metrics, good_cells)
-
-    for infiles, out_file in zip(in_filenames, out_filename):
-
-        helpers.makedirs(out_file, isfile=True)
-
-        infiles = [infiles[samp] for samp in sorted_cells]
-
-        pdfutils.merge_pdfs(infiles, out_file)
-
-
 def sort_bins(bins):
 
-    sortedbins = []
+    bins = bins.drop_duplicates()
 
-    bins = bins.groupby("chr")
+    chromosomes = map(str, range(1, 23)) + ['X', 'Y']
 
-    chromosomes = map(str, range(1, 23)) + ["X", "Y"]
+    bins["chr"] = pd.Categorical(bins["chr"], chromosomes)
 
-    for chrom in chromosomes:
-        chrom_bins = bins.get_group(chrom)
-        chrom_bins = chrom_bins[["start", "end"]]
+    bins = bins.sort_values(['start', ])
 
-        chrom_bins = sorted(chrom_bins.values.tolist())
+    bins = [tuple(v) for v in bins.values.tolist()]
 
-        chrom_bins = [(chrom, v[0], v[1]) for v in chrom_bins]
-
-        sortedbins += chrom_bins
-
-    return sortedbins
+    return bins
 
 
 def get_hierarchical_clustering_order(
-        reads_filename, multiplier):
+        reads_filename, tablename):
 
-    with pd.HDFStore(reads_filename, 'r') as reads_store:
+    data = []
+    chunksize = 10 ** 6
+    for chunk in pd.read_hdf(
+            reads_filename, chunksize=chunksize, key=tablename):
 
-        data = []
+        chunk["bin"] = list(zip(chunk.chr, chunk.start, chunk.end))
 
-        for tableid in reads_store.keys():
+        chunk = chunk.pivot(index='cell_id', columns='bin', values='state')
 
-            table_multiplier = int(tableid.split('/')[-1])
-            if not table_multiplier == multiplier:
-                continue
+        data.append(chunk)
 
-            table = reads_store[tableid]
+    table = pd.concat(data)
 
-            bins = table[['chr', 'start', 'end']]
+    bins = pd.DataFrame(
+        table.columns.values.tolist(),
+        columns=[
+            'chr',
+            'start',
+            'end'])
 
-            bins = sort_bins(bins)
+    bins = sort_bins(bins)
 
-            table["bin"] = list(zip(table.chr, table.start, table.end))
+    table = table.sort_values(bins, axis=0)
 
-            table = table.pivot(index='cell_id', columns='bin', values='state')
+    data_mat = np.array(table.values)
 
-            table = table.sort_values(bins, axis=0)
+    data_mat[np.isnan(data_mat)] = -1
 
-            data.append(table)
+    row_linkage = hc.linkage(sp.distance.pdist(data_mat, 'cityblock'),
+                             method='ward')
 
-    data = pd.concat(data)
-
-    row_linkage = hc.linkage(sp.distance.pdist(data.values),
-                             method='average')
     order = hc.leaves_list(row_linkage)
 
-    samps = data.index
+    samps = table.index
     order = [samps[i] for i in order]
     order = {v: {"order": i} for i, v in enumerate(order)}
 
     return order
 
 
-def add_clustering_order(
-        reads_filename, metrics_filename, cluster_order_output, multipliers, cells):
+def plot_metrics(metrics, output, tempdir, plot_title, multipliers):
 
-    with pd.HDFStore(cluster_order_output, 'w', complevel=9, complib='blosc') as out_store:
+    helpers.makedirs(tempdir)
 
-        for multiplier in multipliers:
-            order = get_hierarchical_clustering_order(
-                reads_filename,
-                multiplier)
+    multiplier_pdfs = []
 
-            tables = [
-                '/hmmcopy/metrics/{}/{}'.format(cell, multiplier) for cell in cells]
+    for multiplier in multipliers:
 
-            hdfutils.annotate_store_with_dict(
-                metrics_filename,
-                order,
-                out_store,
-                tables=tables)
+        multiplier_output = os.path.join(tempdir, "{}.pdf".format(multiplier))
+
+        multiplier_pdfs.append(multiplier_output)
+
+        mult_plot_title = '{}({})'.format(plot_title, multiplier)
+
+        tablename = '/hmmcopy/metrics/{}'.format(multiplier)
+
+        plot = PlotMetrics(
+            metrics,
+            multiplier_output,
+            mult_plot_title,
+            tablename=tablename)
+        plot.plot_hmmcopy_metrics()
+
+    pdfutils.merge_pdfs(multiplier_pdfs, output)
 
 
 def plot_kernel_density(
@@ -418,13 +448,15 @@ def plot_kernel_density(
 
         mult_plot_title = '{}({})'.format(plot_title, multiplier)
 
+        tablename = '/hmmcopy/metrics/{}'.format(multiplier)
+
         plot = PlotKernelDensity(
             infile,
             multiplier_output,
             sep,
             colname,
             mult_plot_title,
-            multiplier=multiplier)
+            tablename=tablename)
         plot.main()
 
     pdfutils.merge_pdfs(multiplier_pdfs, output)
@@ -434,7 +466,7 @@ def plot_pcolor(infile, metrics, output, tempdir, multipliers, plot_title=None,
                 column_name=None, plot_by_col=None, numreads_threshold=None,
                 mad_threshold=None, chromosomes=None, max_cn=None,
                 median_hmmcopy_reads_per_bin_threshold=None,
-                ):
+                scale_by_cells=None):
 
     helpers.makedirs(tempdir)
 
@@ -448,11 +480,17 @@ def plot_pcolor(infile, metrics, output, tempdir, multipliers, plot_title=None,
 
         mult_plot_title = '{}({})'.format(plot_title, multiplier)
 
+        reads_tablename = '/hmmcopy/reads/{}'.format(multiplier)
+        metrics_tablename = '/hmmcopy/metrics/{}'.format(multiplier)
+
         plot = PlotPcolor(infile, metrics, multiplier_output, plot_title=mult_plot_title,
                           column_name=column_name, plot_by_col=plot_by_col,
                           numreads_threshold=numreads_threshold,
                           mad_threshold=mad_threshold, chromosomes=chromosomes,
                           max_cn=max_cn, multiplier=multiplier,
+                          scale_by_cells=scale_by_cells,
+                          segs_tablename=reads_tablename,
+                          metrics_tablename=metrics_tablename,
                           median_hmmcopy_reads_per_bin_threshold=median_hmmcopy_reads_per_bin_threshold)
         plot.main()
 
@@ -461,70 +499,5 @@ def plot_pcolor(infile, metrics, output, tempdir, multipliers, plot_title=None,
 
 def merge_tables(reads, segments, metrics, params, output, multipliers, cells):
 
-    with pd.HDFStore(output, 'w', complevel=9, complib='blosc') as output_store:
-
-        for multiplier in multipliers:
-
-            tables_to_merge = [
-                '/hmmcopy/metrics/{}/{}'.format(cell, multiplier) for cell in cells]
-            hdfutils.merge_per_cell_tables(
-                metrics,
-                output_store,
-                '/hmmcopy/metrics/{}'.format(multiplier),
-                in_memory=True,
-                dtypes={'too_even': float},
-                tables_to_merge=tables_to_merge)
-
-            tables_to_merge = [
-                '/hmmcopy/params/{}/{}'.format(cell, multiplier) for cell in cells]
-            hdfutils.merge_per_cell_tables(
-                params,
-                output_store,
-                '/hmmcopy/params/{}'.format(multiplier),
-                in_memory=True,
-                tables_to_merge=tables_to_merge)
-
-            dtypes = {'valid': bool, 'ideal': bool}
-            tables_to_merge = [
-                '/hmmcopy/reads/{}/{}'.format(cell, multiplier) for cell in cells]
-            hdfutils.merge_per_cell_tables(
-                reads,
-                output_store,
-                '/hmmcopy/reads/{}'.format(multiplier),
-                in_memory=False,
-                dtypes=dtypes,
-                tables_to_merge=tables_to_merge)
-            dtypes = {}
-            tables_to_merge = [
-                '/hmmcopy/segments/{}/{}'.format(cell, multiplier) for cell in cells]
-            hdfutils.merge_per_cell_tables(
-                segments,
-                output_store,
-                '/hmmcopy/segments/{}'.format(multiplier),
-                in_memory=False,
-                dtypes=dtypes,
-                tables_to_merge=tables_to_merge)
-
-
-def plot_metrics(metrics, output, tempdir, plot_title, multipliers):
-
-    helpers.makedirs(tempdir)
-
-    multiplier_pdfs = []
-
-    for multiplier in multipliers:
-
-        multiplier_output = os.path.join(tempdir, "{}.pdf".format(multiplier))
-
-        multiplier_pdfs.append(multiplier_output)
-
-        mult_plot_title = '{}({})'.format(plot_title, multiplier)
-
-        plot = PlotMetrics(
-            metrics,
-            multiplier_output,
-            mult_plot_title,
-            multiplier=multiplier)
-        plot.plot_hmmcopy_metrics()
-
-    pdfutils.merge_pdfs(multiplier_pdfs, output)
+    hdfutils.concat_hdf_tables([reads, segments, metrics, params], output, in_memory=False,
+                               non_numeric_as_category=False)

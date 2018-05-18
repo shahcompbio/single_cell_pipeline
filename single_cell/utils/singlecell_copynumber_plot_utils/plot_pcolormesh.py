@@ -78,7 +78,8 @@ class PlotPcolor(object):
         else:
             self.max_cn = 20
 
-        self.multiplier = kwargs.get('multiplier')
+        self.segs_tablename = kwargs.get('segs_tablename')
+        self.metrics_tablename = kwargs.get('metrics_tablename')
 
     def build_label_indices(self, header):
         '''
@@ -94,23 +95,17 @@ class PlotPcolor(object):
 
     def sort_bins_hdf(self, bins):
 
-        sortedbins = []
+        bins = bins.drop_duplicates()
 
-        bins = bins.groupby("chr")
+        chromosomes = map(str, range(1, 23)) + ['X', 'Y']
 
-        chromosomes = map(str, range(1, 23)) + ["X", "Y"]
+        bins["chr"] = pd.Categorical(bins["chr"], chromosomes)
 
-        for chrom in chromosomes:
-            chrom_bins = bins.get_group(chrom)
-            chrom_bins = chrom_bins[["start", "end"]]
+        bins = bins.sort_values(['start', ])
 
-            chrom_bins = sorted(chrom_bins.values.tolist())
+        bins = [tuple(v) for v in bins.values.tolist()]
 
-            chrom_bins = [(chrom, v[0], v[1]) for v in chrom_bins]
-
-            sortedbins += chrom_bins
-
-        return sortedbins
+        return bins
 
     def read_segs(self):
 
@@ -122,41 +117,32 @@ class PlotPcolor(object):
             return self.read_segs_csv()
 
     def read_segs_hdf(self):
-        bins = None
 
-        with pd.HDFStore(self.input, 'r') as reads_store:
+        data = []
+        chunksize = 10 ** 6
+        for chunk in pd.read_hdf(
+                self.input, chunksize=chunksize, key=self.segs_tablename):
 
-            data = []
+            chunk["bin"] = list(zip(chunk.chr, chunk.start, chunk.end))
 
-            for tableid in reads_store.keys():
+            chunk = chunk.pivot(index='cell_id', columns='bin', values='state')
 
-                table = reads_store[tableid]
+            data.append(chunk)
 
-                if self.multiplier:
-                    table_multiplier = int(tableid.split('/')[-1])
-                    if not table_multiplier == self.multiplier:
-                        continue
+        table = pd.concat(data)
 
+        bins = pd.DataFrame(
+            table.columns.values.tolist(),
+            columns=[
+                'chr',
+                'start',
+                'end'])
 
-                if not bins:
-                    bins = table[['chr', 'start', 'end']]
+        bins = self.sort_bins_hdf(bins)
 
-                    bins = self.sort_bins_hdf(bins)
+        table = table.sort_values(bins, axis=0)
 
-                table["bin"] = list(zip(table.chr, table.start, table.end))
-
-                table = table.pivot(
-                    index='cell_id',
-                    columns='bin',
-                    values='state')
-
-                table = table.sort_values(bins, axis=0)
-
-                data.append(table)
-
-        data = pd.concat(data)
-
-        return data
+        return table
 
     def read_segs_csv(self):
         """
@@ -299,21 +285,9 @@ class PlotPcolor(object):
 
         samples = cndata.index
 
-        data = []
-
         with pd.HDFStore(self.metrics, 'r') as metrics_store:
-            for tableid in metrics_store:
+            data = metrics_store[self.metrics_tablename]
 
-                if self.multiplier:
-                    table_multiplier = int(tableid.split('/')[-1])
-                    if not table_multiplier == self.multiplier:
-                        continue
-
-
-                table = metrics_store[tableid]
-                data.append(table)
-
-        data = pd.concat(data)
         data = data.reset_index()
 
         plot_groups = {}
