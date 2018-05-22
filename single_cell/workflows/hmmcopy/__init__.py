@@ -160,8 +160,6 @@ def create_hmmcopy_workflow(
             ],
             mgd.TempInputFile("annotated_metrics.h5"),
             None,
-            None,
-            None,
         )
     )
 
@@ -182,9 +180,7 @@ def create_hmmcopy_workflow(
                 mgd.OutputFile(bias_filt_pdf),
             ],
             mgd.TempInputFile("annotated_metrics.h5"),
-            config['plot_mad_threshold'],
-            config['plot_numreads_threshold'],
-            config['plot_median_hmmcopy_reads_per_bin_threshold']
+            config['good_cells'],
         )
     )
 
@@ -254,7 +250,8 @@ def create_hmmcopy_workflow(
         kwargs={
             'plot_title': 'QC pipeline metrics',
             'column_name': 'state',
-            'plot_by_col': 'experimental_condition',
+            'plot_by_col': 'condition',
+            'color_by_col': 'pick_met',
             'chromosomes': chromosomes,
             'max_cn': hmmparams['num_states'],
             'scale_by_cells': False
@@ -278,7 +275,8 @@ def create_hmmcopy_workflow(
         kwargs={
             'plot_title': 'QC pipeline metrics',
             'column_name': 'state',
-            'plot_by_col': 'experimental_condition',
+            'plot_by_col': 'condition',
+            'color_by_col': 'pick_met',
             'numreads_threshold': config['plot_numreads_threshold'],
             'median_hmmcopy_reads_per_bin_threshold': config['plot_median_hmmcopy_reads_per_bin_threshold'],
             'mad_threshold': config['plot_mad_threshold'],
