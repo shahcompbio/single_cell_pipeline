@@ -5,6 +5,7 @@ storage_container_name: 'tasks-container'
 pools:
   singlecell${reference}standard_${version}:
     pool_vm_size: 'STANDARD_DS12_V2'
+    primary: true
     node_os_publisher: 'Canonical'
     node_os_offer: 'UbuntuServer'
     node_os_sku: '16'
@@ -42,7 +43,7 @@ pools:
     start_resources:
 
   singlecell${reference}highmem_${version}:
-    pool_vm_size: 'STANDARD_DS11_V2'
+    pool_vm_size: 'STANDARD_DS13_V2'
     node_os_publisher: 'Canonical'
     node_os_offer: 'UbuntuServer'
     node_os_sku: '16'
@@ -133,7 +134,8 @@ compute_start_commands: |
 # the /datadrive directory for common paths between head vm and compute
 # vm.  Run the delegator command in the container.
 compute_run_command: >
-  pypeliner_delegate $AZ_BATCH_TASK_WORKING_DIR/{input_filename} $AZ_BATCH_TASK_WORKING_DIR/{output_filename}
+  python -m pypeliner.delegator $AZ_BATCH_TASK_WORKING_DIR/{input_filename} $AZ_BATCH_TASK_WORKING_DIR/{output_filename}
+
 # Compute Task Finish Commmand
 # ----------------------------
 # Post command workaround because azure batch fails to upload outputfiles
