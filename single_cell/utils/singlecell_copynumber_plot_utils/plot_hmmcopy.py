@@ -16,6 +16,9 @@ from matplotlib.backends.backend_pdf import PdfPages
 import utils as utl
 import matplotlib.gridspec as gridspec
 
+from matplotlib.colors import rgb2hex
+
+
 import numpy as np
 
 lowess = sm.nonparametric.lowess
@@ -25,7 +28,7 @@ matplotlib.rcParams['pdf.fonttype'] = 42
 
 def parse_args():
 
-    ann_cols = ['cell_call', 'experimental_condition', 'sample_type',
+    ann_cols = ['pick_met', 'condition', 'sample_type',
                 'coverage_depth', 'mad_neutral_state', 'MSRSI_non_integerness']
 
     #=========================================================================
@@ -105,7 +108,7 @@ class GenHmmPlots(object):
         self.annotation_cols = kwargs.get('annotation_cols')
 
         if not self.annotation_cols:
-            self.annotation_cols = ['cell_call', 'experimental_condition',
+            self.annotation_cols = ['pick_met', 'condition',
                                     'sample_type', 'coverage_depth',
                                     'mad_neutral_state', 'MSRSI_non_integerness']
 
@@ -274,22 +277,30 @@ class GenHmmPlots(object):
 
     def get_colors(self, num_states):
 
-        states = range(0, num_states)
-        colors = [
-            '#006ba4',
-            '#5f9ed1',
-            '#ababab',
-            '#ffbc79',
-            '#ff800e',
-            '#c85200']
-        # last color is same for all states > 6
-        colors += (['#8c3900'] * (len(states) - len(colors)))
-        cmap = {i: v for i, v in zip(states, colors)}
+        color_reference = {0: '#3498DB', 1: '#85C1E9', 2: '#808080'}
 
-        labels = [str(x) for x in range(num_states)]
+
+        low_max = 3 + int((num_states-3)/2) + 1
+        hi_max = num_states + 1
+        low_states = np.arange(3, low_max)
+        hi_states = np.arange(low_max, hi_max)
+
+        low_cmap = matplotlib.cm.get_cmap('OrRd', low_max+1)
+        hi_cmap = matplotlib.cm.get_cmap('RdPu', hi_max+1)
+
+        for cn_level in low_states:
+            rgb = low_cmap(int(cn_level))[:3]
+            color_reference[cn_level] = rgb2hex(rgb)
+
+        for cn_level in hi_states:
+            rgb = hi_cmap(int(cn_level))[:3]
+            color_reference[cn_level] = rgb2hex(rgb)
+
+        labels = [str(x) for x in range(num_states + 1)]
         labels[-1] = labels[-1] + ' or more'
 
-        return colors, labels, cmap
+        return color_reference
+
 
     def plot_segments(self, pdfout, remove_y=False):
 
@@ -306,34 +317,21 @@ class GenHmmPlots(object):
                     'font.size': 6 * num_plots})
 
         linewidth = 0.5 * num_plots
-        scatter_size = 2 * num_plots
+        scatter_size = 4 * num_plots
 
-        colors, labels, cmap = self.get_colors(self.num_states)
-
-        ylim = self.num_states + 2
-
-        height_plot = 15 * num_plots
-        width_plot = 8 * num_plots
+        height_plot = 20 * num_plots
+        width_plot = 10 * num_plots
 
         # standard: 15,4
         # SA501X3F xenograft heatmap: 20.4, 4
         fig = plt.figure(figsize=(height_plot, width_plot))
 
-        gs = gridspec.GridSpec(num_plots, 2, width_ratios=[5, 1], wspace=0)
+        gs = gridspec.GridSpec(num_plots, 3, width_ratios=[20, 3, 1], wspace=0)
 
         # add annotations to plot
         metrics = self.read_metrics(self.sample_id, 0)
         annotations = self.get_annotations(metrics)
         self.add_annotations(fig, annotations)
-
-        # add one legend for all plots
-        fig.legend = utl.add_legend(
-            fig,
-            labels,
-            colors,
-            self.num_states,
-            type='rectangle',
-            location='upper center')
 
         for i, multiplier in enumerate(self.multipliers):
 
@@ -345,13 +343,13 @@ class GenHmmPlots(object):
             if reads is not None and remove_y:
                 reads = reads[reads['chr'] != 'Y']
 
-            plot_title = "{}({})".format(self.sample_id, multiplier)
-
             ax = plt.subplot(gs[i, 0])
             ax = utl.create_chromosome_plot_axes(ax, self.ref_genome)
 
-            ax.set_title(plot_title)
-            ax.set_ylabel('Copy number')
+            ax.set_title("multiplier: {}".format(multiplier))
+
+            num_states = np.nanmax(reads.state)
+            cmap = self.get_colors(num_states)
 
             # we pass None if we don't have data
             if reads is not None and segments is not None:
@@ -371,12 +369,26 @@ class GenHmmPlots(object):
                 x, y = utl.get_segment_start_end(segments, remove_y)
                 plt.plot(x, y, color='black', linewidth=linewidth)
 
+            ylim = np.nanpercentile(reads['copy'], 99)
+            ylim = int(ylim) + 1
+            ylim = max(3, ylim)
+
+            if ylim <=10:
+                tick_step = 1
+            elif ylim > 10 and ylim <= 30:
+                tick_step = 2
+            else:
+                tick_step = 5
+
+            #make ylim a multiple of tick_step
+            ylim = int((ylim+tick_step)/tick_step)*tick_step
+
             ax.set_ylim((0, ylim))
+
+            ax.set_yticks(np.arange(0, ylim, tick_step))
 
             sns.despine(offset=10, trim=True)
             ax.tick_params(axis='x', which='minor', pad=9.1)
-
-            ax = utl.add_open_grid_lines(ax)
 
             ax1 = plt.subplot(gs[i, 1], sharey=ax)
             ax1.set_ylim((0, ylim))
@@ -390,17 +402,38 @@ class GenHmmPlots(object):
                 ax1,
                 df,
                 params,
-                plot_title,
                 cmap,
-                self.num_states,
+                num_states,
                 vertical=True)
 
+            ax1.set_xlim((0, 2.5))
+
+
+            ax.set_ylabel('Copy number')
+
+            if i+1 == len(self.multipliers):
+                ax.set_xlabel('Chromosome')
+                ax1.set_xlabel("density")
+
+            ax = utl.add_open_grid_lines(ax)
+
+            ax2 = plt.subplot(gs[i, 2])
+            ax2.axis('off')
+            fig.legend = utl.add_legend(
+                ax2,
+                cmap,
+                2,
+                type='rectangle',
+                location='upper center')
+
+
+        fig.suptitle(self.sample_id, x=0.5, y=0.97)
         plt.tight_layout(rect=(0, 0.05, 1, 0.95))
 
         pdfout.savefig(fig)
         plt.close()
 
-    def plot_dist(self, fig, reads, params, plot_title,
+    def plot_dist(self, fig, reads, params,
                   cmap, num_states=7, vertical=False):
 
         # no data to plot
@@ -451,7 +484,6 @@ class GenHmmPlots(object):
                 plt.plot(x, y, color, linewidth=0.5, linestyle='--')
                 fig.set_ylim(0, 4)
 
-        fig.set_xlabel("density")
 
     def main(self):
         """

@@ -41,7 +41,6 @@ def extract_chromosome_info(ref_genome):
 def create_chromosome_plot_axes(ax, ref_genome):
     chromosome_info = extract_chromosome_info(ref_genome)
     ax.set_xlim((-0.5, chromosome_info['end'].max()))
-    ax.set_xlabel('Chromosome')
     ax.set_xticks([0] + list(chromosome_info['end'].values))
     ax.set_xticklabels([])
     ax.xaxis.set_minor_locator(matplotlib.ticker.FixedLocator(chromosome_info['mid']))
@@ -72,19 +71,34 @@ def get_sample_id(out_file):
     
     return sample_id
 
-def add_legend(ax, labels, colours, num_columns, type='rectangle', location='upper center'):
+def add_legend(ax, color_reference, num_columns, type='rectangle', location='upper center'):
     object_list = []
-    for col in colours:
+    labels_list = []
+
+    labels = sorted(color_reference.keys())
+    colours = [color_reference[lbl] for lbl in color_reference]
+
+    #legend for every fifth color if number is too high to make it fit in figure
+    tick_size=1
+    if len(colours) > 25:
+        tick_size = 5
+
+    for i,col in enumerate(colours):
+        if not i%tick_size == 0:
+            continue
+
+        labels_list.append(labels[i])
+
         if type=='rectangle':
             object_list.append(Rectangle((0, 0), 1, 1, facecolor=col, edgecolor='none'))
-        
+
         elif type=='circle':
             object_list.append(Line2D(range(1), range(1), color=col, marker='o', markersize=15, linewidth=0))
-        
+
         else:
             warnings.warn('Legend type must be one of: rectangle, circle.')
-    
-    return ax.legend(tuple(object_list), tuple(labels), loc=location, ncol=num_columns)
+
+    return ax.legend(tuple(object_list), tuple(labels_list), loc=location, ncol=num_columns)
 
 def add_open_grid_lines(ax):
     for x_major in ax.xaxis.get_majorticklocs()[1:-1]:
