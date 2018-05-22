@@ -48,15 +48,23 @@ def convert_csv_to_hdf(infile, outfile, tablename):
         out_store.put(tablename, df, format='table')
 
 
-def concat_hdf_tables(in_files, out_file, drop_duplicates=False,
-                      in_memory=True, non_numeric_as_category=True):
+def concat_hdf_tables(in_files, out_file):
 
-    biowrappers_hdf5.concatenate_tables(
-        in_files,
-        out_file,
-        drop_duplicates=drop_duplicates,
-        in_memory=in_memory,
-        non_numeric_as_category=non_numeric_as_category)
+    chunksize = 10 ** 6
+
+    with pd.HDFStore(out_file, 'w', complevel=9, complib='blosc') as output:
+        for infile in in_files:
+            with pd.HDFStore(infile, 'r') as input_store:
+                tables = input_store.keys()
+
+            for table in tables:
+
+                for chunk in pd.read_hdf(
+                        infile, key=table, chunksize=chunksize):
+                    if table not in output:
+                        output.put(table, chunk, format='table')
+                    else:
+                        output.append(table, chunk, format='table')
 
 
 def merge_cells_in_memory(

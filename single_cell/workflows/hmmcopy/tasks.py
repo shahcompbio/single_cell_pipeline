@@ -503,7 +503,6 @@ def plot_pcolor(infile, metrics, output, tempdir, multipliers, plot_title=None,
     pdfutils.merge_pdfs(multiplier_pdfs, output)
 
 
-def merge_tables(reads, segments, metrics, params, output, multipliers, cells):
+def merge_tables(reads, segments, metrics, params, output):
 
-    hdfutils.concat_hdf_tables([reads, segments, metrics, params], output, in_memory=False,
-                               non_numeric_as_category=False)
+    hdfutils.concat_hdf_tables([reads, segments, metrics, params], output)
