@@ -16,8 +16,12 @@ from single_cell.utils import hdfutils
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotMetrics
 
 
-def plot_metrics(metrics, output, plot_title,gc_matrix, gc_content):
-    plot = PlotMetrics(metrics, output, plot_title, gcbias_matrix=gc_matrix, gc_content=gc_content)
+def plot_metrics(metrics, output, plot_title, gc_matrix, gc_content):
+
+    plot = PlotMetrics(
+        metrics, output, plot_title, gcbias_matrix=gc_matrix,
+        gc_content=gc_content, tablename='/alignment/metrics',
+        gc_tablename='/alignment/gc_metrics')
     plot.plot_alignment_metrics()
 
 
@@ -27,25 +31,50 @@ def get_summary_metrics(infile, output):
 
 
 def annotate_metrics(infile, sample_info, outfile):
-    
+
     hdfutils.annotate_store_with_dict(infile, sample_info, outfile)
+
 
 def merge_all_metrics(infiles, outfile):
     csvutils.merge_csv(infiles, outfile, "outer", "cell_id")
 
-def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config, tempdir):
-    picardutils.bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config, tempdir)
 
-def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, tempdir):
-    picardutils.bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, tempdir)
+def bam_collect_wgs_metrics(
+        bam_filename, ref_genome, metrics_filename, config, tempdir):
+    picardutils.bam_collect_wgs_metrics(
+        bam_filename,
+        ref_genome,
+        metrics_filename,
+        config,
+        tempdir)
 
-def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_filename, histogram_filename, tempdir):
-    picardutils.bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_filename, histogram_filename, tempdir)
+
+def bam_collect_gc_metrics(
+        bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, tempdir):
+    picardutils.bam_collect_gc_metrics(
+        bam_filename,
+        ref_genome,
+        metrics_filename,
+        summary_filename,
+        chart_filename,
+        tempdir)
+
+
+def bam_collect_insert_metrics(
+        bam_filename, flagstat_metrics_filename, metrics_filename, histogram_filename, tempdir):
+    picardutils.bam_collect_insert_metrics(
+        bam_filename,
+        flagstat_metrics_filename,
+        metrics_filename,
+        histogram_filename,
+        tempdir)
+
 
 def merge_bams(inputs, output, output_index):
 
     picardutils.merge_bams(inputs, output)
     bamutils.bam_index(output, output_index)
+
 
 def merge_realignment(input_filenames, output_filename,
                       config, input_cell_id):
@@ -55,7 +84,8 @@ def merge_realignment(input_filenames, output_filename,
             continue
         merge_filenames.append(filename)
 
-    merge_bams(merge_filenames, output_filename, output_filename+".bai")
+    merge_bams(merge_filenames, output_filename, output_filename + ".bai")
+
 
 def realign(input_bams, input_bais, output_bams, tempdir, config, interval):
 
@@ -119,11 +149,10 @@ def run_fastqc(fastq1, fastq2, reports, tempdir):
     helpers.make_tarfile(reports, reports_dir)
 
 
-def get_readgroup(run_id, cell_id, library_id, seqinfo, sample_info):
+def get_readgroup(run_id, cell_id, library_id, centre, sample_info):
     platform = 'illumina'
-    centre = 'UBCBRC' if seqinfo.lower() == 'nextseq' else 'BCCAGSC'
 
-    barcode = sample_info["i7_primer"] + "-" + sample_info["i5_primer"]
+    barcode = sample_info["primer_i7"] + "-" + sample_info["primer_i5"]
 
     read_group_template = (
         '@RG\\tID:' + str(library_id) + '_' + cell_id + '_' + str(run_id) +
@@ -137,23 +166,41 @@ def get_readgroup(run_id, cell_id, library_id, seqinfo, sample_info):
     return read_group_template
 
 
-
 def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
-             reference, source, sample_info, cell_id, lane_id, library_id, config):
+             reference, instrument, centre, sample_info, cell_id, lane_id, library_id, config):
 
-    readgroup = get_readgroup(lane_id, cell_id, library_id, source, sample_info)
+    readgroup = get_readgroup(
+        lane_id,
+        cell_id,
+        library_id,
+        centre,
+        sample_info)
 
     run_fastqc(fastq1, fastq2, reports, tempdir)
 
     aln_temp = os.path.join(tempdir, "temp_alignments.bam")
     if config["aligner"] == "bwa-mem":
-        bamutils.bwa_mem_paired_end(fastq1, fastq2, aln_temp, reference, readgroup)
+        bamutils.bwa_mem_paired_end(
+            fastq1,
+            fastq2,
+            aln_temp,
+            reference,
+            readgroup)
     elif config["aligner"] == "bwa-aln":
-        if not source.lower() == "nextseq":
-            fastq1, fastq2 = trim_fastqs(fastq1, fastq2, cell_id, tempdir, config)
-        bamutils.bwa_aln_paired_end(fastq1, fastq2, aln_temp, tempdir, reference, readgroup)
+        if not instrument == "N550":
+            fastq1, fastq2 = trim_fastqs(
+                fastq1, fastq2, cell_id, tempdir, config)
+        bamutils.bwa_aln_paired_end(
+            fastq1,
+            fastq2,
+            aln_temp,
+            tempdir,
+            reference,
+            readgroup)
     else:
-        raise Exception("Aligner %s not supported, pipeline supports bwa-aln and bwa-mem" %config["aligner"])
+        raise Exception(
+            "Aligner %s not supported, pipeline supports bwa-aln and bwa-mem" %
+            config["aligner"])
 
     picardutils.bam_sort(aln_temp, output, tempdir)
 
@@ -162,18 +209,18 @@ def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
 
 def postprocess_bam(infile, outfile, outfile_index, tempdir,
                     config, markdups_metrics, flagstat_metrics):
-    
+
     if not os.path.exists(tempdir):
         helpers.makedirs(tempdir)
-    
+
     sorted_bam = os.path.join(tempdir, 'sorted.bam')
-    
+
     picardutils.bam_sort(infile, sorted_bam, tempdir)
 
     picardutils.bam_markdups(sorted_bam, outfile, markdups_metrics, tempdir)
 
     bamutils.bam_index(outfile, outfile_index)
-    
+
     bamutils.bam_flagstat(outfile, flagstat_metrics)
 
 
@@ -182,8 +229,11 @@ def collect_gc(infiles, outfile, tempdir):
     helpers.makedirs(tempdir)
 
     tempouts = []
-    for cell_id,infile in infiles.iteritems():
-        tempout = os.path.join(tempdir, os.path.basename(infile)+".parsed.csv") 
+    for cell_id, infile in infiles.iteritems():
+        tempout = os.path.join(
+            tempdir,
+            os.path.basename(infile) +
+            ".parsed.csv")
         tempouts.append(tempout)
         gen_gc = GenerateCNMatrix(infile, tempout, ',',
                                   'NORMALIZED_COVERAGE', cell_id,
@@ -195,6 +245,7 @@ def collect_gc(infiles, outfile, tempdir):
 
     hdfutils.convert_csv_to_hdf(merged_csv, outfile, '/alignment/gc_metrics')
 
+
 def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
                     wgs_metrics, tempdir, merged_metrics):
 
@@ -205,18 +256,21 @@ def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
         mkdup = markdups_metrics[sample]
         insrt = insert_metrics[sample]
         wgs = wgs_metrics[sample]
-        outfile = os.path.join(tempdir, sample+"_metrics.csv")
+        outfile = os.path.join(tempdir, sample + "_metrics.csv")
         sample_outputs.append(outfile)
 
         collmet = CollectMetrics(wgs, insrt, flgstat,
                                  mkdup, outfile, sample)
         collmet.main()
 
-
     merged_metrics_csv = os.path.join(tempdir, 'merged_alignment_metrics.csv')
     csvutils.concatenate_csv(sample_outputs, merged_metrics_csv)
 
-    hdfutils.convert_csv_to_hdf(merged_metrics_csv, merged_metrics, '/alignment/metrics/')
+    hdfutils.convert_csv_to_hdf(
+        merged_metrics_csv,
+        merged_metrics,
+        '/alignment/metrics/')
+
 
 def run_trimgalore(seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt, tempdir,
                    adapter, adapter2, report_r1, report_r2, qc_report_r1,
@@ -244,14 +298,21 @@ def trim_fastqs(fastq1, fastq2, cell_id, tempdir, config):
 
     rep1 = os.path.join(reports_dir, '{}_trimgalore_R1.html'.format(cell_id))
     rep2 = os.path.join(reports_dir, '{}_trimgalore_R2.html'.format(cell_id))
-    qcrep1 = os.path.join(reports_dir, '{}_trimgalore_qc_R1.html'.format(cell_id))
-    qcrep2 = os.path.join(reports_dir, '{}_trimgalore_qc_R2.html'.format(cell_id))
-    qczip1 = os.path.join(reports_dir, '{}_trimgalore_qc_R1.zip'.format(cell_id))
-    qczip2 = os.path.join(reports_dir, '{}_trimgalore_qc_R2.zip'.format(cell_id))
+    qcrep1 = os.path.join(
+        reports_dir,
+        '{}_trimgalore_qc_R1.html'.format(cell_id))
+    qcrep2 = os.path.join(
+        reports_dir,
+        '{}_trimgalore_qc_R2.html'.format(cell_id))
+    qczip1 = os.path.join(
+        reports_dir,
+        '{}_trimgalore_qc_R1.zip'.format(cell_id))
+    qczip2 = os.path.join(
+        reports_dir,
+        '{}_trimgalore_qc_R2.zip'.format(cell_id))
 
     run_trimgalore(fastq1, fastq2, trim1, trim2, 'trim_galore', 'cutadapt',
                    tempdir, config['adapter'], config['adapter2'],
                    rep1, rep2, qcrep1, qcrep2, qczip1, qczip2)
 
     return trim1, trim2
-

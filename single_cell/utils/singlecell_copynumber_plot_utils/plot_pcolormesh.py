@@ -58,7 +58,7 @@ class PlotPcolor(object):
         self.mappability_threshold = kwargs.get('mappability_threshold')
 
         if not self.color_by_col:
-            self.color_by_col = 'cell_call'
+            self.color_by_col = 'pick_met'
 
         if not self.plot_by_col:
             self.plot_by_col = 'all'
@@ -553,7 +553,7 @@ def parse_args():
                         help='''Column name to use for grouping the heatmaps''')
 
     parser.add_argument('--color_by_col',
-                        default='cell_call',
+                        default='pick_met',
                         help='''column name to use for coloring the side bar in heatmap''')
 
     parser.add_argument('--max_cn',

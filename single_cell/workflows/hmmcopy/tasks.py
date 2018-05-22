@@ -169,7 +169,7 @@ def run_hmmcopy(
         metrics_filename,
         hmmcopy_metrics_tablenames)
 
-    annotation_cols = ['cell_call', 'experimental_condition', 'sample_type',
+    annotation_cols = ['pick_met', 'condition', 'sample_type',
                        'coverage_depth', 'mad_neutral_state',
                        'MSRSI_non_integerness']
 
@@ -266,14 +266,11 @@ def merge_hdf_files_in_memory(
     output_store.close()
 
 
-def merge_pdf(in_filenames, out_filename, metrics, mad_threshold,
-              numreads_threshold, median_hmmcopy_reads_per_bin_threshold):
+def merge_pdf(in_filenames, out_filename, metrics, cell_filters):
 
     good_cells = get_good_cells(
         metrics,
-        mad_threshold,
-        numreads_threshold,
-        median_hmmcopy_reads_per_bin_threshold,
+        cell_filters,
         '/hmmcopy/metrics/0')
 
     sorted_cells = sort_cells(metrics, good_cells, '/hmmcopy/metrics/0')
@@ -309,25 +306,33 @@ def plot_hmmcopy(reads, segments, params, metrics, ref_genome, segs_out,
         plot.main()
 
 
-def get_good_cells(metrics, mad_threshold, numreads_threshold,
-                   median_hmmcopy_reads_per_bin_threshold, tableid):
+def extract_cell_by_col(df, colname, colvalue, rowname):
+    return df[df[colname] == colvalue][rowname].iloc[0]
 
-    with pd.HDFStore(metrics, 'r') as metrics:
-        data = metrics[tableid]
 
-        if mad_threshold:
-            data = data[data["mad_neutral_state"] <= mad_threshold]
+def get_good_cells(metrics, cell_filters, tableid):
 
-        if numreads_threshold:
-            data = data[data['total_mapped_reads'] >= numreads_threshold]
+    with pd.HDFStore(metrics, 'r') as metrics_store:
+        metrics_data = metrics_store[tableid]
 
-        if median_hmmcopy_reads_per_bin_threshold:
-            data = data[
-                data['median_hmmcopy_reads_per_bin'] >= median_hmmcopy_reads_per_bin_threshold]
+    cells = metrics_data.cell_id
 
-    good_cells = data["cell_id"].unique()
+    if not cell_filters:
+        return cells
 
-    return good_cells
+    # cells to keep
+    for metric_col, operation, threshold in cell_filters:
+        cells = [cell for cell in cells
+                 if helpers.eval_expr(
+                     extract_cell_by_col(
+                         metrics_data,
+                         'cell_id',
+                         cell,
+                         metric_col),
+                     operation,
+                     threshold)]
+
+    return cells
 
 
 def sort_cells(metrics, good_cells, tableid):
@@ -466,7 +471,7 @@ def plot_pcolor(infile, metrics, output, tempdir, multipliers, plot_title=None,
                 column_name=None, plot_by_col=None, numreads_threshold=None,
                 mad_threshold=None, chromosomes=None, max_cn=None,
                 median_hmmcopy_reads_per_bin_threshold=None,
-                scale_by_cells=None):
+                scale_by_cells=None, color_by_col=None):
 
     helpers.makedirs(tempdir)
 
@@ -491,6 +496,7 @@ def plot_pcolor(infile, metrics, output, tempdir, multipliers, plot_title=None,
                           scale_by_cells=scale_by_cells,
                           segs_tablename=reads_tablename,
                           metrics_tablename=metrics_tablename,
+                          color_by_col=color_by_col,
                           median_hmmcopy_reads_per_bin_threshold=median_hmmcopy_reads_per_bin_threshold)
         plot.main()
 

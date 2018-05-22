@@ -47,13 +47,15 @@ def parse_args():
 class PlotMetrics(object):
 
     def __init__(self, metrics, output, plot_title,
-                 gcbias_matrix=None, gc_content=None, tablename=None):
+                 gcbias_matrix=None, gc_content=None,
+                 tablename=None, gc_tablename=None):
         self.metrics = metrics
         self.output = output
         self.plot_title = plot_title
         self.gcbias_matrix = gcbias_matrix
         self.gc_content = gc_content
         self.tablename = tablename
+        self.gc_tablename = gc_tablename
 
     def add_legend(self, ax, labels, colours, num_columns, typ='rectangle',
                    location='upper center'):
@@ -132,7 +134,7 @@ class PlotMetrics(object):
             sns.barplot(df['cell_id'], total, color=col_total, ax=ax)
             sns.barplot(df['cell_id'], fraction, color=col_fraction, ax=ax)
 
-        column_labels = [str(x) for x in df['cell_call']]
+        column_labels = [str(x) for x in df['pick_met']]
 
         ax = self.add_barplot_labels(ax, column_labels, 0.05, 12)
 
@@ -141,7 +143,7 @@ class PlotMetrics(object):
         sns.despine(offset=10, trim=True)
 
         sample_condition = [' (' + str(x) + ')' for x in
-                            df['experimental_condition']]
+                            df['condition']]
         sample_labels = [
             x + y for x,
             y in zip(
@@ -182,7 +184,7 @@ class PlotMetrics(object):
 
         sns.barplot(df['cell_id'], fraction, color=col_fraction, ax=ax)
 
-        column_labels = [str(x) for x in df['cell_call']]
+        column_labels = [str(x) for x in df['pick_met']]
 
         ax = self.add_barplot_labels(ax, column_labels, 0.015, 12)
 
@@ -192,7 +194,7 @@ class PlotMetrics(object):
         sns.despine(offset=10, trim=True)
 
         sample_condition = [' (' + str(x) + ')' for x in
-                            df['experimental_condition']]
+                            df['condition']]
         sample_labels = [
             x + y for x,
             y in zip(
@@ -230,7 +232,7 @@ class PlotMetrics(object):
 
         sns.barplot(df['cell_id'], df[metric], color=col, ax=ax)
 
-        column_labels = [str(x) for x in df['cell_call']]
+        column_labels = [str(x) for x in df['pick_met']]
 
         ax = self.add_barplot_labels(ax, column_labels, text_spacing, 12)
 
@@ -239,7 +241,7 @@ class PlotMetrics(object):
         sns.despine(offset=10, trim=True)
 
         sample_condition = [' (' + str(x) + ')' for x in
-                            df['experimental_condition']]
+                            df['condition']]
         sample_labels = [
             x + y for x,
             y in zip(
@@ -257,18 +259,9 @@ class PlotMetrics(object):
 
     def plot_metric_heatmap(self, df, metric, title, pdf, plot_title, size=72):
 
-        # don't plot if we don't have the chip plate info
-        # will only happen if merge_pipeline and plate info is not provided
-        if df['sample_plate'].unique()[0] == ['R1-C1'] and \
-                len(df['sample_plate'].unique()) == 1:
-            return
-
-        # add row and column cols to df
-        df[['row', 'col']] = df.sample_plate.str.extract(
-            '[R](\d*)_[C](\d*)').apply(pd.Series).astype(int)
 
         # set size based on the R-C in sample_plate
-        size = max(size, max(df.row), max(df.col))
+        size = max(size, max(df.row), max(df.column))
 
         matrix = np.empty((size, size,))
         matrix[:] = np.nan
@@ -289,16 +282,15 @@ class PlotMetrics(object):
         well_labels = False
         # if the cell call matches the C[1-9]+ format then add cell calls to
         # the plot
-        if all([re.match("C[0-9]+$|NTC", cc) for cc in df['cell_call']]):
+        if all([re.match("C[0-9]+$|NTC", cc) for cc in df['pick_met']]):
             well_labels = np.empty((size, size,))
             well_labels[:] = np.nan
 
             for i in range(len(df)):
-                sample_plate = df.ix[i, 'sample_plate'].split('_')
-                row_idx = int(sample_plate[0].replace('R', ''))
-                col_idx = int(sample_plate[1].replace('C', ''))
+                row_idx = int(df.ix[i]['row'])
+                col_idx = int(df.ix[i]['column'])
 
-                label_value = df.ix[i]["cell_call"]
+                label_value = df.ix[i]["pick_met"]
                 if label_value == "NTC":
                     label_value = 0
                 else:
@@ -307,9 +299,9 @@ class PlotMetrics(object):
                 well_labels[row_idx - 1, col_idx - 1] = label_value
 
         for i in range(len(df)):
-            sample_plate = df.ix[i, 'sample_plate'].split('_')
-            row_idx = int(sample_plate[0].replace('R', ''))
-            col_idx = int(sample_plate[1].replace('C', ''))
+            row_idx = int(df.ix[i]['row'])
+            col_idx = int(df.ix[i]['column'])
+
             matrix_value = float(df.ix[i, metric])
             matrix[row_idx - 1, col_idx - 1] = matrix_value
 
@@ -333,11 +325,11 @@ class PlotMetrics(object):
         plt.close()
 
     def plot_metric_factorplot(self, df, metric, ylab, pdf, plot_title):
-        df_melt = pd.melt(df, id_vars=['cell_id', 'experimental_condition',
-                                       'cell_call'], value_vars=[metric])
+        df_melt = pd.melt(df, id_vars=['cell_id', 'condition',
+                                       'pick_met'], value_vars=[metric])
 
-        expt_conditions_ordered = sorted(df['experimental_condition'].unique())
-        cell_calls_ordered = sorted(df['cell_call'].unique())
+        expt_conditions_ordered = sorted(df['condition'].unique())
+        cell_calls_ordered = sorted(df['pick_met'].unique())
 
         num_cell_calls = len(cell_calls_ordered)
         tableau_10_medium = ['#729ece', '#ff9e4a', '#67bf5c', '#ed665d', '#ad8bc9',
@@ -351,7 +343,7 @@ class PlotMetrics(object):
 
             for call in cell_calls_ordered:
                 num_call.append(str(
-                    len(df[(df['experimental_condition'] == condition) & (df['cell_call'] == call)])))
+                    len(df[(df['condition'] == condition) & (df['pick_met'] == call)])))
 
             num_call = '\n'.join([','.join(num_call[x:x + 4])
                                   for x in range(0, len(num_call), 4)])
@@ -379,9 +371,9 @@ class PlotMetrics(object):
         fig = plt.figure(figsize=(fig_width, fig_height))
         _ = fig.gca()
 
-        g = sns.factorplot('experimental_condition',
+        g = sns.factorplot('condition',
                            'value',
-                           'cell_call',
+                           'pick_met',
                            df_melt,
                            kind='box',
                            order=expt_conditions_ordered,
@@ -408,11 +400,7 @@ class PlotMetrics(object):
 
         # sort the df, by row and then by col
 
-        df['row'] = df['cell_id'].str.extract(
-            '.*-R([0-9]*)-C[0-9]*').astype(int)
-        df['col'] = df['cell_id'].str.extract(
-            '.*-R[0-9]*-C([0-9]*)').astype(int)
-        df = df.sort_index(by=['row', 'col'], ascending=[True, True])
+        df = df.sort_index(by=['row', 'column'], ascending=[True, True])
 
         return df
 
@@ -421,7 +409,7 @@ class PlotMetrics(object):
         generate dict with all cell calls and a randomly assigned
         color for each
         """
-        ccs = set(metrics["cell_call"])
+        ccs = set(metrics["pick_met"])
         cmap = sns.color_palette("deep", len(ccs))
 
         cmap = {cc: cm for cc, cm in zip(ccs, cmap)}
@@ -441,7 +429,7 @@ class PlotMetrics(object):
 
     def plot_gcbias_all(self, infile, pdf, plot_title, metrics, gcdata):
 
-        df = self.read_input_data(infile)
+        df = self.read_input_data(infile, self.gc_tablename)
         df = df.set_index("cell_id")
 
         cmap = self.get_cmap(metrics)
@@ -461,7 +449,7 @@ class PlotMetrics(object):
         alpha = self.get_alpha(len(samples))
 
         for samp in samples:
-            cc = metrics[metrics['cell_id'] == samp]["cell_call"].iloc[0]
+            cc = metrics[metrics['cell_id'] == samp]["pick_met"].iloc[0]
             plt.plot(range(0, 101), df.loc[samp][
                      map(str, range(0, 101))], color=cmap[cc], alpha=alpha)
 
@@ -502,7 +490,7 @@ class PlotMetrics(object):
             returns samples that belong to each ec
             """
             outdata = {}
-            metrics = metrics.groupby("experimental_condition")
+            metrics = metrics.groupby("condition")
             for gc in metrics.groups.keys():
                 vals = metrics.get_group(gc)["cell_id"]
 
@@ -519,7 +507,7 @@ class PlotMetrics(object):
                     'ytick.labelsize': 6,
                     'legend.fontsize': 6})
 
-        df = self.read_input_data(infile)
+        df = self.read_input_data(infile, self.gc_tablename)
         df = df.set_index("cell_id")
 
         samps = get_samples_by_ec(metrics)
@@ -530,7 +518,7 @@ class PlotMetrics(object):
         alpha = self.get_alpha(max([len(v) for v in samps.itervalues()]))
         for ec, samps in samps.iteritems():
             for samp in samps:
-                cc = metrics[metrics['cell_id'] == samp]["cell_call"].iloc[0]
+                cc = metrics[metrics['cell_id'] == samp]["pick_met"].iloc[0]
                 plt.plot(range(0, 101), df.loc[samp][
                          map(str, range(0, 101))], color=cmap[cc], alpha=alpha)
 
@@ -554,7 +542,7 @@ class PlotMetrics(object):
 
             plt.xlabel('GC% of 100 base windows')
             plt.ylabel('Normalized Coverage')
-            plt.title('experimental_condition:' + ec)
+            plt.title('condition:' + ec)
             ticks = np.arange(0, 100, 10)
             plt.xticks(ticks, map(str, ticks))
 
@@ -572,7 +560,7 @@ class PlotMetrics(object):
             returns samples that belong to each ec and cc
             """
             outdata = {}
-            metrics = metrics.groupby(["experimental_condition", "cell_call"])
+            metrics = metrics.groupby(["condition", "pick_met"])
             for gc in metrics.groups.keys():
                 vals = metrics.get_group(gc)["cell_id"]
 
@@ -588,7 +576,7 @@ class PlotMetrics(object):
                     'ytick.labelsize': 6,
                     'legend.fontsize': 6})
 
-        df = self.read_input_data(infile)
+        df = self.read_input_data(infile, self.gc_tablename)
         df = df.set_index("cell_id")
 
         samps = get_samples_by_ec_cc(metrics)
@@ -617,7 +605,7 @@ class PlotMetrics(object):
             plt.xlabel('GC% of 100 base windows')
             plt.ylabel('Normalized Coverage')
             plt.title(
-                'experimental_condition: %s Cell Call %s' %
+                'condition: %s Cell Call %s' %
                 (ec[0], ec[1]))
             pdf.savefig(bbox_inches='tight', pad_inches=0.4)
             plt.close()
@@ -651,7 +639,7 @@ class PlotMetrics(object):
                     'ytick.labelsize': 12,
                     'legend.fontsize': 12})
 
-        df_melt = pd.melt(df, id_vars=['cell_id', 'i5_index', 'i7_index'],
+        df_melt = pd.melt(df, id_vars=['cell_id', 'index_i5', 'index_i7'],
                           value_vars=[metric],)
 
         fig_height = 6
@@ -690,7 +678,7 @@ class PlotMetrics(object):
                 "Couldn't detect output format. extension {}".format(ext))
             return "csv"
 
-    def read_input_data(self, infile):
+    def read_input_data(self, infile, tablename):
 
         fileformat = self.get_file_format(infile)
 
@@ -699,7 +687,8 @@ class PlotMetrics(object):
 
         else:
             with pd.HDFStore(infile, 'r') as metrics_store:
-                metrics = metrics_store[self.tablename]
+
+                metrics = metrics_store[tablename]
 
             metrics = metrics.reset_index()
 
@@ -711,7 +700,7 @@ class PlotMetrics(object):
 
     def plot_hmmcopy_metrics(self, ):
 
-        df = self.read_input_data(self.metrics)
+        df = self.read_input_data(self.metrics, self.tablename)
 
         df = self.sort_samples(df)
 
@@ -751,7 +740,7 @@ class PlotMetrics(object):
 
     def plot_alignment_metrics(self, ):
 
-        df = self.read_input_data(self.metrics)
+        df = self.read_input_data(self.metrics, self.tablename)
 
         df = self.sort_samples(df)
 
@@ -802,9 +791,9 @@ class PlotMetrics(object):
                                         pdf, self.plot_title)
             self.plot_metric_factorplot(df, 'estimated_library_size',
                                         'Picard estimated library size', pdf, self.plot_title)
-            self.plot_by_barcodes(df, 'total_reads', 'Total Reads', 'i5_index',
+            self.plot_by_barcodes(df, 'total_reads', 'Total Reads', 'index_i5',
                                   pdf, self.plot_title)
-            self.plot_by_barcodes(df, 'total_reads', 'Total Reads', 'i7_index',
+            self.plot_by_barcodes(df, 'total_reads', 'Total Reads', 'index_i7',
                                   pdf, self.plot_title)
 
             if self.gcbias_matrix:

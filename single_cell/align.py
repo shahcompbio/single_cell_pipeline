@@ -15,8 +15,9 @@ def align_workflow(workflow, args):
     config = helpers.load_config(args)
 
     fastq1_files, fastq2_files  = helpers.get_fastqs(args['input_yaml'])
-    seqinfo = helpers.get_seqinfo(args['input_yaml'])
     sampleinfo = helpers.get_sample_info(args['input_yaml'])
+    instrumentinfo = helpers.get_instrument_info(args['input_yaml'])
+    centerinfo = helpers.get_center_info(args['input_yaml'])
 
     cellids = helpers.get_samples(args['input_yaml'])
     bam_files, bai_files  = helpers.get_bams(args['input_yaml'])
@@ -26,7 +27,9 @@ def align_workflow(workflow, args):
     outdir = os.path.join(args["out_dir"], "results", "alignment")
 
     alignment_metrics = os.path.join(outdir, '{}_alignment_metrics.h5'.format(lib))
-    plot_metrics_output = os.path.join(outdir, '{}_plot_metrics.pdf'.format(lib))
+
+    plots_dir = os.path.join(outdir,  'plots')
+    plot_metrics_output = os.path.join(plots_dir, '{}_plot_metrics.pdf'.format(lib))
 
 
     workflow.setobj(
@@ -47,7 +50,8 @@ def align_workflow(workflow, args):
             config['ref_genome'],
             config,
             args,
-            seqinfo,
+            instrumentinfo,
+            centerinfo,
             sampleinfo,
             cellids,
         ),

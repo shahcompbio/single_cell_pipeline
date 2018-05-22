@@ -21,6 +21,32 @@ import multiprocessing
 from multiprocessing.pool import ThreadPool
 
 
+def eval_expr(val, operation, threshold):
+
+    if operation == "gt":
+        if val > threshold:
+            return True
+    elif operation == 'ge':
+        if val >= threshold:
+            return True
+    elif operation == 'lt':
+        if val < threshold:
+            return True
+    elif operation == 'le':
+        if val <= threshold:
+            return True
+    elif operation == 'eq':
+        if val == threshold:
+            return True
+    elif operation == 'ne':
+        if not val == threshold:
+            return True
+    else:
+        raise Exception("unknown operator type: {}".format(operation))
+
+    return False
+
+
 def get_incrementing_filename(path):
     """
     avoid overwriting files. if path exists then return path
@@ -35,6 +61,7 @@ def get_incrementing_filename(path):
         i += 1
 
     return "{}.{}".format(path, i)
+
 
 def run_in_parallel(worker, args, ncores=None):
 
@@ -167,7 +194,7 @@ def get_fastqs(fastqs_file):
     return fastq_1_filenames, fastq_2_filenames
 
 
-def get_seqinfo(fastqs_file):
+def get_instrument_info(fastqs_file):
 
     data = load_yaml(fastqs_file)
 
@@ -181,11 +208,32 @@ def get_seqinfo(fastqs_file):
 
         for lane, paths in fastqs.iteritems():
 
-            if "source" not in paths:
-                raise Exception("source key missing in cell: {}".format(cell))
-            seqinfo[(cell, lane)] = paths["source"]
+            if "sequencing_instrument" not in paths:
+                raise Exception("instrument key missing in cell: {}".format(cell))
+            seqinfo[(cell, lane)] = paths["sequencing_instrument"]
 
     return seqinfo
+
+def get_center_info(fastqs_file):
+
+    data = load_yaml(fastqs_file)
+
+    for cell in data.keys():
+        assert "fastqs" in data[
+            cell], "couldnt extract fastq file paths from yaml input for cell: {}".format(cell)
+
+    seqinfo = dict()
+    for cell in data.keys():
+        fastqs = data[cell]["fastqs"]
+
+        for lane, paths in fastqs.iteritems():
+
+            if "sequencing_center" not in paths:
+                raise Exception("sequencing_center key missing in cell: {}".format(cell))
+            seqinfo[(cell, lane)] = paths["sequencing_center"]
+
+    return seqinfo
+
 
 
 def get_sample_info(fastqs_file):
