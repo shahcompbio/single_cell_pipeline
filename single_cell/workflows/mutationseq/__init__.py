@@ -22,7 +22,7 @@ def create_museq_workflow(
 
     workflow.transform(
         name='run_museq',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
+        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
         axes=('region',),
         func=tasks.run_museq,
         args=(
