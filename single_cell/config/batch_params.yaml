@@ -1,2 +1,4 @@
 reference: grch37
 version: 0.1.4
+node_os_sku: 'batch.node.ubuntu 16.04'
+node_resource_id: '/subscriptions/436b89a7-3b73-4644-a97b-949c4d0f19f5/resourceGroups/sccompute/providers/Microsoft.Compute/images/singlecellpipelineimage_0_1_3_v3'

@@ -6,9 +6,10 @@ pools:
   singlecell${reference}standard_${version}:
     pool_vm_size: 'STANDARD_DS12_V2'
     primary: true
+    node_resource_id: ${node_resource_id}
     node_os_publisher: 'Canonical'
     node_os_offer: 'UbuntuServer'
-    node_os_sku: '16'
+    node_os_sku: ${node_os_sku}
     data_disk_sizes:
     max_tasks_per_node: 4
     auto_scale_formula: |
@@ -44,9 +45,10 @@ pools:
 
   singlecell${reference}highmem_${version}:
     pool_vm_size: 'STANDARD_DS13_V2'
+    node_resource_id: ${node_resource_id}
     node_os_publisher: 'Canonical'
     node_os_offer: 'UbuntuServer'
-    node_os_sku: '16'
+    node_os_sku: ${node_os_sku}
     data_disk_sizes:
     max_tasks_per_node: 1
     auto_scale_formula: |
@@ -77,9 +79,10 @@ pools:
 
   singlecell${reference}multicore_${version}:
     pool_vm_size: 'STANDARD_DS13_V2'
+    node_resource_id: ${node_resource_id}
     node_os_publisher: 'Canonical'
     node_os_offer: 'UbuntuServer'
-    node_os_sku: '16'
+    node_os_sku: ${node_os_sku}
     data_disk_sizes:
     max_tasks_per_node: 1
     auto_scale_formula: |
