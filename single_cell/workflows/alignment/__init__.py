@@ -9,6 +9,7 @@ import pypeliner
 import pypeliner.managed as mgd
 
 from single_cell.utils import hdfutils
+from single_cell.utils import helpers
 
 
 def create_alignment_workflow(
@@ -18,6 +19,7 @@ def create_alignment_workflow(
         bai_filename,
         alignment_metrics,
         plot_metrics,
+        meta_yaml,
         ref_genome,
         config,
         args,
@@ -345,4 +347,35 @@ def create_alignment_workflow(
             mgd.OutputFile(alignment_metrics),
         ),
     )
+
+
+    metadata = {
+        'alignment':{
+            'cell_batch_realign': args["realign"],
+            'data': alignment_metrics,
+            'metrics_table': '/alignment/metrics',
+            'gc_metrics_table': '/alignment/gc_metrics',
+            'plots': plot_metrics,
+            'aligner': config["aligner"],
+            'adapter': config["adapter"],
+            'adapter2': config["adapter2"],
+            'picardtools_wgsmetrics_params': config['picard_wgs_params'],
+            'ref_genome': config["ref_genome"]
+        }
+    }
+
+
+    workflow.transform(
+        name='generate_meta_yaml',
+        ctx={
+            'mem': config["memory"]['low'],
+            'pool_id': config['pools']['standard'],
+            'ncpus': 1},
+        func=helpers.write_to_yaml,
+        args=(
+            mgd.OutputFile(meta_yaml),
+            metadata
+        )
+    )
+
     return workflow

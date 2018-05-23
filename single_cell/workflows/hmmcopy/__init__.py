@@ -15,8 +15,8 @@ def create_hmmcopy_workflow(
         bam_file, bai_file, hmmcopy_data, igv_seg_filename, segs_pdf, bias_pdf,
         segs_filt_pdf, bias_filt_pdf, plot_heatmap_ec_output,
         plot_heatmap_ec_filt_output, plot_metrics_output,
-        plot_kernel_density_output, cell_ids, config, args, hmmparams,
-        results_dir):
+        plot_kernel_density_output, meta_yaml, cell_ids, config, args,
+        hmmparams, params_tag, results_dir):
 
     sample_info = helpers.get_sample_info(args["input_yaml"])
 
@@ -301,5 +301,36 @@ def create_hmmcopy_workflow(
             mgd.OutputFile(hmmcopy_data),
         )
     )
+
+    metadata = {
+        'hmmcopy':{
+            'cell_batch_realign': args["realign"],
+            'data': hmmcopy_data,
+            'reads_table': '/hmmcopy/reads/0',
+            'parameters_table': '/hmmcopy/params/0',
+            'segments_table': '/hmmcopy/segments/0',
+            'metrics_table': '/hmmcopy/metrics/0',
+            'hmmcopy_params_tag': params_tag,
+            'hmmcopy_params': hmmparams,
+            'chromosomes': config['chromosomes'],
+            'ref_genome': config['ref_genome'],
+            'cell_filters': config["good_cells"]
+        }
+    }
+
+
+    workflow.transform(
+        name='generate_meta_yaml',
+        ctx={
+            'mem': config["memory"]['low'],
+            'pool_id': config['pools']['standard'],
+            'ncpus': 1},
+        func=helpers.write_to_yaml,
+        args=(
+            mgd.OutputFile(meta_yaml),
+            metadata
+        )
+    )
+
 
     return workflow

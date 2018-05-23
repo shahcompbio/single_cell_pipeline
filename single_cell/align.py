@@ -24,6 +24,8 @@ def align_workflow(workflow, args):
 
     lib = args["library_id"]
 
+    info_file = os.path.join(args["out_dir"], "results", "info.yaml")
+
     outdir = os.path.join(args["out_dir"], "results", "alignment")
 
     alignment_metrics = os.path.join(outdir, '{}_alignment_metrics.h5'.format(lib))
@@ -47,6 +49,7 @@ def align_workflow(workflow, args):
             mgd.OutputFile('bai_markdups', 'cell_id', fnames = bai_files, axes_origin=[]),
             mgd.OutputFile(alignment_metrics),
             mgd.OutputFile(plot_metrics_output),
+            mgd.OutputFile(info_file),
             config['ref_genome'],
             config,
             args,
