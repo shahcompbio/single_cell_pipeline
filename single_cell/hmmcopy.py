@@ -21,11 +21,14 @@ def hmmcopy_workflow(workflow, args):
         value=cellids,
     )
 
-    for name, params in config["hmmcopy_params"].iteritems():
-        name = "hmmcopy_" + name
+    for params_tag, params in config["hmmcopy_params"].iteritems():
+        params_tag = "hmmcopy_" + params_tag
 
-        results_dir = os.path.join(args['out_dir'], 'results', name)
+        results_dir = os.path.join(args['out_dir'], 'results', params_tag)
         plots_dir = os.path.join(results_dir, "plots")
+
+        info_file = os.path.join(results_dir, "info.yaml")
+
 
         igv_seg_file = os.path.join(results_dir, '{}_igv_segments.seg'.format(lib))
 
@@ -43,7 +46,7 @@ def hmmcopy_workflow(workflow, args):
         kernel_density_pdf = os.path.join(plots_dir, '{}_kernel_density.pdf'.format(lib))
 
         workflow.subworkflow(
-            name='hmmcopy_workflow_' + name,
+            name='hmmcopy_workflow_' + params_tag,
             func=hmmcopy.create_hmmcopy_workflow,
             args=(
                 mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files),
@@ -58,10 +61,12 @@ def hmmcopy_workflow(workflow, args):
                 mgd.OutputFile(heatmap_filt_pdf),
                 mgd.OutputFile(metrics_pdf),
                 mgd.OutputFile(kernel_density_pdf),
+                mgd.OutputFile(info_file),
                 cellids,
                 config,
                 args,
                 params,
+                params_tag,
                 results_dir
             ),
         )
