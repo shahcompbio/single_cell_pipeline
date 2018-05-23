@@ -370,6 +370,8 @@ class GenHmmPlots(object):
                 plt.plot(x, y, color='black', linewidth=linewidth)
 
             ylim = np.nanpercentile(reads['copy'], 99)
+            if not np.isfinite(ylim):
+                ylim = ax.get_ylim()[1]
             ylim = int(ylim) + 1
             ylim = max(3, ylim)
 
