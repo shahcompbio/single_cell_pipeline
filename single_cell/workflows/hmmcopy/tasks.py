@@ -351,6 +351,8 @@ def sort_cells(metrics, good_cells, tableid):
 
     sorted_cells = [cells_order[ordval] for ordval in ordervals]
 
+    sorted_cells = [cell for cell in sorted_cells if cell in good_cells]
+
     return sorted_cells
 
 
