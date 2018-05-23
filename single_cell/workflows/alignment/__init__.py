@@ -344,6 +344,5 @@ def create_alignment_workflow(
              ],
             mgd.OutputFile(alignment_metrics),
         ),
-        kwargs={'in_memory': True, 'non_numeric_as_category': False}
     )
     return workflow
