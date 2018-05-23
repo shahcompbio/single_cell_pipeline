@@ -318,7 +318,7 @@ def get_good_cells(metrics, cell_filters, tableid):
     cells = metrics_data.cell_id
 
     if not cell_filters:
-        return cells
+        return cells.tolist()
 
     # cells to keep
     for metric_col, operation, threshold in cell_filters:
@@ -468,16 +468,18 @@ def plot_kernel_density(
 
 
 def plot_pcolor(infile, metrics, output, tempdir, multipliers, plot_title=None,
-                column_name=None, plot_by_col=None, numreads_threshold=None,
-                mad_threshold=None, chromosomes=None, max_cn=None,
-                median_hmmcopy_reads_per_bin_threshold=None,
-                scale_by_cells=None, color_by_col=None):
+                column_name=None, plot_by_col=None,
+                chromosomes=None, max_cn=None,
+                scale_by_cells=None, color_by_col=None,
+                cell_filters=None):
 
     helpers.makedirs(tempdir)
 
     multiplier_pdfs = []
 
     for multiplier in multipliers:
+
+        cells = get_good_cells(metrics, cell_filters, '/hmmcopy/metrics/0')
 
         multiplier_output = os.path.join(tempdir, "{}.pdf".format(multiplier))
 
@@ -490,14 +492,13 @@ def plot_pcolor(infile, metrics, output, tempdir, multipliers, plot_title=None,
 
         plot = PlotPcolor(infile, metrics, multiplier_output, plot_title=mult_plot_title,
                           column_name=column_name, plot_by_col=plot_by_col,
-                          numreads_threshold=numreads_threshold,
-                          mad_threshold=mad_threshold, chromosomes=chromosomes,
+                          chromosomes=chromosomes,
                           max_cn=max_cn, multiplier=multiplier,
                           scale_by_cells=scale_by_cells,
                           segs_tablename=reads_tablename,
                           metrics_tablename=metrics_tablename,
                           color_by_col=color_by_col,
-                          median_hmmcopy_reads_per_bin_threshold=median_hmmcopy_reads_per_bin_threshold)
+                          cells=cells)
         plot.main()
 
     pdfutils.merge_pdfs(multiplier_pdfs, output)

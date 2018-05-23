@@ -277,12 +277,10 @@ def create_hmmcopy_workflow(
             'column_name': 'state',
             'plot_by_col': 'condition',
             'color_by_col': 'pick_met',
-            'numreads_threshold': config['plot_numreads_threshold'],
-            'median_hmmcopy_reads_per_bin_threshold': config['plot_median_hmmcopy_reads_per_bin_threshold'],
-            'mad_threshold': config['plot_mad_threshold'],
             'chromosomes': chromosomes,
             'max_cn': hmmparams['num_states'],
-            'scale_by_cells': False
+            'scale_by_cells': False,
+            'cell_filters': config["good_cells"]
         }
     )
 
@@ -304,7 +302,6 @@ def create_hmmcopy_workflow(
 
     metadata = {
         'hmmcopy':{
-            'cell_batch_realign': args["realign"],
             'data': hmmcopy_data,
             'reads_table': '/hmmcopy/reads/0',
             'parameters_table': '/hmmcopy/params/0',

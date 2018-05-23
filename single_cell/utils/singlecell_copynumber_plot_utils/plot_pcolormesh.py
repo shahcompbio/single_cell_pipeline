@@ -81,6 +81,8 @@ class PlotPcolor(object):
         self.segs_tablename = kwargs.get('segs_tablename')
         self.metrics_tablename = kwargs.get('metrics_tablename')
 
+        self.cells = kwargs.get("cells")
+
     def build_label_indices(self, header):
         '''
         gets all the label cols from file and builds
@@ -390,6 +392,9 @@ class PlotPcolor(object):
         if self.median_hmmcopy_reads_per_bin_thres:
             samples = [samp for samp in samples
                        if reads_per_bin[samp] >= self.median_hmmcopy_reads_per_bin_thres]
+
+        if self.cells:
+            samples = [cell for cell in samples if cell in self.cells]
 
         data = data.loc[samples]
         return data

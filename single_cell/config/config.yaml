@@ -84,11 +84,14 @@ mutationseq: "{$cluster:mutationseq}"
 
 mutationseq_model: "{$cluster:mutationseq_model}"
 
-plot_mad_threshold: null
+# format:  column name( in metrics file), operator, value
+# operators: gt(>), ge(>=), lt(<), le(<=), eq(==), ne(!=)
+good_cells:
+  - ['mad_neutral_state', 'le', 0.2]
 
-plot_numreads_threshold: null
+  - ['total_mapped_reads', 'ge', 100000]
 
-plot_median_hmmcopy_reads_per_bin_threshold: 50
+  - ['median_hmmcopy_reads_per_bin', 'ge', 50]
 
 gc_windows: '{$cluster:$reference:gc_windows}'
 
