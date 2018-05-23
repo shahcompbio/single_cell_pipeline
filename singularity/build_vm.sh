@@ -55,3 +55,14 @@ conda install biowrappers remixt destruct -y
 
 
 rm -rf vmresources vmresources.tar.gz Miniconda2-latest-Linux-x86_64.sh
+
+
+conda install networkx==1.11
+conda create -c conda-forge --name museq python=2 numpy scipy matplotlib intervaltree
+/usr/local/miniconda2/envs/museq/bin/pip install scikit-learn==0.13.1
+conda config --add channels defaults
+conda config --add channels conda-forge
+conda config --add channels bioconda
+conda config --add channels https://conda.anaconda.org/dranew
+conda install bcftools==1.7 blossomv
+sudo chmod -R 777 /usr/local/miniconda2/
