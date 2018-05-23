@@ -21,7 +21,8 @@ import multiprocessing
 from multiprocessing.pool import ThreadPool
 
 def write_to_yaml(outfile, data):
-    yaml.safe_dump(data, open(outfile))
+    with open(outfile, 'w') as output:
+        yaml.safe_dump(data, output)
 
 
 def eval_expr(val, operation, threshold):

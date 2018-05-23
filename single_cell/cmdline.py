@@ -51,10 +51,11 @@ def separate_pipelinedir_by_subcommand(args):
     return args
 
 
-def add_global_args(parser):
+def add_global_args(parser, dont_add_input_yaml=False):
     pypeliner.app.add_arguments(parser)
 
     parser.add_argument("--input_yaml",
+                        required=True,
                         help='''yaml file with fastq files, output bams and cell metadata''')
 
     parser.add_argument("--out_dir",
@@ -77,80 +78,118 @@ def parse_args():
 
     subparsers = parser.add_subparsers()
 
+    #===========
+    # align
+    #===========
     align = add_global_args(subparsers.add_parser("align"))
     align.set_defaults(which='align')
+
     align.add_argument('--realign',
                        action='store_true',
                        help='''will run local realignment on all cells in batch mode''')
+
     align.add_argument("--library_id",
                        required=True,
                        help='''Library id.''')
 
+    #===========
+    # hmmcopy
+    #===========
     hmmcopy = add_global_args(subparsers.add_parser("hmmcopy"))
     hmmcopy.set_defaults(which='hmmcopy')
+
     hmmcopy.add_argument("--library_id",
                          required=True,
                          help='''Library id.''')
 
+    #===========
+    # copyclone
+    #===========
     copyclone = add_global_args(subparsers.add_parser("copyclone"))
     copyclone.set_defaults(which='copyclone')
     copyclone.add_argument("--library_id",
                            required=True,
                            help='''Library id.''')
 
+    #===========
+    # aneufinder
+    #===========
     aneufinder = add_global_args(subparsers.add_parser("aneufinder"))
     aneufinder.set_defaults(which='aneufinder')
     aneufinder.add_argument("--library_id",
                             required=True,
                             help='''Library id.''')
 
+    #===========
+    # merge bams
+    #===========
     merge_bams = add_global_args(subparsers.add_parser("merge_bams"))
     merge_bams.set_defaults(which='merge_bams')
     merge_bams.add_argument("--merged_bam_template",
                             required=True,
-                            help='''template for saving the bams merged by region, use {} as place holder for genomic region''')
+                            help='''template for saving the bams merged by region,
+                            use {} as place holder for genomic region''')
 
-    split_bam = add_global_args(subparsers.add_parser("split_bam"))
+    #===========
+    # split bam
+    #===========
+    split_bam = add_global_args(
+        subparsers.add_parser("split_bam"),
+        dont_add_input_yaml=True)
     split_bam.set_defaults(which='split_bam')
 
     split_bam.add_argument("--split_bam_template",
                            action=parseRegionTemplate,
                            required=True,
-                           help='''template for saving the bams merged by region, use {} as place holder for genomic region''')
+                           help='''template for saving the bams split by region,
+                           use {} as place holder for genomic region''')
 
     split_bam.add_argument("--wgs_bam",
                            required=True,
                            help='''path to the whole genome bam file''')
 
+    #================
+    # variant calling
+    #================
     variant_calling = add_global_args(subparsers.add_parser("variant_calling"))
     variant_calling.set_defaults(which='variant_calling')
 
     variant_calling.add_argument("--tumour_template",
                                  required=True,
                                  action=parseRegionTemplate,
-                                 help='''template for saving the bams merged by region, use {} as place holder for genomic region''')
+                                 help='''template for bams merged by region,
+                                 use {} as place holder for genomic region''')
 
     variant_calling.add_argument("--normal_template",
                                  required=True,
                                  action=parseRegionTemplate,
-                                 help='''template for saving the bams merged by region, use {} as place holder for genomic region''')
+                                 help='''template for bams merged by region,
+                                 use {} as place holder for genomic region''')
 
+    #===========
+    # titan, remixt
+    #===========
     copy_number_calling = add_global_args(
-        subparsers.add_parser("copy_number_calling"))
+        subparsers.add_parser("copy_number_calling"), dont_add_input_yaml=True)
     copy_number_calling.set_defaults(which='copy_number_calling')
 
     copy_number_calling.add_argument("--tumour_yaml",
                                      required=True,
-                                     help='''template for saving the bams merged by region, use {} as place holder for genomic region''')
+                                     help='''template for bams merged by region,
+                                     use {} as place holder for genomic region''')
 
     copy_number_calling.add_argument("--normal_yaml",
                                      required=True,
-                                     help='''template for saving the bams merged by region, use {} as place holder for genomic region''')
+                                     help='''template for bams merged by region,
+                                     use {} as place holder for genomic region''')
 
     copy_number_calling.add_argument("--clone_id",
                                      required=True,
                                      help='''ID to identify the results''')
 
+    #===========
+    # germline
+    #===========
     germline_calling = add_global_args(
         subparsers.add_parser("germline_calling"))
     germline_calling.set_defaults(which='germline_calling')
@@ -158,8 +197,11 @@ def parse_args():
     germline_calling.add_argument("--input_template",
                                   required=True,
                                   action=parseRegionTemplate,
-                                  help='''template for saving the bams merged by region, use {} as place holder for genomic region''')
-
+                                  help='''template for bams merged by region,
+                                  use {} as place holder for genomic region''')
+    #===========
+    # destruct
+    #===========
     breakpoint_calling = add_global_args(
         subparsers.add_parser("breakpoint_calling"))
     breakpoint_calling.set_defaults(which='breakpoint_calling')
@@ -168,6 +210,9 @@ def parse_args():
                                     required=True,
                                     help='''normal bam file''')
 
+    #======================================
+    # generates pipeline and batch configs
+    #======================================
     generate_config = subparsers.add_parser("generate_config")
     generate_config.set_defaults(which='generate_config')
 
@@ -179,6 +224,9 @@ def parse_args():
                                  required=True,
                                  help='''output yaml file''')
 
+    #============================
+    # remove tasks from sentinels
+    #============================
     clean_sentinels = subparsers.add_parser("clean_sentinels")
     clean_sentinels.set_defaults(which='clean_sentinels')
 
