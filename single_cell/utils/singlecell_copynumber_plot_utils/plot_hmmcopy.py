@@ -29,7 +29,8 @@ matplotlib.rcParams['pdf.fonttype'] = 42
 def parse_args():
 
     ann_cols = ['pick_met', 'condition', 'sample_type',
-                'coverage_depth', 'mad_neutral_state', 'MSRSI_non_integerness']
+                'median_hmmcopy_reads_per_bin', 'mad_neutral_state',
+                'MSRSI_non_integerness']
 
     #=========================================================================
     # Read Command Line Input
@@ -115,6 +116,8 @@ class GenHmmPlots(object):
         self.segs_pdf = segs_out
         self.bias_pdf = bias_out
 
+        self.sample_info = kwargs.get("sample_info")
+
     def __enter__(self):
         self.reads_store = pd.HDFStore(self.reads, 'r')
         self.segments_store = pd.HDFStore(self.segments, 'r')
@@ -181,6 +184,8 @@ class GenHmmPlots(object):
                 val = metrics[colname].iloc[0]
                 if not isinstance(val, str):
                     val = '%.3f' % val
+            elif self.sample_info and colname in self.sample_info:
+                val = self.sample_info[colname]
             else:
                 val = 'NA'
 
@@ -267,7 +272,7 @@ class GenHmmPlots(object):
                 alpha=0.1,
                 rasterized=True)
 
-        self.add_annotations(fig, annotations, fontsize=10)
+        self.add_annotations(fig, annotations, fontsize=8)
         fig.suptitle(self.sample_id, fontsize=12)
         sns.despine(offset=10, trim=True)
 

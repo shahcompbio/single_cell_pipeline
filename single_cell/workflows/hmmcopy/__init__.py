@@ -32,6 +32,10 @@ def create_hmmcopy_workflow(
         value=cell_ids,
     )
 
+    workflow.setobj(
+        obj=mgd.TempOutputObj('sampleinfo', 'cell_id', axes_origin=[]),
+        value=sample_info)
+
     workflow.transform(
         name='run_hmmcopy',
         ctx={
@@ -53,7 +57,8 @@ def create_hmmcopy_workflow(
             config,
             hmmparams,
             multipliers,
-            mgd.TempSpace('hmmcopy_temp', 'cell_id')
+            mgd.TempSpace('hmmcopy_temp', 'cell_id'),
+            mgd.TempInputObj('sampleinfo', 'cell_id'),
         ),
     )
 
