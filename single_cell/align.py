@@ -24,9 +24,9 @@ def align_workflow(workflow, args):
 
     lib = args["library_id"]
 
-    info_file = os.path.join(args["out_dir"], "results", "info.yaml")
-
     outdir = os.path.join(args["out_dir"], "results", "alignment")
+
+    info_file = os.path.join(outdir, "info.yaml")
 
     alignment_metrics = os.path.join(outdir, '{}_alignment_metrics.h5'.format(lib))
 

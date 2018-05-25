@@ -102,7 +102,8 @@ def run_hmmcopy(
         config,
         hmmparams,
         multipliers,
-        tempdir,):
+        tempdir,
+        sample_info,):
 
     # generate wig file for hmmcopy
     os.makedirs(tempdir)
@@ -170,15 +171,16 @@ def run_hmmcopy(
         hmmcopy_metrics_tablenames)
 
     annotation_cols = ['pick_met', 'condition', 'sample_type',
-                       'coverage_depth', 'mad_neutral_state',
-                       'MSRSI_non_integerness']
+                       'mad_neutral_state', 'MSRSI_non_integerness',
+                       'total_mapped_reads']
 
     plot_hmmcopy(
         corrected_reads_filename, segments_filename, parameters_filename,
         metrics_filename, config["ref_genome"], segs_pdf_filename,
         bias_pdf_filename, cell_id, multipliers,
         num_states=hmmparams['num_states'],
-        annotation_cols=annotation_cols)
+        annotation_cols=annotation_cols,
+        sample_info=sample_info)
 
 
 def annotate_metrics(reads, metrics, output, sample_info, cells, multipliers):
@@ -298,11 +300,12 @@ def create_igv_seg(merged_segs, merged_hmm_metrics,
 
 def plot_hmmcopy(reads, segments, params, metrics, ref_genome, segs_out,
                  bias_out, cell_id, multiplier, num_states=7,
-                 annotation_cols=None):
+                 annotation_cols=None, sample_info=None):
 
     with GenHmmPlots(reads, segments, params, metrics, ref_genome, segs_out,
                      bias_out, cell_id, multiplier, num_states=num_states,
-                     annotation_cols=annotation_cols) as plot:
+                     annotation_cols=annotation_cols,
+                     sample_info=sample_info) as plot:
         plot.main()
 
 

@@ -87,9 +87,6 @@ mutationseq_model: "{$cluster:mutationseq_model}"
 # format:  column name( in metrics file), operator, value
 # operators: gt(>), ge(>=), lt(<), le(<=), eq(==), ne(!=)
 good_cells:
-  - ['mad_neutral_state', 'le', 0.2]
-
-  - ['total_mapped_reads', 'ge', 100000]
 
   - ['median_hmmcopy_reads_per_bin', 'ge', 50]
 
