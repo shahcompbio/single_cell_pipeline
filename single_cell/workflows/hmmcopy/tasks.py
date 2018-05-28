@@ -106,7 +106,7 @@ def run_hmmcopy(
         sample_info,):
 
     # generate wig file for hmmcopy
-    os.makedirs(tempdir)
+    helpers.makedirs(tempdir)
     readcount_wig = os.path.join(tempdir, 'readcounter.wig')
     corrected_reads = os.path.join(tempdir, 'corrected_reads.csv')
 

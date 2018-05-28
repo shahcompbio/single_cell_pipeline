@@ -92,14 +92,18 @@ error_exit_clean <- function(samp.uncorrected, chromosomes, sample_id, out_reads
         params <- c("initial","1","2","3","4","5","final","state","parameter","cell_id")
         cat(params, "\n", file=out_params, sep=",")
 
-        metrics <- c("multiplier","MSRSI_non_integerness","MBRSI_dispersion_non_integerness",
-                     "MBRSM_dispersion","autocorrelation_hmmcopy","cv_hmmcopy","empty_bins_hmmcopy",
-                     "mad_hmmcopy","mean_hmmcopy_reads_per_bin","median_hmmcopy_reads_per_bin",
-                     "std_hmmcopy_reads_per_bin","total_mapped_reads","total_halfiness","scaled_halfiness",
-                     "mean_state_mads","mean_state_vars","mad_neutral_state","too_even","breakpoints","mean_copy",
-                     "state_mode","log_likelihood","true_multiplier","cell_id")
-        cat(metrics, "\n", file=out_metrics, sep=",")
+        metrics_cols <- c("multiplier","MSRSI_non_integerness","MBRSI_dispersion_non_integerness",
+                          "MBRSM_dispersion","autocorrelation_hmmcopy","cv_hmmcopy","empty_bins_hmmcopy",
+                          "mad_hmmcopy","mean_hmmcopy_reads_per_bin","median_hmmcopy_reads_per_bin",
+                          "std_hmmcopy_reads_per_bin","total_mapped_reads","total_halfiness","scaled_halfiness",
+                          "mean_state_mads","mean_state_vars","mad_neutral_state","too_even","breakpoints","mean_copy",
+                          "state_mode","log_likelihood","true_multiplier","cell_id")
 
+        numcols_metrics <- length(metrics_cols)
+        metrics <- data.frame(matrix(c(rep.int(NA,numcols_metrics)), ncol=numcols_metrics, nrow<-1))
+        colnames(metrics) <- metrics_cols
+        metrics$cell_id <- sample_id
+        write.table(metrics, file=out_metrics, quote=F, sep=",", col.names=T, row.names=F)
 }
 
 
