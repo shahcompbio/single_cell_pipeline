@@ -168,11 +168,11 @@ class GenHmmPlots(object):
         df = self.segments_store[
             "/hmmcopy/segments/{}/{}".format(cell_id, multiplier)]
 
-        chromosomes = map(str, range(1, 23)) + ['X', 'Y']
-        df["chr"] = pd.Categorical(df["chr"], chromosomes)
-        df = df.sort_values(['chr', 'start', 'end'])
-
-        df = utl.compute_chromosome_coordinates(df, self.ref_genome)
+        if not df.empty:
+            chromosomes = map(str, range(1, 23)) + ['X', 'Y']
+            df["chr"] = pd.Categorical(df["chr"], chromosomes)
+            df = df.sort_values(['chr', 'start', 'end'])
+            df = utl.compute_chromosome_coordinates(df, self.ref_genome)
 
         return df
 
@@ -354,6 +354,10 @@ class GenHmmPlots(object):
             ax.set_title("multiplier: {}".format(multiplier))
 
             num_states = np.nanmax(reads.state)
+            #no data
+            if num_states == 0 or not np.isfinite(num_states):
+                continue
+
             cmap = self.get_colors(num_states)
 
             # we pass None if we don't have data

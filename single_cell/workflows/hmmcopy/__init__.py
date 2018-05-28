@@ -76,7 +76,7 @@ def create_hmmcopy_workflow(
             'hmmcopy/reads'
         ),
         kwargs={
-            'dtypes': {'valid': bool, 'ideal': bool}
+            'dtypes': {'valid': bool, 'ideal': bool, 'state':float, 'multiplier':float}
         }
     )
 
