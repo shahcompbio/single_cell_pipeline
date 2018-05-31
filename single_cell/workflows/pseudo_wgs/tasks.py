@@ -11,9 +11,6 @@ from single_cell.utils import helpers
 from subprocess import Popen, PIPE
 
 
-def get_bam_regions(bam_file, split_size, chromosomes):
-    helpers.get_bam_regions(bam_file, split_size, chromosomes)
-
 def merge_bam_worker(input_bam_files, output_bam, output_bai, region):
 
     #pypeliner.commandline.execute doesnt work with multiprocess.

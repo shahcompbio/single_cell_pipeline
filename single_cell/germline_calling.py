@@ -26,6 +26,10 @@ def germline_calling_workflow(workflow, args):
     normal_bam_template = args["input_template"]
     normal_bai_template = args["input_template"] + ".bai"
 
+    if "{reads}" in normal_bam_template:
+        raise ValueError("input template for germline calling only support region based splits")
+
+
     varcalls_dir = os.path.join(
         args['out_dir'], 'results', 'germline_calling')
 
@@ -44,7 +48,7 @@ def germline_calling_workflow(workflow, args):
     workflow.transform(
         name="get_regions",
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
-        func=helpers.get_bam_regions,
+        func=helpers.get_regions_from_reference,
         ret=pypeliner.managed.OutputChunks('region'),
         args=(
             config["ref_genome"],

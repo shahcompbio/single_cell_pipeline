@@ -31,7 +31,7 @@ def merge_bams_workflow(workflow, args):
     workflow.transform(
         name="get_regions",
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
-        func=helpers.get_bam_regions,
+        func=helpers.get_regions_from_reference,
         ret=pypeliner.managed.TempOutputObj('region'),
         args=(
               config["ref_genome"],

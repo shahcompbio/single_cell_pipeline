@@ -108,6 +108,10 @@ def variant_calling_workflow(workflow, args):
     normal_bam_template = args["normal_template"]
     normal_bai_template = args["normal_template"] + ".bai"
 
+    if "{reads}" in normal_bam_template or "{reads}" in wgs_bam_template:
+        raise ValueError("input template for variant calling only supports region based splits")
+
+
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
         value=cellids,
@@ -116,7 +120,7 @@ def variant_calling_workflow(workflow, args):
     workflow.transform(
         name="get_regions",
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
-        func=helpers.get_bam_regions,
+        func=helpers.get_regions_from_reference,
         ret=mgd.OutputChunks('region'),
         args=(
               config["ref_genome"],
