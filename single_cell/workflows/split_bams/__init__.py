@@ -6,8 +6,6 @@ Created on Nov 21, 2017
 import pypeliner
 import pypeliner.managed as mgd
 
-import tasks
-
 
 def create_split_workflow(
     normal_bam, normal_bai, normal_split_bam, normal_split_bai,
@@ -36,7 +34,7 @@ def create_split_workflow(
                 'mem': config['memory']['low'], 'ncpus': config["max_cores"],
                 'pool_id': config['pools']['multicore'],
             },
-            func=tasks.split_bam_file_by_reads,
+            func="single_cell.workflows.split_bams.tasks.split_bam_file_by_reads",
             args=(
                 mgd.InputFile(normal_bam),
                 mgd.InputFile(normal_bai),
@@ -60,7 +58,7 @@ def create_split_workflow(
                 'mem': config['memory']['low'], 'ncpus': config["max_cores"],
                 'pool_id': config['pools']['multicore'],
             },
-            func=tasks.split_bam_file_one_job,
+            func="single_cell.workflows.split_bams.tasks.split_bam_file_one_job",
             args=(
                 mgd.InputFile(normal_bam),
                 mgd.InputFile(normal_bai),
@@ -85,7 +83,7 @@ def create_split_workflow(
                 'pool_id': config['pools']['standard'],
             },
             axes=('region',),
-            func=tasks.split_bam_file,
+            func="single_cell.workflows.split_bams.tasks.split_bam_file",
             args=(
                 mgd.InputFile(normal_bam),
                 mgd.InputFile(normal_bai),

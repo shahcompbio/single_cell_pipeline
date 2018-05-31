@@ -3,11 +3,8 @@ Created on Jul 24, 2017
 
 @author: dgrewal
 '''
-import os
 import pypeliner
 import pypeliner.managed as mgd
-import biowrappers.components.io.vcf.tasks
-import tasks
 
 def create_museq_workflow(
         normal_bam, normal_bai, tumour_bam, tumour_bai, ref_genome, snv_vcf,
@@ -24,7 +21,7 @@ def create_museq_workflow(
         name='run_museq',
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
         axes=('region',),
-        func=tasks.run_museq,
+        func="single_cell.workflows.mutationseq.tasks.run_museq",
         args=(
             mgd.InputFile("merged_bam", "region", fnames=tumour_bam),
             mgd.InputFile("merged_bai", "region", fnames=tumour_bai),
@@ -40,7 +37,7 @@ def create_museq_workflow(
     workflow.transform(
         name='merge_snvs',
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
-        func=tasks.concatenate_vcfs,
+        func="single_cell.workflows.mutationseq.tasks.concatenate_vcfs",
         args=(
             mgd.TempInputFile("museq.vcf", "region"),
             mgd.TempOutputFile("museq.vcf"),
@@ -50,7 +47,7 @@ def create_museq_workflow(
     workflow.transform(
         name='finalise_snvs',
         ctx={'pool_id': config['pools']['standard'], 'ncpus':1},
-        func=biowrappers.components.io.vcf.tasks.finalise_vcf,
+        func="biowrappers.components.io.vcf.tasks.finalise_vcf",
         args=(
             pypeliner.managed.TempInputFile('museq.vcf'),
             pypeliner.managed.OutputFile(snv_vcf),

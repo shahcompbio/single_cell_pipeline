@@ -4,17 +4,8 @@ Created on Jul 11, 2017
 @author: dgrewal
 '''
 
-
-'''
-Created on Jul 6, 2017
-
-@author: dgrewal
-'''
-import os
 import pypeliner
 import pypeliner.managed as mgd
-
-import tasks
 
 
 def create_wgs_workflow(
@@ -49,7 +40,7 @@ def create_wgs_workflow(
     workflow.transform(
         name='merge_bams',
         ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['multicore'], 'ncpus':config["max_cores"]},
-        func=tasks.merge_bams,
+        func="single_cell.workflows.pseudo_wgs.tasks.merge_bams",
         args=(
             mgd.InputFile('bam', 'cell_id', fnames=input_bams),
             mgd.InputFile('bai', 'cell_id', fnames=input_bais),

@@ -7,15 +7,9 @@ Created on Feb 22, 2018
 import os
 import pypeliner
 import pypeliner.managed as mgd
-import biowrappers.components.io.vcf.tasks
-import biowrappers.components.io.hdf5.tasks
-import biowrappers.pipelines.snv_call_and_annotate
-import biowrappers.components.io.vcf.tasks
 from workflows import mutationseq 
-from workflows import split_bams
 from workflows import strelka
 from single_cell.utils import helpers
-from single_cell.utils import vcfutils
 
 
 default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
@@ -45,7 +39,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
     workflow.transform(
         name='get_snv_allele_counts_for_vcf_targets',
         axes=('cell_id',),
-        func=biowrappers.components.variant_calling.snv_allele_counts.tasks.get_snv_allele_counts_for_vcf_targets,
+        func="biowrappers.components.variant_calling.snv_allele_counts.tasks.get_snv_allele_counts_for_vcf_targets",
         args=(
             mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files),
             mgd.InputFile('tumour.bam.bai', 'cell_id', fnames=bai_files),
@@ -65,7 +59,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
     workflow.transform(
         name='merge_snv_allele_counts',
         ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
-        func=biowrappers.components.io.hdf5.tasks.concatenate_tables,
+        func="biowrappers.components.io.hdf5.tasks.concatenate_tables",
         args=(
             mgd.TempInputFile('counts.h5', 'cell_id'),
             mgd.OutputFile(out_file),
@@ -120,7 +114,7 @@ def variant_calling_workflow(workflow, args):
     workflow.transform(
         name="get_regions",
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
-        func=helpers.get_regions_from_reference,
+        func="single_cell.utils.helpers.get_regions_from_reference",
         ret=mgd.OutputChunks('region'),
         args=(
               config["ref_genome"],
@@ -160,7 +154,7 @@ def variant_calling_workflow(workflow, args):
 
     workflow.transform(
         name='convert_museq_to_hdf5',
-        func=biowrappers.components.io.vcf.tasks.convert_vcf_to_hdf5,
+        func="biowrappers.components.io.vcf.tasks.convert_vcf_to_hdf5",
         args=(
             mgd.InputFile(museq_vcf),
             mgd.TempOutputFile('museq.h5'),
@@ -173,7 +167,7 @@ def variant_calling_workflow(workflow, args):
 
     workflow.transform(
         name='convert_strelka_to_hdf5',
-        func=biowrappers.components.io.vcf.tasks.convert_vcf_to_hdf5,
+        func="biowrappers.components.io.vcf.tasks.convert_vcf_to_hdf5",
         args=(
             mgd.InputFile(strelka_snv_vcf),
             mgd.TempOutputFile('strelka_snv.h5'),
@@ -186,7 +180,7 @@ def variant_calling_workflow(workflow, args):
 
     workflow.transform(
         name='merge_snvs',
-        func=vcfutils.merge_vcfs,
+        func="single_cell.utils.vcfutils.merge_vcfs",
         args=(
             [
                 mgd.InputFile(museq_vcf),
@@ -198,7 +192,7 @@ def variant_calling_workflow(workflow, args):
 
     workflow.transform(
         name='finalise_snvs',
-        func=biowrappers.components.io.vcf.tasks.finalise_vcf,
+        func="biowrappers.components.io.vcf.tasks.finalise_vcf",
         args=(
             mgd.TempInputFile('all.snv.vcf'),
             mgd.TempOutputFile('all.snv.vcf.gz', extensions=['.tbi'])
@@ -208,7 +202,7 @@ def variant_calling_workflow(workflow, args):
     workflow.subworkflow(
         name='annotate_snvs',
         axes=(),
-        func=biowrappers.pipelines.snv_call_and_annotate.create_annotation_workflow,
+        func="biowrappers.pipelines.snv_call_and_annotate.create_annotation_workflow",
         args=(
             config,
             mgd.TempInputFile('all.snv.vcf.gz'),
@@ -235,7 +229,7 @@ def variant_calling_workflow(workflow, args):
     workflow.transform(
         name='build_results_file',
         ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
-        func=biowrappers.components.io.hdf5.tasks.concatenate_tables,
+        func="biowrappers.components.io.hdf5.tasks.concatenate_tables",
         args=([
                 mgd.TempInputFile('snv_counts.h5'),
                 mgd.TempInputFile('snv_annotations.h5'),

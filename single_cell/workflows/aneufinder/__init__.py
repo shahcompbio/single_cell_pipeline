@@ -2,10 +2,6 @@ import os
 import pypeliner
 import pypeliner.managed as mgd
 
-import tasks
-
-from single_cell.utils import csvutils
-
 def create_aneufinder_workflow(bam_file,
                                cell_ids,
                                config,
@@ -23,7 +19,7 @@ def create_aneufinder_workflow(bam_file,
     workflow.transform(
         name='run_aneufinder_on_individual_cells',
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
-        func=tasks.run_aneufinder,
+        func="single_cell.workflows.aneufinder.tasks.run_aneufinder",
         axes=('cell_id',),
         args=(
             mgd.InputFile('bam_file', 'cell_id', fnames=bam_file),
@@ -39,7 +35,7 @@ def create_aneufinder_workflow(bam_file,
     workflow.transform(
         name='merge_outputs',
         ctx={'mem': config["memory"]['low'], 'pool_id': config['pools']['standard'], 'ncpus':1},
-        func=tasks.merge_outputs_to_hdf,
+        func="single_cell.workflows.aneufinder.tasks.merge_outputs_to_hdf",
         args=(
             mgd.TempInputFile('reads.csv', 'cell_id'),
             mgd.TempInputFile('segments.csv', 'cell_id'),
@@ -52,7 +48,7 @@ def create_aneufinder_workflow(bam_file,
     workflow.transform(
         name='merge_aneufinder_pdfs',
         ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
-        func=tasks.merge_pdf,
+        func="single_cell.workflows.aneufinder.tasks.merge_pdf",
         args=(
             [mgd.TempInputFile('dnacopy.pdf', 'cell_id')],
             [mgd.OutputFile(dnacopy_pdf_output)],

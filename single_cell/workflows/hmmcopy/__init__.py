@@ -4,7 +4,6 @@ Created on Jul 6, 2017
 @author: dgrewal
 '''
 import os
-import tasks
 import copy
 import pypeliner
 import pypeliner.managed as mgd
@@ -42,7 +41,7 @@ def create_hmmcopy_workflow(
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.run_hmmcopy,
+        func="single_cell.workflows.hmmcopy.tasks.run_hmmcopy",
         axes=('cell_id',),
         args=(
             mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_file),
@@ -68,7 +67,7 @@ def create_hmmcopy_workflow(
             'mem': config["memory"]['low'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.merge_hdf_files_on_disk,
+        func="single_cell.workflows.hmmcopy.tasks.merge_hdf_files_on_disk",
         args=(
             mgd.TempInputFile('reads.h5', 'cell_id'),
             mgd.TempOutputFile("reads.h5"),
@@ -86,7 +85,7 @@ def create_hmmcopy_workflow(
             'mem': config["memory"]['low'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.merge_hdf_files_on_disk,
+        func="single_cell.workflows.hmmcopy.tasks.merge_hdf_files_on_disk",
         args=(
             mgd.TempInputFile('segs.h5', 'cell_id'),
             mgd.TempOutputFile("segments.h5"),
@@ -101,7 +100,7 @@ def create_hmmcopy_workflow(
             'mem': config["memory"]['low'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.merge_hdf_files_in_memory,
+        func="single_cell.workflows.hmmcopy.tasks.merge_hdf_files_in_memory",
         args=(
             mgd.TempInputFile('hmm_metrics.h5', 'cell_id'),
             mgd.TempOutputFile("hmmcopy_metrics.h5"),
@@ -121,7 +120,7 @@ def create_hmmcopy_workflow(
             'mem': config["memory"]['low'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.merge_hdf_files_in_memory,
+        func="single_cell.workflows.hmmcopy.tasks.merge_hdf_files_in_memory",
         args=(
             mgd.TempInputFile('params.h5', 'cell_id'),
             mgd.TempOutputFile("params.h5"),
@@ -136,7 +135,7 @@ def create_hmmcopy_workflow(
             'mem': config["memory"]['low'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.annotate_metrics,
+        func="single_cell.workflows.hmmcopy.tasks.annotate_metrics",
         args=(
             mgd.TempInputFile('reads.h5'),
             mgd.TempInputFile('hmmcopy_metrics.h5'),
@@ -153,7 +152,7 @@ def create_hmmcopy_workflow(
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.merge_pdf,
+        func="single_cell.workflows.hmmcopy.tasks.merge_pdf",
         args=(
             [
                 mgd.TempInputFile('segments.pdf', 'cell_id'),
@@ -174,7 +173,7 @@ def create_hmmcopy_workflow(
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.merge_pdf,
+        func="single_cell.workflows.hmmcopy.tasks.merge_pdf",
         args=(
             [
                 mgd.TempInputFile('segments.pdf', 'cell_id'),
@@ -195,7 +194,7 @@ def create_hmmcopy_workflow(
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.create_igv_seg,
+        func="single_cell.workflows.hmmcopy.tasks.create_igv_seg",
         args=(
             mgd.TempInputFile("segments.h5"),
             mgd.TempInputFile("annotated_metrics.h5"),
@@ -210,7 +209,7 @@ def create_hmmcopy_workflow(
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.plot_metrics,
+        func="single_cell.workflows.hmmcopy.tasks.plot_metrics",
         args=(
             mgd.TempInputFile("annotated_metrics.h5"),
             mgd.OutputFile(plot_metrics_output),
@@ -226,7 +225,7 @@ def create_hmmcopy_workflow(
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.plot_kernel_density,
+        func="single_cell.workflows.hmmcopy.tasks.plot_kernel_density",
         args=(
             mgd.TempInputFile('annotated_metrics.h5'),
             mgd.OutputFile(plot_kernel_density_output),
@@ -244,7 +243,7 @@ def create_hmmcopy_workflow(
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.plot_pcolor,
+        func="single_cell.workflows.hmmcopy.tasks.plot_pcolor",
         args=(
             mgd.TempInputFile('reads.h5'),
             mgd.TempInputFile('annotated_metrics.h5'),
@@ -269,7 +268,7 @@ def create_hmmcopy_workflow(
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.plot_pcolor,
+        func="single_cell.workflows.hmmcopy.tasks.plot_pcolor",
         args=(
             mgd.TempInputFile('reads.h5'),
             mgd.TempInputFile('annotated_metrics.h5'),
@@ -295,7 +294,7 @@ def create_hmmcopy_workflow(
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.merge_tables,
+        func="single_cell.workflows.hmmcopy.tasks.merge_tables",
         args=(
             mgd.TempInputFile("reads.h5"),
             mgd.TempInputFile("segments.h5"),
@@ -327,7 +326,7 @@ def create_hmmcopy_workflow(
             'mem': config["memory"]['low'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=helpers.write_to_yaml,
+        func="single_cell.utils.helpers.write_to_yaml",
         args=(
             mgd.OutputFile(meta_yaml),
             metadata

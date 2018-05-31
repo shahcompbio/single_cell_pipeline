@@ -2,7 +2,6 @@ import os
 import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import helpers
-import biowrappers.components.breakpoint_calling.destruct
 
 
 default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
@@ -30,7 +29,7 @@ def breakpoint_calling_workflow(workflow, args):
 
     workflow.subworkflow(
         name='destruct',
-        func=biowrappers.components.breakpoint_calling.destruct.destruct_pipeline,
+        func="biowrappers.components.breakpoint_calling.destruct.destruct_pipeline",
         args=(
             mgd.InputFile(normal_bam_file),
             mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files),

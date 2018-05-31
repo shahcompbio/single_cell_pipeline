@@ -11,7 +11,6 @@ from workflows import germline
 from workflows import split_bams
 from single_cell.utils import helpers
 from single_cell.workflows.germline import tasks
-import biowrappers.components.variant_calling.mappability
 import variant_calling
 
 
@@ -71,7 +70,7 @@ def germline_calling_workflow(workflow, args):
 
     workflow.subworkflow(
         name='annotate_mappability',
-        func=biowrappers.components.variant_calling.mappability.create_vcf_mappability_annotation_workflow,
+        func="biowrappers.components.variant_calling.mappability.create_vcf_mappability_annotation_workflow",
         args=(
             config['databases']['mappability']['local_path'],
             mgd.InputFile(samtools_germline_vcf, extensions=['.tbi']),
