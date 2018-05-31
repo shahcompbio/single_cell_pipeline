@@ -155,14 +155,13 @@ def get_regions(chromosome_lengths, split_size):
 
     return regions
 
-
-def load_bam_chromosome_lengths(file_name, chromosomes=None):
+def load_chromosome_lengths(file_name, chromosomes=None):
 
     chromosome_lengths = OrderedDict()
 
-    bam = pysam.Fastafile(file_name)
+    ref = pysam.Fastafile(file_name)
 
-    for chrom, length in zip(bam.references, bam.lengths):
+    for chrom, length in zip(ref.references, ref.lengths):
         if chromosomes and chrom not in chromosomes:
             continue
 
@@ -171,10 +170,11 @@ def load_bam_chromosome_lengths(file_name, chromosomes=None):
     return chromosome_lengths
 
 
-def get_bam_regions(bam_file, split_size, chromosomes):
-    chromosome_lengths = load_bam_chromosome_lengths(
-        bam_file,
-        chromosomes=chromosomes)
+def get_regions_from_reference(reference_fastq, split_size, chromosomes):
+    chromosome_lengths = load_chromosome_lengths(
+        reference_fastq,
+        chromosomes=chromosomes
+    )
     return get_regions(chromosome_lengths, split_size)
 
 

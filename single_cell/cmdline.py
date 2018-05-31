@@ -32,7 +32,10 @@ class parseSentinelPattern(argparse.Action):
 class parseRegionTemplate(argparse.Action):
 
     def __call__(self, parser, args, values, option_string=None):
-        values = values.replace("{}", "{region}")
+        if "{region}" not in values and "{reads}" not in values:
+            raise parser.error(
+                "the split template should contain {region} or {reads}"
+            )
         setattr(args, self.dest, values)
 
 
@@ -57,9 +60,10 @@ def separate_pipelinedir_by_subcommand(args):
 def add_global_args(parser, dont_add_input_yaml=False):
     pypeliner.app.add_arguments(parser)
 
-    parser.add_argument("--input_yaml",
-                        required=True,
-                        help='''yaml file with fastq files, output bams and cell metadata''')
+    if not dont_add_input_yaml:
+        parser.add_argument("--input_yaml",
+                            required=True,
+                            help='''yaml file with fastq files, output bams and cell metadata''')
 
     parser.add_argument("--out_dir",
                         required=True,
@@ -199,7 +203,6 @@ def parse_args():
 
     germline_calling.add_argument("--input_template",
                                   required=True,
-                                  action=parseRegionTemplate,
                                   help='''template for bams merged by region,
                                   use {} as place holder for genomic region''')
     #===========
