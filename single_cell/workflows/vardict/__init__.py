@@ -1,6 +1,4 @@
 import pypeliner
-import biowrappers.components.variant_calling.vardict.tasks
-import biowrappers.components.io.vcf.tasks
 
 
 default_chromosomes = [str(a) for a in xrange(1, 23)] + ['X', 'Y']
@@ -30,7 +28,7 @@ def create_vardict_paired_sample_workflow(
         name='run_vardict',
         axes=('region',),
         ctx={'mem': 12, 'num_retry': 4, 'mem_retry_increment': 2},
-        func=biowrappers.components.variant_calling.vardict.tasks.run_paired_sample_vardict,
+        func="biowrappers.components.variant_calling.vardict.tasks.run_paired_sample_vardict",
         args=(
             pypeliner.managed.InputFile('normal.bam', 'region', fnames=normal_bam_file, extensions=['.bai']),
             pypeliner.managed.InputFile('tumour.bam', 'region', fnames=tumour_bam_file, extensions=['.bai']),
@@ -50,7 +48,7 @@ def create_vardict_paired_sample_workflow(
         name='compress_tmp',
         axes=('region',),
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
-        func=biowrappers.components.io.vcf.tasks.compress_vcf,
+        func="biowrappers.components.io.vcf.tasks.compress_vcf",
         args=(
             pypeliner.managed.TempInputFile('result.vcf', 'region'),
             pypeliner.managed.TempOutputFile('result.vcf.gz', 'region'),
@@ -60,7 +58,7 @@ def create_vardict_paired_sample_workflow(
     workflow.transform(
         name='concatenate_vcf',
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
-        func=biowrappers.components.io.vcf.tasks.concatenate_vcf,
+        func="biowrappers.components.io.vcf.tasks.concatenate_vcf",
         args=(
             pypeliner.managed.TempInputFile('result.vcf.gz', 'region'),
             pypeliner.managed.OutputFile(out_file),

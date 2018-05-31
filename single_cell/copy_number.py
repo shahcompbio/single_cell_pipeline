@@ -36,6 +36,9 @@ def copy_number_calling_workflow(workflow, args):
 
     cloneid = args["clone_id"]
 
+    remixt_config = config['titan_params'].get('extract_seqdata', {})
+
+
     workflow.setobj(
         obj=mgd.OutputChunks('tumour_cell_id'),
         value=tumour_cellids,
@@ -45,6 +48,53 @@ def copy_number_calling_workflow(workflow, args):
         obj=mgd.OutputChunks('normal_cell_id'),
         value=normal_cellids,
     )
+
+    workflow.transform(
+        name="get_snp_positions_filename",
+        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        func="remixt.config.get_filename",
+        ret=mgd.TempOutputObj('snp_positions_filename'),
+        args=(
+              remixt_config,
+              config['titan_params']['ref_data_dir'],
+              'snp_positions'
+        )
+    )
+
+    workflow.transform(
+        name="get_bam_max_fragment_length",
+        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        func="remixt.config.get_param",
+        ret=mgd.TempOutputObj('bam_max_fragment_length'),
+        args=(
+              remixt_config,
+              'bam_max_fragment_length'
+        )
+    )
+
+
+    workflow.transform(
+        name="get_bam_max_soft_clipped",
+        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        func="remixt.config.get_param",
+        ret=mgd.TempOutputObj('bam_max_soft_clipped'),
+        args=(
+              remixt_config,
+              'bam_max_soft_clipped'
+        )
+    )
+
+    workflow.transform(
+        name="get_bam_check_proper_pair",
+        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        func="remixt.config.get_param",
+        ret=mgd.TempOutputObj('bam_check_proper_pair'),
+        args=(
+              remixt_config,
+              'bam_check_proper_pair'
+        )
+    )
+
 
     workflow.subworkflow(
         name="extract_seqdata_tumour",
@@ -63,6 +113,10 @@ def copy_number_calling_workflow(workflow, args):
             config,
             config['titan_params'].get('extract_seqdata', {}),
             config['titan_params']['ref_data_dir'],
+            mgd.TempInputObj('snp_positions_filename'),
+            mgd.TempInputObj('bam_max_fragment_length'),
+            mgd.TempInputObj('bam_max_soft_clipped'),
+            mgd.TempInputObj('bam_check_proper_pair'),
         )
     )
 
@@ -83,6 +137,10 @@ def copy_number_calling_workflow(workflow, args):
             config,
             config['titan_params'].get('extract_seqdata', {}),
             config['titan_params']['ref_data_dir'],
+            mgd.TempInputObj('snp_positions_filename'),
+            mgd.TempInputObj('bam_max_fragment_length'),
+            mgd.TempInputObj('bam_max_soft_clipped'),
+            mgd.TempInputObj('bam_check_proper_pair'),
         )
     )
 

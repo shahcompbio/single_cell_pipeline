@@ -4,12 +4,8 @@ Created on Jul 6, 2017
 @author: dgrewal
 '''
 import os
-import tasks
 import pypeliner
 import pypeliner.managed as mgd
-
-from single_cell.utils import hdfutils
-from single_cell.utils import helpers
 
 
 def create_alignment_workflow(
@@ -79,7 +75,7 @@ def create_alignment_workflow(
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
         axes=('cell_id', 'lane',),
-        func=tasks.align_pe,
+        func="single_cell.workflows.alignment.tasks.align_pe",
         args=(
             mgd.InputFile(
                 'fastq_1',
@@ -115,7 +111,7 @@ def create_alignment_workflow(
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.merge_bams,
+        func="single_cell.workflows.alignment.tasks.merge_bams",
         axes=('cell_id',),
         args=(
             mgd.TempInputFile(
@@ -135,7 +131,7 @@ def create_alignment_workflow(
                 'mem': config["memory"]['high'],
                 'pool_id': config['pools']['highmem'],
                 'ncpus': 1},
-            func=tasks.realign,
+            func="single_cell.workflows.alignment.tasks.realign",
             args=(
                 mgd.TempInputFile('merged_lanes.bam', 'cell_id'),
                 mgd.TempInputFile('merged_lanes.bam.bai', 'cell_id'),
@@ -153,7 +149,7 @@ def create_alignment_workflow(
                 'pool_id': config['pools']['highmem'],
                 'ncpus': 1},
             axes=('cell_id',),
-            func=tasks.merge_realignment,
+            func="single_cell.workflows.alignment.tasks.merge_realignment",
             args=(
                 mgd.TempInputFile('realigned.bam', 'chrom', 'cell_id'),
                 mgd.TempOutputFile('merged_realign.bam', 'cell_id'),
@@ -181,7 +177,7 @@ def create_alignment_workflow(
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
         axes=('cell_id',),
-        func=tasks.postprocess_bam,
+        func="single_cell.workflows.alignment.tasks.postprocess_bam",
         args=(
             final_bam,
             mgd.OutputFile('sorted_markdups', 'cell_id', fnames=bam_filename),
@@ -206,7 +202,7 @@ def create_alignment_workflow(
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.bam_collect_wgs_metrics,
+        func="single_cell.workflows.alignment.tasks.bam_collect_wgs_metrics",
         axes=('cell_id',),
         args=(
             mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename),
@@ -235,7 +231,7 @@ def create_alignment_workflow(
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.bam_collect_gc_metrics,
+        func="single_cell.workflows.alignment.tasks.bam_collect_gc_metrics",
         axes=('cell_id',),
         args=(
             mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename),
@@ -261,7 +257,7 @@ def create_alignment_workflow(
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.bam_collect_insert_metrics,
+        func="single_cell.workflows.alignment.tasks.bam_collect_insert_metrics",
         axes=('cell_id',),
         args=(
             mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename),
@@ -274,7 +270,7 @@ def create_alignment_workflow(
 
     workflow.transform(
         name="collect_gc_metrics",
-        func=tasks.collect_gc,
+        func="single_cell.workflows.alignment.tasks.collect_gc",
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
@@ -292,7 +288,7 @@ def create_alignment_workflow(
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.collect_metrics,
+        func="single_cell.workflows.alignment.tasks.collect_metrics",
         args=(
             mgd.InputFile(flagstat_metrics, 'cell_id', axes_origin=[]),
             mgd.InputFile(markdups_metrics, 'cell_id', axes_origin=[]),
@@ -309,7 +305,7 @@ def create_alignment_workflow(
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.annotate_metrics,
+        func="single_cell.workflows.alignment.tasks.annotate_metrics",
         args=(
             mgd.TempInputFile("alignment_metrics.h5"),
             sample_info,
@@ -323,7 +319,7 @@ def create_alignment_workflow(
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=tasks.plot_metrics,
+        func="single_cell.workflows.alignment.tasks.plot_metrics",
         args=(
             mgd.TempInputFile("alignment_metrics_annotated.h5"),
             mgd.OutputFile(plot_metrics),
@@ -339,7 +335,7 @@ def create_alignment_workflow(
             'mem': config["memory"]['low'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=hdfutils.concat_hdf_tables,
+        func="single_cell.workflows.alignment.hdfutils.concat_hdf_tables",
         args=(
             [mgd.TempInputFile("alignment_metrics_annotated.h5"),
              mgd.TempInputFile("gc_metrics.h5"),
@@ -371,7 +367,7 @@ def create_alignment_workflow(
             'mem': config["memory"]['low'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func=helpers.write_to_yaml,
+        func="single_cell.utils.helpers.write_to_yaml",
         args=(
             mgd.OutputFile(meta_yaml),
             metadata
