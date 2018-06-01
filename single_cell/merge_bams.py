@@ -6,7 +6,7 @@ Created on Feb 22, 2018
 import os
 import pypeliner
 import pypeliner.managed as mgd
-from workflows import pseudo_wgs 
+from workflows import merge_bams
 from single_cell.utils import helpers
 
 def merge_bams_workflow(workflow, args):
@@ -42,7 +42,7 @@ def merge_bams_workflow(workflow, args):
 
     workflow.subworkflow(
         name="wgs_merge_workflow",
-        func=pseudo_wgs.create_wgs_workflow,
+        func=merge_bams.create_merge_bams_workflow,
         args=(
             mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files),
             mgd.InputFile('bam_markdups', 'cell_id', fnames=bai_files),
