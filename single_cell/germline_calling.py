@@ -8,10 +8,7 @@ import os
 import pypeliner
 import pypeliner.managed as mgd
 from workflows import germline
-from workflows import split_bams
 from single_cell.utils import helpers
-from single_cell.workflows.germline import tasks
-import variant_calling
 
 
 def germline_calling_workflow(workflow, args):
@@ -47,7 +44,7 @@ def germline_calling_workflow(workflow, args):
     workflow.transform(
         name="get_regions",
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
-        func=helpers.get_regions_from_reference,
+        func="single_cell.utils.pysamutils.get_regions_from_reference",
         ret=pypeliner.managed.OutputChunks('region'),
         args=(
             config["ref_genome"],
@@ -80,7 +77,7 @@ def germline_calling_workflow(workflow, args):
 
     workflow.transform(
         name='annotate_genotype',
-        func=tasks.annotate_normal_genotype,
+        func="single_cell.workflows.germline.tasks.annotate_normal_genotype",
         args=(
             mgd.InputFile(samtools_germline_vcf, extensions=['.tbi']),
             mgd.OutputFile(normal_genotype_filename),
@@ -90,7 +87,7 @@ def germline_calling_workflow(workflow, args):
 
     workflow.subworkflow(
         name='snpeff',
-        func=biowrappers.components.variant_calling.snpeff.create_snpeff_annotation_workflow,
+        func="biowrappers.components.variant_calling.snpeff.create_snpeff_annotation_workflow",
         args=(
             config['databases']['snpeff']['db'],
             mgd.InputFile(samtools_germline_vcf, extensions=['.tbi']),
@@ -103,7 +100,7 @@ def germline_calling_workflow(workflow, args):
 
     workflow.subworkflow(
         name='read_counts',
-        func=variant_calling.create_snv_allele_counts_for_vcf_targets_workflow,
+        func="single_cell.workflows.variant_calling.create_snv_allele_counts_for_vcf_targets_workflow",
         args=(
             config,
             mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files),
@@ -118,7 +115,7 @@ def germline_calling_workflow(workflow, args):
 
     workflow.transform(
         name='build_results_file',
-        func=biowrappers.components.io.hdf5.tasks.concatenate_tables,
+        func="biowrappers.components.io.hdf5.tasks.concatenate_tables",
         args=([
                 mgd.InputFile(counts_template),
                 mgd.InputFile(mappability_filename),

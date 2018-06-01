@@ -114,7 +114,7 @@ def variant_calling_workflow(workflow, args):
     workflow.transform(
         name="get_regions",
         ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
-        func="single_cell.utils.helpers.get_regions_from_reference",
+        func="single_cell.utils.pysamutils.get_regions_from_reference",
         ret=mgd.OutputChunks('region'),
         args=(
               config["ref_genome"],
@@ -223,7 +223,7 @@ def variant_calling_workflow(workflow, args):
             mgd.InputFile('bam_markdups_index', 'cell_id', fnames=bai_files),
             mgd.TempInputFile('all.snv.vcf.gz'),
             mgd.TempOutputFile('snv_counts.h5'),
-        )
+        ),
     )
 
     workflow.transform(
