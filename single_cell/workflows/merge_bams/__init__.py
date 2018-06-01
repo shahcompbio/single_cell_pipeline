@@ -8,7 +8,7 @@ import pypeliner
 import pypeliner.managed as mgd
 
 
-def create_wgs_workflow(
+def create_merge_bams_workflow(
     input_bams,
     input_bais,
     merged_bams,
@@ -40,7 +40,7 @@ def create_wgs_workflow(
     workflow.transform(
         name='merge_bams',
         ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['multicore'], 'ncpus':config["max_cores"]},
-        func="single_cell.workflows.pseudo_wgs.tasks.merge_bams",
+        func="single_cell.workflows.merge_bams.tasks.merge_bams",
         args=(
             mgd.InputFile('bam', 'cell_id', fnames=input_bams),
             mgd.InputFile('bai', 'cell_id', fnames=input_bais),
