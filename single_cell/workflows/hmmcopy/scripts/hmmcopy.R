@@ -123,7 +123,7 @@ run_hmmcopy <- function(cell, corrected_reads_data, param, outdir, multipliers, 
     check.samp.corrected$copy[!check.samp.corrected$ideal] <- NaN
 
     #Catch and quit if no data to fit.
-    if (all(is.na(check.samp.corrected$cor_gc)) & all(is.na(check.samp.corrected$copy))){
+    if (all(is.na(check.samp.corrected$cor_gc)) | all(is.na(check.samp.corrected$copy))){
 
         for (VAL in VALS) {
 
