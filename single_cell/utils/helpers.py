@@ -8,17 +8,16 @@ import errno
 import tarfile
 
 import yaml
-import pysam
 
 import shutil
 
-from collections import OrderedDict
 from subprocess import Popen, PIPE
 
 import multiprocessing
 
 
 from multiprocessing.pool import ThreadPool
+
 
 def write_to_yaml(outfile, data):
     with open(outfile, 'w') as output:
@@ -138,46 +137,6 @@ def copy_file(infile, output):
     shutil.copy(infile, output)
 
 
-def get_regions(chromosome_lengths, split_size):
-    if split_size is None:
-        return dict(enumerate(chromosome_lengths.keys()))
-
-    regions = []
-
-    for chrom, length in chromosome_lengths.iteritems():
-        lside_interval = range(1, length + 1, split_size)
-        rside_interval = range(split_size, length + split_size, split_size)
-
-        for beg, end in zip(lside_interval, rside_interval):
-            end = min(end, length)
-
-            regions.append('{}-{}-{}'.format(chrom, beg, end))
-
-    return regions
-
-def load_chromosome_lengths(file_name, chromosomes=None):
-
-    chromosome_lengths = OrderedDict()
-
-    ref = pysam.Fastafile(file_name)
-
-    for chrom, length in zip(ref.references, ref.lengths):
-        if chromosomes and chrom not in chromosomes:
-            continue
-
-        chromosome_lengths[str(chrom)] = int(length)
-
-    return chromosome_lengths
-
-
-def get_regions_from_reference(reference_fastq, split_size, chromosomes):
-    chromosome_lengths = load_chromosome_lengths(
-        reference_fastq,
-        chromosomes=chromosomes
-    )
-    return get_regions(chromosome_lengths, split_size)
-
-
 def get_fastqs(fastqs_file):
 
     data = load_yaml(fastqs_file)
@@ -213,10 +172,12 @@ def get_instrument_info(fastqs_file):
         for lane, paths in fastqs.iteritems():
 
             if "sequencing_instrument" not in paths:
-                raise Exception("instrument key missing in cell: {}".format(cell))
+                raise Exception(
+                    "instrument key missing in cell: {}".format(cell))
             seqinfo[(cell, lane)] = paths["sequencing_instrument"]
 
     return seqinfo
+
 
 def get_center_info(fastqs_file):
 
@@ -233,11 +194,11 @@ def get_center_info(fastqs_file):
         for lane, paths in fastqs.iteritems():
 
             if "sequencing_center" not in paths:
-                raise Exception("sequencing_center key missing in cell: {}".format(cell))
+                raise Exception(
+                    "sequencing_center key missing in cell: {}".format(cell))
             seqinfo[(cell, lane)] = paths["sequencing_center"]
 
     return seqinfo
-
 
 
 def get_sample_info(fastqs_file):
