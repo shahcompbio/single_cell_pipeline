@@ -261,7 +261,7 @@ class PlotMetrics(object):
 
 
         # set size based on the R-C in sample_plate
-        size = max(size, max(df.row), max(df.column))
+        size = int(max(size, max(df.row), max(df.column)))
 
         matrix = np.empty((size, size,))
         matrix[:] = np.nan
@@ -641,6 +641,10 @@ class PlotMetrics(object):
 
         df_melt = pd.melt(df, id_vars=['cell_id', 'index_i5', 'index_i7'],
                           value_vars=[metric],)
+
+        if df_melt.index_i5.isnull().all() or df_melt.index_i5.isnull().all():
+            warnings.warn("barcode information missing, skipping boxplots")
+            return
 
         fig_height = 6
         fig_width = len(set(df_melt[xlab]))
