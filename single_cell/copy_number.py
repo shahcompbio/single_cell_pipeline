@@ -7,7 +7,6 @@ Created on Apr 13, 2018
 import os
 import pypeliner.managed as mgd
 from workflows import titan
-from workflows import remixt
 from single_cell.utils import helpers
 from workflows import extract_seqdata
 
