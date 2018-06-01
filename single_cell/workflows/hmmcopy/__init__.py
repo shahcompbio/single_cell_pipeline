@@ -144,6 +144,7 @@ def create_hmmcopy_workflow(
             cell_ids,
             multipliers,
         ),
+        kwargs={'chromosomes': config["chromosomes"]}
     )
 
     workflow.transform(

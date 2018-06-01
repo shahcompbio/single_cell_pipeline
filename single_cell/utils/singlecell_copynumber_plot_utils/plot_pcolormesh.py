@@ -99,6 +99,8 @@ class PlotPcolor(object):
 
         bins = bins.drop_duplicates()
 
+        #just the sort order in here, dont need to change for mouse.
+        #might need to extend if reference has more genomes than human
         chromosomes = map(str, range(1, 23)) + ['X', 'Y']
 
         bins["chr"] = pd.Categorical(bins["chr"], chromosomes)

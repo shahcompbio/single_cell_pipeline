@@ -63,6 +63,7 @@ def germline_calling_workflow(workflow, args):
             mgd.OutputFile(samtools_germline_vcf, extensions=['.tbi']),
             config,
         ),
+        kwargs = {'chromosomes': config["chromosomes"]}
     )
 
     workflow.subworkflow(

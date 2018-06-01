@@ -169,6 +169,8 @@ class GenHmmPlots(object):
             "/hmmcopy/segments/{}/{}".format(cell_id, multiplier)]
 
         if not df.empty:
+            #just the sort order in here, dont need to change for mouse.
+            #might need to extend if reference has more genomes than human
             chromosomes = map(str, range(1, 23)) + ['X', 'Y']
             df["chr"] = pd.Categorical(df["chr"], chromosomes)
             df = df.sort_values(['chr', 'start', 'end'])

@@ -10,8 +10,6 @@ import vcf
 import pandas as pd
 
 
-default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
-
 
 def get_regions(chromosome_lengths, split_size):
     if split_size is None:

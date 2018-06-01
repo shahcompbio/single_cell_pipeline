@@ -6,10 +6,7 @@ from single_cell.utils import csvutils
 import remixt
 
 
-chromosomes = [str(a) for a in xrange(1, 23)] + ['X']
-
-
-def merge_overlapping_seqdata(outfile, infiles):
+def merge_overlapping_seqdata(outfile, infiles, chromosomes):
     out_store = pd.HDFStore(outfile, 'w', complevel=9, complib='blosc')
 
     index_offsets = pd.Series(0, index=chromosomes, dtype=np.int64)
@@ -87,7 +84,7 @@ def merge_tumour_alleles(input_csvs, output):
             writer.write("{}\t{}\tA\t{}\tT\t{}\n".format(chrom, pos, ref, alt))
 
 
-def concat_tumour_alleles(input_csvs, output_filename):
+def concat_tumour_alleles(input_csvs, output_filename, chromosomes):
 
     store = pd.HDFStore(output_filename, 'w', complevel=9, complib='blosc')
 

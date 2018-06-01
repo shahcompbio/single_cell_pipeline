@@ -4,9 +4,6 @@ import pypeliner.managed as mgd
 from single_cell.utils import helpers
 
 
-default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
-
-
 def breakpoint_calling_workflow(workflow, args):
 
     config = helpers.load_config(args)
