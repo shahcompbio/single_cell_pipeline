@@ -41,8 +41,10 @@ azure:
   mm10:
     gc_wig_file:
       500000: /refdata/mm10_build38_mouse.gc.ws_500000.wig
+      1000: /data/not/available
     map_wig_file:
       500000: /refdata/mm10_build38_mouse.map.rl_125_ws_500000.wig
+      1000: /data/not/available
     exclude_list: null
     ref_genome: /refdata/mm10_build38_mouse.fasta
     gc_windows: null
@@ -57,9 +59,11 @@ shahlab:
 
   grch37:
     gc_wig_file:
-      500000: /shahlab/pipelines/reference/GRCh37-lite.gc.ws_500000.wig
+      500000: /shahlab/pipelines/reference/GRCh37-lite.gc.ws_500000.wigi
+      1000: /shahlab/pipelines/reference/GRCh37-lite.gc.ws_1000.wig
     map_wig_file:
       500000: /shahlab/pipelines/reference/GRCh37-lite.map.ws_125_to_500000.wig
+      1000: /shahlab/pipelines/reference/GRCh37-lite.map.ws_1000.wig
     exclude_list: /shahlab/pipelines/reference/repeats.satellite.regions
     ref_genome: /shahlab/pipelines/reference/GRCh37-lite.fa
     gc_windows: /refdata/gc_windows.txt
@@ -69,8 +73,10 @@ shahlab:
   mm10:
     gc_wig_file:
       500000: /shahlab/pipelines/reference/mm10_build38_mouse.gc.ws_500000.wig
+      1000: /refdata/GRCh37-lite.map.ws_1000.wig
     map_wig_file:
       500000: /shahlab/pipelines/reference/mm10_build38_mouse.map.rl_125_ws_500000.wig
+      1000: /refdata/GRCh37-lite.map.ws_1000.wig
     exclude_list: null
     ref_genome: /shahlab/pipelines/reference/mm10_build38_mouse.fasta
     gc_windows: null
