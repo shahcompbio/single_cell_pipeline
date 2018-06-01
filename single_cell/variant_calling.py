@@ -150,6 +150,7 @@ def variant_calling_workflow(workflow, args):
             mgd.OutputFile(strelka_snv_vcf),
             config,
         ),
+        kwargs = {"chromosomes":config["chromosomes"]}
     )
 
     workflow.transform(
@@ -224,6 +225,7 @@ def variant_calling_workflow(workflow, args):
             mgd.TempInputFile('all.snv.vcf.gz'),
             mgd.TempOutputFile('snv_counts.h5'),
         ),
+        kwargs={'chromosomes': config['chromosomes']}
     )
 
     workflow.transform(

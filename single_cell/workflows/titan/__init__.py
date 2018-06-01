@@ -8,8 +8,6 @@ import pypeliner
 import pypeliner.managed as mgd
 
 
-default_chromosomes = [str(a) for a in xrange(1, 23)] + ['X']
-
 
 def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
                           raw_data_dir, out_file, config, args,
@@ -40,6 +38,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
                 'normal_sample.h5',
                 'normal_cell_id',
                 fnames=normal_seqdata),
+            config["chromosomes"]
         ),
     )
 
@@ -107,6 +106,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
                 'tumour_alleles.tsv',
                 'tumour_cell_id'),
             pypeliner.managed.OutputFile(tumour_alleles_file),
+            config['chromosomes']
         ),
     )
 
@@ -192,7 +192,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
 
     workflow.setobj(
         obj=mgd.OutputChunks('chromosome'),
-        value=default_chromosomes,
+        value=config["chromosomes"],
     )
 
     workflow.commandline(

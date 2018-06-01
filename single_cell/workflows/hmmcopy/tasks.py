@@ -183,7 +183,7 @@ def run_hmmcopy(
         sample_info=sample_info)
 
 
-def annotate_metrics(reads, metrics, output, sample_info, cells, multipliers):
+def annotate_metrics(reads, metrics, output, sample_info, cells, multipliers, chromosomes=None):
     """
     adds sample information to metrics in place
     """
@@ -194,7 +194,7 @@ def annotate_metrics(reads, metrics, output, sample_info, cells, multipliers):
 
     for multiplier in multipliers:
         tablename = '/hmmcopy/reads/{}'.format(multiplier)
-        order = get_hierarchical_clustering_order(reads, tablename)
+        order = get_hierarchical_clustering_order(reads, tablename, chromosomes=chromosomes)
 
         for cellid, value in order.iteritems():
             cellinfo = sample_info[cellid]
@@ -359,11 +359,12 @@ def sort_cells(metrics, good_cells, tableid):
     return sorted_cells
 
 
-def sort_bins(bins):
+def sort_bins(bins, chromosomes):
 
     bins = bins.drop_duplicates()
 
-    chromosomes = map(str, range(1, 23)) + ['X', 'Y']
+    if not chromosomes:
+        chromosomes = map(str, range(1, 23)) + ['X', 'Y']
 
     bins["chr"] = pd.Categorical(bins["chr"], chromosomes)
 
@@ -375,7 +376,7 @@ def sort_bins(bins):
 
 
 def get_hierarchical_clustering_order(
-        reads_filename, tablename):
+        reads_filename, tablename, chromosomes=None):
 
     data = []
     chunksize = 10 ** 6
@@ -397,7 +398,7 @@ def get_hierarchical_clustering_order(
             'start',
             'end'])
 
-    bins = sort_bins(bins)
+    bins = sort_bins(bins, chromosomes)
 
     table = table.sort_values(bins, axis=0)
 
