@@ -117,14 +117,13 @@ run_hmmcopy <- function(cell, corrected_reads_data, param, outdir, multipliers, 
                                  modal_curve=samp.corrected$modal_curve,modal_quantile=samp.corrected$modal_quantile, cor_map=samp.corrected$cor_map)
 
 
-
-
-
-
     VALS = as.numeric(strsplit(multipliers, ",")[[1]])
 
+    check.samp.corrected <- samp.corrected
+    check.samp.corrected$copy[!check.samp.corrected$ideal] <- NaN
+
     #Catch and quit if no data to fit.
-    if (all(is.na(samp.corrected$cor_gc)) & all(is.na(samp.corrected$copy))){
+    if (all(is.na(check.samp.corrected$cor_gc)) & all(is.na(check.samp.corrected$copy))){
 
         for (VAL in VALS) {
 
@@ -137,7 +136,7 @@ run_hmmcopy <- function(cell, corrected_reads_data, param, outdir, multipliers, 
             out_metrics <- file.path(modal_output, "metrics.csv")
 
             err <- "Low coverage sample results in loess regression failure, unable to correct and segment"
-            error_exit_clean(samp.corrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_metrics, err)
+            error_exit_clean(check.samp.corrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_metrics, err)
         }
 
         #create auto ploidy dummy output
@@ -150,7 +149,7 @@ run_hmmcopy <- function(cell, corrected_reads_data, param, outdir, multipliers, 
         out_metrics <- file.path(modal_output, "metrics.csv")
 
         err <- "Low coverage sample results in loess regression failure, unable to correct and segment"
-        error_exit_clean(samp.corrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_metrics, err)
+        error_exit_clean(check.samp.corrected, chromosomes, opt$sample_id, out_reads, out_segs, out_params, out_metrics, err)
 
         quit()
 
@@ -371,4 +370,5 @@ chromosomes <- c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", 
 param <- get_parameters(opt$param_str, opt$param_e, opt$param_mu, opt$param_l, opt$param_nu, opt$param_k, opt$param_m, opt$param_eta, opt$param_g, opt$param_s)
 
 run_hmmcopy(opt$sample_id, opt$corrected_data, param, opt$outdir, opt$param_multiplier)
+
 
