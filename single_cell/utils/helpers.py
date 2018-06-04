@@ -250,8 +250,13 @@ def get_sample_info(fastqs_file):
     cells = data.keys()
 
     for cell in cells:
+        data[cell]["cell_call"] = data[cell]["pick_met"]
+        data[cell]["experimental_condition"] = data[cell]["condition"]
         del data[cell]["fastqs"]
         del data[cell]["bam"]
+        del data[cell]["pick_met"]
+        del data[cell]["condition"]
+    
     return data
 
 

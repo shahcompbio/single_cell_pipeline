@@ -170,7 +170,7 @@ def run_hmmcopy(
         metrics_filename,
         hmmcopy_metrics_tablenames)
 
-    annotation_cols = ['pick_met', 'condition', 'sample_type',
+    annotation_cols = ['cell_call', 'experimental_condition', 'sample_type',
                        'mad_neutral_state', 'MSRSI_non_integerness',
                        'total_mapped_reads']
 

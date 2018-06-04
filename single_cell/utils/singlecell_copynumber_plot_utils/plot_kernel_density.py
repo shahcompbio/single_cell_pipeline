@@ -122,10 +122,10 @@ class PlotKernelDensity(object):
         ylim_max = self.get_ymax(mad_scores)
 
         # get all experimental conditions
-        exp_conds = set(data["condition"])
+        exp_conds = set(data["experimental_condition"])
         # plot each exp cond
         for expcond in exp_conds:
-            mad_scores = data[data["condition"] == expcond]\
+            mad_scores = data[data["experimental_condition"] == expcond]\
                              [self.column_name]
 
             if mad_scores.isnull().all():
