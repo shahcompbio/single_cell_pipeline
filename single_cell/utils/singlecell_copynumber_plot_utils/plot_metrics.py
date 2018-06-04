@@ -134,7 +134,7 @@ class PlotMetrics(object):
             sns.barplot(df['cell_id'], total, color=col_total, ax=ax)
             sns.barplot(df['cell_id'], fraction, color=col_fraction, ax=ax)
 
-        column_labels = [str(x) for x in df['pick_met']]
+        column_labels = [str(x) for x in df['cell_call']]
 
         ax = self.add_barplot_labels(ax, column_labels, 0.05, 12)
 
@@ -143,7 +143,7 @@ class PlotMetrics(object):
         sns.despine(offset=10, trim=True)
 
         sample_condition = [' (' + str(x) + ')' for x in
-                            df['condition']]
+                            df['experimental_condition']]
         sample_labels = [
             x + y for x,
             y in zip(
@@ -184,7 +184,7 @@ class PlotMetrics(object):
 
         sns.barplot(df['cell_id'], fraction, color=col_fraction, ax=ax)
 
-        column_labels = [str(x) for x in df['pick_met']]
+        column_labels = [str(x) for x in df['cell_call']]
 
         ax = self.add_barplot_labels(ax, column_labels, 0.015, 12)
 
@@ -194,7 +194,7 @@ class PlotMetrics(object):
         sns.despine(offset=10, trim=True)
 
         sample_condition = [' (' + str(x) + ')' for x in
-                            df['condition']]
+                            df['experimental_condition']]
         sample_labels = [
             x + y for x,
             y in zip(
@@ -232,7 +232,7 @@ class PlotMetrics(object):
 
         sns.barplot(df['cell_id'], df[metric], color=col, ax=ax)
 
-        column_labels = [str(x) for x in df['pick_met']]
+        column_labels = [str(x) for x in df['cell_call']]
 
         ax = self.add_barplot_labels(ax, column_labels, text_spacing, 12)
 
@@ -241,7 +241,7 @@ class PlotMetrics(object):
         sns.despine(offset=10, trim=True)
 
         sample_condition = [' (' + str(x) + ')' for x in
-                            df['condition']]
+                            df['experimental_condition']]
         sample_labels = [
             x + y for x,
             y in zip(
@@ -282,7 +282,7 @@ class PlotMetrics(object):
         well_labels = False
         # if the cell call matches the C[1-9]+ format then add cell calls to
         # the plot
-        if all([re.match("C[0-9]+$|NTC", cc) for cc in df['pick_met']]):
+        if all([re.match("C[0-9]+$|NTC", cc) for cc in df['cell_call']]):
             well_labels = np.empty((size, size,))
             well_labels[:] = np.nan
 
@@ -290,7 +290,7 @@ class PlotMetrics(object):
                 row_idx = int(df.ix[i]['row'])
                 col_idx = int(df.ix[i]['column'])
 
-                label_value = df.ix[i]["pick_met"]
+                label_value = df.ix[i]["cell_call"]
                 if label_value == "NTC":
                     label_value = 0
                 else:
@@ -325,11 +325,11 @@ class PlotMetrics(object):
         plt.close()
 
     def plot_metric_factorplot(self, df, metric, ylab, pdf, plot_title):
-        df_melt = pd.melt(df, id_vars=['cell_id', 'condition',
-                                       'pick_met'], value_vars=[metric])
+        df_melt = pd.melt(df, id_vars=['cell_id', 'experimental_condition',
+                                       'cell_call'], value_vars=[metric])
 
-        expt_conditions_ordered = sorted(df['condition'].unique())
-        cell_calls_ordered = sorted(df['pick_met'].unique())
+        expt_conditions_ordered = sorted(df['experimental_condition'].unique())
+        cell_calls_ordered = sorted(df['cell_call'].unique())
 
         num_cell_calls = len(cell_calls_ordered)
         tableau_10_medium = ['#729ece', '#ff9e4a', '#67bf5c', '#ed665d', '#ad8bc9',
@@ -343,7 +343,7 @@ class PlotMetrics(object):
 
             for call in cell_calls_ordered:
                 num_call.append(str(
-                    len(df[(df['condition'] == condition) & (df['pick_met'] == call)])))
+                    len(df[(df['experimental_condition'] == condition) & (df['cell_call'] == call)])))
 
             num_call = '\n'.join([','.join(num_call[x:x + 4])
                                   for x in range(0, len(num_call), 4)])
@@ -371,9 +371,9 @@ class PlotMetrics(object):
         fig = plt.figure(figsize=(fig_width, fig_height))
         _ = fig.gca()
 
-        g = sns.factorplot('condition',
+        g = sns.factorplot('experimental_condition',
                            'value',
-                           'pick_met',
+                           'cell_call',
                            df_melt,
                            kind='box',
                            order=expt_conditions_ordered,
@@ -409,7 +409,7 @@ class PlotMetrics(object):
         generate dict with all cell calls and a randomly assigned
         color for each
         """
-        ccs = set(metrics["pick_met"])
+        ccs = set(metrics["cell_call"])
         cmap = sns.color_palette("deep", len(ccs))
 
         cmap = {cc: cm for cc, cm in zip(ccs, cmap)}
@@ -449,7 +449,7 @@ class PlotMetrics(object):
         alpha = self.get_alpha(len(samples))
 
         for samp in samples:
-            cc = metrics[metrics['cell_id'] == samp]["pick_met"].iloc[0]
+            cc = metrics[metrics['cell_id'] == samp]["cell_call"].iloc[0]
             plt.plot(range(0, 101), df.loc[samp][
                      map(str, range(0, 101))], color=cmap[cc], alpha=alpha)
 
@@ -490,7 +490,7 @@ class PlotMetrics(object):
             returns samples that belong to each ec
             """
             outdata = {}
-            metrics = metrics.groupby("condition")
+            metrics = metrics.groupby("experimental_condition")
             for gc in metrics.groups.keys():
                 vals = metrics.get_group(gc)["cell_id"]
 
@@ -518,7 +518,7 @@ class PlotMetrics(object):
         alpha = self.get_alpha(max([len(v) for v in samps.itervalues()]))
         for ec, samps in samps.iteritems():
             for samp in samps:
-                cc = metrics[metrics['cell_id'] == samp]["pick_met"].iloc[0]
+                cc = metrics[metrics['cell_id'] == samp]["cell_call"].iloc[0]
                 plt.plot(range(0, 101), df.loc[samp][
                          map(str, range(0, 101))], color=cmap[cc], alpha=alpha)
 
@@ -560,7 +560,7 @@ class PlotMetrics(object):
             returns samples that belong to each ec and cc
             """
             outdata = {}
-            metrics = metrics.groupby(["condition", "pick_met"])
+            metrics = metrics.groupby(["experimental_condition", "cell_call"])
             for gc in metrics.groups.keys():
                 vals = metrics.get_group(gc)["cell_id"]
 

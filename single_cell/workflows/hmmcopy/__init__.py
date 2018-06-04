@@ -255,8 +255,8 @@ def create_hmmcopy_workflow(
         kwargs={
             'plot_title': 'QC pipeline metrics',
             'column_name': 'state',
-            'plot_by_col': 'condition',
-            'color_by_col': 'pick_met',
+            'plot_by_col': 'experimental_condition',
+            'color_by_col': 'cell_call',
             'chromosomes': chromosomes,
             'max_cn': hmmparams['num_states'],
             'scale_by_cells': False
@@ -280,8 +280,8 @@ def create_hmmcopy_workflow(
         kwargs={
             'plot_title': 'QC pipeline metrics',
             'column_name': 'state',
-            'plot_by_col': 'condition',
-            'color_by_col': 'pick_met',
+            'plot_by_col': 'experimental_condition',
+            'color_by_col': 'cell_call',
             'chromosomes': chromosomes,
             'max_cn': hmmparams['num_states'],
             'scale_by_cells': False,
