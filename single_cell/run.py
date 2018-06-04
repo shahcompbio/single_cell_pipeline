@@ -19,10 +19,10 @@ def main():
     args = parse_args()
 
     if args["which"] == "generate_config":
-        generate_config(args["generate_config"])
+        generate_config(args)
 
     if args["which"] == "clean_sentinels":
-        clean_sentinels(args["clean_sentinels"])
+        clean_sentinels(args)
 
     if args["which"] == "align":
         pyp = pypeliner.app.Pypeline(config=args)

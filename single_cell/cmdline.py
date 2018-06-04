@@ -38,6 +38,9 @@ class parseRegionTemplate(argparse.Action):
 
 def separate_pipelinedir_by_subcommand(args):
 
+    if args['which'] in ['generate_config', 'clean_sentinels']:
+        return args
+
     pipelinedir = args.get("pipelinedir", None)
 
     if pipelinedir:
@@ -239,6 +242,10 @@ def parse_args():
                                  action=parseSentinelPattern,
                                  required=True,
                                  help='''pattern to clean''')
+
+    clean_sentinels.add_argument("--pipelinedir",
+                                 required=True,
+                                 help='''path to the pipeline dir''')
 
     args = vars(parser.parse_args())
 

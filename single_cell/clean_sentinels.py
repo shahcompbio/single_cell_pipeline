@@ -38,7 +38,11 @@ def list_sentinels(dirname, pattern):
 
     obj_matches = [v for v in objs.keys() if fnmatch.fnmatch(v, pattern)]
 
-    print job_matches + obj_matches
+    matches = job_matches + obj_matches
+
+    matches = '\n'.join(matches)
+
+    print matches
     
     
 def delete_sentinels(dirname, pattern):

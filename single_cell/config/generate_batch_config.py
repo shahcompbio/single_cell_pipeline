@@ -105,6 +105,9 @@ def main(output=None, input_params=None):
 
 def generate_submit_config_in_temp(args):
 
+    if args['which'] in ['clean_sentinels','generate_config']:
+        return args
+
     if args.get("submit_config", None):
         return args
 
