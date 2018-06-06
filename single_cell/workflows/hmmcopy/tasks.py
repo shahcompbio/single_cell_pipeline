@@ -183,7 +183,8 @@ def run_hmmcopy(
         sample_info=sample_info)
 
 
-def annotate_metrics(reads, metrics, output, sample_info, cells, multipliers, chromosomes=None):
+def annotate_metrics(
+        reads, metrics, output, sample_info, cells, multipliers, chromosomes=None):
     """
     adds sample information to metrics in place
     """
@@ -194,7 +195,9 @@ def annotate_metrics(reads, metrics, output, sample_info, cells, multipliers, ch
 
     for multiplier in multipliers:
         tablename = '/hmmcopy/reads/{}'.format(multiplier)
-        order = get_hierarchical_clustering_order(reads, tablename, chromosomes=chromosomes)
+        order = get_hierarchical_clustering_order(
+            reads, tablename, chromosomes=chromosomes
+        )
 
         for cellid, value in order.iteritems():
             cellinfo = sample_info[cellid]
@@ -268,22 +271,53 @@ def merge_hdf_files_in_memory(
     output_store.close()
 
 
-def merge_pdf(in_filenames, out_filename, metrics, cell_filters):
+def group_cells_by_row(cells, metrics, tableid, sort_by_col=False):
+
+    with pd.HDFStore(metrics, 'r') as metrics:
+        metricsdata = metrics[tableid]
+        metricsdata = metricsdata.set_index("cell_id")
+
+    grouped_data = {}
+
+    for cell in cells:
+
+        row = metricsdata.at[cell, 'row']
+        col = metricsdata.at[cell, 'column']
+
+        if row not in grouped_data:
+            grouped_data[row] = []
+
+        value = (cell, col) if sort_by_col else cell
+
+        grouped_data[row].append(value)
+
+    if sort_by_col:
+        for row, coldata in grouped_data.iteritems():
+            coldata = sorted(coldata, key=lambda tup: tup[1])
+            coldata = [cell for cell, col in coldata]
+            grouped_data[row] = coldata
+
+    return grouped_data
+
+
+def merge_pdf(in_filenames, outfilenames, metrics, cell_filters):
 
     good_cells = get_good_cells(
-        metrics,
-        cell_filters,
-        '/hmmcopy/metrics/0')
+        metrics, cell_filters, '/hmmcopy/metrics/0'
+    )
 
-    sorted_cells = sort_cells(metrics, good_cells, '/hmmcopy/metrics/0')
+    grouped_data = group_cells_by_row(
+        good_cells, metrics, '/hmmcopy/metrics/0', sort_by_col=True
+    )
 
-    for infiles, out_file in zip(in_filenames, out_filename):
+    for infiles, outfiles in zip(in_filenames, outfilenames):
 
-        helpers.makedirs(out_file, isfile=True)
+        for row, cells in grouped_data.iteritems():
 
-        infiles = [infiles[samp] for samp in sorted_cells]
+            inputpdfs = [infiles[samp] for samp in cells]
+            out_file = outfiles[row]
 
-        pdfutils.merge_pdfs(infiles, out_file)
+            pdfutils.merge_pdfs(inputpdfs, out_file)
 
 
 def create_igv_seg(merged_segs, merged_hmm_metrics,

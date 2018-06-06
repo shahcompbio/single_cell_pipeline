@@ -9,10 +9,17 @@ import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import helpers
 
+def get_rows_in_chip(sample_info):
+    rows = set()
+    for cellinfo in sample_info.values():
+        rows.add(int(cellinfo["row"]))
+    return sorted(rows)
+
+
 
 def create_hmmcopy_workflow(
         bam_file, bai_file, hmmcopy_data, igv_seg_filename, segs_pdf, bias_pdf,
-        segs_filt_pdf, bias_filt_pdf, plot_heatmap_ec_output,
+        plot_heatmap_ec_output,
         plot_heatmap_ec_filt_output, plot_metrics_output,
         plot_kernel_density_output, meta_yaml, cell_ids, config, args,
         hmmparams, params_tag, results_dir):
@@ -34,6 +41,11 @@ def create_hmmcopy_workflow(
     workflow.setobj(
         obj=mgd.TempOutputObj('sampleinfo', 'cell_id', axes_origin=[]),
         value=sample_info)
+
+    workflow.setobj(
+        obj=mgd.OutputChunks('row'),
+        value=get_rows_in_chip(sample_info))
+
 
     workflow.transform(
         name='run_hmmcopy',
@@ -160,32 +172,11 @@ def create_hmmcopy_workflow(
                 mgd.TempInputFile('bias.pdf', 'cell_id'),
             ],
             [
-                mgd.OutputFile(segs_pdf),
-                mgd.OutputFile(bias_pdf),
+                mgd.OutputFile("segs", "row", axes_origin=[], template=segs_pdf),
+                mgd.OutputFile("bias", "row", axes_origin=[], template=bias_pdf),
             ],
             mgd.TempInputFile("annotated_metrics.h5"),
             None,
-        )
-    )
-
-    workflow.transform(
-        name='merge_hmm_copy_plots_filtered',
-        ctx={
-            'mem': config["memory"]['med'],
-            'pool_id': config['pools']['standard'],
-            'ncpus': 1},
-        func="single_cell.workflows.hmmcopy.tasks.merge_pdf",
-        args=(
-            [
-                mgd.TempInputFile('segments.pdf', 'cell_id'),
-                mgd.TempInputFile('bias.pdf', 'cell_id'),
-            ],
-            [
-                mgd.OutputFile(segs_filt_pdf),
-                mgd.OutputFile(bias_filt_pdf),
-            ],
-            mgd.TempInputFile("annotated_metrics.h5"),
-            config['good_cells'],
         )
     )
 
