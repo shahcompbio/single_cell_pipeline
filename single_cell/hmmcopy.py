@@ -34,11 +34,8 @@ def hmmcopy_workflow(workflow, args):
 
         hmmcopy_data = os.path.join(results_dir, '{}_hmmcopy.h5'.format(lib))
 
-        segs_pdf = os.path.join(plots_dir, '{}_segs.pdf'.format(lib))
-        bias_pdf = os.path.join(plots_dir, '{}_bias.pdf'.format(lib))
-
-        segs_filt_pdf = os.path.join(plots_dir, '{}_segs_filtered.pdf'.format(lib))
-        bias_filt_pdf = os.path.join(plots_dir, '{}_bias_filtered.pdf'.format(lib))
+        segs_pdf = os.path.join(plots_dir, lib+'_segs_row_{row}.pdf')
+        bias_pdf = os.path.join(plots_dir, lib+'_bias_row_{row}.pdf')
 
         heatmap_filt_pdf = os.path.join(plots_dir, '{}_heatmap_by_ec_filtered.pdf'.format(lib))
         heatmap_pdf = os.path.join(plots_dir, '{}_heatmap_by_ec.pdf'.format(lib))
@@ -53,10 +50,8 @@ def hmmcopy_workflow(workflow, args):
                 mgd.InputFile('bam_markdups_index', 'cell_id', fnames=bai_files),
                 mgd.OutputFile(hmmcopy_data),
                 mgd.OutputFile(igv_seg_file),
-                mgd.OutputFile(segs_pdf),
-                mgd.OutputFile(bias_pdf),
-                mgd.OutputFile(segs_filt_pdf),
-                mgd.OutputFile(bias_filt_pdf),
+                segs_pdf,
+                bias_pdf,
                 mgd.OutputFile(heatmap_pdf),
                 mgd.OutputFile(heatmap_filt_pdf),
                 mgd.OutputFile(metrics_pdf),
