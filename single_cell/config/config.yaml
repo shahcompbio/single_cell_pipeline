@@ -38,7 +38,7 @@ hmmcopy_params:
 
     map_cutoff: 0.9
 
-    bin_size: 500000
+    bin_size: "{bin_size}"
 
     e: 0.999999
 
@@ -64,13 +64,13 @@ hmmcopy_params:
 
     mu: 0,1,2,3,4,5,6,7,8,9,10,11
 
-    smoothing_function: modal
+    smoothing_function: "{smoothing_function}"
 
-    exclude_list: /refdata/repeats.satellite.regions
+    exclude_list: "{$cluster:$reference:exclude_list}"
 
-    gc_wig_file: /refdata/GRCh37-lite.gc.ws_500000.wig
+    gc_wig_file: "{$cluster:$reference:gc_wig_file:$bin_size}"
 
-    map_wig_file: /refdata/GRCh37-lite.map.ws_125_to_500000.wig
+    map_wig_file: "{$cluster:$reference:map_wig_file:$bin_size}"
 
 # Reference genome to align to in fasta format. Should be indexed by aligner and samtools
 ref_genome: "{$cluster:$reference:ref_genome}"
