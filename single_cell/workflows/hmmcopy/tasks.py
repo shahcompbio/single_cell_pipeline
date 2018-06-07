@@ -300,7 +300,7 @@ def group_cells_by_row(cells, metrics, tableid, sort_by_col=False):
     return grouped_data
 
 
-def merge_pdf(in_filenames, outfilenames, metrics, cell_filters):
+def merge_pdf(in_filenames, outfilenames, metrics, cell_filters, rows):
 
     good_cells = get_good_cells(
         metrics, cell_filters, '/hmmcopy/metrics/0'
@@ -312,12 +312,20 @@ def merge_pdf(in_filenames, outfilenames, metrics, cell_filters):
 
     for infiles, outfiles in zip(in_filenames, outfilenames):
 
-        for row, cells in grouped_data.iteritems():
+        for row in rows:
+            cells = grouped_data.get(row, None)
 
-            inputpdfs = [infiles[samp] for samp in cells]
             out_file = outfiles[row]
 
-            pdfutils.merge_pdfs(inputpdfs, out_file)
+            # if all cells from a row are filtered
+            # generate empty file to avoid issues with pypeliner
+            if not cells:
+                open(out_file, 'w').close()
+
+            else:
+                inputpdfs = [infiles[samp] for samp in cells]
+
+                pdfutils.merge_pdfs(inputpdfs, out_file)
 
 
 def create_igv_seg(merged_segs, merged_hmm_metrics,
