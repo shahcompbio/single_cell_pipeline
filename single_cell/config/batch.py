@@ -136,7 +136,7 @@ def get_pool_def(
 def get_compute_start_commands():
     commands = (
         'clean_up () {\n'
-        '  echo "clean_up task executed\n'
+        '  echo "clean_up task executed"\n'
         '  find $AZ_BATCH_TASK_WORKING_DIR/ -xtype l -delete\n'
         '  exit 0\n'
         '}\n'
