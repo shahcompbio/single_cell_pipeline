@@ -101,8 +101,8 @@ def get_vm_size_azure(numcores):
 
 
 def get_vm_image_id(version):
-    subscription = os.environ.get("subscription_id", "id-missing")
-    resource_group = os.environ.get("resource_group", "id-missing")
+    subscription = os.environ.get("SUBSCRIPTION_ID", "id-missing")
+    resource_group = os.environ.get("RESOURCE_GROUP", "id-missing")
     return "/subscriptions/{}/resourceGroups/{}/providers/Microsoft.Compute/images/singlecellpipeline_{}".format(
         subscription, resource_group, version)
 
