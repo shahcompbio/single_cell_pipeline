@@ -9,14 +9,6 @@ import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import helpers
 
-def get_rows_in_chip(sample_info):
-    rows = set()
-    for cellinfo in sample_info.values():
-        rows.add(int(cellinfo["row"]))
-    return sorted(rows)
-
-
-
 def create_hmmcopy_workflow(
         bam_file, bai_file, hmmcopy_data, igv_seg_filename, segs_pdf, bias_pdf,
         plot_heatmap_ec_output,
@@ -31,6 +23,9 @@ def create_hmmcopy_workflow(
     multipliers = copy.deepcopy(hmmparams["multipliers"])
     multipliers.append(0)
 
+    rows = [int(cellinfo["row"]) for cellinfo in sample_info.values()]
+    rows = sorted(set(rows))
+
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
@@ -44,7 +39,8 @@ def create_hmmcopy_workflow(
 
     workflow.setobj(
         obj=mgd.OutputChunks('row'),
-        value=get_rows_in_chip(sample_info))
+        value=rows,
+    )
 
 
     workflow.transform(
@@ -177,6 +173,7 @@ def create_hmmcopy_workflow(
             ],
             mgd.TempInputFile("annotated_metrics.h5"),
             None,
+            rows
         )
     )
 
