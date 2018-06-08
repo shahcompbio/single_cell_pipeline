@@ -33,7 +33,7 @@ def generate_submit_config_in_temp(args):
 
     config_params = batch.get_batch_params(override=params_override)
     config = batch.get_batch_config(config_params)
-    config.write_config(config, batch_yaml)
+    batch.write_config(config, batch_yaml)
 
     args["submit_config"] = batch_yaml
 
