@@ -324,7 +324,7 @@ class GenHmmPlots(object):
                     'font.size': 6 * num_plots})
 
         linewidth = 0.5 * num_plots
-        scatter_size = 4 * num_plots
+        scatter_size = 8 * num_plots
 
         height_plot = 20 * num_plots
         width_plot = 10 * num_plots
@@ -462,7 +462,7 @@ class GenHmmPlots(object):
         assert np.nanvar(scale) < 0.0001
         scale = scale[0]
 
-        for state in range(0, num_states):
+        for state in range(0, num_states+1):
             color = cmap[state]
 
             data = reads[reads["state"] == state]["copy"]
