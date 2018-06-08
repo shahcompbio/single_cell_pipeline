@@ -247,7 +247,8 @@ def create_hmmcopy_workflow(
             'color_by_col': 'cell_call',
             'chromosomes': chromosomes,
             'max_cn': hmmparams['num_states'],
-            'scale_by_cells': False
+            'scale_by_cells': False,
+            'mappability_threshold': hmmparams["map_cutoff"]
         }
     )
 
@@ -273,7 +274,8 @@ def create_hmmcopy_workflow(
             'chromosomes': chromosomes,
             'max_cn': hmmparams['num_states'],
             'scale_by_cells': False,
-            'cell_filters': config["good_cells"]
+            'cell_filters': config["good_cells"],
+            'mappability_threshold': hmmparams["map_cutoff"]
         }
     )
 
