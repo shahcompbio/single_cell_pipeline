@@ -81,6 +81,8 @@ class PlotPcolor(object):
         self.segs_tablename = kwargs.get('segs_tablename')
         self.metrics_tablename = kwargs.get('metrics_tablename')
 
+        self.multiplier = kwargs.get('multiplier')
+
         self.cells = kwargs.get("cells")
 
     def build_label_indices(self, header):
@@ -105,7 +107,7 @@ class PlotPcolor(object):
 
         bins["chr"] = pd.Categorical(bins["chr"], chromosomes)
 
-        bins = bins.sort_values(['start', ])
+        bins = bins.sort_values(['chr', 'start', ])
 
         bins = [tuple(v) for v in bins.values.tolist()]
 
@@ -127,9 +129,12 @@ class PlotPcolor(object):
         for chunk in pd.read_hdf(
                 self.input, chunksize=chunksize, key=self.segs_tablename):
 
+            #set low mapp regions to white
+            chunk[self.column_name].loc[chunk['map'] <= self.mappability_threshold] = float("nan")
+
             chunk["bin"] = list(zip(chunk.chr, chunk.start, chunk.end))
 
-            chunk = chunk.pivot(index='cell_id', columns='bin', values='state')
+            chunk = chunk.pivot(index='cell_id', columns='bin', values=self.column_name)
 
             data.append(chunk)
 
@@ -144,7 +149,7 @@ class PlotPcolor(object):
 
         bins = self.sort_bins_hdf(bins)
 
-        table = table.sort_values(bins, axis=0)
+        table = table[bins]
 
         return table
 
@@ -566,6 +571,10 @@ def parse_args():
     parser.add_argument('--max_cn',
                         default=20,
                         help='''maximum copynumber to plot in heatmap''')
+
+    parser.add_argument('--multiplier',
+                        help='''required if inputs are csv''')
+
 
     parser.add_argument('--scale_by_cells',
                         default=False,

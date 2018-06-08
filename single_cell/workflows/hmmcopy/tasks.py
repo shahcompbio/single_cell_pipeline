@@ -519,7 +519,7 @@ def plot_pcolor(infile, metrics, output, tempdir, multipliers, plot_title=None,
                 column_name=None, plot_by_col=None,
                 chromosomes=None, max_cn=None,
                 scale_by_cells=None, color_by_col=None,
-                cell_filters=None):
+                cell_filters=None, mappability_threshold=None):
 
     helpers.makedirs(tempdir)
 
@@ -546,7 +546,8 @@ def plot_pcolor(infile, metrics, output, tempdir, multipliers, plot_title=None,
                           segs_tablename=reads_tablename,
                           metrics_tablename=metrics_tablename,
                           color_by_col=color_by_col,
-                          cells=cells)
+                          cells=cells,
+                          mappability_threshold=mappability_threshold)
         plot.main()
 
     pdfutils.merge_pdfs(multiplier_pdfs, output)
