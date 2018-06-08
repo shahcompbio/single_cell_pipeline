@@ -22,7 +22,7 @@ From: ubuntu:latest
     conda config --add channels https://conda.anaconda.org/aroth85
     conda install --file /tmp/conda_packages.txt
     export GIT_SSL_NO_VERIFY=true
-    pip install git+https://svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git@0.1.3
+    pip install git+https://svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git@0.1.4
     pip install git+https://bitbucket.org/aroth85/biowrappers.git@singlecell
     pip install git+https://bitbucket.org/dranew/pypeliner.git@azure_production
     gatk-register /tmp/GenomeAnalysisTK.jar
