@@ -86,7 +86,7 @@ error_exit_clean <- function(samp.uncorrected, chromosomes, sample_id, out_reads
         write.table(samp.uncorrected, file=out_reads, quote=F, sep=",", col.names=T, row.names=F)
 
         #write colnames to the seg file
-        segs <- c("chr","start","end","state","median","integer_median","integer_copy_number")
+        segs <- c("chr","start","end","state","median","integer_median","integer_copy_number","cell_id")
         cat(segs, "\n", file=out_segs, sep=",")
 
         params <- c("initial","1","2","3","4","5","final","state","parameter","cell_id")
