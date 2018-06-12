@@ -100,6 +100,9 @@ def create_hmmcopy_workflow(
             multipliers,
             'hmmcopy/segments'
         ),
+        kwargs={
+            'dtypes': {'end': int, 'median': float}
+        }
     )
 
     workflow.transform(
