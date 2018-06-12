@@ -231,7 +231,10 @@ def merge_hdf_files_on_disk(
                 tablename = '/{}/{}/{}'.format(tableprefix, cellid, multiplier)
                 data = infilestore[tablename]
 
-                #make cellid categorical
+                # remove later, only added to fix a run
+                if "cell_id" not in data:
+                    data.cell_id = cellid
+                # make cellid categorical
                 data.cell_id = pd.Categorical(data.cell_id, cells)
 
                 for col, dtype in dtypes.iteritems():
@@ -239,9 +242,17 @@ def merge_hdf_files_on_disk(
 
                 out_tablename = '/{}/{}'.format(tableprefix, multiplier)
                 if out_tablename not in output_store:
-                    output_store.put(out_tablename, data, format='table', min_itemsize=min_itemsize)
+                    output_store.put(
+                        out_tablename,
+                        data,
+                        format='table',
+                        min_itemsize=min_itemsize)
                 else:
-                    output_store.append(out_tablename, data, format='table', min_itemsize=min_itemsize)
+                    output_store.append(
+                        out_tablename,
+                        data,
+                        format='table',
+                        min_itemsize=min_itemsize)
 
     output_store.close()
 
@@ -273,10 +284,14 @@ def merge_hdf_files_in_memory(
 
         out_tablename = '/{}/{}'.format(tableprefix, multiplier)
 
-        #make cellid categorical
+        # make cellid categorical
         all_cells_data.cell_id = pd.Categorical(all_cells_data.cell_id, cells)
 
-        output_store.put(out_tablename, all_cells_data, format='table', min_itemsize=min_itemsize)
+        output_store.put(
+            out_tablename,
+            all_cells_data,
+            format='table',
+            min_itemsize=min_itemsize)
 
     output_store.close()
 
