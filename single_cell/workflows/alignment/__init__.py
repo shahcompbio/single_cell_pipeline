@@ -335,7 +335,7 @@ def create_alignment_workflow(
             'mem': config["memory"]['low'],
             'pool_id': config['pools']['standard'],
             'ncpus': 1},
-        func="single_cell.workflows.alignment.hdfutils.concat_hdf_tables",
+        func="single_cell.utils.hdfutils.concat_hdf_tables",
         args=(
             [mgd.TempInputFile("alignment_metrics_annotated.h5"),
              mgd.TempInputFile("gc_metrics.h5"),
