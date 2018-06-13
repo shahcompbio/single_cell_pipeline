@@ -306,8 +306,8 @@ def group_cells_by_row(cells, metrics, tableid, sort_by_col=False):
 
     for cell in cells:
 
-        row = metricsdata.at[cell, 'row']
-        col = metricsdata.at[cell, 'column']
+        row = metricsdata.loc[cell]["row"]
+        col = metricsdata.loc[cell]["column"]
 
         if row not in grouped_data:
             grouped_data[row] = []
