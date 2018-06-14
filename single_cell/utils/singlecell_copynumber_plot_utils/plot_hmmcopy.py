@@ -28,7 +28,7 @@ matplotlib.rcParams['pdf.fonttype'] = 42
 
 def parse_args():
 
-    ann_cols = ['pick_met', 'condition', 'sample_type',
+    ann_cols = ['cell_call', 'experimental_condition', 'sample_type',
                 'median_hmmcopy_reads_per_bin', 'mad_neutral_state',
                 'MSRSI_non_integerness']
 
@@ -169,8 +169,8 @@ class GenHmmPlots(object):
             "/hmmcopy/segments/{}/{}".format(cell_id, multiplier)]
 
         if not df.empty:
-            #just the sort order in here, dont need to change for mouse.
-            #might need to extend if reference has more genomes than human
+            # just the sort order in here, dont need to change for mouse.
+            # might need to extend if reference has more genomes than human
             chromosomes = map(str, range(1, 23)) + ['X', 'Y']
             df["chr"] = pd.Categorical(df["chr"], chromosomes)
             df = df.sort_values(['chr', 'start', 'end'])
@@ -286,14 +286,13 @@ class GenHmmPlots(object):
 
         color_reference = {0: '#3498DB', 1: '#85C1E9', 2: '#808080'}
 
-
-        low_max = 3 + int((num_states-3)/2) + 1
+        low_max = 3 + int((num_states - 3) / 2) + 1
         hi_max = num_states + 1
         low_states = np.arange(3, low_max)
         hi_states = np.arange(low_max, hi_max)
 
-        low_cmap = matplotlib.cm.get_cmap('OrRd', low_max+1)
-        hi_cmap = matplotlib.cm.get_cmap('RdPu', hi_max+1)
+        low_cmap = matplotlib.cm.get_cmap('OrRd', low_max + 1)
+        hi_cmap = matplotlib.cm.get_cmap('RdPu', hi_max + 1)
 
         for cn_level in low_states:
             rgb = low_cmap(int(cn_level))[:3]
@@ -307,7 +306,6 @@ class GenHmmPlots(object):
         labels[-1] = labels[-1] + ' or more'
 
         return color_reference
-
 
     def plot_segments(self, pdfout, remove_y=False):
 
@@ -333,6 +331,8 @@ class GenHmmPlots(object):
         # SA501X3F xenograft heatmap: 20.4, 4
         fig = plt.figure(figsize=(height_plot, width_plot))
 
+        cmap = self.get_colors(self.num_states)
+
         gs = gridspec.GridSpec(num_plots, 3, width_ratios=[20, 3, 1], wspace=0)
 
         # add annotations to plot
@@ -354,13 +354,6 @@ class GenHmmPlots(object):
             ax = utl.create_chromosome_plot_axes(ax, self.ref_genome)
 
             ax.set_title("multiplier: {}".format(multiplier))
-
-            num_states = np.nanmax(reads.state)
-            #no data
-            if num_states == 0 or not np.isfinite(num_states):
-                continue
-
-            cmap = self.get_colors(num_states)
 
             # we pass None if we don't have data
             if reads is not None and segments is not None:
@@ -386,15 +379,15 @@ class GenHmmPlots(object):
             ylim = int(ylim) + 1
             ylim = max(3, ylim)
 
-            if ylim <=10:
+            if ylim <= 10:
                 tick_step = 1
             elif ylim > 10 and ylim <= 30:
                 tick_step = 2
             else:
                 tick_step = 5
 
-            #make ylim a multiple of tick_step
-            ylim = int((ylim+tick_step)/tick_step)*tick_step
+            # make ylim a multiple of tick_step
+            ylim = int((ylim + tick_step) / tick_step) * tick_step
 
             ax.set_ylim((0, ylim))
 
@@ -416,15 +409,14 @@ class GenHmmPlots(object):
                 df,
                 params,
                 cmap,
-                num_states,
+                self.num_states,
                 vertical=True)
 
             ax1.set_xlim((0, 2.5))
 
-
             ax.set_ylabel('Copy number')
 
-            if i+1 == len(self.multipliers):
+            if i + 1 == len(self.multipliers):
                 ax.set_xlabel('Chromosome')
                 ax1.set_xlabel("density")
 
@@ -438,7 +430,6 @@ class GenHmmPlots(object):
                 2,
                 type='rectangle',
                 location='upper center')
-
 
         fig.suptitle(self.sample_id, x=0.5, y=0.97)
         plt.tight_layout(rect=(0, 0.05, 1, 0.95))
@@ -462,7 +453,7 @@ class GenHmmPlots(object):
         assert np.nanvar(scale) < 0.0001
         scale = scale[0]
 
-        for state in range(0, num_states+1):
+        for state in range(0, num_states + 1):
             color = cmap[state]
 
             data = reads[reads["state"] == state]["copy"]
@@ -497,7 +488,6 @@ class GenHmmPlots(object):
                 plt.plot(x, y, color, linewidth=0.5, linestyle='--')
                 fig.set_ylim(0, 4)
 
-
     def main(self):
         """
         main
@@ -514,8 +504,8 @@ if __name__ == '__main__':
     args = parse_args()
 
     with GenHmmPlots(
-        args.corrected_reads, args.segments, args.params, args.quality_metrics,
-        args.ref_genome, args.segs_output, args.bias_output, args.sample_id,
-        args.multipliers, annotation_cols=args.annotation_cols,
-        num_states=args.num_states) as plot:
+            args.corrected_reads, args.segments, args.params, args.quality_metrics,
+            args.ref_genome, args.segs_output, args.bias_output, args.sample_id,
+            args.multipliers, annotation_cols=args.annotation_cols,
+            num_states=args.num_states) as plot:
         plot.main()
