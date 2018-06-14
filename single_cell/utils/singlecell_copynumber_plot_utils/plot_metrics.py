@@ -257,8 +257,8 @@ class PlotMetrics(object):
         pdf.savefig(bbox_inches='tight', pad_inches=0.4)
         plt.close()
 
-    def plot_metric_heatmap(self, df, metric, title, pdf, plot_title, size=72):
-
+    def plot_metric_heatmap(
+            self, df, metric, title, pdf, plot_title, size=72, center=None):
 
         # set size based on the R-C in sample_plate
         size = int(max(size, max(df.row), max(df.column)))
@@ -313,6 +313,7 @@ class PlotMetrics(object):
                         linewidths=0.6,
                         square=True,
                         cbar=True,
+                        center=center,
                         annot=well_labels,
                         annot_kws={'size': 6})
 
@@ -772,7 +773,7 @@ class PlotMetrics(object):
             self.plot_metric(df, 'median_insert_size', 'Median insert size', 0.05,
                              pdf, self.plot_title,)
             self.plot_metric_heatmap(df, 'total_reads', 'Total reads',
-                                     pdf, self.plot_title)
+                                     pdf, self.plot_title, center=250000)
             self.plot_metric_heatmap(df, 'percent_duplicate_reads', 'Percent duplicate reads',
                                      pdf, self.plot_title)
             self.plot_metric_heatmap(df, 'coverage_depth', 'Coverage depth',
