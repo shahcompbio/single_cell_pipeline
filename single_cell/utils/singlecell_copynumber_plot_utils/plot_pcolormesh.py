@@ -73,9 +73,7 @@ class PlotPcolor(object):
 
         self.max_cn = kwargs.get("max_cn")
 
-        if self.max_cn:
-            self.max_cn = int(self.max_cn) + 1
-        else:
+        if not self.max_cn:
             self.max_cn = 20
 
         self.segs_tablename = kwargs.get('segs_tablename')
@@ -101,8 +99,8 @@ class PlotPcolor(object):
 
         bins = bins.drop_duplicates()
 
-        #just the sort order in here, dont need to change for mouse.
-        #might need to extend if reference has more genomes than human
+        # just the sort order in here, dont need to change for mouse.
+        # might need to extend if reference has more genomes than human
         chromosomes = map(str, range(1, 23)) + ['X', 'Y']
 
         bins["chr"] = pd.Categorical(bins["chr"], chromosomes)
@@ -129,12 +127,17 @@ class PlotPcolor(object):
         for chunk in pd.read_hdf(
                 self.input, chunksize=chunksize, key=self.segs_tablename):
 
-            #set low mapp regions to white
-            chunk[self.column_name].loc[chunk['map'] <= self.mappability_threshold] = float("nan")
+            # set low mapp regions to white
+            chunk[
+                self.column_name].loc[
+                chunk['map'] <= self.mappability_threshold] = float("nan")
 
             chunk["bin"] = list(zip(chunk.chr, chunk.start, chunk.end))
 
-            chunk = chunk.pivot(index='cell_id', columns='bin', values=self.column_name)
+            chunk = chunk.pivot(
+                index='cell_id',
+                columns='bin',
+                values=self.column_name)
 
             data.append(chunk)
 
@@ -414,7 +417,6 @@ class PlotPcolor(object):
         ClusterMap(
             data,
             ccdata,
-            lims,
             self.max_cn,
             chromosomes=self.chromosomes,
             scale_by_cells=self.scale_by_cells)
@@ -574,7 +576,6 @@ def parse_args():
 
     parser.add_argument('--multiplier',
                         help='''required if inputs are csv''')
-
 
     parser.add_argument('--scale_by_cells',
                         default=False,

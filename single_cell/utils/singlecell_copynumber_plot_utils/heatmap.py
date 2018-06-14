@@ -15,7 +15,8 @@ import seaborn as sns
 
 class ClusterMap(object):
 
-    def __init__(self, data, colordata, lims, max_cn, chromosomes=None, scale_by_cells=False):
+    def __init__(self, data, colordata, max_cn, chromosomes=None,
+                 scale_by_cells=False):
         """
         :param data pandas dataframe with bins as columns and samples as rows
         :param colordata: dict with samples and their corresponding type
@@ -29,7 +30,7 @@ class ClusterMap(object):
 
         self.scale_by_cells = scale_by_cells
 
-        self.max_cn = max_cn
+        self.max_cn = max_cn + 1
 
         self.colordata = colordata
         self.rows = data.index
@@ -40,9 +41,6 @@ class ClusterMap(object):
 
         # set max for data
         self.data = np.clip(self.data, 0, self.max_cn)
-
-        self.vmax = min(self.max_cn, lims[1])
-        self.vmin = lims[0]
 
         self.generate_plot()
 
@@ -76,31 +74,34 @@ class ClusterMap(object):
 
         return ListedColormap(cmap), ccs
 
-    def generate_colormap_heatmap(self, local_levels, maxval):
+    def generate_colormap_heatmap(self, maxval, vmin, vmax):
         """generating a custom heatmap 2:gray 0: blue 2+: reds
         :param maxval highest value in the data
         :returns listedcolormap
         """
+
         color_reference = {0: '#3498DB', 1: '#85C1E9', 2: '#D3D3D3'}
 
-        # all colors 2 and up are red with increasing intensity
-        cmap = matplotlib.cm.get_cmap('Reds', maxval + 1)
+        low_max = 3 + int((maxval - 3) / 2) + 1
+        hi_max = maxval
+        low_states = np.arange(3, low_max)
+        hi_states = np.arange(low_max, hi_max)
 
-        for cn_level in np.arange(3, maxval + 1):
-            cn_level = int(cn_level)
+        low_cmap = matplotlib.cm.get_cmap('OrRd', low_max + 1)
+        hi_cmap = matplotlib.cm.get_cmap('RdPu', hi_max + 1)
 
-            if cn_level == self.max_cn:
-                rgb = '#000000'
-            else:
-                rgb = cmap(cn_level)[:3]
-
+        for cn_level in low_states:
+            rgb = low_cmap(int(cn_level))[:3]
             color_reference[cn_level] = rgb2hex(rgb)
 
-        colors = [
-            color_reference[val] for val in np.arange(
-                min(local_levels),
-                max(local_levels) +
-                1)]
+        for cn_level in hi_states:
+            rgb = hi_cmap(int(cn_level))[:3]
+            color_reference[cn_level] = rgb2hex(rgb)
+
+        color_reference[maxval] = "#000000"
+
+        colors = [color_reference[cnlevel]
+                  for cnlevel in np.arange(vmin, vmax + 1)]
 
         cmap = ListedColormap(colors)
 
@@ -173,8 +174,10 @@ class ClusterMap(object):
 
         # get all values we're going to plot later and generate a colormap for
         # them
-        plot_levels = np.unique(mat[~np.isnan(mat)])
-        cmap = self.generate_colormap_heatmap(plot_levels, self.vmax)
+        cmap = self.generate_colormap_heatmap(
+            self.max_cn,
+            np.nanmin(mat),
+            np.nanmax(mat))
 
         # calculate appropriate margin to accomodate labels
         label_len = max([len(self.rows[leaves[i]])
@@ -211,13 +214,9 @@ class ClusterMap(object):
         legend_plc = [0.07, 0.98, 0.18, 0.01]
         axcb = fig.add_axes(legend_plc, frame_on=False)
 
-        ticklabels = map(
-            int,
-            np.arange(
-                min(plot_levels),
-                max(plot_levels) +
-                1))
+        ticklabels = range(0, self.max_cn)
         ticklabels = map(str, ticklabels)
+        ticklabels.append('{}+'.format(self.max_cn - 1))
         self.plot_legend(axcb, cmap, ticklabels=ticklabels)
 
     def plot_legend(self, axes, cmap, ticklabels=None):
@@ -247,7 +246,7 @@ class ClusterMap(object):
         """generates a figure with dendrogram, colorbar, heatmap and legends
         """
 
-        figsize = (30,30)
+        figsize = (30, 30)
         if self.scale_by_cells:
             height = float(len(self.data)) / 7
             figsize = (30, height)
