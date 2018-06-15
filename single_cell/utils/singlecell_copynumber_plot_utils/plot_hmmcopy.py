@@ -314,18 +314,18 @@ class GenHmmPlots(object):
         sns.set(context='talk',
                 style='ticks',
                 font='Helvetica',
-                rc={'axes.titlesize': 6 * num_plots,
-                    'axes.labelsize': 6 * num_plots,
-                    'xtick.labelsize': 6 * num_plots,
-                    'ytick.labelsize': 6 * num_plots,
-                    'legend.fontsize': 6 * num_plots,
-                    'font.size': 6 * num_plots})
+                rc={'axes.titlesize': 3 * num_plots,
+                    'axes.labelsize': 3 * num_plots,
+                    'xtick.labelsize': 3 * num_plots,
+                    'ytick.labelsize': 3 * num_plots,
+                    'legend.fontsize': 3 * num_plots,
+                    'font.size': 3 * num_plots})
 
-        linewidth = 0.5 * num_plots
-        scatter_size = 8 * num_plots
+        linewidth = 0.25 * num_plots
+        scatter_size = 3 * num_plots
 
-        height_plot = 20 * num_plots
-        width_plot = 10 * num_plots
+        height_plot = 10 * num_plots
+        width_plot = 5 * num_plots
 
         # standard: 15,4
         # SA501X3F xenograft heatmap: 20.4, 4
@@ -333,7 +333,14 @@ class GenHmmPlots(object):
 
         cmap = self.get_colors(self.num_states)
 
-        gs = gridspec.GridSpec(num_plots, 3, width_ratios=[20, 3, 1], wspace=0)
+        utl.add_legend(
+            fig,
+            cmap,
+            self.num_states+1,
+            type='rectangle',
+            location='upper center')
+
+        gs = gridspec.GridSpec(num_plots, 2, width_ratios=[20, 3], wspace=0)
 
         # add annotations to plot
         metrics = self.read_metrics(self.sample_id, 0)
@@ -421,15 +428,6 @@ class GenHmmPlots(object):
                 ax1.set_xlabel("density")
 
             ax = utl.add_open_grid_lines(ax)
-
-            ax2 = plt.subplot(gs[i, 2])
-            ax2.axis('off')
-            fig.legend = utl.add_legend(
-                ax2,
-                cmap,
-                2,
-                type='rectangle',
-                location='upper center')
 
         fig.suptitle(self.sample_id, x=0.5, y=0.97)
         plt.tight_layout(rect=(0, 0.05, 1, 0.95))
