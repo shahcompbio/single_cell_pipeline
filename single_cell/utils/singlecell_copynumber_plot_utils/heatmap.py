@@ -68,7 +68,7 @@ class ClusterMap(object):
         :returns listedcolormap
         :returns list of string desc for each color
         """
-        ccs = list(set(self.colordata.values()))
+        ccs = list(set([self.colordata[row] for row in self.rows]))
 
         cmap = sns.color_palette("RdBu_d", len(ccs))
 
