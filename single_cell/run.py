@@ -5,6 +5,7 @@ from hmmcopy import hmmcopy_workflow
 from aneufinder import aneufinder_workflow
 from merge_bams import merge_bams_workflow
 from variant_calling import variant_calling_workflow
+from variant_calling import variant_counting_workflow
 from germline_calling import germline_calling_workflow
 from breakpoint_calling import breakpoint_calling_workflow
 from split_bam import split_bam_workflow
@@ -82,6 +83,12 @@ def main():
         pyp = pypeliner.app.Pypeline(config=args)
         workflow = pypeliner.workflow.Workflow()
         workflow = breakpoint_calling_workflow(workflow, args)
+        pyp.run(workflow)
+
+    if args["which"] == "variant_counting":
+        pyp = pypeliner.app.Pypeline(config=args)
+        workflow = pypeliner.workflow.Workflow()
+        workflow = variant_counting_workflow(workflow, args)
         pyp.run(workflow)
 
 if __name__ == "__main__":

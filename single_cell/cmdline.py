@@ -217,6 +217,18 @@ def parse_args():
                                     help='''normal bam file''')
 
     #======================================
+    # count variants from multiple samples
+    #======================================
+    variant_counting = add_global_args(
+        subparsers.add_parser("variant_counting"))
+    variant_counting.set_defaults(which='variant_counting')
+
+    variant_counting.add_argument("--input_vcfs",
+                                  required=True,
+                                  help='''vcf files''',
+                                  nargs='+')
+
+    #======================================
     # generates pipeline and batch configs
     #======================================
     generate_config = subparsers.add_parser("generate_config")
