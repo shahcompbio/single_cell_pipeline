@@ -247,3 +247,51 @@ def variant_calling_workflow(workflow, args):
 
     return workflow
 
+
+def variant_counting_workflow(workflow, args):
+
+    config = helpers.load_config(args)
+
+    bam_files, bai_files  = helpers.get_bams(args['input_yaml'])
+    vcfs = args['input_vcfs']
+    results_file = os.path.join(args['out_dir'], 'results', 'variant_counting', 'counts.h5')
+
+    cellids = helpers.get_samples(args['input_yaml'])
+
+    workflow.setobj(
+        obj=mgd.OutputChunks('cell_id'),
+        value=cellids,
+    )
+
+    workflow.transform(
+        name='merge_snvs',
+        func=vcfutils.merge_vcfs,
+        args=(
+            [mgd.InputFile(vcf) for vcf in vcfs],
+            mgd.TempOutputFile('all.snv.vcf')
+        )
+    )
+
+    workflow.transform(
+        name='finalise_snvs',
+        func=biowrappers.components.io.vcf.tasks.finalise_vcf,
+        args=(
+            mgd.TempInputFile('all.snv.vcf'),
+            mgd.TempOutputFile('all.snv.vcf.gz', extensions=['.tbi'])
+        )
+    )
+
+    workflow.subworkflow(
+        name='count_alleles',
+        func=create_snv_allele_counts_for_vcf_targets_workflow,
+        args=(
+            config,
+            mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files),
+            mgd.InputFile('bam_markdups_index', 'cell_id', fnames=bai_files),
+            mgd.TempInputFile('all.snv.vcf.gz'),
+            mgd.OutputFile(results_file),
+        )
+    )
+
+    return workflow
+
