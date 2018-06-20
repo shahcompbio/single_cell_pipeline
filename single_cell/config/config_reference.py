@@ -16,7 +16,7 @@ def get_chromosomes(reference):
 def get_reference_azure():
 
     common_options = {
-        'max_cores': None,
+        'max_cores': 8,
         'mutationseq': '/usr/local/museq/',
         'mutationseq_model': '/usr/local/museq/models_anaconda/model_v4.1.2_anaconda_sk_0.13.1.npz',
         'mutationseq_python': '/usr/local/miniconda2/envs/museq/bin/python',
@@ -75,7 +75,7 @@ def get_reference_azure():
 def get_reference_shahlab():
 
     common_options = {
-        'max_cores': 8,
+        'max_cores': None,
         'mutationseq': '/shahlab/pipelines/apps_centos6/mutationSeq_4.3.7_anaconda/',
         'mutationseq_model': '/shahlab/pipelines/apps_centos6/mutationSeq_4.3.7_anaconda//model_v4.1.2_anaconda_sk_0.13.1.npz',
         'mutationseq_python': 'python',
@@ -191,7 +191,8 @@ def get_const():
         'g': 3,
         'lambda': 20,
         'nu': 2.1,
-        'num_states': 12,
+        'num_states_hmmcopy': 12,
+        'num_states_copyclone': 7,
         's': 1,
         'strength': 1000,
         'kappa': '100,100,700,100,25,25,25,25,25,25,25,25',
@@ -201,8 +202,7 @@ def get_const():
         'memory': {'low': 2, 'med': 6, 'high': 18},
         'adapter': 'CTGTCTCTTATACACATCTCCGAGCCCACGAGAC',
         'adapter2': 'CTGTCTCTTATACACATCTGACGCTGCCGACGA',
-        'split_size': 10000000,
-
+        'split_size': 10000000,        
     }
     
     return params

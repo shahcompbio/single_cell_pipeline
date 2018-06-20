@@ -11,8 +11,7 @@ from split_bam import split_bam_workflow
 from generate_config import generate_config
 from clean_sentinels import clean_sentinels
 from copy_number import copy_number_calling_workflow
-
-# from copyclone import copyclone_workflow
+from copyclone import copyclone_workflow
 
 def main():
 
@@ -36,11 +35,11 @@ def main():
         workflow = hmmcopy_workflow(workflow, args)
         pyp.run(workflow)
 
-#     if args["which"] == "copyclone":
-#         pyp = pypeliner.app.Pypeline(config=args)
-#         workflow = pypeliner.workflow.Workflow()
-#         workflow = copyclone_workflow(workflow, args)
-#         pyp.run(workflow)
+    if args["which"] == "copyclone":
+        pyp = pypeliner.app.Pypeline(config=args)
+        workflow = pypeliner.workflow.Workflow()
+        workflow = copyclone_workflow(workflow, args)
+        pyp.run(workflow)
 
     if args["which"] == "aneufinder":
         pyp = pypeliner.app.Pypeline(config=args)

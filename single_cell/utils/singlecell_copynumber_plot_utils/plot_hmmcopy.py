@@ -92,15 +92,21 @@ class GenHmmPlots(object):
 
     def __init__(self, reads, segments, params, metrics,
                  ref_genome, segs_out, bias_out,
-                 sample_id, multipliers, **kwargs):
+                 sample_id, multipliers, tablename_format, **kwargs):
 
-        self.multipliers = multipliers
         self.reads = reads
         self.segments = segments
         self.params = params
         self.metrics = metrics
         self.ref_genome = ref_genome
+
+        self.multipliers = multipliers
+        if not self.multipliers:
+            self.multipliers = [None]
+
         self.sample_id = sample_id
+
+        self.tablename_format = tablename_format
 
         self.num_states = kwargs.get('num_states')
         if not self.num_states:
@@ -109,7 +115,7 @@ class GenHmmPlots(object):
         self.annotation_cols = kwargs.get('annotation_cols')
 
         if not self.annotation_cols:
-            self.annotation_cols = ['pick_met', 'condition',
+            self.annotation_cols = ['cell_call', 'experimental_condition',
                                     'sample_type', 'coverage_depth',
                                     'mad_neutral_state', 'MSRSI_non_integerness']
 
@@ -122,61 +128,115 @@ class GenHmmPlots(object):
         self.reads_store = pd.HDFStore(self.reads, 'r')
         self.segments_store = pd.HDFStore(self.segments, 'r')
         self.metrics_store = pd.HDFStore(self.metrics, 'r')
-        self.params_store = pd.HDFStore(self.params, 'r')
+
+        if self.params:
+            self.params_store = pd.HDFStore(self.params, 'r')
+        else:
+            self.params_store = None
 
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.reads_store.close()
         self.segments_store.close()
-        self.params_store.close()
+        if self.params_store:
+            self.params_store.close()
         self.metrics_store.close()
+
+    def _parse_table_format(self, string, reference={'type': 'metrics'}):
+        return reference.get(string, string)
 
     def read_metrics(self, cell_id, multiplier):
         """
 
         """
 
-        return self.metrics_store[
-            "/hmmcopy/metrics/{}/{}".format(cell_id, multiplier)]
+        ref = {'type': 'metrics', 'cell_id': cell_id, 'multiplier': multiplier}
+        tablename = [
+            self._parse_table_format(
+                v,
+                ref) for v in self.tablename_format]
+        tablename = '/'.join(tablename)
+
+        data = self.metrics_store[tablename]
+
+        data = data.groupby('cell_id')
+
+        return data.get_group(cell_id)
 
     def read_params(self, cell_id, multiplier):
         """
 
         """
-        return self.params_store[
-            "/hmmcopy/params/{}/{}".format(cell_id, multiplier)]
+
+        if not self.params_store:
+            return None
+
+        ref = {'type': 'params', 'cell_id': cell_id, 'multiplier': multiplier}
+        tablename = [
+            self._parse_table_format(
+                v,
+                ref) for v in self.tablename_format]
+        tablename = '/'.join(tablename)
+
+        data = self.params_store[tablename]
+
+        data = data.groupby('cell_id')
+
+        return data.get_group(cell_id)
 
     def read_corrected_reads(self, cell_id, multiplier):
         """
 
         """
+        ref = {'type': 'reads', 'cell_id': cell_id, 'multiplier': multiplier}
+        tablename = [
+            self._parse_table_format(
+                v,
+                ref) for v in self.tablename_format]
+        tablename = '/'.join(tablename)
 
-        df = self.reads_store[
-            "/hmmcopy/reads/{}/{}".format(cell_id, multiplier)]
+        data = self.reads_store[tablename]
 
-        df = utl.normalize_reads(df)
-        df = utl.compute_chromosome_coordinates(df, self.ref_genome)
+        data = data.groupby('cell_id')
 
-        return df
+        data = data.get_group(cell_id)
+
+        data = utl.normalize_reads(data)
+        data = utl.compute_chromosome_coordinates(data, self.ref_genome)
+
+        return data
 
     def read_segments(self, cell_id, multiplier):
         """
 
         """
 
-        df = self.segments_store[
-            "/hmmcopy/segments/{}/{}".format(cell_id, multiplier)]
+        ref = {
+            'type': 'segments',
+            'cell_id': cell_id,
+            'multiplier': multiplier}
+        tablename = [
+            self._parse_table_format(
+                v,
+                ref) for v in self.tablename_format]
+        tablename = '/'.join(tablename)
 
-        if not df.empty:
+        data = self.segments_store[tablename]
+
+        data = data.groupby('cell_id')
+
+        data = data.get_group(cell_id)
+
+        if not data.empty:
             # just the sort order in here, dont need to change for mouse.
             # might need to extend if reference has more genomes than human
             chromosomes = map(str, range(1, 23)) + ['X', 'Y']
-            df["chr"] = pd.Categorical(df["chr"], chromosomes)
-            df = df.sort_values(['chr', 'start', 'end'])
-            df = utl.compute_chromosome_coordinates(df, self.ref_genome)
+            data["chr"] = pd.Categorical(data["chr"], chromosomes)
+            data = data.sort_values(['chr', 'start', 'end'])
+            data = utl.compute_chromosome_coordinates(data, self.ref_genome)
 
-        return df
+        return data
 
     def get_annotations(self, metrics):
         annotations = []
@@ -314,15 +374,18 @@ class GenHmmPlots(object):
         sns.set(context='talk',
                 style='ticks',
                 font='Helvetica',
-                rc={'axes.titlesize': 3 * num_plots,
-                    'axes.labelsize': 3 * num_plots,
-                    'xtick.labelsize': 3 * num_plots,
-                    'ytick.labelsize': 3 * num_plots,
-                    'legend.fontsize': 3 * num_plots,
-                    'font.size': 3 * num_plots})
+                rc={'axes.titlesize': 5 * num_plots,
+                    'axes.labelsize': 5 * num_plots,
+                    'axes.linewidth': 0.5 * num_plots,
+                    'xtick.labelsize': 5 * num_plots,
+                    'xtick.major.width': 0.5 * num_plots,
+                    'ytick.labelsize': 5 * num_plots,
+                    'ytick.major.width': 0.5 * num_plots,
+                    'legend.fontsize': 4 * num_plots,
+                    'font.size': 4 * num_plots})
 
         linewidth = 0.25 * num_plots
-        scatter_size = 3 * num_plots
+        scatter_size = 2 * num_plots
 
         height_plot = 10 * num_plots
         width_plot = 5 * num_plots
@@ -336,11 +399,18 @@ class GenHmmPlots(object):
         utl.add_legend(
             fig,
             cmap,
-            self.num_states+1,
+            self.num_states + 1,
             type='rectangle',
             location='upper center')
 
-        gs = gridspec.GridSpec(num_plots, 2, width_ratios=[20, 3], wspace=0)
+        num_splits = 2 if self.params else 1
+        widths = [20, 3] if self.params else [20]
+
+        gs = gridspec.GridSpec(
+            num_plots,
+            num_splits,
+            width_ratios=widths,
+            wspace=0)
 
         # add annotations to plot
         metrics = self.read_metrics(self.sample_id, 0)
@@ -364,10 +434,8 @@ class GenHmmPlots(object):
 
             # we pass None if we don't have data
             if reads is not None and segments is not None:
-                cols = reads["state"].replace(cmap)
-                cols = cols[~reads['copy'].isnull()]
-
                 df = reads[np.isfinite(reads['copy'])]
+                cols = df["state"].replace(cmap)
 
                 plt.scatter(
                     df['plot_coord'],
@@ -403,36 +471,37 @@ class GenHmmPlots(object):
             sns.despine(offset=10, trim=True)
             ax.tick_params(axis='x', which='minor', pad=9.1)
 
-            ax1 = plt.subplot(gs[i, 1], sharey=ax)
-            ax1.set_ylim((0, ylim))
-
-            sns.despine(offset=10)
-
-            ax1.yaxis.set_visible(False)
-            ax1.spines['left'].set_visible(False)
-
-            self.plot_dist(
-                ax1,
-                df,
-                params,
-                cmap,
-                self.num_states,
-                vertical=True)
-
-            ax1.set_xlim((0, 2.5))
-
+            utl.add_open_grid_lines(ax)
             ax.set_ylabel('Copy number')
-
             if i + 1 == len(self.multipliers):
                 ax.set_xlabel('Chromosome')
-                ax1.set_xlabel("density")
 
-            ax = utl.add_open_grid_lines(ax)
+            if params:
+                ax1 = plt.subplot(gs[i, 1], sharey=ax)
+                ax1.set_ylim((0, ylim))
+
+                sns.despine(offset=10)
+
+                ax1.yaxis.set_visible(False)
+                ax1.spines['left'].set_visible(False)
+
+                self.plot_dist(
+                    ax1,
+                    df,
+                    params,
+                    cmap,
+                    self.num_states,
+                    vertical=True)
+
+                ax1.set_xlim((0, 2.5))
+
+                if i + 1 == len(self.multipliers):
+                    ax1.set_xlabel("density")
 
         fig.suptitle(self.sample_id, x=0.5, y=0.97)
         plt.tight_layout(rect=(0, 0.05, 1, 0.95))
 
-        pdfout.savefig(fig)
+        pdfout.savefig(fig, dpi=100)
         plt.close()
 
     def plot_dist(self, fig, reads, params,
@@ -440,6 +509,9 @@ class GenHmmPlots(object):
 
         # no data to plot
         if reads['copy'].isnull().all():
+            return
+
+        if not params:
             return
 
         scale = (reads["copy"] / reads["copy"])
