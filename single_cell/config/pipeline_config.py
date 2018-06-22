@@ -20,7 +20,7 @@ def get_version():
 def get_config_params(override=None):
     version = get_version()
     input_params = {
-        "cluster": "azure", "aligner": "bwa-aln",
+        "cluster": "azure", "aligner": "bwa-mem",
         "reference": "grch37", "smoothing_function": "modal",
         "bin_size": 500000, "copynumber_bin_size": 1000,
         "version": version
