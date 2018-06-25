@@ -17,7 +17,6 @@ import vcf
 
 import re
 from single_cell.utils import helpers
-from strelkautils import default_chromosomes
 
 
 
