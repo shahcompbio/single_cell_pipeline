@@ -6,6 +6,43 @@ Created on Jun 6, 2018
 import single_cell
 import os
 import yaml
+import collections
+
+
+class folded_unicode(unicode):
+    pass
+
+
+class literal_unicode(unicode):
+    pass
+
+
+def folded_unicode_representer(dumper, data):
+    return dumper.represent_scalar(u'tag:yaml.org,2002:str', data, style='>')
+
+
+def literal_unicode_representer(dumper, data):
+    return dumper.represent_scalar(u'tag:yaml.org,2002:str', data, style='|')
+
+yaml.add_representer(folded_unicode, folded_unicode_representer)
+yaml.add_representer(literal_unicode, literal_unicode_representer)
+
+
+def override_config(config, override):
+    def update(d, u):
+        for k, v in u.iteritems():
+            if isinstance(v, collections.Mapping):
+                d[k] = update(d.get(k, {}), v)
+            else:
+                d[k] = v
+        return d
+
+    if not override:
+        return config
+
+    cfg = update(config, override)
+
+    return cfg
 
 
 def get_version():
@@ -44,11 +81,9 @@ def get_batch_params(override=None):
         "reference": "grch37"
     }
 
-    if override:
-        data.update(override)
+    data = override_config(data, override)
 
     data["version"] = data["version"].replace('.', '_')
-
 
     return data
 
@@ -75,6 +110,8 @@ def generate_autoscale_formula(tasks_per_node):
 
     formula = formula.format(tasks_per_node)
 
+    formula = literal_unicode(formula)
+
     return formula
 
 
@@ -84,6 +121,8 @@ def create_vm_commands():
         "if [ `sudo blockdev --getsize64 /dev/sdd` -gt 900000000000 ]; then sudo mount /dev/sdd /datadrive; else sudo mount /dev/sdc /datadrive; fi\n"
         "sudo chmod -R 777 /datadrive /refdata\n"
     )
+
+    commands = literal_unicode(commands)
 
     return commands
 
@@ -146,12 +185,16 @@ def get_compute_start_commands():
         'cd /datadrive/$AZ_BATCH_TASK_WORKING_DIR/\n'
     )
 
+    commands = literal_unicode(commands)
+
     return {"compute_start_commands": commands}
 
 
 def get_compute_run_commands():
 
     cmd = "python -m pypeliner.delegator $AZ_BATCH_TASK_WORKING_DIR/{input_filename} $AZ_BATCH_TASK_WORKING_DIR/{output_filename}"
+
+    cmd = literal_unicode(cmd)
 
     return {"compute_run_command": cmd}
 
@@ -161,6 +204,8 @@ def get_compute_finish_commands():
         "find /datadrive/$AZ_BATCH_TASK_WORKING_DIR/ -xtype l -delete\n"
         "find /datadrive/$AZ_BATCH_TASK_WORKING_DIR/ -type f -delete\n"
     )
+
+    commands = literal_unicode(commands)
 
     return {"compute_finish_commands": commands}
 
@@ -186,10 +231,10 @@ def get_all_pools(pool_config, reference, version):
 
 def write_config(params, filepath):
     with open(filepath, 'w') as outputfile:
-        yaml.safe_dump(params, outputfile, default_flow_style=False)
+        yaml.dump(params, outputfile, default_flow_style=False)
 
 
-def get_batch_config(defaults):
+def get_batch_config(defaults, override=None):
     config = {}
 
     config.update(
@@ -209,6 +254,6 @@ def get_batch_config(defaults):
     config.update({"no_delete_pool": defaults["no_delete_pool"]})
     config.update({"no_delete_job": defaults["no_delete_job"]})
 
+    config = override_config(config, override)
+
     return config
-
-
