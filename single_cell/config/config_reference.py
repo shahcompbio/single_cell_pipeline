@@ -4,11 +4,12 @@ Created on Jun 6, 2018
 @author: dgrewal
 '''
 
+
 def get_chromosomes(reference):
     if reference == 'grch37':
-        return map(str, range(1,23)) + ['X','Y']
+        return map(str, range(1, 23)) + ['X', 'Y']
     elif reference == 'mm10':
-        return map(str, range(1,20)) + ['X','Y']
+        return map(str, range(1, 20)) + ['X', 'Y']
     else:
         raise Exception("unknown reference genome type {}".format(reference))
 
@@ -176,37 +177,25 @@ def get_databases():
 
     return databases
 
+
 def get_const():
 
     params = {
-        "min_bqual":20,
-        "min_mqual":20,
-        "count_unpaired": False,        
+        "min_bqual": 20,
+        "min_mqual": 20,
+        "count_unpaired": False,
         "normal_contamination": [0.2, 0.4, 0.6, 0.8],
         'num_clusters': [1, 2],
         'ploidy': [1, 2, 3, 4],
-        'multipliers': [1, 2, 3, 4, 5, 6],
         'map_cutoff': 0.9,
-        'e': 0.999999,
-        'eta': 50000,
-        'g': 3,
-        'lambda': 20,
-        'nu': 2.1,
-        'num_states': 12,
-        's': 1,
-        'strength': 1000,
-        'kappa': '100,100,700,100,25,25,25,25,25,25,25,25',
-        'm': '0,1,2,3,4,5,6,7,8,9,10,11',
-        'mu': '0,1,2,3,4,5,6,7,8,9,10,11',
         'good_cells': [['median_hmmcopy_reads_per_bin', 'ge', 50]],
-        'memory': {'low': 2, 'med': 6, 'high': 18},
         'adapter': 'CTGTCTCTTATACACATCTCCGAGCCCACGAGAC',
         'adapter2': 'CTGTCTCTTATACACATCTGACGCTGCCGACGA',
         'split_size': 10000000,
-
     }
-    
+
     return params
+
 
 def reference_data():
     data = {}

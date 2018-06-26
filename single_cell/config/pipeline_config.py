@@ -3,7 +3,7 @@ Created on Jun 6, 2018
 
 @author: dgrewal
 '''
-
+import collections
 import single_cell
 from config_reference import extract_from_reference
 import yaml
@@ -23,13 +23,13 @@ def get_config_params(override=None):
         "cluster": "azure", "aligner": "bwa-mem",
         "reference": "grch37", "smoothing_function": "modal",
         "bin_size": 500000, "copynumber_bin_size": 1000,
-        "version": version
+        "version": version,
+        'memory': {'high': 18, 'med': 6, 'low': 2}
     }
 
-    if override:
-        input_params.update(override)
-
     input_params["version"] = input_params["version"].replace('.', '_')
+
+    input_params = override_config(input_params, override)
 
     return input_params
 
@@ -87,21 +87,21 @@ def get_titan_params(cluster, reference, binsize):
 def get_hmmcopy_params(cluster, reference, binsize, smoothing_function):
 
     params = {
-        'multipliers': extract_from_reference(['multipliers']),
+        'multipliers': [1, 2, 3, 4, 5, 6],
         'map_cutoff': extract_from_reference(['map_cutoff']),
         'bin_size': binsize,
-        'e': extract_from_reference(['e']),
-        'eta': extract_from_reference(['eta']),
-        'g': extract_from_reference(['g']),
-        'lambda': extract_from_reference(['lambda']),
+        'e': 0.999999,
+        'eta': 50000,
+        'g': 3,
+        'lambda': 20,
         'min_mqual': extract_from_reference(['min_mqual']),
-        'nu': extract_from_reference(['nu']),
-        'num_states': extract_from_reference(['num_states']),
-        's': extract_from_reference(['s']),
-        'strength': extract_from_reference(['strength']),
-        'kappa': extract_from_reference(['kappa']),
-        'm': extract_from_reference(['m']),
-        'mu': extract_from_reference(['mu']),
+        'nu': 2.1,
+        'num_states': 12,
+        's': 1,
+        'strength': 1000,
+        'kappa': '100,100,700,100,25,25,25,25,25,25,25,25',
+        'm': '0,1,2,3,4,5,6,7,8,9,10,11',
+        'mu': '0,1,2,3,4,5,6,7,8,9,10,11',
         'smoothing_function': smoothing_function,
         'exclude_list': extract_from_reference([cluster, reference, 'exclude_list']),
         'gc_wig_file': extract_from_reference([cluster, reference, 'gc_wig_file', binsize]),
@@ -112,16 +112,34 @@ def get_hmmcopy_params(cluster, reference, binsize, smoothing_function):
     return {"hmmcopy_params": {"autoploidy": params}}
 
 
+def get_copyclone_params(cluster, reference, binsize, smoothing_function):
+    params = {
+        'map_cutoff': extract_from_reference(['map_cutoff']),
+        'bin_size': binsize,
+        'gc_wig_file': extract_from_reference([cluster, reference, 'gc_wig_file', binsize]),
+        'map_wig_file': extract_from_reference([cluster, reference, 'map_wig_file', binsize]),
+        'smoothing_function': smoothing_function,
+        'exclude_list': None,
+        'min_mqual': extract_from_reference(['min_mqual']),
+        'num_states': 7,
+        'A': [0.994, 0.994, 0.994, 0.994, 0.994, 0.994, 0.994],
+        'alpha_A': [1000, 1000, 1000, 1000, 1000, 1000, 1000],
+        'alpha_pi': [2, 2, 50, 2, 2, 2, 2],
+        'pi': [0.05, 0.1, 0.5, 0.2, 0.05, 0.05, 0.05],
+        'tau': [500, 25, 25, 25, 25, 25, 15],
+        'nu': [5, 5, 5, 5, 5, 5, 5],
+        'eta': [5000, 5000, 5000, 5000, 5000, 5000, 5000],
+        'shape': [3, 30, 30, 30, 30, 30, 20],
+        'rate': [0.01, 1, 1, 1, 1, 1, 1],
+        'ploidy_states': [2, 3, 4],
+    }
+
+    return {"copyclone": params}
+
+
 def get_cell_filter():
 
     return {"good_cells": extract_from_reference(['good_cells'])}
-
-
-def get_memory_requests():
-
-    params = {'memory': extract_from_reference(['memory'])}
-
-    return params
 
 
 def get_global_params(cluster, reference, aligner):
@@ -179,7 +197,24 @@ def get_databases():
     return databases
 
 
-def get_singlecell_pipeline_config(config_params):
+def override_config(config, override):
+    def update(d, u):
+        for k, v in u.iteritems():
+            if isinstance(v, collections.Mapping):
+                d[k] = update(d.get(k, {}), v)
+            else:
+                d[k] = v
+        return d
+
+    if not override:
+        return config
+
+    cfg = update(config, override)
+
+    return cfg
+
+
+def get_singlecell_pipeline_config(config_params, override=None):
 
     reference = config_params["reference"]
     cluster = config_params["cluster"]
@@ -211,11 +246,13 @@ def get_singlecell_pipeline_config(config_params):
 
     params.update(get_cell_filter())
 
-    params.update(get_memory_requests())
+    params.update({'memory': config_params['memory']})
 
     params.update(get_destruct_params(cluster, reference))
 
     params.update(get_databases())
+
+    params = override_config(params, override)
 
     return params
 
