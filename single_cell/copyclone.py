@@ -23,9 +23,7 @@ def copyclone_workflow(workflow, args):
     libid = args['library_id']
 
     results_dir = os.path.join(args['out_dir'], 'results', "copyclone")
-    segs_filename = os.path.join(results_dir, '{}_segments.h5'.format(libid))
-    reads_filename = os.path.join(results_dir, '{}_reads.h5'.format(libid))
-    metrics_filename = os.path.join(results_dir, '{}_metrics.h5'.format(libid))
+    output_filename = os.path.join(results_dir, '{}_copyclone.h5'.format(libid))
 
     plots_dir = os.path.join(results_dir, "plots")
     segs_pdf = os.path.join(plots_dir, '{}_segments.pdf'.format(libid))
@@ -45,9 +43,7 @@ def copyclone_workflow(workflow, args):
             'bam_markdups_index',
             'sample_id',
             fnames=bai_files),
-            mgd.OutputFile(reads_filename),
-            mgd.OutputFile(segs_filename),
-            mgd.OutputFile(metrics_filename),
+            mgd.OutputFile(output_filename),
             mgd.OutputFile(segs_pdf),
             mgd.OutputFile(reads_pdf),
             mgd.OutputFile(metrics_pdf),

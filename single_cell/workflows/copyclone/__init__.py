@@ -11,7 +11,7 @@ import tasks
 from single_cell.utils import helpers
 
 
-def create_copyclone_workflow(bam_file, bai_file, reads, segments, metrics,
+def create_copyclone_workflow(bam_file, bai_file, outputdata,
                               segments_plot, bias_plot, plot_metrics_output,
                               plot_kernel_density_output, plot_heatmap_ec_output,
                               plot_heatmap_ec_filt_output,
@@ -66,8 +66,8 @@ def create_copyclone_workflow(bam_file, bai_file, reads, segments, metrics,
         func=tasks.run_copyclone,
         args=(
             mgd.TempInputFile('corrected_reads.csv'),
-            mgd.OutputFile(reads),
-            mgd.OutputFile(segments),
+            mgd.TempOutputFile('reads.h5'),
+            mgd.TempOutputFile('segments.h5'),
             mgd.TempOutputFile("metrics.h5"),
             mgd.OutputFile(segments_plot),
             mgd.OutputFile(bias_plot),
@@ -100,9 +100,9 @@ def create_copyclone_workflow(bam_file, bai_file, reads, segments, metrics,
             'ncpus': 1},
         func="single_cell.workflows.copyclone.tasks.annotate_metrics",
         args=(
-            mgd.InputFile(reads),
+            mgd.TempInputFile('reads.h5'),
             mgd.TempInputFile('metrics.h5'),
-            mgd.OutputFile(metrics),
+            mgd.TempOutputFile('metrics_annotated.h5'),
             sample_info,
             sample_ids,
         ),
@@ -117,7 +117,7 @@ def create_copyclone_workflow(bam_file, bai_file, reads, segments, metrics,
             'ncpus': 1},
         func="single_cell.workflows.copyclone.tasks.plot_metrics",
         args=(
-            mgd.InputFile(metrics),
+            mgd.TempInputFile('metrics_annotated.h5'),
             mgd.OutputFile(plot_metrics_output),
             mgd.TempSpace("plot_metrics_temp"),
             'QC pipeline metrics',
@@ -132,7 +132,7 @@ def create_copyclone_workflow(bam_file, bai_file, reads, segments, metrics,
             'ncpus': 1},
         func="single_cell.workflows.copyclone.tasks.plot_kernel_density",
         args=(
-            mgd.InputFile(metrics),
+            mgd.TempInputFile('metrics_annotated.h5'),
             mgd.OutputFile(plot_kernel_density_output),
             ',',
             'mad_neutral_state',
@@ -148,8 +148,8 @@ def create_copyclone_workflow(bam_file, bai_file, reads, segments, metrics,
             'ncpus': 1},
         func="single_cell.workflows.copyclone.tasks.plot_pcolor",
         args=(
-            mgd.InputFile(reads),
-            mgd.InputFile(metrics),
+            mgd.TempInputFile('reads.h5'),
+            mgd.TempInputFile('metrics_annotated.h5'),
             mgd.OutputFile(plot_heatmap_ec_output),
         ),
         kwargs={
@@ -162,6 +162,21 @@ def create_copyclone_workflow(bam_file, bai_file, reads, segments, metrics,
             'scale_by_cells': False,
             'mappability_threshold': config['copyclone']["map_cutoff"]
         }
+    )
+
+    workflow.transform(
+        name='merge_all_hdf5_stores',
+        ctx={
+            'mem': config["memory"]['med'],
+            'pool_id': config['pools']['standard'],
+            'ncpus': 1},
+        func="single_cell.utils.hdfutils.concat_hdf_tables",
+        args=(
+            [mgd.TempInputFile("reads.h5"),
+             mgd.TempInputFile("segments.h5"),
+             mgd.TempInputFile("metrics_annotated.h5")],
+            mgd.OutputFile(outputdata),
+        )
     )
 
     return workflow
