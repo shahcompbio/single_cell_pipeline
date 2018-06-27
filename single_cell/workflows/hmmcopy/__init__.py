@@ -14,7 +14,7 @@ def create_hmmcopy_workflow(
         plot_heatmap_ec_output,
         plot_heatmap_ec_filt_output, plot_metrics_output,
         plot_kernel_density_output, meta_yaml, cell_ids, config, args,
-        hmmparams, params_tag, results_dir):
+        hmmparams, params_tag, results_dir, alignment_metrics=None):
 
     sample_info = helpers.get_sample_info(args["input_yaml"])
 
@@ -140,6 +140,25 @@ def create_hmmcopy_workflow(
         ),
     )
 
+    annotation_input = 'hmmcopy_metrics.h5'
+    if alignment_metrics:
+        annotation_input = 'hmmcopy_quality_metrics.h5'
+        workflow.transform(
+            name="add_quality",
+            ctx={
+                'mem': config["memory"]['low'],
+                'pool_id': config['pools']['standard'],
+                'ncpus': 1},
+            func="single_cell.workflows.hmmcopy.tasks.add_quality",
+            args=(
+                mgd.TempInputFile('hmmcopy_metrics.h5'),
+                mgd.InputFile(alignment_metrics),
+                multipliers,
+                mgd.TempOutputFile("hmmcopy_quality_metrics.h5"),
+                hmmparams['classifier_training_data'],
+            ),
+        )
+
     workflow.transform(
         name='annotate_metrics_with_info_and_clustering',
         ctx={
@@ -149,7 +168,7 @@ def create_hmmcopy_workflow(
         func="single_cell.workflows.hmmcopy.tasks.annotate_metrics",
         args=(
             mgd.TempInputFile('reads.h5'),
-            mgd.TempInputFile('hmmcopy_metrics.h5'),
+            mgd.TempInputFile(annotation_input),
             mgd.TempOutputFile("annotated_metrics.h5"),
             sample_info,
             cell_ids,

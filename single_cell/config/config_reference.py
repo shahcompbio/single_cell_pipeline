@@ -21,7 +21,7 @@ def get_reference_azure():
         'mutationseq_model': '/usr/local/museq/models_anaconda/model_v4.1.2_anaconda_sk_0.13.1.npz',
         'mutationseq_python': '/usr/local/miniconda2/envs/museq/bin/python',
         'one_split_job': True,
-
+        'classifier_training_data': '/refdata/classifier_training_data.h5'
     }
 
     human_data = {
@@ -80,6 +80,7 @@ def get_reference_shahlab():
         'mutationseq_model': '/shahlab/pipelines/apps_centos6/mutationSeq_4.3.7_anaconda//model_v4.1.2_anaconda_sk_0.13.1.npz',
         'mutationseq_python': 'python',
         'one_split_job': False,
+        'classifier_training_data': '/shahlab/pipelines/reference/classifier_training_data.h5'
     }
 
     human_data = {

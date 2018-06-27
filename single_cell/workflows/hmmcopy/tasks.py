@@ -13,6 +13,7 @@ import scipy.cluster.hierarchy as hc
 from scripts import ConvertCSVToSEG
 from scripts import ReadCounter
 from scripts import CorrectReadCount
+from scripts import classify
 
 from single_cell.utils import pdfutils
 from single_cell.utils import helpers
@@ -583,3 +584,27 @@ def plot_pcolor(infile, metrics, output, tempdir, multipliers, plot_title=None,
 def merge_tables(reads, segments, metrics, params, output):
 
     hdfutils.concat_hdf_tables([reads, segments, metrics, params], output)
+
+
+def add_quality(hmmcopy_metrics, alignment_metrics, multipliers, output, training_data):
+
+    hmmcopy_tables = ['/hmmcopy/metrics/{}'.format(mult) for mult in multipliers]
+
+    model = classify.train_classifier(training_data)
+
+    feature_names = model.feature_names_
+
+    data = classify.load_data(hmmcopy_metrics, alignment_metrics,
+                              hmmcopy_tables, '/alignment/metrics',
+                              feature_names)
+
+    for hmmcopy_table, tabledata in data:
+        predictions = classify.classify(model, tabledata)
+
+        classify.write_to_output(
+            hmmcopy_metrics,
+            hmmcopy_table,
+            output,
+            predictions)
+
+

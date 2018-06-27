@@ -29,25 +29,30 @@ def hmmcopy_workflow(workflow, args):
 
         info_file = os.path.join(results_dir, "info.yaml")
 
-
-        igv_seg_file = os.path.join(results_dir, '{}_igv_segments.seg'.format(lib))
+        igv_seg_file = os.path.join(
+            results_dir, '{}_igv_segments.seg'.format(lib))
 
         hmmcopy_data = os.path.join(results_dir, '{}_hmmcopy.h5'.format(lib))
 
-        segs_pdf = os.path.join(plots_dir, "segments", lib+'_segs_row_{row}.pdf')
-        bias_pdf = os.path.join(plots_dir, "bias", lib+'_bias_row_{row}.pdf')
+        segs_pdf = os.path.join(
+            plots_dir, "segments", lib + '_segs_row_{row}.pdf')
+        bias_pdf = os.path.join(plots_dir, "bias", lib + '_bias_row_{row}.pdf')
 
-        heatmap_filt_pdf = os.path.join(plots_dir, '{}_heatmap_by_ec_filtered.pdf'.format(lib))
-        heatmap_pdf = os.path.join(plots_dir, '{}_heatmap_by_ec.pdf'.format(lib))
+        heatmap_filt_pdf = os.path.join(
+            plots_dir, '{}_heatmap_by_ec_filtered.pdf'.format(lib))
+        heatmap_pdf = os.path.join(
+            plots_dir, '{}_heatmap_by_ec.pdf'.format(lib))
         metrics_pdf = os.path.join(plots_dir, '{}_metrics.pdf'.format(lib))
-        kernel_density_pdf = os.path.join(plots_dir, '{}_kernel_density.pdf'.format(lib))
+        kernel_density_pdf = os.path.join(
+            plots_dir, '{}_kernel_density.pdf'.format(lib))
 
         workflow.subworkflow(
             name='hmmcopy_workflow_' + params_tag,
             func=hmmcopy.create_hmmcopy_workflow,
             args=(
                 mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files),
-                mgd.InputFile('bam_markdups_index', 'cell_id', fnames=bai_files),
+                mgd.InputFile(
+                    'bam_markdups_index', 'cell_id', fnames=bai_files),
                 mgd.OutputFile(hmmcopy_data),
                 mgd.OutputFile(igv_seg_file),
                 segs_pdf,
@@ -64,6 +69,7 @@ def hmmcopy_workflow(workflow, args):
                 params_tag,
                 results_dir
             ),
+            kwargs={'alignment_metrics': args['alignment_metrics']}
         )
 
     return workflow
