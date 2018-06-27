@@ -52,3 +52,4 @@ pyyaml
 destruct
 pygenes
 bowtie
+pathos

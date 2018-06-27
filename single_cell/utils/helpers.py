@@ -13,11 +13,7 @@ import shutil
 
 from subprocess import Popen, PIPE
 
-import multiprocessing
-
-
-from multiprocessing.pool import ThreadPool
-
+import pathos.multiprocessing as mp
 
 def write_to_yaml(outfile, data):
     with open(outfile, 'w') as output:
@@ -71,12 +67,12 @@ def run_in_parallel(worker, args, ncores=None):
     def args_unpack(worker, args):
         return worker(*args)
 
-    count = multiprocessing.cpu_count()
+    count = mp.cpu_count()
 
     if ncores:
         count = min(ncores, count)
 
-    pool = ThreadPool(processes=count)
+    pool = mp.Pool(processes=count)
 
     tasks = []
 
@@ -217,7 +213,7 @@ def get_sample_info(fastqs_file):
         del data[cell]["bam"]
         del data[cell]["pick_met"]
         del data[cell]["condition"]
-    
+
     return data
 
 

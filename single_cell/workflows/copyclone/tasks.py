@@ -14,7 +14,6 @@ import numpy as np
 import scipy.spatial as sp
 import scipy.cluster.hierarchy as hc
 
-import warnings
 from single_cell.utils import csvutils
 from single_cell.utils import pdfutils
 from single_cell.utils import helpers
@@ -133,12 +132,7 @@ def run_copyclone(corrected_data, reads, segments, metrics, segments_plot, bias_
         segsfiles.append(segsout)
         biasfiles.append(biasout)
 
-    for arg in args:
-        print arg
-        _plot_hmmcopy_worker(*arg)
-
-#
-#     helpers.run_in_parallel(_plot_hmmcopy_worker, args, ncores=num_cores)
+    helpers.run_in_parallel(_plot_hmmcopy_worker, args, ncores=num_cores)
 
     pdfutils.merge_pdfs(segsfiles, segments_plot)
     pdfutils.merge_pdfs(biasfiles, bias_plot)
