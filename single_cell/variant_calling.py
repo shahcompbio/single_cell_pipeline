@@ -242,6 +242,7 @@ def variant_calling_workflow(workflow, args):
         ),
         kwargs={
             'drop_duplicates' : True,
+            'in_memory' : False,
         }
     )
 
