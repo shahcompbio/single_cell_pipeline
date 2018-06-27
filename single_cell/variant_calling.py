@@ -265,7 +265,7 @@ def variant_counting_workflow(workflow, args):
 
     workflow.transform(
         name='merge_snvs',
-        func=vcfutils.merge_vcfs,
+        func="single_cell.utils.vcfutils.merge_vcfs",
         args=(
             [mgd.InputFile(vcf) for vcf in vcfs],
             mgd.TempOutputFile('all.snv.vcf')
@@ -274,7 +274,7 @@ def variant_counting_workflow(workflow, args):
 
     workflow.transform(
         name='finalise_snvs',
-        func=biowrappers.components.io.vcf.tasks.finalise_vcf,
+        func="biowrappers.components.io.vcf.tasks.finalise_vcf",
         args=(
             mgd.TempInputFile('all.snv.vcf'),
             mgd.TempOutputFile('all.snv.vcf.gz', extensions=['.tbi'])
