@@ -425,9 +425,24 @@ class RunCopyClone(object):
 
         return predicted_labels, predicted_names, dataset
 
-    def fit(self, df):
+    def scale_copy_by_ploidy(self, df, cells, labels):
 
-#         df = df.fillna(value=0)
+        df = df.groupby("cell_id")
+
+        outdata = []
+        for i, cell in enumerate(cells):
+            df_cell = df.get_group(cell)
+            cell_label = labels[i]
+
+            df_cell["copy"] = df_cell["copy"] * cell_label
+
+            outdata.append(df_cell)
+
+        outdata = pd.concat(outdata)
+
+        return outdata
+
+    def fit(self, df):
 
         df_na = df.dropna(axis=1, how="any")
 
@@ -471,6 +486,8 @@ class RunCopyClone(object):
         data = self.parse_viterbi_paths(cells, viterbi_paths, bins, data)
 
         data = self.fill_chromosome(data)
+
+        data = self.scale_copy_by_ploidy(data, cells, predicted_names)
 
         self.write_csv(data, self.reads_out)
 
