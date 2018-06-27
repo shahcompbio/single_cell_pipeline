@@ -171,7 +171,7 @@ def get_databases():
         'cosmic_status': copy.deepcopy(status_data),
         'dbsnp_status': copy.deepcopy(status_data),
         'mappability': copy.deepcopy(status_data),
-        'snpeff_status': copy.deepcopy(status_data),
+        'snpeff': copy.deepcopy(status_data),
         'tri_nucleotide_context': copy.deepcopy(status_data),
     }
 
