@@ -109,6 +109,9 @@ def parse_args():
                          required=True,
                          help='''Library id.''')
 
+    hmmcopy.add_argument("--alignment_metrics",
+                         help='''alignment metrics h5 file''')
+
     #===========
     # copyclone
     #===========

@@ -106,6 +106,7 @@ def get_hmmcopy_params(cluster, reference, binsize, smoothing_function):
         'exclude_list': extract_from_reference([cluster, reference, 'exclude_list']),
         'gc_wig_file': extract_from_reference([cluster, reference, 'gc_wig_file', binsize]),
         'map_wig_file': extract_from_reference([cluster, reference, 'map_wig_file', binsize]),
+        'classifier_training_data': extract_from_reference([cluster, 'classifier_training_data'])
     }
 
     return {"hmmcopy_params": {"autoploidy": params}}
