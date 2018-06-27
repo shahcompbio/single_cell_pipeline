@@ -129,32 +129,32 @@ class CorrectReadCount(object):
 
         return data
 
-    def modal_quantile_regression(self, df_regression, lowess_frac=0.2):
+    def modal_quantile_regression(self, df_regression, df, lowess_frac=0.2):
         '''
         Compute quantile regression curves and select the modal quantile.
         '''
-        # 2nd order polynomial quantile regression
-
-        q_range = range(10, 91, 1)
-        quantiles = np.array(q_range) / 100
-        quantile_names = [str(x) for x in q_range]
-
         # need at least 3 values to compute the quantiles
         if len(df_regression) < 10:
             return df_regression
 
+        # 2nd order polynomial quantile regression
+        q_range = range(10, 91, 1)
+        quantiles = np.array(q_range) / 100
+        quantile_names = [str(x) for x in q_range]
+
         poly2_quantile_model = smf.quantreg(
-            'reads ~ gc + I(gc ** 2.0)',
-            data=df_regression)
+            'reads ~ gc + I(gc ** 2.0)', data=df_regression)
+
         poly2_quantile_fit = [poly2_quantile_model.fit(q=q) for q in quantiles]
+
         poly2_quantile_predict = [
-            poly2_quantile_fit[i].predict(df_regression) for i in range(
+            poly2_quantile_fit[i].predict(df) for i in range(
                 len(quantiles))]
 
         poly2_quantile_params = pd.DataFrame()
 
         for i in range(len(quantiles)):
-            df_regression[quantile_names[i]] = poly2_quantile_predict[i]
+            df[quantile_names[i]] = poly2_quantile_predict[i]
             poly2_quantile_params[
                 quantile_names[i]] = poly2_quantile_fit[i].params
 
@@ -183,22 +183,22 @@ class CorrectReadCount(object):
                                 'distances': distances})
         dist_max = df_dist['distances'].quantile(q=0.95)
         df_dist_filter = df_dist[df_dist['distances'] < dist_max]
+
         df_dist_filter['lowess'] = lowess(
             df_dist_filter['distances'],
             df_dist_filter['quantiles'],
             frac=lowess_frac,
             return_sorted=False)
 
-        modal_quantile = quantile_names[np.argmin(df_dist_filter['lowess'])]
+        modal_quantile = quantile_names[df_dist_filter['lowess'].idxmin()]
 
         # add values to table
 
-        df_regression['modal_quantile'] = modal_quantile
-        df_regression['modal_curve'] = df_regression[modal_quantile]
-        df_regression['modal_corrected'] = df_regression[
-            'reads'] / df_regression[modal_quantile]
+        df['modal_quantile'] = modal_quantile
+        df['modal_curve'] = df[modal_quantile]
+        df['modal_corrected'] = df['reads'] / df[modal_quantile]
 
-        return df_regression
+        return df
 
     def write(self, df):
         """write results to the output file
@@ -228,28 +228,25 @@ class CorrectReadCount(object):
         df_non_zero = df_valid_gc[df_valid_gc['reads'] > 0]
 
         df_regression = pd.DataFrame.copy(df_non_zero)
+        df_prediction = pd.DataFrame.copy(df)
 
         df_regression.sort_values(by='gc', inplace=True)
 
         # modal quantile regression
-        df_regression = self.modal_quantile_regression(
+        df_prediction = self.modal_quantile_regression(
             df_regression,
+            df_prediction,
             lowess_frac=0.2)
 
         # map results back to full data frame
-        df.ix[
-            df_regression.index,
-            'modal_quantile'] = df_regression['modal_quantile']
-        df.ix[
-            df_regression.index,
-            'modal_curve'] = df_regression['modal_curve']
-        df.ix[
-            df_regression.index,
-            'modal_corrected'] = df_regression['modal_corrected']
+        df['modal_quantile'] = df_prediction['modal_quantile']
+        df['modal_curve'] = df_prediction['modal_curve']
+        df['modal_corrected'] = df_prediction['modal_corrected']
 
         # filter by mappability
         df['copy'] = df['modal_corrected']
-        df['copy'][df['map'] < self.mappability] = float('NaN')
+
+        df.loc[df.map < self.mappability, "copy"] = float('NaN')
 
         df = df.rename(columns=({"modal_corrected": "cor_gc"}))
 
