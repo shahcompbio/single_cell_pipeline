@@ -13,6 +13,27 @@ def parse_args():
     parses command line arguments
     """
 
+    ploidy_2_params = {'A':[0.994, 0.994, 0.9994, 0.994, 0.994, 0.994, 0.994],
+                       'alpha_A': [1000, 1000, 10000, 1000, 1000, 1000, 1000],
+                       'pi':[0.05, 0.1, 0.5, 0.2, 0.05, 0.05, 0.05],
+                       'alpha_pi':[2, 2, 50, 2, 2, 2, 2]}
+
+    ploidy_3_params = {'A':[0.994, 0.994, 0.994, 0.9994, 0.994, 0.994, 0.994],
+                       'alpha_A': [1000, 1000, 1000, 10000, 1000, 1000, 1000],
+                       'pi':[0.05, 0.05, 0.1, 0.5, 0.2, 0.05, 0.05],
+                       'alpha_pi':[2, 2, 2, 50, 2, 2, 2]}
+
+
+    ploidy_4_params = {'A':[0.994, 0.994, 0.994, 0.994, 0.9994, 0.994, 0.994],
+                       'alpha_A': [1000, 1000, 1000, 1000, 10000, 1000, 1000],
+                       'pi':[0.05, 0.05, 0.05, 0.1, 0.5, 0.2, 0.05],
+                       'alpha_pi':[2, 2, 2, 2, 50, 2, 2]}
+
+
+
+    ploidy_states = {2: ploidy_2_params, 3: ploidy_3_params, 4:ploidy_4_params}
+
+
     parser = argparse.ArgumentParser()
 
     parser.add_argument('corrected_reads',
@@ -29,35 +50,6 @@ def parse_args():
 
     parser.add_argument('metrics',
                         help='path to the output csv file'
-                        )
-
-    parser.add_argument('--a',
-                        default=[0.994, 0.994, 0.994, 0.994,
-                                 0.994, 0.994, 0.994],
-                        type=float,
-                        nargs="*",
-                        help='copy clone a param'
-                        )
-
-    parser.add_argument('--alpha_a',
-                        default=[1000, 1000, 1000, 1000, 1000, 1000, 1000],
-                        type=float,
-                        nargs="*",
-                        help='copy clone alpha_a param'
-                        )
-
-    parser.add_argument('--pi',
-                        default=[0.05, 0.1, 0.5, 0.2, 0.05, 0.05, 0.05],
-                        type=float,
-                        nargs="*",
-                        help='copy clone pi param'
-                        )
-
-    parser.add_argument('--alpha_pi',
-                        default=[2, 2, 50, 2, 2, 2, 2],
-                        type=float,
-                        nargs="*",
-                        help='copy clone alpha_pi param'
                         )
 
     parser.add_argument('--tau',
@@ -98,7 +90,7 @@ def parse_args():
     parser.add_argument('--ploidy_states',
                         type=int,
                         nargs="*",
-                        default=[2, 3, 4],
+                        default=ploidy_states,
                         help='json object with all states and their corresponding labels'
                         )
 
@@ -115,18 +107,15 @@ def parse_args():
 
 class RunCopyClone(object):
 
-    def __init__(self, corrected_reads, reads_out, segments, metrics, A=None, alpha_A=None, pi=None, alpha_pi=None,
-                 tau=None, nu=None, eta=None, shape=None, rate=None, ploidy_states=None, num_states=None):
+    def __init__(self, corrected_reads, reads_out, segments, metrics,
+                 pi=None, alpha_pi=None, tau=None, nu=None, eta=None,
+                 shape=None, rate=None, ploidy_states=None, num_states=None):
 
         self.corrected_reads = corrected_reads
         self.reads_out = reads_out
         self.segments = segments
         self.metrics = metrics
 
-        self.A = A
-        self.alpha_A = alpha_A
-        self.pi = pi
-        self.alpha_pi = alpha_pi
         self.tau = tau
         self.nu = nu
         self.eta = eta
@@ -216,24 +205,22 @@ class RunCopyClone(object):
 
     def initialize_naive_bayesian_hmm(self, verbose=False):
 
-        A = self.get_param_matrix(self.A, self.num_states)
-        alpha_A = self.get_param_matrix(
-            self.alpha_A,
-            self.num_states,
-            fill_val=2)
-
         hmms = []
 
-        for val in self.ploidy_states:
+        for val, params in self.ploidy_states.iteritems():
+
+            A = self.get_param_matrix(params['A'], self.num_states)
+            alpha_A = self.get_param_matrix(
+                params['alpha_A'],
+                self.num_states,
+                fill_val=2)
+
 
             mu = [0.0, 1 / val, 2 / val, 3 / val, 4 / val, 5 / val, 6 / val]
             m = [0.0, 1 / val, 2 / val, 3 / val, 4 / val, 5 / val, 6 / val]
 
-            print (self.pi, A, mu, self.tau, self.nu, self.alpha_pi, alpha_A, m,
-                   self.eta, self.shape, self.rate)
-
             hmm = BayesianStudentsTHMM(
-                self.pi, A, mu, self.tau, self.nu, self.alpha_pi, alpha_A, m,
+                params['pi'], A, mu, self.tau, self.nu, params['alpha_pi'], alpha_A, m,
                 self.eta, self.shape, self.rate, name=str(val), verbose=verbose
             )
 

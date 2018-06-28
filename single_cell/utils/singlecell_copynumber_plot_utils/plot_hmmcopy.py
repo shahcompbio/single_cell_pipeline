@@ -384,7 +384,7 @@ class GenHmmPlots(object):
                     'legend.fontsize': 4 * num_plots,
                     'font.size': 4 * num_plots})
 
-        linewidth = 0.25 * num_plots
+        linewidth = 1.25
         scatter_size = 2 * num_plots
 
         height_plot = 10 * num_plots
