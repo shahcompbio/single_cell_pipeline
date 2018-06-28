@@ -6,6 +6,51 @@ Created on Mar 28, 2018
 import numpy as np
 from statsmodels.robust.scale import stand_mad
 from statsmodels.tsa.stattools import acf
+from math import log
+
+def compute_halfiness(df, df_seg):
+    data = {}
+
+    for cell, reads in df:
+
+        segs = df_seg.get_group(cell)
+
+        halfiness_full = []
+        halfiness_scaled = []
+
+        for _,row in segs.iterrows():
+
+            seg_chr = row['chr']
+
+            seg_start = row['start']
+
+            seg_end = row['end']
+
+            seg_median = row['median']
+
+            df_seg_bins = reads[(reads['chr'] == seg_chr) &
+                             (reads['start'] >= seg_start) &
+                             (reads['end'] <= seg_end)]
+
+            df_seg_bins_hmmcopy = df_seg_bins[~df_seg_bins['state'].isnull()]
+
+            halfiness = [-log(np.abs(np.minimum(np.abs(seg_median - x), 0.4999) - 0.5), 2)
+                         for x in df_seg_bins_hmmcopy['state']]
+
+            halfiness_scaled = [-log(np.abs(np.minimum(np.abs(seg_median - x), 0.4999) - 0.5), 2) / (x+1)
+                                for x in df_seg_bins_hmmcopy['state']]
+
+
+            halfiness_full.extend(halfiness)
+            halfiness_scaled.extend(halfiness_scaled)
+
+        total_halfiness = np.nansum(halfiness_full)
+        scaled_halfiness = np.nansum(halfiness_scaled)
+
+        data[cell] = (total_halfiness, scaled_halfiness)
+
+    return data
+
 
 
 def median_of_segment_residuals_from_segment_integer(df_seg):

@@ -165,7 +165,9 @@ class RunCopyClone(object):
                 end = chromdata.at[end_index, 'end']
                 length = end - (start - 1)
                 state = label[0]
-                median = np.nanmedian(label)
+
+                # assuming copy is already scaled by ploidy
+                median = np.nanmedian(chromdata[start_index:end_index]['copy'])
 
                 df_segments = df_segments.append({'chr': chrom,
                                                   'start': start,
@@ -386,6 +388,8 @@ class RunCopyClone(object):
         MSRSI_non_integerness = ccmetrics.median_of_segment_residuals_from_segment_integer(
             segs)
 
+        halfiness = ccmetrics.compute_halfiness(reads, segs)
+
         metrics = pd.DataFrame()
         for i, cell in enumerate(cells):
 
@@ -406,7 +410,10 @@ class RunCopyClone(object):
                                      'MSRSI_non_integerness': MSRSI_non_integerness[cell],
                                      'MBRSI_dispersion_non_integerness': MBRSI_dispersion_non_integerness[cell],
                                      'MBRSM_dispersion': MBRSM_dispersion[cell],
-                                     'empty_bins_hmmcopy': empty_bins_hmmcopy[cell]})
+                                     'empty_bins_hmmcopy': empty_bins_hmmcopy[cell],
+                                     'total_halfiness': halfiness[cell][0],
+                                     'scaled_halfiness': halfiness[cell][1],
+                                     })
 
             metrics = pd.concat(
                 [metrics, pd.DataFrame(cellmetrics).transpose()])
