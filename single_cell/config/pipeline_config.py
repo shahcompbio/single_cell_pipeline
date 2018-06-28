@@ -110,7 +110,28 @@ def get_hmmcopy_params(cluster, reference, binsize, smoothing_function):
 
     return {"hmmcopy_params": {"autoploidy": params}}
 
+
 def get_copyclone_params(cluster, reference, binsize, smoothing_function):
+    ploidy_2_params = {'A': [0.994, 0.994, 0.9994, 0.994, 0.994, 0.994, 0.994],
+                       'alpha_A': [1000, 1000, 10000, 1000, 1000, 1000, 1000],
+                       'pi': [0.05, 0.1, 0.5, 0.2, 0.05, 0.05, 0.05],
+                       'alpha_pi': [2, 2, 50, 2, 2, 2, 2]}
+
+    ploidy_3_params = {'A': [0.994, 0.994, 0.994, 0.9994, 0.994, 0.994, 0.994],
+                       'alpha_A': [1000, 1000, 1000, 10000, 1000, 1000, 1000],
+                       'pi': [0.05, 0.05, 0.1, 0.5, 0.2, 0.05, 0.05],
+                       'alpha_pi': [2, 2, 2, 50, 2, 2, 2]}
+
+    ploidy_4_params = {'A': [0.994, 0.994, 0.994, 0.994, 0.9994, 0.994, 0.994],
+                       'alpha_A': [1000, 1000, 1000, 1000, 10000, 1000, 1000],
+                       'pi': [0.05, 0.05, 0.05, 0.1, 0.5, 0.2, 0.05],
+                       'alpha_pi': [2, 2, 2, 2, 50, 2, 2]}
+
+    ploidy_states = {
+        2: ploidy_2_params,
+        3: ploidy_3_params,
+        4: ploidy_4_params}
+
     params = {
         'map_cutoff': extract_from_reference(['map_cutoff']),
         'bin_size': binsize,
@@ -120,16 +141,12 @@ def get_copyclone_params(cluster, reference, binsize, smoothing_function):
         'exclude_list': None,
         'min_mqual': extract_from_reference(['min_mqual']),
         'num_states': extract_from_reference(['num_states_copyclone']),
-        'A': [0.994, 0.994, 0.994, 0.994, 0.994, 0.994, 0.994],
-        'alpha_A': [1000, 1000, 1000, 1000, 1000, 1000, 1000],
-        'alpha_pi':  [2, 2, 50, 2, 2, 2, 2],
-        'pi': [0.05, 0.1, 0.5, 0.2, 0.05, 0.05, 0.05],
         'tau': [500, 25, 25, 25, 25, 25, 15],
         'nu': [5, 5, 5, 5, 5, 5, 5],
         'eta': [5000, 5000, 5000, 5000, 5000, 5000, 5000],
         'shape': [3, 30, 30, 30, 30, 30, 20],
         'rate': [0.01, 1, 1, 1, 1, 1, 1],
-        'ploidy_states': [2,3,4],
+        'ploidy_states': ploidy_states,
     }
 
     return {"copyclone": params}

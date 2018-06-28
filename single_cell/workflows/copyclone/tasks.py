@@ -83,8 +83,8 @@ def correct_reads(
 
 def run_copyclone(corrected_data, reads, segments, metrics, segments_plot, bias_plot,
                   tempdir, config,
-                  cells, sample_info, A=None, alpha_A=None, pi=None,
-                  alpha_pi=None, tau=None, nu=None, eta=None, shape=None,
+                  cells, sample_info, A=None, alpha_A=None,
+                  tau=None, nu=None, eta=None, shape=None,
                   rate=None, ploidy_states=None, num_states=None, num_cores=1):
 
     helpers.makedirs(tempdir)
@@ -95,7 +95,6 @@ def run_copyclone(corrected_data, reads, segments, metrics, segments_plot, bias_
 
     rc = RunCopyClone(
         corrected_data, csv_reads, csv_segments, csv_metrics,
-        A=A, alpha_A=alpha_A, pi=pi, alpha_pi=alpha_pi,
         tau=tau, nu=nu, eta=eta, shape=shape, rate=rate,
         ploidy_states=ploidy_states, num_states=num_states)
     rc.main()
