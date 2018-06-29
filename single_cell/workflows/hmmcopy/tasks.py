@@ -456,7 +456,9 @@ def get_hierarchical_clustering_order(
 
         data.append(chunk)
 
+    # merge chunks, sum cells that get split across chunks
     table = pd.concat(data)
+    table = table.groupby(table.index).sum()
 
     bins = pd.DataFrame(
         table.columns.values.tolist(),
