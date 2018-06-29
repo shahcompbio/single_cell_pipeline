@@ -8,6 +8,7 @@ from statsmodels.robust.scale import stand_mad
 from statsmodels.tsa.stattools import acf
 from math import log
 
+
 def compute_halfiness(df, df_seg):
     data = {}
 
@@ -18,7 +19,7 @@ def compute_halfiness(df, df_seg):
         halfiness_full = []
         halfiness_scaled = []
 
-        for _,row in segs.iterrows():
+        for _, row in segs.iterrows():
 
             seg_chr = row['chr']
 
@@ -29,20 +30,19 @@ def compute_halfiness(df, df_seg):
             seg_median = row['median']
 
             df_seg_bins = reads[(reads['chr'] == seg_chr) &
-                             (reads['start'] >= seg_start) &
-                             (reads['end'] <= seg_end)]
+                                (reads['start'] >= seg_start) &
+                                (reads['end'] <= seg_end)]
 
-            df_seg_bins_hmmcopy = df_seg_bins[~df_seg_bins['state'].isnull()]
+            df_seg_bins = df_seg_bins[~df_seg_bins['state'].isnull()]
 
-            halfiness = [-log(np.abs(np.minimum(np.abs(seg_median - x), 0.4999) - 0.5), 2)
-                         for x in df_seg_bins_hmmcopy['state']]
+            for state, ideal in zip(df_seg_bins.state, df_seg_bins.ideal):
+                if not ideal:
+                    continue
+                halfiness = - log(np.abs(np.minimum(np.abs(seg_median - state), 0.499) - 0.5), 2) - 1
+                scaled = halfiness / (state + 1)
 
-            halfiness_scaled = [-log(np.abs(np.minimum(np.abs(seg_median - x), 0.4999) - 0.5), 2) / (x+1)
-                                for x in df_seg_bins_hmmcopy['state']]
-
-
-            halfiness_full.extend(halfiness)
-            halfiness_scaled.extend(halfiness_scaled)
+                halfiness_full.append(halfiness)
+                halfiness_scaled.append(scaled)
 
         total_halfiness = np.nansum(halfiness_full)
         scaled_halfiness = np.nansum(halfiness_scaled)
@@ -50,7 +50,6 @@ def compute_halfiness(df, df_seg):
         data[cell] = (total_halfiness, scaled_halfiness)
 
     return data
-
 
 
 def median_of_segment_residuals_from_segment_integer(df_seg):
@@ -74,6 +73,7 @@ def median_of_segment_residuals_from_segment_integer(df_seg):
 
     return data
 
+
 def median_of_bin_residuals_from_segment_integer(df):
     '''
     MBRSI: This measures both "dispersion" and "integerness".
@@ -93,7 +93,7 @@ def median_of_bin_residuals_from_segment_integer(df):
     return data
 
 
-def compute_total_reads_hmmcopy( df):
+def compute_total_reads_hmmcopy(df):
 
     data = {}
     for cell, reads in df:
@@ -103,7 +103,8 @@ def compute_total_reads_hmmcopy( df):
 
     return data
 
-def compute_mad_hmmcopy( df):
+
+def compute_mad_hmmcopy(df):
 
     data = {}
     for cell, reads in df:
@@ -118,7 +119,8 @@ def compute_mad_hmmcopy( df):
 
     return data
 
-def compute_mad_autosomes( df):
+
+def compute_mad_autosomes(df):
 
     data = {}
     for cell, reads in df:
@@ -132,7 +134,8 @@ def compute_mad_autosomes( df):
         data[cell] = mad_autosomes
     return data
 
-def compute_cv_hmmcopy( df):
+
+def compute_cv_hmmcopy(df):
 
     data = {}
     for cell, reads in df:
@@ -153,7 +156,8 @@ def compute_cv_hmmcopy( df):
 
     return data
 
-def compute_cv_neutral_state( df):
+
+def compute_cv_neutral_state(df):
 
     data = {}
     for cell, reads in df:
@@ -175,7 +179,8 @@ def compute_cv_neutral_state( df):
         data[cell] = cv_neutral_state
     return data
 
-def compute_autocorrelation_hmmcopy( df):
+
+def compute_autocorrelation_hmmcopy(df):
 
     data = {}
     for cell, reads in df:
@@ -193,7 +198,8 @@ def compute_autocorrelation_hmmcopy( df):
         data[cell] = ac_hmmcopy
     return data
 
-def compute_mean_median_std_hmmcopy_reads_per_bin( df):
+
+def compute_mean_median_std_hmmcopy_reads_per_bin(df):
 
     mean = {}
     median = {}
@@ -214,7 +220,8 @@ def compute_mean_median_std_hmmcopy_reads_per_bin( df):
 
     return mean, median, std
 
-def compute_num_empty_bins( df):
+
+def compute_num_empty_bins(df):
 
     data = {}
     for cell, reads in df:
@@ -227,7 +234,8 @@ def compute_num_empty_bins( df):
 
     return data
 
-def compute_mad_neutral_state( df):
+
+def compute_mad_neutral_state(df):
     data = {}
 
     for cell, reads in df:
@@ -259,8 +267,7 @@ def median_of_bin_residuals_from_segment_median(df, df_seg):
 
         residuals = []
 
-
-        for _,row in segs.iterrows():
+        for _, row in segs.iterrows():
 
             seg_chr = row['chr']
 
@@ -271,8 +278,8 @@ def median_of_bin_residuals_from_segment_median(df, df_seg):
             seg_median = row['median']
 
             df_seg_bins = reads[(reads['chr'] == seg_chr) &
-                             (reads['start'] >= seg_start) &
-                             (reads['end'] <= seg_end)]
+                                (reads['start'] >= seg_start) &
+                                (reads['end'] <= seg_end)]
 
             df_seg_bins_hmmcopy = df_seg_bins[~df_seg_bins['copy'].isnull()]
 
@@ -284,8 +291,7 @@ def median_of_bin_residuals_from_segment_median(df, df_seg):
             residuals.extend(seg_residuals)
 
         median_bin_residuals_median = np.median(residuals)
-        
+
         data[cell] = median_bin_residuals_median
 
     return data
-
