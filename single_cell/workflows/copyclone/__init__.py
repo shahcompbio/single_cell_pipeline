@@ -61,8 +61,8 @@ def create_copyclone_workflow(bam_file, bai_file, outputdata,
         name="run_copyclone",
         ctx={
             'mem': config["memory"]['med'],
-            'pool_id': config['pools']['standard'],
-            'ncpus': 1},
+            'pool_id': config['pools']['multicore'],
+            'ncpus': 8},
         func=tasks.run_copyclone,
         args=(
             mgd.TempInputFile('corrected_reads.csv'),
