@@ -143,7 +143,7 @@ class PlotPcolor(object):
 
         # merge chunks, sum cells that get split across chunks
         table = pd.concat(data)
-        table = table.groupby(table.index).sum()
+        table = table.groupby(table.index).apply(pd.DataFrame.sum,skipna=False)
 
         bins = pd.DataFrame(
             table.columns.values.tolist(),
