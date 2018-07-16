@@ -58,7 +58,6 @@ def create_alignment_workflow(
         obj=mgd.TempOutputObj('center', 'cell_id', 'lane', axes_origin=[]),
         value=centerinfo)
 
-
     workflow.setobj(
         obj=mgd.TempOutputObj('sampleinfo', 'cell_id', axes_origin=[]),
         value=sample_info)
@@ -73,24 +72,17 @@ def create_alignment_workflow(
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment': 2,
             'ncpus': 1},
         axes=('cell_id', 'lane',),
         func="single_cell.workflows.alignment.tasks.align_pe",
         args=(
             mgd.InputFile(
-                'fastq_1',
-                'cell_id',
-                'lane',
-                fnames=fastq_1_filename),
+                'fastq_1', 'cell_id', 'lane', fnames=fastq_1_filename),
             mgd.InputFile(
-                'fastq_2',
-                'cell_id',
-                'lane',
-                fnames=fastq_2_filename),
+                'fastq_2', 'cell_id', 'lane', fnames=fastq_2_filename),
             mgd.TempOutputFile(
-                'aligned_per_cell_per_lane.sorted.bam',
-                'cell_id',
-                'lane'),
+                'aligned_per_cell_per_lane.sorted.bam', 'cell_id', 'lane'),
             mgd.OutputFile(fastqc_reports, 'cell_id', 'lane'),
             mgd.OutputFile(flagstat_metrics, 'cell_id', 'lane'),
             mgd.TempSpace('alignment_temp', 'cell_id', 'lane'),
@@ -110,14 +102,13 @@ def create_alignment_workflow(
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment': 2,
             'ncpus': 1},
         func="single_cell.workflows.alignment.tasks.merge_bams",
         axes=('cell_id',),
         args=(
             mgd.TempInputFile(
-                'aligned_per_cell_per_lane.sorted.bam',
-                'cell_id',
-                'lane'),
+                'aligned_per_cell_per_lane.sorted.bam', 'cell_id', 'lane'),
             mgd.TempOutputFile('merged_lanes.bam', 'cell_id'),
             mgd.TempOutputFile('merged_lanes.bam.bai', 'cell_id'),
         )
@@ -130,6 +121,7 @@ def create_alignment_workflow(
             ctx={
                 'mem': config["memory"]['high'],
                 'pool_id': config['pools']['highmem'],
+                'mem_retry_increment': 4,
                 'ncpus': 1},
             func="single_cell.workflows.alignment.tasks.realign",
             args=(
@@ -147,6 +139,7 @@ def create_alignment_workflow(
             ctx={
                 'mem': config["memory"]['high'],
                 'pool_id': config['pools']['highmem'],
+                'mem_retry_increment': 4,
                 'ncpus': 1},
             axes=('cell_id',),
             func="single_cell.workflows.alignment.tasks.merge_realignment",
@@ -175,6 +168,7 @@ def create_alignment_workflow(
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment': 2,
             'ncpus': 1},
         axes=('cell_id',),
         func="single_cell.workflows.alignment.tasks.postprocess_bam",
@@ -182,9 +176,7 @@ def create_alignment_workflow(
             final_bam,
             mgd.OutputFile('sorted_markdups', 'cell_id', fnames=bam_filename),
             mgd.OutputFile(
-                'sorted_markdups_index',
-                'cell_id',
-                fnames=bai_filename),
+                'sorted_markdups_index', 'cell_id', fnames=bai_filename),
             mgd.TempSpace('tempdir', 'cell_id'),
             config,
             mgd.OutputFile(markdups_metrics, 'cell_id'),
@@ -201,6 +193,7 @@ def create_alignment_workflow(
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment': 2,
             'ncpus': 1},
         func="single_cell.workflows.alignment.tasks.bam_collect_wgs_metrics",
         axes=('cell_id',),
@@ -230,6 +223,7 @@ def create_alignment_workflow(
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment': 2,
             'ncpus': 1},
         func="single_cell.workflows.alignment.tasks.bam_collect_gc_metrics",
         axes=('cell_id',),
@@ -256,6 +250,7 @@ def create_alignment_workflow(
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment': 2,
             'ncpus': 1},
         func="single_cell.workflows.alignment.tasks.bam_collect_insert_metrics",
         axes=('cell_id',),
@@ -274,6 +269,7 @@ def create_alignment_workflow(
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment': 2,
             'ncpus': 1},
         args=(
             mgd.InputFile(gc_metrics_filename, 'cell_id', axes_origin=[]),
@@ -287,6 +283,7 @@ def create_alignment_workflow(
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment': 2,
             'ncpus': 1},
         func="single_cell.workflows.alignment.tasks.collect_metrics",
         args=(
@@ -304,6 +301,7 @@ def create_alignment_workflow(
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment': 2,
             'ncpus': 1},
         func="single_cell.workflows.alignment.tasks.annotate_metrics",
         args=(
@@ -318,6 +316,7 @@ def create_alignment_workflow(
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment': 2,
             'ncpus': 1},
         func="single_cell.workflows.alignment.tasks.plot_metrics",
         args=(
@@ -334,6 +333,7 @@ def create_alignment_workflow(
         ctx={
             'mem': config["memory"]['low'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment': 2,
             'ncpus': 1},
         func="single_cell.utils.hdfutils.concat_hdf_tables",
         args=(
@@ -344,9 +344,8 @@ def create_alignment_workflow(
         ),
     )
 
-
     metadata = {
-        'alignment':{
+        'alignment': {
             'cell_batch_realign': args["realign"],
             'data': alignment_metrics,
             'metrics_table': '/alignment/metrics',
@@ -360,12 +359,12 @@ def create_alignment_workflow(
         }
     }
 
-
     workflow.transform(
         name='generate_meta_yaml',
         ctx={
             'mem': config["memory"]['low'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment': 2,
             'ncpus': 1},
         func="single_cell.utils.helpers.write_to_yaml",
         args=(
