@@ -175,8 +175,9 @@ class GenHmmPlots(object):
             df["chr"] = pd.Categorical(df["chr"], chromosomes)
             df = df.sort_values(['chr', 'start', 'end'])
             df = utl.compute_chromosome_coordinates(df, self.ref_genome)
-
-        return df
+            return df
+        else:
+            return None
 
     def get_annotations(self, metrics):
         annotations = []
@@ -356,6 +357,9 @@ class GenHmmPlots(object):
 
             if reads is not None and remove_y:
                 reads = reads[reads['chr'] != 'Y']
+
+            if not segments:
+                continue
 
             ax = plt.subplot(gs[i, 0])
             ax = utl.create_chromosome_plot_axes(ax, self.ref_genome)
