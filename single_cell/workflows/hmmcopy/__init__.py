@@ -48,6 +48,7 @@ def create_hmmcopy_workflow(
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment':2,
             'ncpus': 1},
         func="single_cell.workflows.hmmcopy.tasks.run_hmmcopy",
         axes=('cell_id',),
@@ -74,6 +75,7 @@ def create_hmmcopy_workflow(
         ctx={
             'mem': config["memory"]['low'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment':2,
             'ncpus': 1},
         func="single_cell.workflows.hmmcopy.tasks.merge_hdf_files_on_disk",
         args=(
@@ -92,6 +94,7 @@ def create_hmmcopy_workflow(
         ctx={
             'mem': config["memory"]['low'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment':2,
             'ncpus': 1},
         func="single_cell.workflows.hmmcopy.tasks.merge_hdf_files_on_disk",
         args=(
@@ -110,6 +113,7 @@ def create_hmmcopy_workflow(
         ctx={
             'mem': config["memory"]['low'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment':2,
             'ncpus': 1},
         func="single_cell.workflows.hmmcopy.tasks.merge_hdf_files_in_memory",
         args=(
@@ -130,6 +134,7 @@ def create_hmmcopy_workflow(
         ctx={
             'mem': config["memory"]['low'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment':2,
             'ncpus': 1},
         func="single_cell.workflows.hmmcopy.tasks.merge_hdf_files_in_memory",
         args=(
@@ -164,6 +169,7 @@ def create_hmmcopy_workflow(
         ctx={
             'mem': config["memory"]['low'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment':2,
             'ncpus': 1},
         func="single_cell.workflows.hmmcopy.tasks.annotate_metrics",
         args=(
@@ -182,6 +188,7 @@ def create_hmmcopy_workflow(
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment':2,
             'ncpus': 1},
         func="single_cell.workflows.hmmcopy.tasks.merge_pdf",
         args=(
@@ -204,6 +211,7 @@ def create_hmmcopy_workflow(
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment':2,
             'ncpus': 1},
         func="single_cell.workflows.hmmcopy.tasks.create_igv_seg",
         args=(
@@ -219,6 +227,7 @@ def create_hmmcopy_workflow(
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment':2,
             'ncpus': 1},
         func="single_cell.workflows.hmmcopy.tasks.plot_metrics",
         args=(
@@ -235,6 +244,7 @@ def create_hmmcopy_workflow(
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment':2,
             'ncpus': 1},
         func="single_cell.workflows.hmmcopy.tasks.plot_kernel_density",
         args=(
@@ -253,6 +263,7 @@ def create_hmmcopy_workflow(
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment':2,
             'ncpus': 1},
         func="single_cell.workflows.hmmcopy.tasks.plot_pcolor",
         args=(
@@ -279,6 +290,7 @@ def create_hmmcopy_workflow(
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment':2,
             'ncpus': 1},
         func="single_cell.workflows.hmmcopy.tasks.plot_pcolor",
         args=(
@@ -306,6 +318,7 @@ def create_hmmcopy_workflow(
         ctx={
             'mem': config["memory"]['med'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment':2,
             'ncpus': 1},
         func="single_cell.workflows.hmmcopy.tasks.merge_tables",
         args=(
@@ -338,6 +351,7 @@ def create_hmmcopy_workflow(
         ctx={
             'mem': config["memory"]['low'],
             'pool_id': config['pools']['standard'],
+            'mem_retry_increment':2,
             'ncpus': 1},
         func="single_cell.utils.helpers.write_to_yaml",
         args=(
