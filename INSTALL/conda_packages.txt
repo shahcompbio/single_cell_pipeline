@@ -32,7 +32,8 @@ bioconductor-bsgenome.hsapiens.ucsc.hg19
 bioconductor-titan
 biowrappers
 remixt
-
+dill
+r-data.table 
 # From biowrappers
 sambamba ==0.5.9
 

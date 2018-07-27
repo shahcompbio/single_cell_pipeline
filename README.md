@@ -1,5 +1,8 @@
-# Single Cell Pipeline
+# Single Cell Pipeline 
 
+For a detailed guide see [INSTALL](INSTALL/README.md)
+
+For azure documentation see [azure](azure/README.md)
 
 ## Setup and installation
 
@@ -47,194 +50,370 @@ To install the latest production version from anaconda.org:
 conda install single_cell_pipeline
 ```
 
-## Run the pipeline
+## 1. Align
 
-### Inputs
+![align](readme_data/align.png)
 
-TODO: cell id or sample id???
+The single cell analysis pipeline runs on a list of pairs of fastq file (paired end) and performs the following steps:
 
-#### Configuration file
+* Run fastqc on the fastq files
+* Align the fastq pairs with bwa (supports both mem and aln)
+* Merge all lanes together
+* create targets and realign around those targets with GATK
+* sort bams files, mark duplicate reads and index final bams
+* collect metrics from samtools flagstat, picardtools CollectInsertSizeMetrics, picardtools CollectWgsMetrics and picardtools CollectGcBiasMetrics
+* generate QC plot
 
-The configuration file contains global options including:
-
-* reference genome
-* chromosomes to operate on
-* hmm parameters
-* thresholds
-* adapters
-
-See config_shahlab.yaml and config_cloud.yaml for examples.
-
-#### Input sample info table
-
-The input sample info table provides meta data per cell.  The columns should be:
-
-- cell_id
-- cell_call
-- experimental_condition
-- sample_type # No longer necessary
-- sample_well
-- sample_plate
-- i5_barcode
-- i7_barcode
-
-#### Input fastq table
-
-The fastq file paths should be provided in a CSV file, and the path to this input
-file given on the command line.  The following columns are required:
-
-- sample_id
-- lane_id
-- fastq_1
-- fastq_2
-
-#### Library id
-
-The library id should be provided as an argument on the command line and will be
-added to the header of the bam file.
-
-### Command line interface
-
-The pipeline takes 4 positional arguments:
-
-1. input sample info table
-2. input fastq filename table
-3. library id
-4. output directory
-5. config filename
-
-The remaining arguments are for controlling execution using [pypeliner](http://pypeliner.readthedocs.org/).
-
-For example, run the pipeline as follows:
-
+### Input
+The pipeline accepts a yaml file as input. The yaml file contains the input paths and metadata for each cell, the format for each cell is as follows:
 ```
-single_cell \
-  /shahlab/amcpherson/single_cell_test/A90696ABC_sample_info.csv \
-  /shahlab/amcpherson/single_cell_test/A90696ABC_fastqs.csv \
-  A90696ABC \
-  /shahlab/amcpherson/single_cell_test/results/ \
-  /shahlab/dgrewal/test_andrew_sc/data/config_shahlab.yaml \
-  --loglevel DEBUG \
-  --submit asyncqsub \
-  --maxjobs 1000 \
-  --nocleanup
+SA12345-A12345-R01-C01:
+  bam: /path/to/aligned/SA12345-A12345-R01-C01.bam
+  column: 01
+  condition: A
+  fastqs:
+    LANE_ID_1:
+      fastq_1: /path/to/fastqfile/ACTACT-AGTAGT_1.fastq.gz
+      fastq_2: /path/to/fastqfile/ACTACT-AGTAGT_1.fastq.gz
+      sequencing_center: CENTERID
+      sequencing_instrument: INSTRUMENT_TYPE
+    LANE_ID_2:
+      fastq_1: /path/to/fastqfile/ATTATT-ACTACT_1.fastq.gz
+      fastq_2: /path/to/fastqfile/ATTATT-ACTACT_1.fastq.gz
+      sequencing_center: CENTERID
+      sequencing_instrument: INSTRUMENT_TYPE
+  img_col: 10
+  index_i5: i5-INDEX
+  index_i7: i7-INDEX
+  pick_met: CELLCALL
+  primer_i5: ACTACTATT
+  primer_i7: AGTAGTACT
+  row: 01
+  sample_type: C
 ```
 
-## Setup in the cloud
-
-Run the following in an instance:
+### Run 
 
 ```
-sudo mkdir /datadrive/software
-sudo chown shahlab:shahlab /datadrive/software
-cd /datadrive/software/
-wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
-bash Miniconda2-latest-Linux-x86_64.sh -b -p /datadrive/software/miniconda2
-echo "export PATH=/datadrive/software/miniconda2/bin:\$PATH" >> ~/.bashrc
-echo "export GIT_SSL_NO_VERIFY=1" >> ~/.bashrc
-source ~/.bashrc
-
-# Conda setup
-conda config --add channels https://conda.anaconda.org/dranew
-conda config --add channels 'bioconda'
-conda config --add channels 'r'
-
-# Setup environment
-cd /datadrive/software/
-git clone https://amcpherson@svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git
-cd single_cell_pipeline/
-conda create --name singlecellpipeline --file conda_packages.txt --yes
-source activate singlecellpipeline
-python setup.py develop
-
-# Install GATK
-wget -O GATK.tar.bz2 https://software.broadinstitute.org/gatk/download/auth?package=GATK
-tar -jxvf GATK.tar.bz2
-gatk-register GenomeAnalysisTK.jar
-
-# Download reference genome
-sudo mkdir /datadrive/refdata
-sudo chown shahlab:shahlab /datadrive/refdata
-cd /datadrive/refdata/
-wget ftp://ftp.bcgsc.ca/public/shahlab/singlecellpipeline/*
-picard CreateSequenceDictionary R= /datadrive/refdata/GRCh37-lite.fa O= /datadrive/refdata/GRCh37-lite.dict
-
-# Create analysis space
-sudo mkdir /datadrive/analysis
-sudo chown shahlab:shahlab /datadrive/analysis
+single_cell align \
+--input_yaml inputs/SC-1234/bams.yaml \
+--tmpdir temp/SC-1234/tmp \
+--pipelinedir pipeline/SC-1234  \
+--out_dir results/SC-1234/results \
+ --library_id A123123 \
+ ...
 ```
 
-Copy the fastq files.  Run the following on thost:
+
+## 2. Hmmcopy
+
+![align](readme_data/hmmcopy.png)
+
+Hmmcopy runs the hmmcopy package on the aligned data and calls copy number:
+
+1. generate read count wig files from the bam files
+2. perform  GC correction
+3. Run Hmmcopy
+4. generate segment and bias plots, kernel density plot and heatmaps 
+
+### Input
+The pipeline accepts a yaml file as input. The yaml file contains the input paths and metadata for each cell, the format for each cell is as follows:
+```
+SA12345-A12345-R01-C01:
+  bam: /path/to/aligned/SA12345-A12345-R01-C01.bam
+  column: 01
+  condition: A
+  img_col: 10
+  index_i5: i5-INDEX
+  index_i7: i7-INDEX
+  pick_met: CELLCALL
+  primer_i5: ACTACTATT
+  primer_i7: AGTAGTACT
+  row: 01
+  sample_type: C
+```
+The yaml file for the align step should work as well
+
+
+### Run 
 
 ```
-scp -r /genesis/shahlab/dgrewal/test_andrew_sc/data/hiseq/PX0577/ sccompute1:/datadrive/analysis/
-scp -r /genesis/shahlab/amcpherson/single_cell_test/*.csv sccompute1:/datadrive/analysis/
-```
-
-Reformat the fastq list:
-
-```
-cd /datadrive/analysis
-sed 's#/genesis/shahlab/dgrewal/test_andrew_sc/data/hiseq#/datadrive/analysis#g' < A90696ABC_fastqs.csv > A90696ABC_fastqs_local.csv
-```
-
-Subset:
-
-```
-head -1 A90696ABC_fastqs_local.csv > A90696ABC_fastqs_local_subset.csv
-grep '\(R03-C63\|R08-C63\|R04-C63\|R11-C63\|R13-C63\|R15-C63\|R20-C63\|R45-C63\)' A90696ABC_fastqs_local.csv >> A90696ABC_fastqs_local_subset.csv
-head -1 A90696ABC_sample_info.csv > A90696ABC_sample_info_subset.csv
-grep '\(R03-C63\|R08-C63\|R04-C63\|R11-C63\|R13-C63\|R15-C63\|R20-C63\|R45-C63\)' A90696ABC_sample_info.csv >> A90696ABC_sample_info_subset.csv
-```
-
-Run the pipeline:
-
-```
-single_cell_nextseq \
-  /datadrive/analysis/A90696ABC_sample_info_subset.csv \
-  /datadrive/analysis/A90696ABC_fastqs_local_subset.csv \
-  A90696ABC \
-  /datadrive/analysis/results/ \
-  /datadrive/software/single_cell_pipeline/config_cloud.yaml \
-  --loglevel DEBUG \
-  --submit local \
-  --maxjobs 32 \
-  --nocleanup \
-  --realign
+single_cell hmmcopy \
+--input_yaml inputs/SC-1234/bams.yaml \
+--tmpdir temp/SC-1234/tmp \
+--pipelinedir pipeline/SC-1234  \
+--out_dir results/SC-1234/results \
+ --library_id A123123 \
+ ...
 ```
 
 
 
-# Singularity container
-create a workdir and cd into the directory
+## 3. Copyclone
+### Input
+The pipeline accepts a yaml file as input. The yaml file contains the input paths and metadata for each cell, the format for each cell is as follows:
+```
+SA12345-A12345-R01-C01:
+  bam: /path/to/aligned/SA12345-A12345-R01-C01.bam
+  column: 01
+  condition: A
+  img_col: 10
+  index_i5: i5-INDEX
+  index_i7: i7-INDEX
+  pick_met: CELLCALL
+  primer_i5: ACTACTATT
+  primer_i7: AGTAGTACT
+  row: 01
+  sample_type: C
+```
 
-clone mutationseq
+
+### Run 
+
 ```
-git clone https://dgrewal@svn.bcgsc.ca/bitbucket/scm/museq/mutationseq.git
+single_cell copyclone \
+--input_yaml inputs/SC-1234/bams.yaml \
+--tmpdir temp/SC-1234/tmp \
+--pipelinedir pipeline/SC-1234  \
+--out_dir results/SC-1234/results \
+ --library_id A123123 \
+ ...
 ```
-Clone Single Cell pipeline repo
+
+
+## 4. Aneufinder
+### Input
+The pipeline accepts a yaml file as input. The yaml file contains the input paths and metadata for each cell, the format for each cell is as follows:
 ```
-git clone https://dgrewal@svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git
+SA12345-A12345-R01-C01:
+  bam: /path/to/aligned/SA12345-A12345-R01-C01.bam
+  column: 01
+  condition: A
+  img_col: 10
+  index_i5: i5-INDEX
+  index_i7: i7-INDEX
+  pick_met: CELLCALL
+  primer_i5: ACTACTATT
+  primer_i7: AGTAGTACT
+  row: 01
+  sample_type: C
 ```
-Clone pypeliner repo
+The yaml file for the align step should work as well
+
+
+### Run 
+
 ```
-git clone https://dgrewal@bitbucket.org/dranew/pypeliner.git
+single_cell aneufinder \
+--input_yaml inputs/SC-1234/bams.yaml \
+--tmpdir temp/SC-1234/tmp \
+--pipelinedir pipeline/SC-1234  \
+--out_dir results/SC-1234/results \
+ --library_id A123123 \
+ ...
 ```
-Download GATK jar file
+
+
+
+## 5. merge bams
+The tumour needs to be simultaneously merged across cells and split by region. The input for this step is the per cell bam yaml and the template for the merged bams by region.
+
 ```
-wget ftp://ftp.bcgsc.ca/public/shahlab/dgrewal/GenomeAnalysisTK.jar
+SA501X5XB00877-A95670A-R04-C03:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C03.bam
+SA501X5XB00877-A95670A-R04-C05:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C05.bam
+SA501X5XB00877-A95670A-R04-C07:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C07.bam
+SA501X5XB00877-A95670A-R04-C09:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C09.bam
+SA501X5XB00877-A95670A-R04-C10:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C10.bam
 ```
-copy conda_packages.txt and singularity.recipe files from the single_cell pipeline.
+
+
 ```
-cp single_cell_pipeline/conda_packages.txt .
-cp single_cell_pipeline/singularity.recipe .
+single_cell merge_bams \
+--input_yaml inputs/SC-1234/bams.yaml \
+--merged_bam_template temp/SC-1234/pseudo_wgs/TUMOUR_{region}.bam \
+--tmpdir temp/SC-1234/tmp \
+--pipelinedir pipeline/SC-1234  \
+--out_dir results/SC-1234/results \
+ ...
 ```
-Download boost
+
+
+## 6. split bams
+
+The normal also needs to be split by region from an input data path to an output per region template.
 ```
-wget https://sourceforge.net/projects/boost/files/boost/1.57.0/boost_1_57_0.tar.gz
-tar -xvf boost_1_57_0.tar.gz
+single_cell split_bam \
+ --wgs_bam data/NORMAL.bam \
+ --split_bam_template temp/SC-1234/pseudo_wgs/NORMAL_{region}.bam \
+ --tmpdir temp/SC-1234/tmp \
+ --pipelinedir pipeline/SC-1234 \
+ --out_dir results/SC-1234/results \
 ```
-build container:
+
+
+## 7. Variant Calling
+
 ```
-sudo singularity build  single_cell.img singularity.recipe
+SA501X5XB00877-A95670A-R04-C03:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C03.bam
+SA501X5XB00877-A95670A-R04-C05:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C05.bam
+SA501X5XB00877-A95670A-R04-C07:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C07.bam
+SA501X5XB00877-A95670A-R04-C09:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C09.bam
+SA501X5XB00877-A95670A-R04-C10:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C10.bam
 ```
+
+The variant calling takes in both the per cell bam yaml, using the per cell bams for variant allele counting, and the tumour and normal region templates for calling snvs in parallel by region.
+```
+single_cell variant_calling \
+ --input_yaml inputs/SC-1234/bams.yaml \
+ --tumour_template temp/SC-1234/pseudo_wgs/TUMOUR_{region}.bam \
+ --normal_template temp/SC-1234/pseudo_wgs/NORMAL_{region}.bam \
+ --tmpdir temp/SC-1234/tmp \
+ --out_dir results/SC-1099/results \
+ --pipelinedir pipeline/SC-1234 \
+ ...
+```
+
+
+## 8. Copy Number Calling
+
+The copy number analysis takes in per cell bam yaml, with the ability to provide per cell bams for normal and tumour. If a WGS bam is used for normal that can be a single entry in the normal bam yaml.
+
+
+per cell bam yaml format:
+```
+SA501X5XB00877-A95670A-R04-C03:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C03.bam
+SA501X5XB00877-A95670A-R04-C05:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C05.bam
+SA501X5XB00877-A95670A-R04-C07:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C07.bam
+SA501X5XB00877-A95670A-R04-C09:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C09.bam
+SA501X5XB00877-A95670A-R04-C10:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C10.bam
+```
+
+single wgs bam format:
+```
+SA501:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C03.bam
+```
+
+Run:
+```
+single_cell copy_number_calling \
+ --tumour_yaml inputs/SC-1234/bams.yaml \
+ --normal_yaml inputs/SC-1234/normal.yaml \
+ --clone_id 1 \
+ --tmpdir temp/SC-1234/tmp \
+ --pipelinedir pipeline/SC-1234 \
+ --out_dir results/SC-1234/results
+ ...
+```
+
+## 9. Germline Calling
+
+input yaml:
+```
+SA501X5XB00877-A95670A-R04-C03:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C03.bam
+SA501X5XB00877-A95670A-R04-C05:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C05.bam
+SA501X5XB00877-A95670A-R04-C07:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C07.bam
+SA501X5XB00877-A95670A-R04-C09:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C09.bam
+SA501X5XB00877-A95670A-R04-C10:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C10.bam
+```
+Run:
+```
+single_cell germline_calling \
+ --input_yaml inputs/SC-1234/bams.yaml \
+ --input_template temp/SC-1234/pseudo_wgs/INPUT_{region}.bam \
+ --tmpdir temp/SC-1234/tmp \
+ --pipelinedir pipeline/SC-1234 \
+ --out_dir results/SC-1234/results
+ ...
+```
+
+
+## 10. Destruct
+
+```
+SA501X5XB00877-A95670A-R04-C03:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C03.bam
+SA501X5XB00877-A95670A-R04-C05:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C05.bam
+SA501X5XB00877-A95670A-R04-C07:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C07.bam
+SA501X5XB00877-A95670A-R04-C09:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C09.bam
+SA501X5XB00877-A95670A-R04-C10:
+  bam: data/single_cell_indexing/bam/A95670A/grch37/bwa-aln/SA501X5XB00877-A95670A-R04-C10.bam
+```
+
+The breakpoint analysis takes in per cell bam yaml in addition to the unsplit matched normal bam filename.
+```
+single_cell breakpoint_calling \
+ --input_yaml inputs/SC-1234/bams.yaml \
+ --matched_normal data/NORMAL.bam \
+ --tmpdir temp/SC-1234/tmp \
+ --pipelinedir pipeline/SC-1234 \
+ --out_dir results/SC-1234/results
+ ...
+```
+
+
+## 11. Generate Config 
+
+The pipeline auto generates a config file with the default parameters before every run. Some of the values in the config file can be updated by using the ``--config_override`` option.  ```generate_config``` option allows users to generate the config files. These configs can then be specified as input to the pipeline after making the required changes.
+```
+single_cell generate_config --pipeline_config pipeline_config.yaml --batch_config batch_config.yaml
+```
+the pipeline config file contains all pipeline defaults and the batch config specifies all azure batch specific settings.
+
+the pipeline config can be specified manually when running the pipeline with ```--config_file``` option and the batch config with ```--submit_config``` option.
+
+
+
+## 12. Clean Sentinels
+the pipeline will skip any successful tasks from previous runs when run again. The ``--rerun`` flag force run all tasks including the successful tasks from the previous runs while the ```clean_sentinels``` option provides a more fine grained control.
+
+```
+single_cell clean_sentinels --mode list --pattern "*" --tmpdir temp/SC-1234/tmp/hmmcopy
+```
+will list all successfully completed hmmcopy tasks
+
+```
+single_cell clean_sentinels --mode delete --pattern "*" --tmpdir temp/SC-1234/tmp/hmmcopy
+```
+is the same as ```--rerun``` flag
+
+running
+```
+single_cell clean_sentinels --mode delete --pattern "*plot_heatmap*" --tmpdir temp/SC-1234/tmp/hmmcopy
+```
+before launching the hmmcopy will rerun the heatmap plotting  and any tasks that haven't completed yet.
+
+
+### Common options
+
+* add ``` --storage azureblob``` to read the inputs and write the outputs to Microsoft Azure Blob Storage
+* add ``` --submit local``` to run the pipeline on the current node
+* add ``` --submit asyncqsub ``` to run the pipeline on a SGE cluster
+* add ``` --submit azurebatch``` to run the tasks on Microsoft Azure Batch
+* add ``` --nocleanup``` to disable temporary file deletion
+* add ``` --loglevel DEBUG``` for verbose logging
+* ```--submit_config <path to yaml config>``` for custom azure batch submission configuration file. see 10. Generate config for more details
+* ```--config_file <path to yaml config>``` to specify pipeline config file.
