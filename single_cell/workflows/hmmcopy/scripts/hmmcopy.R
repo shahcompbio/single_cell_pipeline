@@ -96,7 +96,7 @@ error_exit_clean <- function(samp.uncorrected, chromosomes, sample_id, out_reads
                           "MBRSM_dispersion","autocorrelation_hmmcopy","cv_hmmcopy","empty_bins_hmmcopy",
                           "mad_hmmcopy","mean_hmmcopy_reads_per_bin","median_hmmcopy_reads_per_bin",
                           "std_hmmcopy_reads_per_bin","total_mapped_reads","total_halfiness","scaled_halfiness",
-                          "mean_state_mads","mean_state_vars","mad_neutral_state","too_even","breakpoints","mean_copy",
+                          "mean_state_mads","mean_state_vars","mad_neutral_state","breakpoints","mean_copy",
                           "state_mode","log_likelihood","true_multiplier","cell_id")
 
         numcols_metrics <- length(metrics_cols)
@@ -237,22 +237,18 @@ run_hmmcopy <- function(cell, corrected_reads_data, param, outdir, multipliers, 
         neumad <- subset(stats3, state == 2)$state_mads
         mstats$mad_neutral_state <- ifelse(length(neumad) == 1, neumad, NA)
 
-        mstats$too_even <- NA
-        states <- unique(ideal$state)
-        if (all(c(2, 4) %in% states)) {
-            if (any(c(1, 3) %in% states)) {
-                mstats$too_even <- FALSE
-            } else {
-                mstats$too_even <- TRUE
-            }
-        }
-
         mstats$breakpoints <- nrow(modal_seg) - length(unique(modal_seg$chr))
         mstats$mean_copy <- mean(ideal$copy, na.rm = TRUE)
         mstats$state_mode <- as.numeric(names(tail(sort(table(ideal$state)), 1)))
         mstats$log_likelihood <- tail(samp.segmented$loglik, 1)
         mstats$true_multiplier <- true_multiplier
         mstats$cell_id <- cell
+
+        # HAPLOID POISON
+        ones <- ideal$state == 1
+        if (sum(ones) / length(ones) > 0.7) {
+            mstats$scaled_halfiness <- Inf
+        }
 
         df.params <- format_parameter_table(samp.segmented, new.params)
 
@@ -265,7 +261,6 @@ run_hmmcopy <- function(cell, corrected_reads_data, param, outdir, multipliers, 
         # rename space col in reads
         test.corrected <- as.data.frame(test.corrected)
         colnames(test.corrected)[colnames(test.corrected)=="space"] <- "chr"
-
 
         #write
         modal_output = file.path(outdir, VAL, sep='/')
@@ -281,19 +276,14 @@ run_hmmcopy <- function(cell, corrected_reads_data, param, outdir, multipliers, 
         best.metrics[[VAL]] <- mstats
         best.params[[VAL]] <- df.params
 
-
-
         seg.best <- rbind.fill(seg.best, data.frame(VAL, VAL, scaledpenalty = mstats$scaled_halfiness, MSRSI_non_integerness = mstats$MSRSI_non_integerness, mean_copy = mstats$mean_copy))
     }
-
-
 
     auto_output = file.path(outdir, "0", sep='/')
     dir.create(auto_output, recursive=TRUE)
 
     seg.best$red <- FALSE
     seg.best$red[which(seg.best$scaledpenalty == min(seg.best$scaledpenalty))] <- TRUE
-
 
     pick <- subset(seg.best, red)$VAL
     if (length(pick) > 1){
