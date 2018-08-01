@@ -123,9 +123,7 @@ def create_hmmcopy_workflow(
             'hmmcopy/metrics'
         ),
         kwargs={
-            'dtypes': {'too_even': float,
-                       'mad_neutral_state': float,
-                       }
+            'dtypes': {'mad_neutral_state': float}
         }
     )
 
