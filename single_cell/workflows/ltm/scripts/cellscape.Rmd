@@ -1,0 +1,26 @@
+---
+title: "LTM visualization"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r, echo=FALSE}
+source("https://bioconductor.org/biocLite.R")
+biocLite("cellscape")
+library(cellscape)
+# single cell tree edges
+tree_edges <- read.csv("cnv_tree_edges.csv")
+# cnv segments data
+cnv_data <- read.csv("cnv_data.csv")
+# annotations
+sc_annot <- read.csv("cnv_annots.csv")
+# custom clone colours
+clone_colours <- data.frame(clone_id = c("1","2","3"), colour = c("7fc97f", "beaed4", "fdc086"))
+# run cellscape
+cellscape(cnv_data=cnv_data, tree_edges=tree_edges, sc_annot=sc_annot, width=800, height=3000, show_warnings=FALSE, clone_colours=clone_colours)
+```

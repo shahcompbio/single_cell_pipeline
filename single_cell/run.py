@@ -12,6 +12,7 @@ from split_bam import split_bam_workflow
 from generate_config import generate_config
 from clean_sentinels import clean_sentinels
 from copy_number import copy_number_calling_workflow
+from ltm import ltm_workflow
 
 # from copyclone import copyclone_workflow
 
@@ -90,6 +91,13 @@ def main():
         workflow = pypeliner.workflow.Workflow()
         workflow = variant_counting_workflow(workflow, args)
         pyp.run(workflow)
+
+    if args["which"] == "ltm":
+        pyp = pypeliner.app.Pypeline(config=args)
+        workflow = pypeliner.workflow.Workflow()
+        workflow = ltm_workflow(workflow, args)
+        pyp.run(workflow)
+
 
 if __name__ == "__main__":
     main()
