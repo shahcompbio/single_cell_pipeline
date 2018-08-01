@@ -268,6 +268,31 @@ def parse_args():
                                  required=True,
                                  help='''path to the pipeline dir''')
 
+    #============================
+    # generate LTM tree
+    #============================
+    ltm = add_global_args(subparsers.add_parser("ltm"), dont_add_input_yaml=True)
+    ltm.set_defaults(which='ltm')
+
+    ltm.add_argument("--input_csv",
+                     required=True,
+                     help='''csv file with alignment and hmmcopy results for each timepoint''')
+
+    ltm.add_argument("--root_id",
+                     help='''ID of the cell to use as root of the tree. Default: first SA928 cell''',
+                     default=None)
+
+    ltm.add_argument('--number_of_jobs',
+                     help='''Number of jobs to submit for distance calculation for scaled method.''',
+                     default=10,
+                     type=int)
+
+    ltm.add_argument('--ploidy',
+                     help='''Ploidy to use for analysis.''',
+                     default=0,
+                     type=int)
+
+
     args = vars(parser.parse_args())
 
     # add config paths to global args if needed.
