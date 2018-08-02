@@ -3,17 +3,16 @@ Created on Feb 19, 2018
 
 @author: dgrewal
 '''
-import pypeliner.commandline
 import os
-
+import pypeliner.commandline
 from helpers import makedirs
 
-def merge_bams(inputs, output, mem="2G"):
 
+def merge_bams(inputs, output, mem="2G", **kwargs):
     if isinstance(inputs, dict):
         inputs = inputs.values()
-    
-    cmd = ['picard', '-Xmx'+mem, '-Xms'+mem,
+
+    cmd = ['picard', '-Xmx' + mem, '-Xms' + mem,
            '-XX:ParallelGCThreads=1',
            'MergeSamFiles',
            'OUTPUT=' + output,
@@ -22,81 +21,133 @@ def merge_bams(inputs, output, mem="2G"):
            'VALIDATION_STRINGENCY=LENIENT',
            'MAX_RECORDS_IN_RAM=150000'
            ]
-    for bamfile in inputs:
-        cmd.append('I='+bamfile)
-    
-    pypeliner.commandline.execute(*cmd)
 
-def bam_sort(bam_filename, sorted_bam_filename, tempdir, mem="2G"):
+    for bamfile in inputs:
+        cmd.append('I=' + os.path.abspath(bamfile))
+
+
+    kwargs = {
+        'dockerize':kwargs.get('dockerize'),
+        'image':kwargs.get('image'),
+        'mounts':kwargs.get('mounts'),
+        'username':kwargs.get("username"),
+        'password':kwargs.get('password'),
+        'server':kwargs.get('server'),
+    }
+
+    pypeliner.commandline.execute(*cmd, **kwargs)
+
+
+def bam_sort(bam_filename, sorted_bam_filename, tempdir, mem="2G", **kwargs):
     if not os.path.exists(tempdir):
         makedirs(tempdir)
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx'+mem, '-Xms'+mem,
+        'picard', '-Xmx' + mem, '-Xms' + mem,
         '-XX:ParallelGCThreads=1',
         'SortSam',
-        'INPUT=' + bam_filename,
-        'OUTPUT=' + sorted_bam_filename,
+                  'INPUT=' + bam_filename,
+                  'OUTPUT=' + sorted_bam_filename,
         'SORT_ORDER=coordinate',
         'VALIDATION_STRINGENCY=LENIENT',
-        'TMP_DIR='+tempdir,
-        'MAX_RECORDS_IN_RAM=150000')
+                  'TMP_DIR=' + tempdir,
+        'MAX_RECORDS_IN_RAM=150000',
+        dockerize=kwargs.get('dockerize'),
+        image=kwargs.get('image'),
+        mounts=kwargs.get('mounts'),
+        username=kwargs.get("username"),
+        password=kwargs.get('password'),
+        server=kwargs.get('server'),
+    )
 
-def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename, tempdir, mem="2G"):
+
+def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename,
+                 tempdir, mem="2G", **kwargs):
     if not os.path.exists(tempdir):
         makedirs(tempdir)
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx'+mem, '-Xms'+mem,
+        'picard', '-Xmx' + mem, '-Xms' + mem,
         '-XX:ParallelGCThreads=1',
         'MarkDuplicates',
-        'INPUT=' + bam_filename,
-        'OUTPUT=' + markduped_bam_filename,
-        'METRICS_FILE=' + metrics_filename,
+                  'INPUT=' + bam_filename,
+                  'OUTPUT=' + markduped_bam_filename,
+                  'METRICS_FILE=' + metrics_filename,
         'REMOVE_DUPLICATES=False',
         'ASSUME_SORTED=True',
         'VALIDATION_STRINGENCY=LENIENT',
-        'TMP_DIR='+tempdir,
-        'MAX_RECORDS_IN_RAM=150000')
+                  'TMP_DIR=' + tempdir,
+        'MAX_RECORDS_IN_RAM=150000',
+        dockerize=kwargs.get('dockerize'),
+        image=kwargs.get('image'),
+        mounts=kwargs.get('mounts'),
+        username=kwargs.get("username"),
+        password=kwargs.get('password'),
+        server=kwargs.get('server'),
+    )
 
-def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename, config, tempdir, mem="2G"):
 
+def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename,
+                            config, tempdir, mem="2G", **kwargs):
     if not os.path.exists(tempdir):
         makedirs(tempdir)
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx'+mem, '-Xms'+mem,
+        'picard', '-Xmx' + mem, '-Xms' + mem,
         '-XX:ParallelGCThreads=1',
         'CollectWgsMetrics',
-        'INPUT=' + bam_filename,
-        'OUTPUT=' + metrics_filename,
-        'REFERENCE_SEQUENCE=' + ref_genome,
-        'MINIMUM_BASE_QUALITY=' + str(config['picard_wgs_params']['min_bqual']),
-        'MINIMUM_MAPPING_QUALITY=' + str(config['picard_wgs_params']['min_mqual']),
+                  'INPUT=' + bam_filename,
+                  'OUTPUT=' + metrics_filename,
+                  'REFERENCE_SEQUENCE=' + ref_genome,
+                  'MINIMUM_BASE_QUALITY=' +
+                  str(config['picard_wgs_params']['min_bqual']),
+                  'MINIMUM_MAPPING_QUALITY=' +
+                  str(config['picard_wgs_params']['min_mqual']),
         'COVERAGE_CAP=500',
         'VALIDATION_STRINGENCY=LENIENT',
-        'COUNT_UNPAIRED=' + ('True' if config['picard_wgs_params']['count_unpaired'] else 'False'),
-        'TMP_DIR='+tempdir,
-        'MAX_RECORDS_IN_RAM=150000')
+                  'COUNT_UNPAIRED=' +
+                  ('True' if config['picard_wgs_params']['count_unpaired'] else 'False'),
+                  'TMP_DIR=' + tempdir,
+        'MAX_RECORDS_IN_RAM=150000',
+        dockerize=kwargs.get('dockerize'),
+        image=kwargs.get('image'),
+        mounts=kwargs.get('mounts'),
+        username=kwargs.get("username"),
+        password=kwargs.get('password'),
+        server=kwargs.get('server'),
+    )
 
-def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, tempdir, mem="2G"):
+
+def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename,
+                           summary_filename, chart_filename, tempdir,
+                           mem="2G", **kwargs):
     if not os.path.exists(tempdir):
         makedirs(tempdir)
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx'+mem, '-Xms'+mem,
+        'picard', '-Xmx' + mem, '-Xms' + mem,
         '-XX:ParallelGCThreads=1',
         'CollectGcBiasMetrics',
-        'INPUT=' + bam_filename,
-        'OUTPUT=' + metrics_filename,
-        'REFERENCE_SEQUENCE=' + ref_genome,
-        'S=' + summary_filename,
-        'CHART_OUTPUT=' + chart_filename,
+                  'INPUT=' + bam_filename,
+                  'OUTPUT=' + metrics_filename,
+                  'REFERENCE_SEQUENCE=' + ref_genome,
+                  'S=' + summary_filename,
+                  'CHART_OUTPUT=' + chart_filename,
         'VALIDATION_STRINGENCY=LENIENT',
-        'TMP_DIR='+tempdir,
-        'MAX_RECORDS_IN_RAM=150000')
+                  'TMP_DIR=' + tempdir,
+        'MAX_RECORDS_IN_RAM=150000',
+        dockerize=kwargs.get('dockerize'),
+        image=kwargs.get('image'),
+        mounts=kwargs.get('mounts'),
+        username=kwargs.get("username"),
+        password=kwargs.get('password'),
+        server=kwargs.get('server'),
+    )
 
-def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_filename, histogram_filename, tempdir, mem="2G"):
+
+def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename,
+                               metrics_filename, histogram_filename, tempdir,
+                               mem="2G", **kwargs):
     # Check if any paired reads exist
     has_paired = None
     with open(flagstat_metrics_filename) as f:
@@ -108,7 +159,8 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_
                     has_paired = True
 
     if has_paired is None:
-        raise Exception('Unable to determine number of properly paired reads from {}'.format(flagstat_metrics_filename))
+        raise Exception('Unable to determine number of properly paired reads from {}'.format(
+            flagstat_metrics_filename))
 
     if not has_paired:
         with open(metrics_filename, 'w') as f:
@@ -121,13 +173,20 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename, metrics_
         makedirs(tempdir)
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx'+mem, '-Xms'+mem,
+        'picard', '-Xmx' + mem, '-Xms' + mem,
         '-XX:ParallelGCThreads=1',
         'CollectInsertSizeMetrics',
-        'INPUT=' + bam_filename,
-        'OUTPUT=' + metrics_filename,
-        'HISTOGRAM_FILE=' + histogram_filename,
+                  'INPUT=' + bam_filename,
+                  'OUTPUT=' + metrics_filename,
+                  'HISTOGRAM_FILE=' + histogram_filename,
         'ASSUME_SORTED=True',
         'VALIDATION_STRINGENCY=LENIENT',
-        'TMP_DIR='+tempdir,
-        'MAX_RECORDS_IN_RAM=150000')
+                  'TMP_DIR=' + tempdir,
+        'MAX_RECORDS_IN_RAM=150000',
+        dockerize=kwargs.get('dockerize'),
+        image=kwargs.get('image'),
+        mounts=kwargs.get('mounts'),
+        username=kwargs.get("username"),
+        password=kwargs.get('password'),
+        server=kwargs.get('server'),
+    )

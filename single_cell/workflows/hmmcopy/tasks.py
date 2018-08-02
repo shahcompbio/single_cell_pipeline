@@ -44,13 +44,21 @@ def run_correction_hmmcopy(
     rc.main()
 
     if hmmparams["smoothing_function"] == 'loess':
+        docker_args = config['docker']['images']['hmmcopy']
+
         cmd = ['Rscript', run_readcount_rscript,
                readcount_wig,
                hmmparams['gc_wig_file'],
                hmmparams['map_wig_file'],
                correct_reads_out
                ]
-        pypeliner.commandline.execute(*cmd)
+        pypeliner.commandline.execute(
+            *cmd,
+                username = docker_args['username'],
+                password = docker_args['password'],
+                server = docker_args['server'],
+                dockerize = config['docker']['dockerize'],
+                image = docker_args['image'])
     elif hmmparams["smoothing_function"] == 'modal':
         CorrectReadCount(hmmparams["gc_wig_file"],
                          hmmparams['map_wig_file'],
@@ -65,11 +73,18 @@ def run_correction_hmmcopy(
     return correct_reads_out
 
 
-def run_hmmcopy_script(corrected_reads, tempdir, cell_id, hmmparams):
+def run_hmmcopy_script(corrected_reads, tempdir, cell_id, hmmparams, config):
+
+    docker_args = config['docker']['images']['hmmcopy']
+    mounts = config['docker']['mounts']
+
+    if config["docker"]["dockerize"]:
+        cmd = ["hmmcopy"]
+    else:
+        cmd = ['Rscript', run_hmmcopy_rscript]
 
     # run hmmcopy
-    cmd = ['Rscript', run_hmmcopy_rscript,
-           '--corrected_data=' + corrected_reads,
+    cmd += ['--corrected_data=' + corrected_reads,
            '--outdir=' + tempdir,
            '--sample_id=' + cell_id]
 
@@ -87,8 +102,13 @@ def run_hmmcopy_script(corrected_reads, tempdir, cell_id, hmmparams):
     cmd.append('--param_s=' + str(hmmparams['s']))
     cmd.append('--param_multiplier=' + multipliers)
 
-    pypeliner.commandline.execute(*cmd)
-
+    pypeliner.commandline.execute(*cmd,
+                username = docker_args['username'],
+                password = docker_args['password'],
+                dockerize = config['docker']['dockerize'],
+                image = docker_args['image'],
+                server = docker_args['server'],
+                mounts = mounts)
 
 def run_hmmcopy(
         bam_file,
@@ -100,6 +120,7 @@ def run_hmmcopy(
         segs_pdf_filename,
         bias_pdf_filename,
         cell_id,
+        reference,
         config,
         hmmparams,
         multipliers,
@@ -122,7 +143,7 @@ def run_hmmcopy(
         corrected_reads,
         tempdir,
         cell_id,
-        hmmparams)
+        hmmparams, config)
 
     hmmcopy_reads_files = []
     hmmcopy_params_files = []

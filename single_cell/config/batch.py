@@ -8,6 +8,8 @@ import os
 import yaml
 import collections
 
+import pipeline_config
+
 
 class folded_unicode(unicode):
     pass
@@ -116,10 +118,24 @@ def generate_autoscale_formula(tasks_per_node):
 
 
 def create_vm_commands():
+
+    # GETSIZE AND MOUNT:
+    # the disks are not guaranteed to appear under the same device name when starting a new
+    # vm from a managed image. So we cannot be sure where the devices should be mounted,
+    # this code uses the disk size to guess where to mount
+    # If disk in under 40ish GB then mount it to refdata (our default reference disk is 32 GB)
+    # If disk is over 900ish GB then mount it to datadrive (our default scratch space is 1TB)
+    # DOCKER GROUP:
+    # We do not have sudo available in tasks, docker requires sudo. Docker also comes with a
+    # 'docker' user group. This user group has escalated permissions, any user in this group
+    # can run docker without sudo (but still as an escalated user). Add the current user (default _azbatch)
+    # to the docker user group. This cannot be done during the image creation, image capture removes all user
+    # information.
     commands = (
         "if [ `sudo blockdev --getsize64 /dev/sdc` -le 40000000000 ]; then sudo mount /dev/sdc /refdata; else sudo mount /dev/sdd /refdata; fi\n"
         "if [ `sudo blockdev --getsize64 /dev/sdd` -gt 900000000000 ]; then sudo mount /dev/sdd /datadrive; else sudo mount /dev/sdc /datadrive; fi\n"
         "sudo chmod -R 777 /datadrive /refdata\n"
+        "sudo gpasswd -a $USER docker"
     )
 
     commands = literal_unicode(commands)
@@ -129,14 +145,23 @@ def create_vm_commands():
 
 def get_vm_size_azure(numcores):
     if numcores <= 2:
-        return "STANDARD_DS11_V2"
+        return "STANDARD_E2_V3"
     elif numcores <= 4:
-        return "STANDARD_DS12_V2"
+        return "STANDARD_E4_V3"
     elif numcores <= 8:
-        return "STANDARD_DS13_V2"
+        return "STANDARD_E8_V3"
     else:
         # max 16 cores
-        return "STANDARD_DS14_V2"
+        return "STANDARD_E16_V3"
+#     if numcores <= 2:
+#         return "STANDARD_DS11_V2"
+#     elif numcores <= 4:
+#         return "STANDARD_DS12_V2"
+#     elif numcores <= 8:
+#         return "STANDARD_DS13_V2"
+#     else:
+#         # max 16 cores
+#         return "STANDARD_DS14_V2"
 
 
 def get_vm_image_id(version):
@@ -173,17 +198,34 @@ def get_pool_def(
 
 
 def get_compute_start_commands():
+    # Azure batch starts a process on each node during startup
+    # this process runs the entire time VM is up (speculation?). running sudo gasswd
+    # adds our user to the docker group in node startup. but all user/group
+    # permission updates require restarting the bash process (normally by
+    # running newgrp or by logout-login). Since we cannot do that with batch
+    # and since the start task and compute task run under same process, we need
+    # to explicitly specify the user group when running docker commands. sg in
+    # linux can be used to set group when executing commands
+    dockeruser = os.environ["CLIENT_ID"]
+    dockerpass = os.environ["SECRET_KEY"]
+
     commands = (
-        'clean_up () {\n'
-        '  echo "clean_up task executed"\n'
-        '  find $AZ_BATCH_TASK_WORKING_DIR/ -xtype l -delete\n'
-        '  exit 0\n'
-        '}\n'
-        'trap clean_up EXIT\n'
-        'export PATH=/usr/local/miniconda2/bin/:$PATH\n'
-        'mkdir -p /datadrive/$AZ_BATCH_TASK_WORKING_DIR/\n'
-        'cd /datadrive/$AZ_BATCH_TASK_WORKING_DIR/\n'
+        'clean_up () {',
+        '  echo "clean_up task executed"',
+        '  find $AZ_BATCH_TASK_WORKING_DIR/ -xtype l -delete',
+        '  exit 0',
+        '}',
+        'trap clean_up EXIT',
+        'export PATH=/usr/local/miniconda2/bin/:$PATH',
+        'mkdir -p /datadrive/$AZ_BATCH_TASK_WORKING_DIR/',
+        'cd /datadrive/$AZ_BATCH_TASK_WORKING_DIR/',
+        'sg docker -c "docker login singlecellcontainers.azurecr.io -u {} -p {}"'.format(
+            dockeruser,
+            dockerpass),
+        'sg docker -c "docker pull singlecellcontainers.azurecr.io/scp/single_cell_pipeline"',
     )
+
+    commands = '\n'.join(commands)
 
     commands = literal_unicode(commands)
 
@@ -192,11 +234,37 @@ def get_compute_start_commands():
 
 def get_compute_run_commands():
 
-    cmd = "python -m pypeliner.delegator $AZ_BATCH_TASK_WORKING_DIR/{input_filename} $AZ_BATCH_TASK_WORKING_DIR/{output_filename}"
+    run_command  = ['pypeliner_delegate',
+                   '$AZ_BATCH_TASK_WORKING_DIR/{input_filename}',
+                   '$AZ_BATCH_TASK_WORKING_DIR/{output_filename}',
+                   ]
+    run_command = ' '.join(run_command)
+    run_command = literal_unicode(run_command)
 
-    cmd = literal_unicode(cmd)
+    docker_mounts = pipeline_config.get_docker_params(
+        'azure')['docker']['mounts']
 
-    return {"compute_run_command": cmd}
+    mount_string = ['-v {}:{}'.format(mount, mount) for mount in docker_mounts]
+    mount_string += ['-v /mnt:/mnt']
+    mount_string = ' '.join(mount_string)
+
+    dockerize_run_command = ['docker run -w $PWD',
+                             mount_string,
+                             '-v /var/run/docker.sock:/var/run/docker.sock',
+                             '-v /usr/bin/docker:/usr/bin/docker',
+                             'singlecellcontainers.azurecr.io/scp/single_cell_pipeline',
+                             '{command}'
+                            ]
+    dockerize_run_command = ' '.join(dockerize_run_command)
+
+    # wrap it up as docker group command
+    dockerize_run_command = 'sg docker -c "{}"'.format(dockerize_run_command)
+
+    # use block format
+    dockerize_run_command = literal_unicode(dockerize_run_command)
+
+    return {"compute_run_command": run_command,
+            "dockerize_run_command": dockerize_run_command}
 
 
 def get_compute_finish_commands():

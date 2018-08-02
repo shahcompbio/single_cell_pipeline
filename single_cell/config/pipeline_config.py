@@ -8,7 +8,7 @@ import single_cell
 from config_reference import extract_from_reference
 import yaml
 import copy
-
+import os
 
 def get_version():
     version = single_cell.__version__
@@ -196,6 +196,46 @@ def get_databases():
 
     return databases
 
+def get_docker_images():
+
+    username = os.environ["CLIENT_ID"]
+    password = os.environ["SECRET_KEY"]
+    server = "singlecellcontainers.azurecr.io"
+    
+    image_urls = {
+        "bwa" : "singlecellcontainers.azurecr.io/scp/bwa",
+        "samtools" : "singlecellcontainers.azurecr.io/scp/samtools",
+        "python_base" : "singlecellcontainers.azurecr.io/scp/python_base",
+        "single_cell_pipeline" : "singlecellcontainers.azurecr.io/scp/single_cell_pipeline",
+        "picard" : "singlecellcontainers.azurecr.io/scp/picard",
+        "gatk" : "singlecellcontainers.azurecr.io/scp/gatk",
+        "fastqc": "singlecellcontainers.azurecr.io/scp/fastqc",
+        "hmmcopy": "singlecellcontainers.azurecr.io/scp/hmmcopy"
+    }
+
+    image_data = {}
+    
+    for name, url in image_urls.iteritems():
+        image_data[name] = {'image': url, 'server': server,
+                            'username': username, 'password': password}
+
+
+    images = {"images": image_data}
+
+    return images
+
+def get_docker_params(cluster,):
+    params = {}
+ 
+    params.update(get_docker_images())
+ 
+    dockerize = True if cluster == 'azure' else False
+    params["dockerize"] = dockerize
+    params["mounts"] = ['/refdata','/datadrive']
+ 
+    return {"docker": params}
+
+
 
 def override_config(config, override):
     def update(d, u):
@@ -251,6 +291,8 @@ def get_singlecell_pipeline_config(config_params, override=None):
     params.update(get_destruct_params(cluster, reference))
 
     params.update(get_databases())
+
+    params.update(get_docker_params(cluster))
 
     params = override_config(params, override)
 
