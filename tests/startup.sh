@@ -28,7 +28,7 @@ conda config --add channels 'conda-forge'
 conda config --add channels https://conda.anaconda.org/aroth85
 
 
-conda install --file single_cell_pipeline/tests/conda_packages.txt -y -q
+#conda install --file single_cell_pipeline/tests/conda_packages.txt -y -q
 
 gatk3-register vmresources/GenomeAnalysisTK.jar
 pip install azure-storage azure-batch futures azure-mgmt

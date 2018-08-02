@@ -19,6 +19,19 @@ import multiprocessing
 from multiprocessing.pool import ThreadPool
 
 
+def get_mount_dirs_docker(*args):
+    mounts = set()
+
+    for arg in args:
+        if os.path.exists(os.path.dirname(arg)):
+            if not arg.startswith('/'):
+                arg = os.path.abspath(arg)
+            arg = arg.split('/')
+
+            mounts.add('/' + arg[1])
+    return sorted(mounts)
+
+
 def write_to_yaml(outfile, data):
     with open(outfile, 'w') as output:
         yaml.safe_dump(data, output)

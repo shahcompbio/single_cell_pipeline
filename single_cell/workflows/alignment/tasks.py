@@ -15,7 +15,6 @@ from single_cell.utils import hdfutils
 
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotMetrics
 
-
 def plot_metrics(metrics, output, plot_title, gc_matrix, gc_content):
 
     plot = PlotMetrics(
@@ -46,34 +45,72 @@ def bam_collect_wgs_metrics(
         ref_genome,
         metrics_filename,
         config,
-        tempdir)
+        tempdir,
+        dockerize=config['docker']['dockerize'],
+        mounts=config['docker']['mounts'],
+        image=config['docker']['images']['picard']['image'],
+        username=config['docker']['images']['picard']['username'],
+        password=config['docker']['images']['picard']['password'],
+        server=config['docker']['images']['picard']['server'],
+    )
+
 
 
 def bam_collect_gc_metrics(
-        bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, tempdir):
+        bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, tempdir, config):
     picardutils.bam_collect_gc_metrics(
         bam_filename,
         ref_genome,
         metrics_filename,
         summary_filename,
         chart_filename,
-        tempdir)
+        tempdir,
+        dockerize=config['docker']['dockerize'],
+        mounts=config['docker']['mounts'],
+        image=config['docker']['images']['picard']['image'],
+        username=config['docker']['images']['picard']['username'],
+        password=config['docker']['images']['picard']['password'],
+        server=config['docker']['images']['picard']['server'],
+    )
+
 
 
 def bam_collect_insert_metrics(
-        bam_filename, flagstat_metrics_filename, metrics_filename, histogram_filename, tempdir):
+        bam_filename, flagstat_metrics_filename, metrics_filename, histogram_filename, tempdir,config):
     picardutils.bam_collect_insert_metrics(
         bam_filename,
         flagstat_metrics_filename,
         metrics_filename,
         histogram_filename,
-        tempdir)
+        tempdir,
+        dockerize=config['docker']['dockerize'],
+        mounts=config['docker']['mounts'],
+        image=config['docker']['images']['picard']['image'],
+        username=config['docker']['images']['picard']['username'],
+        password=config['docker']['images']['picard']['password'],
+        server=config['docker']['images']['picard']['server'],
+    )
 
 
-def merge_bams(inputs, output, output_index):
 
-    picardutils.merge_bams(inputs, output)
-    bamutils.bam_index(output, output_index)
+def merge_bams(inputs, output, output_index, config):
+
+    picardutils.merge_bams(inputs, output,
+                           dockerize=config['docker']['dockerize'],
+                           mounts=config['docker']['mounts'],
+                           image=config['docker']['images']['picard']['image'],
+                           username=config['docker']['images']['picard']['username'],
+                           password=config['docker']['images']['picard']['password'],
+                           server=config['docker']['images']['picard']['server'],
+                           )
+    bamutils.bam_index(output, output_index,
+                       dockerize=config['docker']['dockerize'],
+                       mounts=config['docker']['mounts'],
+                       image=config['docker']['images']['samtools']['image'],
+                       username=config['docker']['images']['samtools']['username'],
+                       password=config['docker']['images']['samtools']['password'],
+                       server=config['docker']['images']['samtools']['server'],
+                       )
 
 
 def merge_realignment(input_filenames, output_filename,
@@ -123,11 +160,12 @@ def realign(input_bams, input_bais, output_bams, tempdir, config, interval):
         shutil.move(realigned_bai, output_bai_filename)
 
 
-def run_fastqc(fastq1, fastq2, reports, tempdir):
+def run_fastqc(fastq1, fastq2, reports, tempdir, config):
     """
     run fastqc on both fastq files
     run trimgalore if needed, copy if not.
     """
+
     reports_dir = os.path.join(tempdir, 'fastqc_reports')
     if not os.path.exists(reports_dir):
         helpers.makedirs(reports_dir)
@@ -135,14 +173,28 @@ def run_fastqc(fastq1, fastq2, reports, tempdir):
     out_html = os.path.join(reports_dir, 'fastqc_R1.html')
     out_plot = os.path.join(reports_dir, 'fastqc_R1.zip')
     if not os.path.getsize(fastq1) == 0:
-        bamutils.produce_fastqc_report(fastq1, out_html, out_plot, tempdir)
+        bamutils.produce_fastqc_report(fastq1, out_html, out_plot, tempdir,
+                                       dockerize=config['docker']['dockerize'],
+                                       mounts=config['docker']['mounts'],
+                                       image=config['docker']['images']['fastqc']['image'],
+                                       username=config['docker']['images']['fastqc']['username'],
+                                       password=config['docker']['images']['fastqc']['password'],
+                                       server=config['docker']['images']['fastqc']['server'],
+                                       )
     else:
         warnings.warn("fastq file %s is empty, skipping fastqc" % fastq1)
 
     out_html = os.path.join(reports_dir, 'fastqc_R2.html')
     out_plot = os.path.join(reports_dir, 'fastqc_R2.zip')
     if not os.path.getsize(fastq2) == 0:
-        bamutils.produce_fastqc_report(fastq2, out_html, out_plot, tempdir)
+        bamutils.produce_fastqc_report(fastq2, out_html, out_plot, tempdir,
+                                       dockerize=config['docker']['dockerize'],
+                                       mounts=config['docker']['mounts'],
+                                       image=config['docker']['images']['fastqc']['image'],
+                                       username=config['docker']['images']['fastqc']['username'],
+                                       password=config['docker']['images']['fastqc']['password'],
+                                       server=config['docker']['images']['fastqc']['server'],
+                                       )
     else:
         warnings.warn("fastq file %s is empty, skipping fastqc" % fastq1)
 
@@ -166,6 +218,52 @@ def get_readgroup(run_id, cell_id, library_id, centre, sample_info):
     return read_group_template
 
 
+def bwa_mem_paired_end(fastq1, fastq2, output,
+                       reference, readgroup, tempdir,
+                       config):
+
+    samfile = os.path.join(tempdir, "bwamem.sam")
+    
+    bamutils.bwa_mem_paired_end(fastq1, fastq2, samfile, reference, readgroup,
+                                dockerize=config['dockerize'],
+                                mounts=config['mounts'],
+                                image=config['images']['bwa']['image'],
+                                username=config['images']['bwa']['username'],
+                                password=config['images']['bwa']['password'],
+                                server=config['images']['bwa']['server'],
+                                )
+    bamutils.samtools_sam_to_bam(samfile, output,
+                                 dockerize=config['dockerize'],
+                                 mounts=config['mounts'],
+                                 image=config['images']['samtools']['image'],
+                                 username=config['images']['samtools']['username'],
+                                 password=config['images']['samtools']['password'],
+                                 server=config['images']['samtools']['server'],
+                                 )
+
+def bwa_aln_paired_end(fastq1, fastq2, output, tempdir,
+                         reference, readgroup, config):
+
+    samfile = os.path.join(tempdir, "bwamem.sam")
+
+    bamutils.bwa_aln_paired_end(fastq1, fastq2, samfile, tempdir, reference, readgroup,
+                                dockerize=config['dockerize'],
+                                mounts=config['mounts'],
+                                image=config['images']['bwa']['image'],
+                                username=config['images']['bwa']['username'],
+                                password=config['images']['bwa']['password'],
+                                server=config['images']['bwa']['server'],
+                                )
+
+    bamutils.samtools_sam_to_bam(samfile, output,
+                                 dockerize=config['dockerize'],
+                                 mounts=config['mounts'],
+                                 image=config['images']['samtools']['image'],
+                                 username=config['images']['samtools']['username'],
+                                 password=config['images']['samtools']['password'],
+                                 server=config['images']['samtools']['server'],
+                                 )
+
 def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
              reference, instrument, centre, sample_info, cell_id, lane_id, library_id, config):
 
@@ -176,16 +274,18 @@ def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
         centre,
         sample_info)
 
-    run_fastqc(fastq1, fastq2, reports, tempdir)
+    run_fastqc(fastq1, fastq2, reports, tempdir, config)
 
     aln_temp = os.path.join(tempdir, "temp_alignments.bam")
     if config["aligner"] == "bwa-mem":
-        bamutils.bwa_mem_paired_end(
+        bwa_mem_paired_end(
             fastq1,
             fastq2,
             aln_temp,
             reference,
-            readgroup)
+            readgroup,
+            tempdir,
+            config['docker'])
     elif config["aligner"] == "bwa-aln":
         if not instrument == "N550":
             fastq1, fastq2 = trim_fastqs(
@@ -196,33 +296,74 @@ def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
             aln_temp,
             tempdir,
             reference,
-            readgroup)
+            readgroup,
+            config['docker'])
     else:
         raise Exception(
             "Aligner %s not supported, pipeline supports bwa-aln and bwa-mem" %
             config["aligner"])
 
-    picardutils.bam_sort(aln_temp, output, tempdir)
 
-    bamutils.bam_flagstat(output, metrics)
 
+    picardutils.bam_sort(aln_temp, output, tempdir,
+                         dockerize=config['docker']['dockerize'],
+                         mounts=config['docker']['mounts'],
+                         image=config['docker']['images']['picard']['image'],
+                         username=config['docker']['images']['picard']['username'],
+                         password=config['docker']['images']['picard']['password'],
+                         server=config['docker']['images']['picard']['server'],
+                         )
+    bamutils.bam_flagstat(output, metrics,
+                          dockerize=config['docker']['dockerize'],
+                          mounts=config['docker']['mounts'],
+                          image=config['docker']['images']['samtools']['image'],
+                          username=config['docker']['images']['samtools']['username'],
+                          password=config['docker']['images']['samtools']['password'],
+                          server=config['docker']['images']['samtools']['server'],
+                          )
 
 def postprocess_bam(infile, outfile, outfile_index, tempdir,
                     config, markdups_metrics, flagstat_metrics):
+
+    config = config['docker']
 
     if not os.path.exists(tempdir):
         helpers.makedirs(tempdir)
 
     sorted_bam = os.path.join(tempdir, 'sorted.bam')
 
-    picardutils.bam_sort(infile, sorted_bam, tempdir)
-
-    picardutils.bam_markdups(sorted_bam, outfile, markdups_metrics, tempdir)
-
-    bamutils.bam_index(outfile, outfile_index)
-
-    bamutils.bam_flagstat(outfile, flagstat_metrics)
-
+    picardutils.bam_sort(infile, sorted_bam, tempdir,
+                         dockerize=config['dockerize'],
+                         mounts=config['mounts'],
+                         image=config['images']['picard']['image'],
+                         username=config['images']['picard']['username'],
+                         password=config['images']['picard']['password'],
+                         server=config['images']['picard']['server'],
+                         )
+    picardutils.bam_markdups(sorted_bam, outfile, markdups_metrics, tempdir,
+                             dockerize=config['dockerize'],
+                             mounts=config['mounts'],
+                             image=config['images']['picard']['image'],
+                             username=config['images']['picard']['username'],
+                             password=config['images']['picard']['password'],
+                             server=config['images']['picard']['server'],
+                             )
+    bamutils.bam_index(outfile, outfile_index,
+                       dockerize=config['dockerize'],
+                       mounts=config['mounts'],
+                       image=config['images']['samtools']['image'],
+                       username=config['images']['samtools']['username'],
+                       password=config['images']['samtools']['password'],
+                       server=config['images']['samtools']['server'],
+                       )
+    bamutils.bam_flagstat(outfile, flagstat_metrics,
+                          dockerize=config['dockerize'],
+                          mounts=config['mounts'],
+                          image=config['images']['samtools']['image'],
+                          username=config['images']['samtools']['username'],
+                          password=config['images']['samtools']['password'],
+                          server=config['images']['samtools']['server'],
+                          )
 
 def collect_gc(infiles, outfile, tempdir):
 
