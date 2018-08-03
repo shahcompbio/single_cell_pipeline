@@ -355,6 +355,11 @@ class GenHmmPlots(object):
             params = self.read_params(self.sample_id, multiplier)
             metrics = self.read_metrics(self.sample_id, multiplier)
 
+            if not isinstance(reads, pd.DataFrame) and not reads:
+                continue
+            if not isinstance(segments, pd.DataFrame) and not segments:
+                continue
+
             if reads is not None and remove_y:
                 reads = reads[reads['chr'] != 'Y']
 
@@ -364,22 +369,21 @@ class GenHmmPlots(object):
             ax.set_title("multiplier: {}".format(multiplier))
 
             # we pass None if we don't have data
-            if reads is not None and segments is not None:
-                cols = reads["state"].replace(cmap)
-                cols = cols[~reads['copy'].isnull()]
+            cols = reads["state"].replace(cmap)
+            cols = cols[~reads['copy'].isnull()]
 
-                df = reads[np.isfinite(reads['copy'])]
+            df = reads[np.isfinite(reads['copy'])]
 
-                plt.scatter(
-                    df['plot_coord'],
-                    df['copy'],
-                    facecolors=cols,
-                    edgecolors='none',
-                    s=scatter_size,
-                    rasterized=True)
+            plt.scatter(
+                df['plot_coord'],
+                df['copy'],
+                facecolors=cols,
+                edgecolors='none',
+                s=scatter_size,
+                rasterized=True)
 
-                x, y = utl.get_segment_start_end(segments, remove_y)
-                plt.plot(x, y, color='black', linewidth=linewidth)
+            x, y = utl.get_segment_start_end(segments, remove_y)
+            plt.plot(x, y, color='black', linewidth=linewidth)
 
             ylim = np.nanpercentile(reads['copy'], 99)
             if not np.isfinite(ylim):
