@@ -238,12 +238,15 @@ def parse_args():
     generate_config.set_defaults(which='generate_config')
 
     generate_config.add_argument("--pipeline_config",
-                                 required=True,
                                  help='''output yaml file''')
 
     generate_config.add_argument("--batch_config",
-                                 required=True,
                                  help='''output yaml file''')
+
+    generate_config.add_argument("--config_override",
+                                 type=json.loads,
+                                 help='''json string to override the defaults in config''')
+
 
     #============================
     # remove tasks from sentinels
