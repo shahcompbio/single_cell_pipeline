@@ -374,13 +374,14 @@ class GenHmmPlots(object):
 
             df = reads[np.isfinite(reads['copy'])]
 
-            plt.scatter(
-                df['plot_coord'],
-                df['copy'],
-                facecolors=cols,
-                edgecolors='none',
-                s=scatter_size,
-                rasterized=True)
+            if not df.empty:
+                plt.scatter(
+                    df['plot_coord'],
+                    df['copy'],
+                    facecolors=cols,
+                    edgecolors='none',
+                    s=scatter_size,
+                    rasterized=True)
 
             x, y = utl.get_segment_start_end(segments, remove_y)
             plt.plot(x, y, color='black', linewidth=linewidth)
@@ -416,13 +417,14 @@ class GenHmmPlots(object):
             ax1.yaxis.set_visible(False)
             ax1.spines['left'].set_visible(False)
 
-            self.plot_dist(
-                ax1,
-                df,
-                params,
-                cmap,
-                self.num_states,
-                vertical=True)
+            if not df.empty:
+                self.plot_dist(
+                    ax1,
+                    df,
+                    params,
+                    cmap,
+                    self.num_states,
+                    vertical=True)
 
             ax1.set_xlim((0, 2.5))
 
