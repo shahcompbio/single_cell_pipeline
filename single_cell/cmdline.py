@@ -198,6 +198,29 @@ def parse_args():
                                      help='''ID to identify the results''')
 
     #===========
+    # titan, remixt
+    #===========
+    infer_haps = add_global_args(
+        subparsers.add_parser("infer_haps"), dont_add_input_yaml=True)
+    infer_haps.set_defaults(which='infer_haps')
+
+    mutexgroup = infer_haps.add_mutually_exclusive_group(required=True)
+
+    mutexgroup.add_argument("--input_yaml",
+                            help='''template for bams merged by region,
+                                    use {} as place holder for genomic region''')
+
+    mutexgroup.add_argument("--input_bam",
+                            help='''template for bams merged by region,
+                                    use {} as place holder for genomic region''')
+
+    infer_haps.add_argument("--normal",
+                            default=False,
+                            action='store_true',
+                            help='''code assumes input is tumour, set this flag to to override''')
+
+
+    #===========
     # germline
     #===========
     germline_calling = add_global_args(

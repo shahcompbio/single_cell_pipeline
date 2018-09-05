@@ -13,7 +13,7 @@ from generate_config import generate_config
 from clean_sentinels import clean_sentinels
 from copy_number import copy_number_calling_workflow
 from ltm import ltm_workflow
-
+from infer_haps import infer_haps_workflow
 # from copyclone import copyclone_workflow
 
 def main():
@@ -72,6 +72,12 @@ def main():
         pyp = pypeliner.app.Pypeline(config=args)
         workflow = pypeliner.workflow.Workflow()
         workflow = copy_number_calling_workflow(workflow, args)
+        pyp.run(workflow)
+
+    if args["which"] == "infer_haps":
+        pyp = pypeliner.app.Pypeline(config=args)
+        workflow = pypeliner.workflow.Workflow()
+        workflow = infer_haps_workflow(workflow, args)
         pyp.run(workflow)
 
     if args["which"] == "germline_calling":
