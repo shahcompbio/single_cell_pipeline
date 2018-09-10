@@ -16,15 +16,28 @@ def create_extract_seqdata_workflow(
      snp_positions_filename,
      bam_max_fragment_length,
      bam_max_soft_clipped,
-     bam_check_proper_pair
+     bam_check_proper_pair,
+     multiprocess=False
 ):
+
+    singlecellimage = config['docker']['images']['single_cell_pipeline']
+    ctx = {
+              'mem_retry_increment': 2,
+              'ncpus': 1,
+              'image': singlecellimage['image'],
+              'dockerize': config['docker']['dockerize'],
+              'mounts': config['docker']['mounts'],
+              'username': singlecellimage['username'],
+              'password': singlecellimage['password'],
+              'server': singlecellimage['server'],
+          }
 
     workflow = pypeliner.workflow.Workflow()
 
 
     workflow.transform(
         name="get_chromosomes",
-        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        ctx=dict(mem=2, pool_id=config['pools']['standard'], **ctx),
         func="remixt.config.get_chromosomes",
         ret=mgd.TempOutputObj('chromosomes'),
         args=(
@@ -40,7 +53,7 @@ def create_extract_seqdata_workflow(
 
     workflow.transform(
         name='create_chromosome_seqdata',
-        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
+        ctx=dict(mem=config["memory"]['high'], pool_id=config['pools']['highmem'], **ctx),
         func="single_cell.workflows.extract_seqdata.tasks.create_chromosome_seqdata",
         args=(
             mgd.TempOutputFile('seqdata', 'chromosome', axes_origin=[]),
@@ -52,11 +65,13 @@ def create_extract_seqdata_workflow(
             bam_max_soft_clipped,
             bam_check_proper_pair,
         ),
+        kwargs={'multiprocess':multiprocess,
+                'ncores':config['max_cores']}
     )
 
     workflow.transform(
         name='merge_seqdata',
-        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
+        ctx=dict(mem=config["memory"]['high'], pool_id=config['pools']['highmem'], **ctx),
         func="remixt.seqdataio.merge_seqdata",
         args=(
             mgd.OutputFile(seqdata_filename),

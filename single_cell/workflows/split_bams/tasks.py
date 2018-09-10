@@ -8,52 +8,89 @@ import gzip
 import pypeliner
 
 from single_cell.utils import helpers
+from single_cell.utils import bamutils
 
 
-def split_bam_worker(bam, output_bam, region):
+def split_bam_worker(bam, output_bam, region, config):
 
     region = '{}:{}-{}'.format(*region.split('-'))
-    cmd = ['samtools', 'view', '-b', bam, '-o', output_bam, region]
 
-    helpers.run_cmd(cmd)
+    bamutils.bam_view(
+        bam, output_bam, region,
+        dockerize=config['dockerize'],
+        mounts=config['mounts'],
+        image=config['images']['samtools']['image'],
+        username=config['images']['samtools']['username'],
+        password=config['images']['samtools']['password'],
+        server=config['images']['samtools']['server'],
+    )
 
 
-def index_bam_worker(bam, bai):
-    cmd = ['samtools', 'index', bam, bai]
-    helpers.run_cmd(cmd)
+def index_bam_worker(bam, bai, config):
+
+    bamutils.bam_index(
+        bam, bai,
+        dockerize=config['dockerize'],
+        mounts=config['mounts'],
+        image=config['images']['samtools']['image'],
+        username=config['images']['samtools']['username'],
+        password=config['images']['samtools']['password'],
+        server=config['images']['samtools']['server'],
+    )
 
 
-def split_bam_file_one_job(bam, bai, outbam, outbai, regions, ncores=None):
+def split_bam_file_one_job(bam, bai, outbam, outbai, regions, docker_config, ncores=None):
 
-    args = [(bam, outbam(region), region) for region in regions]
+    args = [(bam, outbam(region), region, docker_config) for region in regions]
 
     helpers.run_in_parallel(split_bam_worker, args, ncores=ncores)
 
-    args = [(outbam(region), outbai(region)) for region in regions]
+    args = [(outbam(region), outbai(region), docker_config) for region in regions]
 
     helpers.run_in_parallel(index_bam_worker, args, ncores=ncores)
 
 
-def split_bam_file(bam, bai, outbam, outbai, interval):
+def split_bam_file(bam, bai, outbam, outbai, interval, docker_config):
 
-    pypeliner.commandline.execute(
-        'samtools', 'view', '-b', bam, interval,
-        '>', outbam)
+    bamutils.bam_view(
+        bam, outbam, interval,
+        dockerize=docker_config['dockerize'],
+        mounts=docker_config['mounts'],
+        image=docker_config['images']['samtools']['image'],
+        username=docker_config['images']['samtools']['username'],
+        password=docker_config['images']['samtools']['password'],
+        server=docker_config['images']['samtools']['server'],
+    )
 
-    pypeliner.commandline.execute(
-        'samtools', 'index', outbam,
-        outbai)
+    bamutils.bam_index(
+        outbam, outbai,
+        dockerize=docker_config['dockerize'],
+        mounts=docker_config['mounts'],
+        image=docker_config['images']['samtools']['image'],
+        username=docker_config['images']['samtools']['username'],
+        password=docker_config['images']['samtools']['password'],
+        server=docker_config['images']['samtools']['server'],
+    )
 
 
-def split_bam_file_by_reads(bam, bai, outbams, outbais, tempspace, intervals):
+def split_bam_file_by_reads(bam, bai, outbams, outbais, tempspace, intervals, docker_config):
     # sort bam by reads and convert to sam
+
+    kwargs = {
+        'dockerize':kwargs.get('dockerize'),
+        'image':kwargs.get('image'),
+        'mounts':kwargs.get('mounts'),
+        'username':kwargs.get("username"),
+        'password':kwargs.get('password'),
+        'server':kwargs.get('server'),
+    }
 
     helpers.makedirs(tempspace)
 
     headerfile = os.path.join(tempspace, "bam_header.sam")
 
     cmd = ['samtools', 'view', '-H', bam, '-o', headerfile]
-    pypeliner.commandline.execute(*cmd)
+    pypeliner.commandline.execute(*cmd, **kwargs)
 
     collate_prefix = os.path.join(
         tempspace, os.path.basename(bam) + "_collate_temp"
@@ -65,14 +102,10 @@ def split_bam_file_by_reads(bam, bai, outbams, outbais, tempspace, intervals):
         'samtools', 'view', '-', '-o', collated_bam
     ]
 
-    pypeliner.commandline.execute(*cmd)
+    pypeliner.commandline.execute(*cmd, **kwargs)
 
     tempoutputs = [
-        os.path.join(
-            tempspace,
-            os.path.basename(
-                outbams[interval]) +
-            ".split.temp")
+        os.path.join(tempspace, os.path.basename(outbams[interval]) + ".split.temp")
         for interval in intervals
     ]
 
@@ -83,7 +116,7 @@ def split_bam_file_by_reads(bam, bai, outbams, outbais, tempspace, intervals):
 
         cmd = ['samtools', 'view', '-Sb', inputsam, '-o', outputbam]
 
-        pypeliner.commandline.execute(*cmd)
+        pypeliner.commandline.execute(*cmd, **kwargs)
 
 
 def get_file_handle(filename, mode="r"):

@@ -10,6 +10,8 @@ def create_museq_workflow(
         normal_bam, normal_bai, tumour_bam, tumour_bai, ref_genome, snv_vcf,
         config):
 
+    singlecellimage = config['docker']['images']['single_cell_pipeline']
+
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
@@ -19,7 +21,17 @@ def create_museq_workflow(
 
     workflow.transform(
         name='run_museq',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
+        ctx={
+            'mem': config["memory"]['med'], 'num_retry': 3,
+            'mem_retry_increment': 2,
+            'pool_id': config['pools']['highmem'], 'ncpus': 1,
+            'image': singlecellimage['image'],
+            'dockerize': config['docker']['dockerize'],
+            'mounts': config['docker']['mounts'],
+            'username': singlecellimage['username'],
+            'password': singlecellimage['password'],
+            'server': singlecellimage['server'],
+        },
         axes=('region',),
         func="single_cell.workflows.mutationseq.tasks.run_museq",
         args=(
@@ -36,7 +48,17 @@ def create_museq_workflow(
 
     workflow.transform(
         name='merge_snvs',
-        ctx={'mem': config["memory"]['med'], 'pool_id': config['pools']['standard'], 'ncpus':1},
+        ctx={
+            'mem': config["memory"]['med'], 'num_retry': 3,
+            'mem_retry_increment': 2,
+            'pool_id': config['pools']['standard'], 'ncpus': 1,
+            'image': singlecellimage['image'],
+            'dockerize': config['docker']['dockerize'],
+            'mounts': config['docker']['mounts'],
+            'username': singlecellimage['username'],
+            'password': singlecellimage['password'],
+            'server': singlecellimage['server'],
+        },
         func="single_cell.workflows.mutationseq.tasks.concatenate_vcfs",
         args=(
             mgd.TempInputFile("museq.vcf", "region"),
@@ -46,12 +68,23 @@ def create_museq_workflow(
 
     workflow.transform(
         name='finalise_snvs',
-        ctx={'pool_id': config['pools']['standard'], 'ncpus':1},
+        ctx={
+            'mem': config["memory"]['med'], 'num_retry': 3,
+            'mem_retry_increment': 2,
+            'pool_id': config['pools']['standard'], 'ncpus': 1,
+            'image': singlecellimage['image'],
+            'dockerize': config['docker']['dockerize'],
+            'mounts': config['docker']['mounts'],
+            'username': singlecellimage['username'],
+            'password': singlecellimage['password'],
+            'server': singlecellimage['server'],
+        },
         func="biowrappers.components.io.vcf.tasks.finalise_vcf",
         args=(
             pypeliner.managed.TempInputFile('museq.vcf'),
             pypeliner.managed.OutputFile(snv_vcf),
         ),
+        kwargs={'docker_config': config['docker']}
     )
 
     return workflow

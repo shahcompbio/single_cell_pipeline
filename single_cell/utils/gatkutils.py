@@ -6,7 +6,7 @@ Created on Feb 19, 2018
 import os
 import pypeliner
 
-def generate_targets(input_bams, config, intervals, interval, dockerize=False, image=None):
+def generate_targets(input_bams, config, intervals, interval, **kwargs):
     # generate positions
     cmd = ['gatk', '-Xmx8G',
            '-T', 'RealignerTargetCreator',
@@ -17,16 +17,19 @@ def generate_targets(input_bams, config, intervals, interval, dockerize=False, i
     for _, bamfile in input_bams.iteritems():
         cmd.extend(['-I', bamfile])
 
-    pypeliner.commandline.execute(*cmd, dockerize=kwargs.get('dockerize'),
-        image=kwargs.get('image'),
-        mounts=kwargs.get('mounts'),
-        username=kwargs.get("username"),
-        password=kwargs.get('password'),
-        server=kwargs.get('server'),
-)
+    kwargs = {
+        'dockerize': kwargs.get('dockerize'),
+        'image': kwargs.get('image'),
+        'mounts': kwargs.get('mounts'),
+        'username': kwargs.get("username"),
+        'password': kwargs.get('password'),
+        'server': kwargs.get('server')
+    }
+
+    pypeliner.commandline.execute(*cmd, **kwargs)
 
 
-def gatk_realigner(inputs, config, targets, interval, tempdir, dockerize=False, image=None):
+def gatk_realigner(inputs, config, targets, interval, tempdir, **kwargs):
 
 
     targets = os.path.abspath(targets)

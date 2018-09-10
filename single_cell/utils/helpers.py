@@ -6,7 +6,7 @@ Created on Feb 19, 2018
 import os
 import errno
 import tarfile
-
+import time
 import yaml
 
 import shutil
@@ -17,6 +17,22 @@ import multiprocessing
 
 
 from multiprocessing.pool import ThreadPool
+
+
+def build_docker_args(docker_config, image_name=None):
+    if not image_name:
+        raise Exception("missing image name")
+
+    credentials = docker_config['images'][image_name]
+    docker_context = {
+              'image': credentials['image'],
+              'dockerize': docker_config['dockerize'],
+              'mounts': docker_config['mounts'],
+              'username': credentials['username'],
+              'password': credentials['password'],
+              'server': credentials['server'],
+          }
+    return docker_context
 
 
 def get_mount_dirs_docker(*args):

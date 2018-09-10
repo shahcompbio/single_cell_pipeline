@@ -126,6 +126,15 @@ def merge_realignment(input_filenames, output_filename,
 
 def realign(input_bams, input_bais, output_bams, tempdir, config, interval):
 
+    kwargs = {
+        'dockerize': config['docker']['dockerize'],
+        'mounts': config['docker']['mounts'],
+        'image': config['docker']['images']['samtools']['image'],
+        'username': config['docker']['images']['samtools']['username'],
+        'password': config['docker']['images']['samtools']['password'],
+        'server': config['docker']['images']['samtools']['server'],
+    }
+
     # make the dir
     if not os.path.exists(tempdir):
         os.makedirs(tempdir)
@@ -144,10 +153,10 @@ def realign(input_bams, input_bais, output_bams, tempdir, config, interval):
 
     # save intervals file in tempdir
     targets = os.path.join(tempdir, 'realn_positions.intervals')
-    gatkutils.generate_targets(input_bams, config, targets, interval)
+    gatkutils.generate_targets(input_bams, config, targets, interval, **kwargs)
 
     # run gatk realigner
-    gatkutils.gatk_realigner(new_inputs, config, targets, interval, tempdir)
+    gatkutils.gatk_realigner(new_inputs, config, targets, interval, tempdir, **kwargs)
 
     # copy generated files in temp dir to the specified output paths
     for key in input_bams.keys():
@@ -321,6 +330,7 @@ def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
                           password=config['docker']['images']['samtools']['password'],
                           server=config['docker']['images']['samtools']['server'],
                           )
+
 
 def postprocess_bam(infile, outfile, outfile_index, tempdir,
                     config, markdups_metrics, flagstat_metrics):

@@ -15,6 +15,12 @@ def copy_number_calling_workflow(workflow, args):
 
     config = helpers.load_config(args)
 
+    ctx = {'mem_retry_increment': 2, 'ncpus': 1,
+           'mem': config["memory"]['low'],
+           'pool_id': config['pools']['standard']}
+    docker_ctx = helpers.build_docker_args(config['docker'], 'single_cell_pipeline')
+    ctx.update(docker_ctx)
+
     tumour_bam_files, tumour_bai_files = helpers.get_bams(args['tumour_yaml'])
 
     normal_bam_files, normal_bai_files = helpers.get_bams(args['normal_yaml'])
@@ -37,7 +43,6 @@ def copy_number_calling_workflow(workflow, args):
 
     remixt_config = config['titan_params'].get('extract_seqdata', {})
 
-
     workflow.setobj(
         obj=mgd.OutputChunks('tumour_cell_id'),
         value=tumour_cellids,
@@ -50,7 +55,7 @@ def copy_number_calling_workflow(workflow, args):
 
     workflow.transform(
         name="get_snp_positions_filename",
-        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        ctx=ctx,
         func="remixt.config.get_filename",
         ret=mgd.TempOutputObj('snp_positions_filename'),
         args=(
@@ -62,7 +67,7 @@ def copy_number_calling_workflow(workflow, args):
 
     workflow.transform(
         name="get_bam_max_fragment_length",
-        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        ctx=ctx,
         func="remixt.config.get_param",
         ret=mgd.TempOutputObj('bam_max_fragment_length'),
         args=(
@@ -71,10 +76,9 @@ def copy_number_calling_workflow(workflow, args):
         )
     )
 
-
     workflow.transform(
         name="get_bam_max_soft_clipped",
-        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        ctx=ctx,
         func="remixt.config.get_param",
         ret=mgd.TempOutputObj('bam_max_soft_clipped'),
         args=(
@@ -85,7 +89,7 @@ def copy_number_calling_workflow(workflow, args):
 
     workflow.transform(
         name="get_bam_check_proper_pair",
-        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        ctx=ctx,
         func="remixt.config.get_param",
         ret=mgd.TempOutputObj('bam_check_proper_pair'),
         args=(

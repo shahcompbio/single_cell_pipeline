@@ -52,7 +52,18 @@ def run_aneufinder(
         aneufinder_output,
         segments,
         reads,
-        dnacopy_plot):
+        dnacopy_plot,
+        docker_config):
+
+    kwargs = {
+        'dockerize': docker_config['docker']['dockerize'],
+        'mounts': docker_config['docker']['mounts'],
+        'image': docker_config['docker']['images']['samtools']['image'],
+        'username': docker_config['docker']['images']['samtools']['username'],
+        'password': docker_config['docker']['images']['samtools']['password'],
+        'server': docker_config['docker']['images']['samtools']['server'],
+    }
+
 
     # Create an output folder for temp storage
     helpers.makedirs(working_dir)
@@ -76,7 +87,7 @@ def run_aneufinder(
     cmd = ['Rscript', run_aneufinder_rscript, working_dir, temp_output]
 
     try:
-        pypeliner.commandline.execute(*cmd)
+        pypeliner.commandline.execute(*cmd, **kwargs)
     except:
         print('Aneufinder failed on {}'.format(bam_file))
         open(segments, 'w').close()
@@ -113,7 +124,7 @@ def run_aneufinder(
 
     cmd = ['Rscript', rdata_to_csv_rscript, segments_rdata, segments, reads]
 
-    pypeliner.commandline.execute(*cmd)
+    pypeliner.commandline.execute(*cmd, **kwargs)
 
     convert_segments_to_hmmcopy_format(segments, cell_id)
     convert_reads_to_hmmcopy_format(reads, cell_id)
@@ -142,4 +153,3 @@ def merge_outputs_to_hdf(
                                 outfile,
                                 ['/aneufinder/reads/',
                                  '/aneufinder/segments/'])
-

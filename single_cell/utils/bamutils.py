@@ -186,3 +186,10 @@ def bam_merge(bams, output, **kwargs):
     }
 
     pypeliner.commandline.execute(*cmd, **kwargs)
+
+
+def bam_view(bam, output, region, **kwargs):
+
+    cmd = ['samtools', 'view', '-b', bam, '-o', output, region]
+    pypeliner.commandline.execute(*cmd, **kwargs)
+
