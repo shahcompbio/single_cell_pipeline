@@ -12,6 +12,8 @@ def create_split_workflow(
     regions, config, by_reads=False
 ):
 
+    singlecellimage = config['docker']['images']['single_cell_pipeline']
+
     normal_split_bam = dict([(ival, normal_split_bam[ival])
                              for ival in regions])
     normal_split_bai = dict([(ival, normal_split_bai[ival])
@@ -31,8 +33,15 @@ def create_split_workflow(
         workflow.transform(
             name='split_normal_bam',
             ctx={
-                'mem': config['memory']['low'], 'ncpus': config["max_cores"],
+                'mem': config['memory']['low'],
+                'ncpus': config["max_cores"],
                 'pool_id': config['pools']['multicore'],
+                'image': singlecellimage['image'],
+                'dockerize': config['docker']['dockerize'],
+                'mounts': config['docker']['mounts'],
+                'username': singlecellimage['username'],
+                'password': singlecellimage['password'],
+                'server': singlecellimage['server'],
             },
             func="single_cell.workflows.split_bams.tasks.split_bam_file_by_reads",
             args=(
@@ -47,7 +56,8 @@ def create_split_workflow(
                     fnames=normal_split_bai, axes_origin=[]
                 ),
                 mgd.TempSpace("bam_split_by_reads"),
-                regions
+                regions,
+                config['docker']
             ),
         )
 
@@ -55,8 +65,15 @@ def create_split_workflow(
         workflow.transform(
             name='split_normal_bam',
             ctx={
-                'mem': config['memory']['low'], 'ncpus': config["max_cores"],
+                'mem': config['memory']['low'],
+                'ncpus': config["max_cores"],
                 'pool_id': config['pools']['multicore'],
+                'image': singlecellimage['image'],
+                'dockerize': config['docker']['dockerize'],
+                'mounts': config['docker']['mounts'],
+                'username': singlecellimage['username'],
+                'password': singlecellimage['password'],
+                'server': singlecellimage['server'],
             },
             func="single_cell.workflows.split_bams.tasks.split_bam_file_one_job",
             args=(
@@ -70,7 +87,8 @@ def create_split_workflow(
                     "normal.split.bam.bai", "region",
                     fnames=normal_split_bai, axes_origin=[]
                 ),
-                regions
+                regions,
+                config['docker']
             ),
             kwargs={"ncores": config["max_cores"]}
         )
@@ -79,8 +97,15 @@ def create_split_workflow(
         workflow.transform(
             name='split_normal_bam',
             ctx={
-                'mem': config['memory']['low'], 'ncpus': 1,
+                'mem': config['memory']['low'],
+                'ncpus': 1,
                 'pool_id': config['pools']['standard'],
+                'image': singlecellimage['image'],
+                'dockerize': config['docker']['dockerize'],
+                'mounts': config['docker']['mounts'],
+                'username': singlecellimage['username'],
+                'password': singlecellimage['password'],
+                'server': singlecellimage['server'],
             },
             axes=('region',),
             func="single_cell.workflows.split_bams.tasks.split_bam_file",
@@ -94,6 +119,7 @@ def create_split_workflow(
                     "normal.split.bam.bai", "region", fnames=normal_split_bai
                 ),
                 mgd.InputInstance('region'),
+                config['docker']
             )
         )
 

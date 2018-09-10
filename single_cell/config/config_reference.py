@@ -17,7 +17,7 @@ def get_chromosomes(reference):
 def get_reference_azure():
 
     common_options = {
-        'max_cores': None,
+        'max_cores': 8,
         'mutationseq': '/usr/local/museq/',
         'mutationseq_model': '/usr/local/museq/models_anaconda/model_v4.1.2_anaconda_sk_0.13.1.npz',
         'mutationseq_python': '/usr/local/miniconda2/envs/museq/bin/python',

@@ -4,7 +4,7 @@ import pandas as pd
 import shutil
 import os
 import scipy.stats
-
+import biowrappers.components.io.vcf.tasks
 
 NUCLEOTIDES = ('A', 'C', 'G', 'T')
 
@@ -47,7 +47,9 @@ def run_samtools_variant_calling(
         min_bqual=0,
         min_depth=0,
         min_mqual=0,
-        region=None):
+        region=None,
+        samtools_docker=None,
+        vcftools_docker=None):
 
     mpileup_cmd = [
         'samtools',
@@ -75,9 +77,9 @@ def run_samtools_variant_calling(
     cmd.append('|')
     cmd.extend(bcf_cmd)
 
-    pypeliner.commandline.execute(*cmd)
+    pypeliner.commandline.execute(*cmd, **samtools_docker)
 
-    index_bcf(out_file)
+    biowrappers.components.io.vcf.tasks.index_bcf(out_file, docker_config=vcftools_docker)
 
 
 def annotate_normal_genotype(vcf_filename, results_filename, chromosomes):

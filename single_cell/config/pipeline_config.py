@@ -78,7 +78,8 @@ def get_titan_params(cluster, reference, binsize):
                     'window_size': window_size,
                     'ref_data_dir': ref_data_dir,
                     'gc_wig': gc_wig,
-                    'mappability_wig': mappability_wig
+                    'mappability_wig': mappability_wig,
+                    'chromosomes': map(str, range(1,23)) + ['X'],
                     }
 
     return {'titan_params': titan_params}
@@ -210,7 +211,13 @@ def get_docker_images():
         "picard" : "singlecellcontainers.azurecr.io/scp/picard",
         "gatk" : "singlecellcontainers.azurecr.io/scp/gatk",
         "fastqc": "singlecellcontainers.azurecr.io/scp/fastqc",
-        "hmmcopy": "singlecellcontainers.azurecr.io/scp/hmmcopy"
+        "hmmcopy": "singlecellcontainers.azurecr.io/scp/hmmcopy",
+        "aneufinder": "singlecellcontainers.azurecr.io/scp/aneufinder",
+        "strelka": "singlecellcontainers.azurecr.io/scp/strelka",
+        "mutationseq": "singlecellcontainers.azurecr.io/scp/mutationseq",
+        "vcftools": "singlecellcontainers.azurecr.io/scp/vcftools",
+        "snpeff": "singlecellcontainers.azurecr.io/scp/vcftools",
+        "titan": "singlecellcontainers.azurecr.io/scp/titan",
     }
 
     image_data = {}
@@ -219,10 +226,10 @@ def get_docker_images():
         image_data[name] = {'image': url, 'server': server,
                             'username': username, 'password': password}
 
-
     images = {"images": image_data}
 
     return images
+
 
 def get_docker_params(cluster,):
     params = {}
@@ -231,10 +238,8 @@ def get_docker_params(cluster,):
  
     dockerize = True if cluster == 'azure' else False
     params["dockerize"] = dockerize
-    params["mounts"] = ['/refdata','/datadrive']
- 
+    params["mounts"] = ['/refdata', '/datadrive']
     return {"docker": params}
-
 
 
 def override_config(config, override):

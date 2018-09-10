@@ -21,6 +21,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
         bai_files,
         vcf_file,
         out_file,
+        docker_config=None,
         chromosomes=default_chromosomes,
         count_duplicates=False,
         min_bqual=0,
@@ -29,7 +30,13 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
         table_name='snv_allele_counts',
         vcf_to_bam_chrom_map=None):
 
-    workflow = pypeliner.workflow.Workflow(default_ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 })
+    ctx = {'mem': 2, 'num_retry': 3,
+           'mem_retry_increment': 2,
+           'pool_id': config['pools']['standard'], 'ncpus': 1}
+    if docker_config:
+        ctx.update(docker_config)
+
+    workflow = pypeliner.workflow.Workflow(default_ctx=ctx)
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
@@ -85,7 +92,13 @@ def variant_calling_workflow(workflow, args):
 
     config = helpers.load_config(args)
 
-    bam_files, bai_files  = helpers.get_bams(args['input_yaml'])
+    ctx = {'num_retry': 3,
+           'mem_retry_increment': 2,
+           'ncpus': 1}
+    docker_ctx = helpers.build_docker_args(config['docker'], 'single_cell_pipeline')
+    ctx.update(docker_ctx)
+
+    bam_files, bai_files = helpers.get_bams(args['input_yaml'])
 
     cellids = helpers.get_samples(args['input_yaml'])
 
@@ -103,6 +116,8 @@ def variant_calling_workflow(workflow, args):
     normal_bam_template = args["normal_template"]
     normal_bai_template = args["normal_template"] + ".bai"
 
+    singlecellimage = config['docker']['images']['single_cell_pipeline']
+
     if "{reads}" in normal_bam_template or "{reads}" in wgs_bam_template:
         raise ValueError("input template for variant calling only supports region based splits")
 
@@ -114,7 +129,7 @@ def variant_calling_workflow(workflow, args):
 
     workflow.transform(
         name="get_regions",
-        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        ctx=dict(mem=2, pool_id=config['pools']['standard'], **ctx),
         func="single_cell.utils.pysamutils.get_regions_from_reference",
         ret=mgd.OutputChunks('region'),
         args=(
@@ -151,12 +166,13 @@ def variant_calling_workflow(workflow, args):
             mgd.OutputFile(strelka_snv_vcf),
             config,
         ),
-        kwargs = {"chromosomes":config["chromosomes"]}
+        kwargs={"chromosomes":config["chromosomes"]}
     )
 
     workflow.transform(
         name='convert_museq_to_hdf5',
         func="biowrappers.components.io.vcf.tasks.convert_vcf_to_hdf5",
+        ctx=dict(mem=2, pool_id=config['pools']['standard'], **ctx),
         args=(
             mgd.InputFile(museq_vcf),
             mgd.TempOutputFile('museq.h5'),
@@ -170,6 +186,7 @@ def variant_calling_workflow(workflow, args):
     workflow.transform(
         name='convert_strelka_to_hdf5',
         func="biowrappers.components.io.vcf.tasks.convert_vcf_to_hdf5",
+        ctx=dict(mem=2, pool_id=config['pools']['standard'], **ctx),
         args=(
             mgd.InputFile(strelka_snv_vcf),
             mgd.TempOutputFile('strelka_snv.h5'),
@@ -183,6 +200,7 @@ def variant_calling_workflow(workflow, args):
     workflow.transform(
         name='merge_snvs',
         func="single_cell.utils.vcfutils.merge_vcfs",
+        ctx=dict(mem=2, pool_id=config['pools']['standard'], **ctx),
         args=(
             [
                 mgd.InputFile(museq_vcf),
@@ -195,6 +213,7 @@ def variant_calling_workflow(workflow, args):
     workflow.transform(
         name='finalise_snvs',
         func="biowrappers.components.io.vcf.tasks.finalise_vcf",
+        ctx=dict(mem=2, pool_id=config['pools']['standard'], **ctx),
         args=(
             mgd.TempInputFile('all.snv.vcf'),
             mgd.TempOutputFile('all.snv.vcf.gz', extensions=['.tbi'])
@@ -212,7 +231,8 @@ def variant_calling_workflow(workflow, args):
             os.path.join(varcalls_dir, 'snv'),
         ),
         kwargs={
-            'variant_type': 'snv'
+            'variant_type': 'snv',
+            'docker_config': helpers.build_docker_args(config['docker'], 'single_cell_pipeline')
         }
     )
 
@@ -226,12 +246,13 @@ def variant_calling_workflow(workflow, args):
             mgd.TempInputFile('all.snv.vcf.gz'),
             mgd.TempOutputFile('snv_counts.h5'),
         ),
-        kwargs={'chromosomes': config['chromosomes']}
+        kwargs={'chromosomes': config['chromosomes'],
+                'docker_config': config['docker']}
     )
 
     workflow.transform(
         name='build_results_file',
-        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
+        ctx=dict(mem=config['memory']['high'], pool_id=config['pools']['highmem'], **ctx),
         func="biowrappers.components.io.hdf5.tasks.concatenate_tables",
         args=([
                 mgd.TempInputFile('snv_counts.h5'),
@@ -292,7 +313,10 @@ def variant_counting_workflow(workflow, args):
             mgd.InputFile('bam_markdups_index', 'cell_id', fnames=bai_files),
             mgd.TempInputFile('all.snv.vcf.gz'),
             mgd.OutputFile(results_file),
-        )
+        ),
+        kwargs={
+            'docker_config': helpers.build_docker_args(config['docker'], 'single_cell_pipeline')
+        },
     )
 
     return workflow

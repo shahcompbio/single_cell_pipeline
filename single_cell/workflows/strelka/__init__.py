@@ -17,6 +17,8 @@ def create_strelka_workflow(
         split_size=int(1e7),
         use_depth_thresholds=True):
 
+    singlecellimage = config['docker']['images']['single_cell_pipeline']
+
     regions = normal_bam_file.keys()
     assert set(tumour_bam_file.keys()) == set(regions)
 
@@ -31,20 +33,39 @@ def create_strelka_workflow(
         obj=pypeliner.managed.OutputChunks('region'),
         value=regions,
     )
-              
+
     workflow.transform(
         name='count_fasta_bases',
-        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        ctx={'mem': 2, 'num_retry': 3,
+             'mem_retry_increment': 2,
+             'pool_id': config['pools']['standard'], 'ncpus':1,
+             'image': singlecellimage['image'],
+             'dockerize': config['docker']['dockerize'],
+             'mounts': config['docker']['mounts'],
+             'username': singlecellimage['username'],
+             'password': singlecellimage['password'],
+             'server': singlecellimage['server'],
+             },
         func="single_cell.workflows.strelka.tasks.count_fasta_bases",
         args=(
             ref_genome_fasta_file,
-            pypeliner.managed.TempOutputFile('ref_base_counts.tsv')
+            pypeliner.managed.TempOutputFile('ref_base_counts.tsv'),
+            config['docker']
         )
     )
 
     workflow.transform(
         name="get_chrom_sizes",
-        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        ctx={'mem': 2, 'num_retry': 3,
+             'mem_retry_increment': 2,
+             'pool_id': config['pools']['standard'], 'ncpus':1,
+             'image': singlecellimage['image'],
+             'dockerize': config['docker']['dockerize'],
+             'mounts': config['docker']['mounts'],
+             'username': singlecellimage['username'],
+             'password': singlecellimage['password'],
+             'server': singlecellimage['server'],
+             },
         func="single_cell.workflows.strelka.tasks.get_known_chromosome_sizes",
         ret=pypeliner.managed.TempOutputObj('known_sizes'),
         args=(
@@ -55,7 +76,16 @@ def create_strelka_workflow(
      
     workflow.transform(
         name='call_somatic_variants',
-        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'ncpus':1, 'pool_id': config['pools']['standard']},
+        ctx={'mem': 4, 'num_retry': 3,
+             'mem_retry_increment': 2,'ncpus':1,
+             'pool_id': config['pools']['standard'],
+             'image': singlecellimage['image'],
+             'dockerize': config['docker']['dockerize'],
+             'mounts': config['docker']['mounts'],
+             'username': singlecellimage['username'],
+             'password': singlecellimage['password'],
+             'server': singlecellimage['server'],
+             },
         func="single_cell.workflows.strelka.tasks.call_somatic_variants",
         axes=('region',),
         args=(
@@ -70,13 +100,23 @@ def create_strelka_workflow(
             pypeliner.managed.TempOutputFile('somatic.snvs.unfiltered.vcf', 'region'),
             pypeliner.managed.TempOutputFile('strelka.stats', 'region'),
             pypeliner.managed.InputInstance("region"),
+            config['docker'],
         ),
     )
  
     workflow.transform(
         name='add_indel_filters',
         axes=('chrom',),
-        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        ctx={'mem': 4, 'num_retry': 3,
+             'mem_retry_increment': 2,
+             'pool_id': config['pools']['standard'], 'ncpus':1,
+             'image': singlecellimage['image'],
+             'dockerize': config['docker']['dockerize'],
+             'mounts': config['docker']['mounts'],
+             'username': singlecellimage['username'],
+             'password': singlecellimage['password'],
+             'server': singlecellimage['server'],
+             },
         func="single_cell.workflows.strelka.tasks.filter_indel_file_list",
         args=(
             pypeliner.managed.TempInputFile('somatic.indels.unfiltered.vcf', 'region'),
@@ -93,7 +133,16 @@ def create_strelka_workflow(
     workflow.transform(
         name='add_snv_filters',
         axes=('chrom',),
-        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        ctx={'mem': 4, 'num_retry': 3,
+             'mem_retry_increment': 2,
+             'pool_id': config['pools']['standard'], 'ncpus':1,
+             'image': singlecellimage['image'],
+             'dockerize': config['docker']['dockerize'],
+             'mounts': config['docker']['mounts'],
+             'username': singlecellimage['username'],
+             'password': singlecellimage['password'],
+             'server': singlecellimage['server'],
+             },
         func="single_cell.workflows.strelka.tasks.filter_snv_file_list",
         args=(
             pypeliner.managed.TempInputFile('somatic.snvs.unfiltered.vcf', 'region'),
@@ -108,29 +157,58 @@ def create_strelka_workflow(
     
     workflow.transform(
         name='merge_indels',
-        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        ctx={'mem': 4, 'num_retry': 3,
+             'mem_retry_increment': 2,
+             'pool_id': config['pools']['standard'], 'ncpus':1,
+             'image': singlecellimage['image'],
+             'dockerize': config['docker']['dockerize'],
+             'mounts': config['docker']['mounts'],
+             'username': singlecellimage['username'],
+             'password': singlecellimage['password'],
+             'server': singlecellimage['server'],
+             },
         func="single_cell.workflows.strelka.vcf_tasks.concatenate_vcf",
         args=(
             pypeliner.managed.TempInputFile('somatic.indels.filtered.vcf', 'chrom'),
             pypeliner.managed.TempOutputFile('somatic.indels.filtered.vcf.gz'),
-            pypeliner.managed.TempSpace("merge_indels_temp")
+            pypeliner.managed.TempSpace("merge_indels_temp"),
+            config['docker']
         )
     )
     
     workflow.transform(
         name='merge_snvs',
-        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        ctx={'mem': 4, 'num_retry': 3, 'ncpus':1,
+             'mem_retry_increment': 2,
+             'pool_id': config['pools']['standard'],
+             'image': singlecellimage['image'],
+             'dockerize': config['docker']['dockerize'],
+             'mounts': config['docker']['mounts'],
+             'username': singlecellimage['username'],
+             'password': singlecellimage['password'],
+             'server': singlecellimage['server'],
+             },
         func="single_cell.workflows.strelka.vcf_tasks.concatenate_vcf",
         args=(
             pypeliner.managed.TempInputFile('somatic.snvs.filtered.vcf', 'chrom'),
             pypeliner.managed.TempOutputFile('somatic.snvs.filtered.vcf.gz'),
-            pypeliner.managed.TempSpace("merge_snvs_temp")
+            pypeliner.managed.TempSpace("merge_snvs_temp"),
+            config['docker']
         )
     )
     
     workflow.transform(
         name='filter_indels',
-        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        ctx={'mem': 4, 'num_retry': 3, 'ncpus':1,
+             'mem_retry_increment': 2,
+             'pool_id': config['pools']['standard'],
+             'image': singlecellimage['image'],
+             'dockerize': config['docker']['dockerize'],
+             'mounts': config['docker']['mounts'],
+             'username': singlecellimage['username'],
+             'password': singlecellimage['password'],
+             'server': singlecellimage['server'],
+             },
         func="single_cell.workflows.strelka.vcf_tasks.filter_vcf",
         args=(
             pypeliner.managed.TempInputFile('somatic.indels.filtered.vcf.gz'),
@@ -140,7 +218,16 @@ def create_strelka_workflow(
     
     workflow.transform(
         name='filter_snvs',
-        ctx={'mem': 4, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        ctx={'mem': 4, 'num_retry': 3, 'ncpus':1,
+             'mem_retry_increment': 2,
+             'pool_id': config['pools']['standard'],
+             'image': singlecellimage['image'],
+             'dockerize': config['docker']['dockerize'],
+             'mounts': config['docker']['mounts'],
+             'username': singlecellimage['username'],
+             'password': singlecellimage['password'],
+             'server': singlecellimage['server'],
+             },
         func="single_cell.workflows.strelka.vcf_tasks.filter_vcf",
         args=(
             pypeliner.managed.TempInputFile('somatic.snvs.filtered.vcf.gz'),
@@ -150,21 +237,39 @@ def create_strelka_workflow(
     
     workflow.transform(
         name='finalise_indels',
-        ctx={'pool_id': config['pools']['standard'], 'ncpus':1},
+        ctx={'pool_id': config['pools']['standard'],
+             'ncpus':1,
+             'image': singlecellimage['image'],
+             'dockerize': config['docker']['dockerize'],
+             'mounts': config['docker']['mounts'],
+             'username': singlecellimage['username'],
+             'password': singlecellimage['password'],
+             'server': singlecellimage['server'],
+             },
         func="single_cell.workflows.strelka.vcf_tasks.finalise_vcf",
         args=(
             pypeliner.managed.TempInputFile('somatic.indels.passed.vcf'),
-            pypeliner.managed.OutputFile(indel_vcf_file)
+            pypeliner.managed.OutputFile(indel_vcf_file),
+            config['docker']
         )
     )
     
     workflow.transform(
         name='finalise_snvs',
-        ctx={'pool_id': config['pools']['standard'], 'ncpus':1},
+        ctx={'pool_id': config['pools']['standard'],
+             'ncpus':1,
+             'image': singlecellimage['image'],
+             'dockerize': config['docker']['dockerize'],
+             'mounts': config['docker']['mounts'],
+             'username': singlecellimage['username'],
+             'password': singlecellimage['password'],
+             'server': singlecellimage['server'],
+             },
         func="single_cell.workflows.strelka.vcf_tasks.finalise_vcf",
         args=(
             pypeliner.managed.TempInputFile('somatic.snvs.passed.vcf'),
-            pypeliner.managed.OutputFile(snv_vcf_file)
+            pypeliner.managed.OutputFile(snv_vcf_file),
+            config['docker']
         )
     )
 
