@@ -25,9 +25,10 @@
 	conda config --add channels 'conda-forge'
 	conda config --add channels https://conda.anaconda.org/aroth85
 	```
-5.  Install Dependencies
+5.  Install Dependencies + Biowrappers
 	```
-	conda install --file single_cell_pipeline/conda_packages.txt
+	conda install --file single_cell_pipeline/INSTALL/conda_packages.txt
+	pip install git+https://bitbucket.org/aroth85/biowrappers/src/dev/
 	```
 6. install single_cell pipeline
 	```
@@ -118,8 +119,9 @@
 	```
 13. align the fastq pairs:
 	```
-	single_cell align --input_yaml single_cell_pipeline/INSTALL/input.yaml --out_dir dlp --submit local --library_id A96139A --loglevel DEBUG --tmpdir temp --pipelinedir pipeline --maxjobs 2
+	single_cell align --input_yaml single_cell_pipeline/INSTALL/input.yaml --out_dir dlp --submit local --library_id A96139A --loglevel DEBUG --tmpdir temp --pipelinedir pipeline --maxjobs 2 --config_file /path/to/config.yaml
 	```
+	Replace /path/to/ with your path to config.yaml
     *Outputs:*
     * ```data/SA123.bam``` and ```data/SA456.bam```: aligned bam files
     * ```dlp/results/alignment/A123456_alignment_metrics.h5```: alignment metrics and metadata
