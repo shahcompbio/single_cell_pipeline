@@ -232,7 +232,7 @@ class GenHmmPlots(object):
         ax1 = plt.subplot(311)
         ax1.set_ylabel('Read count')
         ax1.set_xlabel('GC Content')
-        if df is not None:
+        if df is not None and df_ideal.size:
             ax1.scatter(
                 df_ideal['gc'],
                 df_ideal['reads'],
@@ -254,7 +254,7 @@ class GenHmmPlots(object):
         ax2.set_xlabel('GC content')
         ax2.set_ylabel('Normalized read count')
         not_null = df_ideal['cor_gc'].notnull()
-        if df is not None:
+        if df is not None and df_ideal.size:
             ax2.scatter(
                 df_ideal['gc'][not_null],
                 df_ideal['cor_gc'][not_null],
@@ -266,7 +266,7 @@ class GenHmmPlots(object):
         ax3 = plt.subplot(313)
         ax3.set_xlabel('Mappability')
         ax3.set_ylabel('Read Count')
-        if df is not None:
+        if df is not None and df_ideal.size:
             ax3.scatter(
                 df_ideal['map'],
                 df_ideal['reads'],

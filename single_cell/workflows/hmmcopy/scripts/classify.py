@@ -83,14 +83,18 @@ def load_data(hmmcopy_filename, alignment_filename,
             else:
                 coldata = alignment_data[colname]
 
+            if colname == 'scaled_halfiness':
+                # haploid poison adds inf, replace with big number since 0 is considered good
+                # and we want to score to decrease
+                coldata = coldata.replace(np.inf, 1e10)
             data.append(coldata)
 
         data = pd.concat(data, axis=1)
 
+        data = data.replace(-np.inf, np.nan)
         data = data.fillna(0)
 
         yield (hmmcopy_table, data)
-
 
 def classify(model, data):
     predictions = model.predict_proba(data)
