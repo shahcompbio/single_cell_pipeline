@@ -158,6 +158,9 @@ class GenHmmPlots(object):
         df = utl.normalize_reads(df)
         df = utl.compute_chromosome_coordinates(df, self.ref_genome)
 
+        # clip the copy column to 40 to avoid crashes due to super high outliers in data
+        df["copy"] = np.clip(df["copy"], 0, 40)
+
         return df
 
     def read_segments(self, cell_id, multiplier):
@@ -438,6 +441,7 @@ class GenHmmPlots(object):
 
         fig.suptitle(self.sample_id, x=0.5, y=0.97)
         plt.tight_layout(rect=(0, 0.05, 1, 0.95))
+        fig.text(0.85,0.02,"maximum copy number is 40, higher values are set to 40")
 
         pdfout.savefig(fig)
         plt.close()
