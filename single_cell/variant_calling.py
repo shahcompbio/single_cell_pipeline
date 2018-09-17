@@ -53,6 +53,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
             'min_mqual': min_mqual,
             'vcf_to_bam_chrom_map': vcf_to_bam_chrom_map,
             'cell_id': mgd.Instance('cell_id'),
+            'report_zero_count_positions': False,
         }
     )
 
