@@ -17,15 +17,6 @@ def generate_targets(input_bams, config, intervals, interval, **kwargs):
     for _, bamfile in input_bams.iteritems():
         cmd.extend(['-I', bamfile])
 
-    kwargs = {
-        'dockerize': kwargs.get('dockerize'),
-        'image': kwargs.get('image'),
-        'mounts': kwargs.get('mounts'),
-        'username': kwargs.get("username"),
-        'password': kwargs.get('password'),
-        'server': kwargs.get('server')
-    }
-
     pypeliner.commandline.execute(*cmd, **kwargs)
 
 
@@ -49,6 +40,6 @@ def gatk_realigner(inputs, config, targets, interval, tempdir, **kwargs):
     cwd = os.getcwd()
     os.chdir(tempdir)
 
-    pypeliner.commandline.execute(*cmd, dockerize=dockerize, image=image)
+    pypeliner.commandline.execute(*cmd, **kwargs)
 
     os.chdir(cwd)

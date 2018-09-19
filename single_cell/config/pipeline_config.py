@@ -197,49 +197,46 @@ def get_databases():
 
     return databases
 
-def get_docker_images():
 
-    username = os.environ["CLIENT_ID"]
-    password = os.environ["SECRET_KEY"]
-    server = "singlecellcontainers.azurecr.io"
-    
-    image_urls = {
-        "bwa" : "singlecellcontainers.azurecr.io/scp/bwa",
-        "samtools" : "singlecellcontainers.azurecr.io/scp/samtools",
-        "python_base" : "singlecellcontainers.azurecr.io/scp/python_base",
-        "single_cell_pipeline" : "singlecellcontainers.azurecr.io/scp/single_cell_pipeline",
-        "picard" : "singlecellcontainers.azurecr.io/scp/picard",
-        "gatk" : "singlecellcontainers.azurecr.io/scp/gatk",
-        "fastqc": "singlecellcontainers.azurecr.io/scp/fastqc",
-        "hmmcopy": "singlecellcontainers.azurecr.io/scp/hmmcopy",
-        "aneufinder": "singlecellcontainers.azurecr.io/scp/aneufinder",
-        "strelka": "singlecellcontainers.azurecr.io/scp/strelka",
-        "mutationseq": "singlecellcontainers.azurecr.io/scp/mutationseq",
-        "vcftools": "singlecellcontainers.azurecr.io/scp/vcftools",
-        "snpeff": "singlecellcontainers.azurecr.io/scp/vcftools",
-        "titan": "singlecellcontainers.azurecr.io/scp/titan",
-    }
+def get_container_images(cluster):
+    images = ['bwa', 'samtools', 'python_base', 'single_cell_pipeline',
+              'picard', 'gatk', 'fastqc', 'hmmcopy', 'aneufinder',
+              'strelka', 'mutationseq', 'vcftools', 'snpeff', 'titan']
+
+    if cluster == 'azure':
+        username = os.environ["CLIENT_ID"]
+        password = os.environ["SECRET_KEY"]
+        server = "singlecellcontainers.azurecr.io"
+
+        image_urls = {v:"singlecellcontainers.azurecr.io/scp/{}".format(v)
+                      for v in images}
+        image_urls['snpeff'] = "singlecellcontainers.azurecr.io/scp/vcftools"
+    else:
+        username = None
+        password = None
+        server = None
+        image_path = '/refdata/single_cell_pipeline.simg'
+        image_urls = {v: image_path for v in images}
 
     image_data = {}
-    
     for name, url in image_urls.iteritems():
         image_data[name] = {'image': url, 'server': server,
                             'username': username, 'password': password}
-
     images = {"images": image_data}
 
     return images
 
 
-def get_docker_params(cluster,):
+def get_container_params(cluster,):
     params = {}
- 
-    params.update(get_docker_images())
- 
-    dockerize = True if cluster == 'azure' else False
-    params["dockerize"] = dockerize
+    params.update(get_container_images(cluster))
+
+    container_type = 'docker' if cluster == 'azure' else 'singularity'
+    params["container_type"] = container_type
     params["mounts"] = ['/refdata', '/datadrive']
-    return {"docker": params}
+    if cluster == 'azure':
+        params["mounts"].append('/mnt')
+    return {"containers": params}
 
 
 def override_config(config, override):
@@ -297,7 +294,7 @@ def get_singlecell_pipeline_config(config_params, override=None):
 
     params.update(get_databases())
 
-    params.update(get_docker_params(cluster))
+    params.update(get_container_params(cluster))
 
     params = override_config(params, override)
 

@@ -19,15 +19,15 @@ import multiprocessing
 from multiprocessing.pool import ThreadPool
 
 
-def build_docker_args(docker_config, image_name=None):
-    if not image_name:
-        raise Exception("missing image name")
+def get_container_ctx(container_config, image_name, docker_only=False):
+    if docker_only and not container_config['container_type'] == 'docker':
+        return {}
 
-    credentials = docker_config['images'][image_name]
+    credentials = container_config['images'][image_name]
     docker_context = {
               'image': credentials['image'],
-              'dockerize': docker_config['dockerize'],
-              'mounts': docker_config['mounts'],
+              'container_type': container_config['container_type'],
+              'mounts': container_config['mounts'],
               'username': credentials['username'],
               'password': credentials['password'],
               'server': credentials['server'],
