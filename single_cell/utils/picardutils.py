@@ -25,16 +25,6 @@ def merge_bams(inputs, output, mem="2G", **kwargs):
     for bamfile in inputs:
         cmd.append('I=' + os.path.abspath(bamfile))
 
-
-    kwargs = {
-        'dockerize':kwargs.get('dockerize'),
-        'image':kwargs.get('image'),
-        'mounts':kwargs.get('mounts'),
-        'username':kwargs.get("username"),
-        'password':kwargs.get('password'),
-        'server':kwargs.get('server'),
-    }
-
     pypeliner.commandline.execute(*cmd, **kwargs)
 
 
@@ -52,13 +42,7 @@ def bam_sort(bam_filename, sorted_bam_filename, tempdir, mem="2G", **kwargs):
         'VALIDATION_STRINGENCY=LENIENT',
                   'TMP_DIR=' + tempdir,
         'MAX_RECORDS_IN_RAM=150000',
-        dockerize=kwargs.get('dockerize'),
-        image=kwargs.get('image'),
-        mounts=kwargs.get('mounts'),
-        username=kwargs.get("username"),
-        password=kwargs.get('password'),
-        server=kwargs.get('server'),
-    )
+        **kwargs)
 
 
 def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename,
@@ -78,13 +62,7 @@ def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename,
         'VALIDATION_STRINGENCY=LENIENT',
                   'TMP_DIR=' + tempdir,
         'MAX_RECORDS_IN_RAM=150000',
-        dockerize=kwargs.get('dockerize'),
-        image=kwargs.get('image'),
-        mounts=kwargs.get('mounts'),
-        username=kwargs.get("username"),
-        password=kwargs.get('password'),
-        server=kwargs.get('server'),
-    )
+        **kwargs)
 
 
 def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename,
@@ -109,13 +87,7 @@ def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename,
                   ('True' if config['picard_wgs_params']['count_unpaired'] else 'False'),
                   'TMP_DIR=' + tempdir,
         'MAX_RECORDS_IN_RAM=150000',
-        dockerize=kwargs.get('dockerize'),
-        image=kwargs.get('image'),
-        mounts=kwargs.get('mounts'),
-        username=kwargs.get("username"),
-        password=kwargs.get('password'),
-        server=kwargs.get('server'),
-    )
+        **kwargs)
 
 
 def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename,
@@ -136,13 +108,7 @@ def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename,
         'VALIDATION_STRINGENCY=LENIENT',
                   'TMP_DIR=' + tempdir,
         'MAX_RECORDS_IN_RAM=150000',
-        dockerize=kwargs.get('dockerize'),
-        image=kwargs.get('image'),
-        mounts=kwargs.get('mounts'),
-        username=kwargs.get("username"),
-        password=kwargs.get('password'),
-        server=kwargs.get('server'),
-    )
+        **kwargs)
 
 
 def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename,
@@ -183,10 +149,4 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename,
         'VALIDATION_STRINGENCY=LENIENT',
                   'TMP_DIR=' + tempdir,
         'MAX_RECORDS_IN_RAM=150000',
-        dockerize=kwargs.get('dockerize'),
-        image=kwargs.get('image'),
-        mounts=kwargs.get('mounts'),
-        username=kwargs.get("username"),
-        password=kwargs.get('password'),
-        server=kwargs.get('server'),
-    )
+        **kwargs)

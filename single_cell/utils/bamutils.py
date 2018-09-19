@@ -17,14 +17,7 @@ def produce_fastqc_report(fastq_filename, output_html, output_plots, temp_dir,
         'fastqc',
         '--outdir=' + temp_dir,
         fastq_filename,
-        dockerize=kwargs.get('dockerize'),
-        image=kwargs.get('image'),
-        mounts=kwargs.get('mounts'),
-        username=kwargs.get("username"),
-        password=kwargs.get('password'),
-        server=kwargs.get('server'),
-    )
-
+        **kwargs)
 
     fastq_basename = os.path.basename(fastq_filename)
     if fastq_basename.endswith(".fastq.gz"):
@@ -51,13 +44,8 @@ def bwa_mem_paired_end(fastq1, fastq2, output,
         'bwa', 'mem', '-M', '-R', readgroup,
         reference, fastq1, fastq2,
         '>', output,
-        dockerize=kwargs.get('dockerize'),
-        image=kwargs.get('image'),
-        mounts=kwargs.get('mounts'),
-        username=kwargs.get("username"),
-        password=kwargs.get('password'),
-        server=kwargs.get('server'),
-    )
+        **kwargs)
+
 
 def samtools_sam_to_bam(samfile, bamfile,
                          **kwargs):
@@ -65,14 +53,7 @@ def samtools_sam_to_bam(samfile, bamfile,
     pypeliner.commandline.execute(
         'samtools', 'view', '-bSh', samfile,
         '>', bamfile,
-        dockerize=kwargs.get('dockerize'),
-        image=kwargs.get('image'),
-        mounts=kwargs.get('mounts'),
-        username=kwargs.get("username"),
-        password=kwargs.get('password'),
-        server=kwargs.get('server'),
-    )
-
+        **kwargs)
 
 
 def bwa_aln_paired_end(fastq1, fastq2, output, tempdir,
@@ -95,13 +76,7 @@ def bwa_aln_paired_end(fastq1, fastq2, output, tempdir,
         fastq1,
         '>',
         read_1_sai,
-        dockerize=kwargs.get('dockerize'),
-        image=kwargs.get('image'),
-        mounts=kwargs.get('mounts'),
-        username=kwargs.get("username"),
-        password=kwargs.get('password'),
-        server=kwargs.get('server'),
-    )
+        **kwargs)
 
     pypeliner.commandline.execute(
         'bwa',
@@ -110,13 +85,7 @@ def bwa_aln_paired_end(fastq1, fastq2, output, tempdir,
         fastq2,
         '>',
         read_2_sai,
-        dockerize=kwargs.get('dockerize'),
-        image=kwargs.get('image'),
-        mounts=kwargs.get('mounts'),
-        username=kwargs.get("username"),
-        password=kwargs.get('password'),
-        server=kwargs.get('server'),
-    )
+        **kwargs)
 
     pypeliner.commandline.execute(
         'bwa', 'sampe',
@@ -128,13 +97,7 @@ def bwa_aln_paired_end(fastq1, fastq2, output, tempdir,
         fastq2,
         '>',
         output,
-        dockerize=kwargs.get('dockerize'),
-        image=kwargs.get('image'),
-        mounts=kwargs.get('mounts'),
-        username=kwargs.get("username"),
-        password=kwargs.get('password'),
-        server=kwargs.get('server'),
-    )
+        **kwargs)
 
 
 def bam_index(infile, outfile, **kwargs):
@@ -142,13 +105,7 @@ def bam_index(infile, outfile, **kwargs):
         'samtools', 'index',
         infile,
         outfile,
-        dockerize=kwargs.get('dockerize'),
-        image=kwargs.get('image'),
-        mounts=kwargs.get('mounts'),
-        username=kwargs.get("username"),
-        password=kwargs.get('password'),
-        server=kwargs.get('server'),
-    )
+        **kwargs)
 
 
 def bam_flagstat(bam, metrics, **kwargs):
@@ -158,13 +115,7 @@ def bam_flagstat(bam, metrics, **kwargs):
         bam,
         '>',
         metrics,
-        dockerize=kwargs.get('dockerize'),
-        image=kwargs.get('image'),
-        mounts=kwargs.get('mounts'),
-        username=kwargs.get("username"),
-        password=kwargs.get('password'),
-        server=kwargs.get('server'),
-    )
+        **kwargs)
 
 
 def bam_merge(bams, output, **kwargs):
@@ -177,7 +128,7 @@ def bam_merge(bams, output, **kwargs):
     cmd.extend(bams)
 
     kwargs = {
-        'dockerize':kwargs.get('dockerize'),
+        'container_type':kwargs.get('container_type'),
         'image':kwargs.get('image'),
         'mounts':kwargs.get('mounts'),
         'username':kwargs.get("username"),
