@@ -14,6 +14,7 @@ import shutil
 import vcf
 
 from components_utils import flatten_input
+from single_cell.utils import helpers
 
 # from ._merge import merge_vcfs
 
@@ -138,8 +139,7 @@ def concatenate_vcf(
     :param out_file: path where output file will be written in VCF format.
 
     """
-    if not os.path.exists(tempdir):
-        os.makedirs(tempdir)
+    helpers.makedirs(tempdir)
 
     merged_file = os.path.join(tempdir, 'merged.vcf')
     if allow_overlap:

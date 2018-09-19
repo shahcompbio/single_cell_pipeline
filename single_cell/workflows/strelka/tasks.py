@@ -35,13 +35,13 @@ def _get_files_for_chrom(infiles, intervals, chrom):
         infiles = {ival:infiles[ival] for ival in intervals}
 
     outfiles = {}
-    
+
     for interval in intervals:
         ival_chrom = interval.split("-")[0]
-        
+
         if ival_chrom==chrom:
             outfiles[interval] = infiles[interval]
-    
+
     return outfiles
 
 
@@ -73,9 +73,7 @@ def count_fasta_bases(ref_genome_fasta_file, out_file, docker_config):
 
 def call_somatic_variants(
         normal_bam_file,
-        normal_bai_file,
         tumour_bam_file,
-        tumour_bai_file,
         known_sizes,
         ref_genome,
         indel_file,
@@ -133,7 +131,7 @@ def call_somatic_variants(
         '--min-contig-open-end-support', 35,
         '--report-file', stats_file,
         '--shared-site-error-rate', ssnv_noise,
-        
+
         '--shared-site-error-strand-bias-fraction', ssnv_noise_strand_bias_frac,
         '--somatic-indel-rate', sindel_prior,
         '--shared-indel-error-rate', sindel_noise,
@@ -632,8 +630,5 @@ def parse_strelka(infile, output):
     parser = ParseStrelka(infile=infile, tid='NA', nid='NA', output=output,
                         keep_dbsnp=True,keep_1000gen=True,
                         remove_duplicates=True)
-    
+
     parser.main()
-
-
-

@@ -11,7 +11,7 @@ from single_cell.utils import helpers
 from subprocess import Popen, PIPE
 
 
-def merge_bam_worker(input_bam_files, output_bam, output_bai, region, kwargs):
+def merge_bam_worker(input_bam_files, output_bam, region, kwargs):
 
     bamutils.bam_merge(
         input_bam_files, output_bam,
@@ -19,17 +19,17 @@ def merge_bam_worker(input_bam_files, output_bam, output_bai, region, kwargs):
         **kwargs)
 
     bamutils.bam_index(
-        output_bam, output_bai,
+        output_bam, output_bam+'.bai',
         **kwargs)
 
 
-def merge_bams(bams, bais, outputs, output_index, regions, docker_config, ncores=None):
+def merge_bams(bams, outputs, regions, docker_config, ncores=None):
 
     count = multiprocessing.cpu_count()
-    
+
     if ncores:
         count = min(ncores, count)
-    
+
     pool = multiprocessing.Pool(processes=count)
 
     tasks = []
@@ -38,13 +38,10 @@ def merge_bams(bams, bais, outputs, output_index, regions, docker_config, ncores
 
     for region in regions:
         output_bam = outputs[region]
-        output_bai = output_index[region]
 
         region = '{}:{}-{}'.format(*region.split('-'))
-        # merge_bam_worker(bams, output_bam, output_bai, region, docker_config)
-
         task = pool.apply_async(merge_bam_worker,
-                         args=(bams, output_bam, output_bai, region, docker_config)
+                         args=(bams, output_bam, region, docker_config)
                         )
         tasks.append(task)
 

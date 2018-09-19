@@ -3,6 +3,7 @@ Created on Feb 27, 2018
 
 @author: dgrewal
 '''
+import os
 import warnings
 import biowrappers.components.io.vcf.tasks
 
@@ -40,6 +41,10 @@ def concatenate_vcf(infiles, outfile):
 
         for _,ifile in infiles.iteritems():
 
+            if os.path.getsize(ifile) == 0:
+                warnings.warn('input file {} is empty'.format(ifile))
+                continue
+
             with open(ifile) as f:
 
                 if not header:
@@ -53,10 +58,4 @@ def concatenate_vcf(infiles, outfile):
 
                 for l in f:
                     print >> ofile, l,
-
-def merge_vcfs(infiles, outfiles, docker_config={}):
-    for infile in infiles:
-        biowrappers.components.io.vcf.tasks.index_vcf(infile, index_file=infile + '.tbi', docker_config=docker_config)
-    biowrappers.components.io.vcf.tasks.merge_vcfs(infiles, outfiles)
-
 
