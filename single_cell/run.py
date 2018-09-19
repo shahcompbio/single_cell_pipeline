@@ -14,6 +14,7 @@ from clean_sentinels import clean_sentinels
 from copy_number import copy_number_calling_workflow
 from ltm import ltm_workflow
 from infer_haps import infer_haps_workflow
+from multi_sample import multi_sample_workflow
 # from copyclone import copyclone_workflow
 
 def main():
@@ -49,7 +50,7 @@ def main():
         workflow = pypeliner.workflow.Workflow()
         workflow = aneufinder_workflow(workflow, args)
         pyp.run(workflow)
-        
+
     if args["which"] == "merge_bams":
         pyp = pypeliner.app.Pypeline(config=args)
         workflow = pypeliner.workflow.Workflow()
@@ -64,8 +65,7 @@ def main():
 
     if args["which"] == "variant_calling":
         pyp = pypeliner.app.Pypeline(config=args)
-        workflow = pypeliner.workflow.Workflow()
-        workflow = variant_calling_workflow(workflow, args)
+        workflow = variant_calling_workflow(args)
         pyp.run(workflow)
 
     if args["which"] == "copy_number_calling":
@@ -94,14 +94,18 @@ def main():
 
     if args["which"] == "variant_counting":
         pyp = pypeliner.app.Pypeline(config=args)
-        workflow = pypeliner.workflow.Workflow()
-        workflow = variant_counting_workflow(workflow, args)
+        workflow = variant_counting_workflow(args)
         pyp.run(workflow)
 
     if args["which"] == "ltm":
         pyp = pypeliner.app.Pypeline(config=args)
         workflow = pypeliner.workflow.Workflow()
         workflow = ltm_workflow(workflow, args)
+        pyp.run(workflow)
+
+    if args["which"] == "multi_sample_pseudo_bulk":
+        pyp = pypeliner.app.Pypeline(config=args)
+        workflow = multi_sample_workflow(args)
         pyp.run(workflow)
 
 

@@ -255,6 +255,17 @@ def parse_args():
                                   nargs='+')
 
     #======================================
+    # count variants from multiple samples
+    #======================================
+    multi_sample_pseudo_bulk = add_global_args(
+        subparsers.add_parser("multi_sample_pseudo_bulk"))
+    multi_sample_pseudo_bulk.set_defaults(which='multi_sample_pseudo_bulk')
+
+    multi_sample_pseudo_bulk.add_argument("--normal_wgs_bam",
+                                          required=True,
+                                          help='''normal bam''')
+
+    #======================================
     # generates pipeline and batch configs
     #======================================
     generate_config = subparsers.add_parser("generate_config")

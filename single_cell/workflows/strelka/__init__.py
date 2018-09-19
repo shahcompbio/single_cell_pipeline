@@ -7,9 +7,7 @@ default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 
 def create_strelka_workflow(
         normal_bam_file,
-        normal_bai_file,
         tumour_bam_file,
-        tumour_bai_file,
         ref_genome_fasta_file,
         indel_vcf_file,
         snv_vcf_file,
@@ -31,7 +29,7 @@ def create_strelka_workflow(
         obj=pypeliner.managed.OutputChunks('chrom'),
         value=chromosomes,
     )
-    
+
     workflow.setobj(
         obj=pypeliner.managed.OutputChunks('region'),
         value=regions,
@@ -62,7 +60,7 @@ def create_strelka_workflow(
               chromosomes
         )
     )
-     
+
     workflow.transform(
         name='call_somatic_variants',
         ctx=dict(mem=4,
@@ -72,9 +70,7 @@ def create_strelka_workflow(
         axes=('region',),
         args=(
             pypeliner.managed.InputFile("normal.split.bam", "region", fnames=normal_bam_file),
-            pypeliner.managed.InputFile("normal.split.bam.bai", "region", fnames=normal_bai_file),
             pypeliner.managed.InputFile("merged_bam", "region", fnames=tumour_bam_file),
-            pypeliner.managed.InputFile("merged_bai", "region", fnames=tumour_bai_file),
             pypeliner.managed.TempInputObj('known_sizes'),
             ref_genome_fasta_file,
             pypeliner.managed.TempOutputFile('somatic.indels.unfiltered.vcf', 'region'),
@@ -85,7 +81,7 @@ def create_strelka_workflow(
             helpers.get_container_ctx(config['containers'], 'strelka')
         ),
     )
- 
+
     workflow.transform(
         name='add_indel_filters',
         axes=('chrom',),
@@ -104,7 +100,7 @@ def create_strelka_workflow(
         ),
         kwargs={'use_depth_filter': use_depth_thresholds}
     )
-  
+
     workflow.transform(
         name='add_snv_filters',
         axes=('chrom',),
@@ -122,7 +118,7 @@ def create_strelka_workflow(
         ),
         kwargs={'use_depth_filter': use_depth_thresholds}
     )
-    
+
     workflow.transform(
         name='merge_indels',
         ctx=dict(mem=4,
@@ -136,7 +132,7 @@ def create_strelka_workflow(
             helpers.get_container_ctx(config['containers'], 'vcftools')
         )
     )
-    
+
     workflow.transform(
         name='merge_snvs',
         ctx=dict(mem=4,
@@ -150,7 +146,7 @@ def create_strelka_workflow(
             helpers.get_container_ctx(config['containers'], 'vcftools')
         )
     )
-    
+
     workflow.transform(
         name='filter_indels',
         ctx=dict(mem=4,
@@ -162,7 +158,7 @@ def create_strelka_workflow(
             pypeliner.managed.TempOutputFile('somatic.indels.passed.vcf')
         )
     )
-    
+
     workflow.transform(
         name='filter_snvs',
         ctx=dict(mem=4,
@@ -174,7 +170,7 @@ def create_strelka_workflow(
             pypeliner.managed.TempOutputFile('somatic.snvs.passed.vcf')
         )
     )
-    
+
     workflow.transform(
         name='finalise_indels',
         ctx=dict(mem=4,
@@ -187,7 +183,7 @@ def create_strelka_workflow(
             helpers.get_container_ctx(config['containers'], 'vcftools')
         )
     )
-    
+
     workflow.transform(
         name='finalise_snvs',
         ctx=dict(mem=2,
@@ -202,5 +198,3 @@ def create_strelka_workflow(
     )
 
     return workflow
-
-

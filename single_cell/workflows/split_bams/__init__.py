@@ -66,15 +66,11 @@ def create_split_workflow(
                      **ctx),
             func="single_cell.workflows.split_bams.tasks.split_bam_file_one_job",
             args=(
-                mgd.InputFile(normal_bam),
-                mgd.InputFile(normal_bai),
+                mgd.InputFile(normal_bam, extensions=['.bai']),
                 mgd.OutputFile(
                     "normal.split.bam", "region",
-                    fnames=normal_split_bam, axes_origin=[]
-                ),
-                mgd.OutputFile(
-                    "normal.split.bam.bai", "region",
-                    fnames=normal_split_bai, axes_origin=[]
+                    fnames=normal_split_bam, axes_origin=[],
+                    extensions=['.bai'],
                 ),
                 regions,
                 helpers.get_container_ctx(config['containers'], 'samtools')

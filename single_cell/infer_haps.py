@@ -5,9 +5,11 @@ Created on Aug 29, 2018
 '''
 
 import os
+import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import helpers
 from workflows import extract_seqdata
+import remixt.config
 
 
 def infer_haps_workflow(workflow, args):
@@ -180,3 +182,151 @@ def infer_haps_workflow(workflow, args):
     )
 
     return workflow
+
+
+def infer_haps_from_bulk_normal(
+    normal_bam_file,
+    normal_seqdata_file,
+    haplotypes_filename,
+    config,
+):
+    remixt_config = config['remixt_config'].get('extract_seqdata', {})
+    remixt_ref_data_dir = config['remixt_ref_data_dir']
+
+    chromosomes = remixt.config.get_chromosomes(config, remixt_ref_data_dir)
+
+    workflow = pypeliner.workflow.Workflow()
+
+    workflow.subworkflow(
+        name='extract_seqdata',
+        func=extract_seqdata.create_extract_seqdata_workflow,
+        args=(
+            mgd.InputFile(normal_bam_file, extensions=['.bai']),
+            mgd.OutputFile(normal_seqdata_file),
+            remixt_config,
+            remixt_ref_data_dir,
+            config,
+        ),
+    )
+
+    workflow.setobj(
+        obj=mgd.OutputChunks('chromosome'),
+        value=chromosomes,
+    )
+
+    workflow.transform(
+        name='infer_snp_genotype',
+        axes=('chromosome',),
+        ctx={'mem': 16},
+        func='remixt.analysis.haplotype.infer_snp_genotype_from_normal',
+        args=(
+            mgd.TempOutputFile('snp_genotype.tsv', 'chromosome'),
+            mgd.InputFile(normal_seqdata_file),
+            mgd.InputInstance('chromosome'),
+            config,
+        ),
+    )
+
+    workflow.transform(
+        name='infer_haps',
+        axes=('chromosome',),
+        ctx={'mem': 16},
+        func='remixt.analysis.haplotype.infer_haps',
+        args=(
+            mgd.TempOutputFile('haplotypes.tsv', 'chromosome'),
+            mgd.TempInputFile('snp_genotype.tsv', 'chromosome'),
+            mgd.InputInstance('chromosome'),
+            mgd.TempSpace('haplotyping', 'chromosome'),
+            remixt_config,
+            remixt_ref_data_dir,
+        ),
+    )
+
+    workflow.transform(
+        name='merge_haps',
+        ctx={'mem': 16},
+        func='remixt.utils.merge_tables',
+        args=(
+            mgd.OutputFile(haplotypes_filename),
+            mgd.TempInputFile('haplotypes.tsv', 'chromosome'),
+        )
+    )
+
+    return workflow
+
+
+def extract_allele_readcounts(
+    haplotypes_filename,
+    tumour_cell_bams,
+    tumour_cell_seqdata,
+    allele_counts_filename,
+    config,
+):
+    tumour_cell_seqdata = {cell_id: tumour_cell_seqdata[cell_id] for cell_id in tumour_cell_bams}
+
+    remixt_config = config['remixt_config'].get('extract_seqdata', {})
+    remixt_ref_data_dir = config['remixt_ref_data_dir']
+
+    workflow = pypeliner.workflow.Workflow()
+
+    workflow.set_filenames('cell.bam', 'cell_id', fnames=tumour_cell_bams)
+    workflow.set_filenames('seqdata.h5', 'cell_id', fnames=tumour_cell_seqdata)
+
+    workflow.setobj(
+        obj=mgd.OutputChunks('cell_id'),
+        value=tumour_cell_bams.keys(),
+    )
+
+    workflow.subworkflow(
+        name='create_chromosome_seqdata',
+        axes=('cell_id',),
+        func='remixt.workflow.create_extract_seqdata_workflow',
+        args=(
+            mgd.InputFile('cell.bam', 'cell_id'),
+            mgd.OutputFile('seqdata.h5', 'cell_id', axes_origin=[]),
+            remixt_config,
+            remixt_ref_data_dir,
+        ),
+    )
+
+    #TODO Segments with bin width from single cell
+    workflow.transform(
+        name='create_segments',
+        func='remixt.analysis.segment.create_segments',
+        args=(
+            mgd.TempOutputFile('segments.tsv'),
+            remixt_config,
+            remixt_ref_data_dir,
+        ),
+    )
+
+    workflow.transform(
+        name='haplotype_allele_readcount',
+        axes=('cell_id',),
+        ctx={'mem': 20},
+        func='remixt.analysis.readcount.haplotype_allele_readcount',
+        args=(
+            mgd.TempOutputFile('allele_counts.tsv', 'cell_id', axes_origin=[]),
+            mgd.TempInputFile('segments.tsv'),
+            mgd.InputFile('seqdata.h5', 'cell_id'),
+            mgd.InputFile(haplotypes_filename),
+            remixt_config,
+        ),
+    )
+
+    workflow.transform(
+        name='merge_allele_readcount',
+        ctx={'mem': 20},
+        func='single_cell.utils.csvutils.concatenate_csv',
+        args=(
+            mgd.TempInputFile('allele_counts.tsv', 'cell_id'),
+            mgd.OutputFile(allele_counts_filename),
+        ),
+        kwargs={
+            'key_column': 'cell_id',
+            'sep': '\t',
+        },
+    )
+
+    return workflow
+

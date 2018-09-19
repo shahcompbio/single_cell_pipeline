@@ -7,7 +7,7 @@ Created on Feb 22, 2018
 import os
 import pypeliner
 import pypeliner.managed as mgd
-from workflows import mutationseq 
+from workflows import mutationseq
 from workflows import strelka
 import single_cell
 from single_cell.utils import helpers
@@ -19,7 +19,6 @@ default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 def create_snv_allele_counts_for_vcf_targets_workflow(
         config,
         bam_files,
-        bai_files,
         vcf_file,
         out_file,
         docker_config=None,
@@ -50,7 +49,6 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
         func="biowrappers.components.variant_calling.snv_allele_counts.tasks.get_snv_allele_counts_for_vcf_targets",
         args=(
             mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files),
-            mgd.InputFile('tumour.bam.bai', 'cell_id', fnames=bai_files),
             mgd.InputFile(vcf_file),
             mgd.TempOutputFile('counts.h5', 'cell_id'),
             table_name,
@@ -89,7 +87,7 @@ def strelka_snv_callback(record):
     return record.INFO['QSS']
 
 
-def variant_calling_workflow(workflow, args):
+def variant_calling_workflow(args):
 
     config = helpers.load_config(args)
 
@@ -111,43 +109,63 @@ def variant_calling_workflow(workflow, args):
     museq_vcf = os.path.join(varcalls_dir, 'museq_snv.vcf.gz')
     strelka_snv_vcf = os.path.join(varcalls_dir, 'strelka_snv.vcf.gz')
     strelka_indel_vcf = os.path.join(varcalls_dir, 'strelka_indel.vcf.gz')
-    snv_h5_filename = os.path.join(varcalls_dir, 'snv_annotations.h5')
+    snv_h5 = os.path.join(varcalls_dir, 'snv_annotations.h5')
+    raw_data_dir = os.path.join(varcalls_dir, 'raw')
 
     wgs_bam_template = args["tumour_template"]
-    wgs_bai_template = args["tumour_template"] + ".bai"
-
     normal_bam_template = args["normal_template"]
-    normal_bai_template = args["normal_template"] + ".bai"
 
-    if "{reads}" in normal_bam_template or "{reads}" in wgs_bam_template:
-        raise ValueError("input template for variant calling only supports region based splits")
+    regions = refgenome.get_split_regions(config["split_size"])
 
+    tumour_region_bams = {r: wgs_bam_template.format(region=r) for r in regions}
+    normal_region_bams = {r: normal_bam_template.format(region=r) for r in regions}
+
+    return create_variant_calling_workflow(
+        bam_files,
+        tumour_region_bams,
+        normal_region_bams,
+        museq_vcf,
+        strelka_snv_vcf,
+        strelka_indel_vcf,
+        snv_h5,
+        config,
+        raw_data_dir,
+    )
+
+
+def create_variant_calling_workflow(
+    tumour_cell_bams,
+    tumour_region_bams,
+    normal_region_bams,
+    museq_vcf,
+    strelka_snv_vcf,
+    strelka_indel_vcf,
+    snv_h5,
+    config,
+    raw_data_dir,
+):
+    workflow = pypeliner.workflow.Workflow()
+
+    workflow.set_filenames('normal_regions.bam', 'region', fnames=normal_region_bams)
+    workflow.set_filenames('tumour_cells.bam', 'cell_id', fnames=tumour_cell_bams)
+    workflow.set_filenames('tumour_regions.bam', 'region', fnames=tumour_region_bams)
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
-        value=cellids,
+        value=tumour_cell_bams.keys(),
     )
 
-    workflow.transform(
-        name="get_regions",
-        ctx=dict(mem=2, pool_id=config['pools']['standard'], **ctx),
-        func="single_cell.utils.pysamutils.get_regions_from_reference",
-        ret=mgd.OutputChunks('region'),
-        args=(
-              config["ref_genome"],
-              config["split_size"],
-              config["chromosomes"],
-        )
+    workflow.setobj(
+        obj=mgd.OutputChunks('region'),
+        value=tumour_region_bams.keys(),
     )
 
     workflow.subworkflow(
         name='museq',
         func=mutationseq.create_museq_workflow,
         args=(
-            mgd.InputFile("normal.split.bam", "region", template=normal_bam_template),
-            mgd.InputFile("normal.split.bam.bai", "region", template=normal_bai_template),
-            mgd.InputFile("merged_bam", "region", template=wgs_bam_template),
-            mgd.InputFile("merged_bam", "region", template=wgs_bai_template),
+            mgd.InputFile('normal_regions.bam', 'region', extensions=['.bai']),
+            mgd.InputFile('tumour_regions.bam', 'region', extensions=['.bai']),
             config['ref_genome'],
             mgd.OutputFile(museq_vcf),
             config,
@@ -158,10 +176,8 @@ def variant_calling_workflow(workflow, args):
         name='strelka',
         func=strelka.create_strelka_workflow,
         args=(
-            mgd.InputFile("normal.split.bam", "region", template=normal_bam_template),
-            mgd.InputFile("normal.split.bam.bai", "region", template=normal_bai_template),
-            mgd.InputFile("merged_bam", "region", template=wgs_bam_template),
-            mgd.InputFile("merged_bam", "region", template=wgs_bai_template),
+            mgd.InputFile('normal_regions.bam', 'region', extensions=['.bai']),
+            mgd.InputFile('tumour_regions.bam', 'region', extensions=['.bai']),
             config['ref_genome'],
             mgd.OutputFile(strelka_indel_vcf),
             mgd.OutputFile(strelka_snv_vcf),
@@ -200,7 +216,7 @@ def variant_calling_workflow(workflow, args):
 
     workflow.transform(
         name='merge_snvs',
-        func="single_cell.utils.vcfutils.merge_vcfs",
+        func='biowrappers.components.io.vcf.tasks.merge_vcfs',
         ctx=dict(mem=2, pool_id=config['pools']['standard'], **ctx),
         args=(
             [
@@ -231,7 +247,7 @@ def variant_calling_workflow(workflow, args):
             config,
             mgd.TempInputFile('all.snv.vcf.gz'),
             mgd.TempOutputFile('snv_annotations.h5'),
-            os.path.join(varcalls_dir, 'snv'),
+            os.path.join(raw_data_dir, 'snv'),
         ),
         kwargs={
             'variant_type': 'snv',
@@ -244,8 +260,7 @@ def variant_calling_workflow(workflow, args):
         func=create_snv_allele_counts_for_vcf_targets_workflow,
         args=(
             config,
-            mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files),
-            mgd.InputFile('bam_markdups_index', 'cell_id', fnames=bai_files),
+            mgd.InputFile('tumour_cells.bam', 'cell_id', extensions=['.bai']),
             mgd.TempInputFile('all.snv.vcf.gz'),
             mgd.TempOutputFile('snv_counts.h5'),
         ),
@@ -264,7 +279,7 @@ def variant_calling_workflow(workflow, args):
                 mgd.TempInputFile('museq.h5'),
                 mgd.TempInputFile('strelka_snv.h5'),
             ],
-            pypeliner.managed.OutputFile(snv_h5_filename),
+            pypeliner.managed.OutputFile(snv_h5),
         ),
         kwargs={
             'drop_duplicates': True,
@@ -303,7 +318,7 @@ def variant_calling_workflow(workflow, args):
     return workflow
 
 
-def variant_counting_workflow(workflow, args):
+def variant_counting_workflow(args):
 
     config = helpers.load_config(args)
 
@@ -313,14 +328,28 @@ def variant_counting_workflow(workflow, args):
 
     cellids = helpers.get_samples(args['input_yaml'])
 
+    return create_variant_counting_workflow(vcfs, bam_files, results_file, config)
+
+
+def create_variant_counting_workflow(
+    vcfs,
+    tumour_cell_bams,
+    results_h5,
+    config,
+):
+    """ Count variant reads for multiple sets of variants across cells.
+    """
+
+    workflow = pypeliner.workflow.Workflow()
+
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
-        value=cellids,
+        value=tumour_cell_bams.keys(),
     )
 
     workflow.transform(
         name='merge_snvs',
-        func="single_cell.utils.vcfutils.merge_vcfs",
+        func='biowrappers.components.io.vcf.tasks.merge_vcfs',
         args=(
             [mgd.InputFile(vcf) for vcf in vcfs],
             mgd.TempOutputFile('all.snv.vcf')
@@ -342,10 +371,9 @@ def variant_counting_workflow(workflow, args):
         func=create_snv_allele_counts_for_vcf_targets_workflow,
         args=(
             config,
-            mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files),
-            mgd.InputFile('bam_markdups_index', 'cell_id', fnames=bai_files),
+            mgd.InputFile('tumour_cells.bam', 'cell_id', extensions=['.bai'], fnames=tumour_cell_bams),
             mgd.TempInputFile('all.snv.vcf.gz'),
-            mgd.OutputFile(results_file),
+            mgd.OutputFile(results_h5),
         ),
         kwargs={
             'docker_config': helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
@@ -353,4 +381,3 @@ def variant_counting_workflow(workflow, args):
     )
 
     return workflow
-

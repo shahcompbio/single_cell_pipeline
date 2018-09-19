@@ -30,22 +30,24 @@ def annotate_metrics(infile, sample_info, outfile, compression=None):
     write_to_file(metrics_df, outfile, index=False, compression=compression)
 
 
-def concatenate_csv(in_filenames, out_filename, nan_val='NA', compression=None):
+def concatenate_csv(in_filenames, out_filename, nan_val='NA', compression=None, key_column=None, sep=','):
     data = []
 
-    if isinstance(in_filenames, dict):
-        in_filenames = in_filenames.values()
+    if not isinstance(in_filenames, dict):
+        in_filenames = zip(enumerage(in_filenames))
 
-    
-    for in_filename in in_filenames:
+    for key, in_filename in in_filenames.iteritems():
         with open(in_filename) as f:
             first_line = f.readline()
             if len(first_line) == 0:
                 continue
-        data.append(pd.read_csv(in_filename, dtype=str))
+        df = pd.read_csv(in_filename, dtype=str, sep=sep)
+        if key_column is not None:
+            df[key_column] = str(key)
+        data.append(df)
     data = pd.concat(data, ignore_index=True)
     data = data.fillna(nan_val)
-    
+
     write_to_file(data, out_filename, index=False, compression=compression)
 
 
@@ -69,11 +71,11 @@ def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', sep=',', suffix
     write_to_file(data, out_filename, index=False, compression=compression)
 
 
-def write_to_file(df, out_filename, index=True, compression=None):
+def write_to_file(df, out_filename, index=True, compression=None, sep=','):
     if compression == "hdf5":
         df.to_hdf5(out_filename, index=index)
     else:
-        df.to_csv(out_filename, index=index, compression=compression)
+        df.to_csv(out_filename, index=index, compression=compression, sep=sep)
 
 
 def merge_frames(frames, how, on, suffixes=None):
@@ -91,19 +93,19 @@ def merge_frames(frames, how, on, suffixes=None):
     else:
         left = frames[0]
         right = frames[1]
-        
+
         if suffixes:
             suff = (suffixes[0],suffixes[1])
-        
+
         merged_frame = pd.merge(left, right,
                                 how=how,
-                                on=on, 
+                                on=on,
                                 suffixes=suff)
         for i,frame in enumerate(frames[2:]):
-            
+
             if suffixes:
                 suff = (suffixes[i+2],suffixes[i+2])
-            
+
             merged_frame = pd.merge(merged_frame, frame,
                                     how=how,
                                     on=on,
@@ -121,10 +123,10 @@ def concatenate_csv_lowmem(in_filenames, out_filename, compression=None):
         raise Exception("doesn't support {} compression. only supports gzip".format(compression))
 
     writer = None
-    
+
     if isinstance(in_filenames, dict):
         in_filenames = in_filenames.values()
-    
+
     for infile in in_filenames:
 
         with open(infile) as inp:

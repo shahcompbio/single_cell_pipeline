@@ -19,19 +19,19 @@ def split_bam_worker(bam, output_bam, region, kwargs):
         bam, output_bam, region, **kwargs)
 
 
-def index_bam_worker(bam, bai, kwargs):
+def index_bam_worker(bam, kwargs):
 
     bamutils.bam_index(
-        bam, bai, **kwargs)
+        bam, bam+'.bai', **kwargs)
 
 
-def split_bam_file_one_job(bam, bai, outbam, outbai, regions, kwargs, ncores=None):
+def split_bam_file_one_job(bam, outbam, regions, kwargs, ncores=None):
 
-    args = [(bam, outbam(region), region, kwargs) for region in regions]
+    args = [(bam, outbam[region], region, kwargs) for region in regions]
 
     helpers.run_in_parallel(split_bam_worker, args, ncores=ncores)
 
-    args = [(outbam(region), outbai(region), kwargs) for region in regions]
+    args = [(outbam[region], kwargs) for region in regions]
 
     helpers.run_in_parallel(index_bam_worker, args, ncores=ncores)
 
