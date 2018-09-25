@@ -95,7 +95,7 @@ def variant_calling_workflow(workflow, args):
     ctx = {'num_retry': 3,
            'mem_retry_increment': 2,
            'ncpus': 1}
-    docker_ctx = helpers.build_docker_args(config['docker'], 'single_cell_pipeline')
+    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
     ctx.update(docker_ctx)
 
     bam_files, bai_files = helpers.get_bams(args['input_yaml'])
@@ -115,8 +115,6 @@ def variant_calling_workflow(workflow, args):
 
     normal_bam_template = args["normal_template"]
     normal_bai_template = args["normal_template"] + ".bai"
-
-    singlecellimage = config['docker']['images']['single_cell_pipeline']
 
     if "{reads}" in normal_bam_template or "{reads}" in wgs_bam_template:
         raise ValueError("input template for variant calling only supports region based splits")
@@ -207,7 +205,8 @@ def variant_calling_workflow(workflow, args):
                 mgd.InputFile(strelka_snv_vcf),
             ],
             mgd.TempOutputFile('all.snv.vcf')
-        )
+        ),
+        kwargs={'docker_config': helpers.get_container_ctx(config['containers'], 'vcftools')}
     )
 
     workflow.transform(
@@ -217,7 +216,8 @@ def variant_calling_workflow(workflow, args):
         args=(
             mgd.TempInputFile('all.snv.vcf'),
             mgd.TempOutputFile('all.snv.vcf.gz', extensions=['.tbi'])
-        )
+        ),
+        kwargs={'docker_config': helpers.get_container_ctx(config['containers'], 'vcftools')}
     )
 
     workflow.subworkflow(
@@ -232,7 +232,7 @@ def variant_calling_workflow(workflow, args):
         ),
         kwargs={
             'variant_type': 'snv',
-            'docker_config': helpers.build_docker_args(config['docker'], 'single_cell_pipeline')
+            'docker_config': helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
         }
     )
 
@@ -247,7 +247,8 @@ def variant_calling_workflow(workflow, args):
             mgd.TempOutputFile('snv_counts.h5'),
         ),
         kwargs={'chromosomes': config['chromosomes'],
-                'docker_config': config['docker']}
+                'docker_config': helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
+                }
     )
 
     workflow.transform(
@@ -301,7 +302,8 @@ def variant_counting_workflow(workflow, args):
         args=(
             mgd.TempInputFile('all.snv.vcf'),
             mgd.TempOutputFile('all.snv.vcf.gz', extensions=['.tbi'])
-        )
+        ),
+    kwargs={'docker_config': helpers.get_container_ctx(config['containers'], 'vcftools')}
     )
 
     workflow.subworkflow(
@@ -315,7 +317,7 @@ def variant_counting_workflow(workflow, args):
             mgd.OutputFile(results_file),
         ),
         kwargs={
-            'docker_config': helpers.build_docker_args(config['docker'], 'single_cell_pipeline')
+            'docker_config': helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
         },
     )
 

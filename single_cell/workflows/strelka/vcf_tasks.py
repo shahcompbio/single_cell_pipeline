@@ -74,13 +74,7 @@ def index_bcf(in_file, docker_config, index_file=None):
 
     pypeliner.commandline.execute(
         'bcftools', 'index', in_file,
-        dockerize=docker_config['dockerize'],
-        mounts=docker_config['mounts'],
-        image=docker_config['image'],
-        username=docker_config['username'],
-        password=docker_config['password'],
-        server=docker_config['server'],
-    )
+        **docker_config)
 
     if index_file is None:
         _rename_index(in_file, '.csi')
@@ -101,23 +95,12 @@ def finalise_vcf(in_file, compressed_file, docker_config):
     uncompressed_file = compressed_file + '.uncompressed'
     pypeliner.commandline.execute(
         'vcf-sort', in_file, '>', uncompressed_file,
-        dockerize=docker_config['dockerize'],
-        mounts=docker_config['mounts'],
-        image=docker_config['images']['vcftools']['image'],
-        username=docker_config['images']['vcftools']['username'],
-        password=docker_config['images']['vcftools']['password'],
-        server=docker_config['images']['vcftools']['server'],
-    )
+        **docker_config)
 
     pypeliner.commandline.execute(
         'bgzip', uncompressed_file, '-c', '>', compressed_file,
-        dockerize=docker_config['dockerize'],
-        mounts=docker_config['mounts'],
-        image=docker_config['images']['vcftools']['image'],
-        username=docker_config['images']['vcftools']['username'],
-        password=docker_config['images']['vcftools']['password'],
-        server=docker_config['images']['vcftools']['server'],
-    )
+        **docker_config)
+
     os.remove(uncompressed_file)
 
     index_bcf(compressed_file, docker_config)
@@ -136,13 +119,7 @@ def index_vcf(vcf_file, docker_config, index_file=None):
 
     pypeliner.commandline.execute(
         'tabix', '-f', '-p', 'vcf', vcf_file,
-        dockerize=docker_config['dockerize'],
-        mounts=docker_config['mounts'],
-        image=docker_config['image'],
-        username=docker_config['username'],
-        password=docker_config['password'],
-        server=docker_config['server'],
-    )
+        **docker_config)
 
     if index_file is None:
         _rename_index(vcf_file, '.tbi')
@@ -164,7 +141,7 @@ def concatenate_vcf(
     if not os.path.exists(tempdir):
         os.makedirs(tempdir)
 
-    merged_file = os.path.join(tempdir, "merged.vcf")
+    merged_file = os.path.join(tempdir, 'merged.vcf')
     if allow_overlap:
         cmd = ['bcftools', 'concat', '-a', '-O', 'z', '-o', merged_file]
     else:

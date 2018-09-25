@@ -54,9 +54,9 @@ def concatenate_vcf(infiles, outfile):
                 for l in f:
                     print >> ofile, l,
 
-def merge_vcfs(infiles, outfiles):
+def merge_vcfs(infiles, outfiles, docker_config={}):
     for infile in infiles:
-        biowrappers.components.io.vcf.tasks.index_vcf(infile, infile + '.tbi')
+        biowrappers.components.io.vcf.tasks.index_vcf(infile, index_file=infile + '.tbi', docker_config=docker_config)
     biowrappers.components.io.vcf.tasks.merge_vcfs(infiles, outfiles)
 
 

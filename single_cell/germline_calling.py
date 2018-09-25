@@ -19,7 +19,7 @@ def germline_calling_workflow(workflow, args):
            'mem': config["memory"]['low'],
            'pool_id': config['pools']['standard'],
            }
-    docker_ctx = helpers.build_docker_args(config['docker'], 'single_cell_pipeline')
+    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
     ctx.update(docker_ctx)
 
     bam_files, bai_files  = helpers.get_bams(args['input_yaml'])
@@ -71,9 +71,9 @@ def germline_calling_workflow(workflow, args):
             config,
         ),
         kwargs={'chromosomes': config["chromosomes"],
-                'base_docker': helpers.build_docker_args(config['docker'], 'single_cell_pipeline'),
-                'vcftools_docker': helpers.build_docker_args(config['docker'], 'vcftools'),
-                'samtools_docker': helpers.build_docker_args(config['docker'], 'samtools'),}
+                'base_docker': helpers.get_container_ctx(config['containers'], 'single_cell_pipeline'),
+                'vcftools_docker': helpers.get_container_ctx(config['containers'], 'vcftools'),
+                'samtools_docker': helpers.get_container_ctx(config['containers'], 'samtools'),}
     )
 
     workflow.subworkflow(
@@ -84,7 +84,7 @@ def germline_calling_workflow(workflow, args):
             mgd.InputFile(samtools_germline_vcf, extensions=['.tbi']),
             mgd.OutputFile(mappability_filename),
         ),
-        kwargs={'base_docker': helpers.build_docker_args(config['docker'], 'single_cell_pipeline')}
+        kwargs={'base_docker': helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')}
     )
 
     workflow.transform(
@@ -108,9 +108,9 @@ def germline_calling_workflow(workflow, args):
         ),
         kwargs={
             'hdf5_output': False,
-            'base_docker': helpers.build_docker_args(config['docker'], 'single_cell_pipeline'),
-            'vcftools_docker':helpers.build_docker_args(config['docker'], 'vcftools'),
-            'snpeff_docker': helpers.build_docker_args(config['docker'], 'snpeff'),
+            'base_docker': helpers.get_container_ctx(config['containers'], 'single_cell_pipeline'),
+            'vcftools_docker':helpers.get_container_ctx(config['containers'], 'vcftools'),
+            'snpeff_docker': helpers.get_container_ctx(config['containers'], 'snpeff'),
         }
     )
 
@@ -126,7 +126,7 @@ def germline_calling_workflow(workflow, args):
         ),
         kwargs={
             'table_name': '/germline_allele_counts',
-            'docker_config': helpers.build_docker_args(config['docker'], 'single_cell_pipeline')
+            'docker_config': helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
         },
     )
 

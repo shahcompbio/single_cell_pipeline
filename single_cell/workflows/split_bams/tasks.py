@@ -11,79 +11,40 @@ from single_cell.utils import helpers
 from single_cell.utils import bamutils
 
 
-def split_bam_worker(bam, output_bam, region, config):
+def split_bam_worker(bam, output_bam, region, kwargs):
 
     region = '{}:{}-{}'.format(*region.split('-'))
 
     bamutils.bam_view(
-        bam, output_bam, region,
-        dockerize=config['dockerize'],
-        mounts=config['mounts'],
-        image=config['images']['samtools']['image'],
-        username=config['images']['samtools']['username'],
-        password=config['images']['samtools']['password'],
-        server=config['images']['samtools']['server'],
-    )
+        bam, output_bam, region, **kwargs)
 
 
-def index_bam_worker(bam, bai, config):
+def index_bam_worker(bam, bai, kwargs):
 
     bamutils.bam_index(
-        bam, bai,
-        dockerize=config['dockerize'],
-        mounts=config['mounts'],
-        image=config['images']['samtools']['image'],
-        username=config['images']['samtools']['username'],
-        password=config['images']['samtools']['password'],
-        server=config['images']['samtools']['server'],
-    )
+        bam, bai, **kwargs)
 
 
-def split_bam_file_one_job(bam, bai, outbam, outbai, regions, docker_config, ncores=None):
+def split_bam_file_one_job(bam, bai, outbam, outbai, regions, kwargs, ncores=None):
 
-    args = [(bam, outbam(region), region, docker_config) for region in regions]
+    args = [(bam, outbam(region), region, kwargs) for region in regions]
 
     helpers.run_in_parallel(split_bam_worker, args, ncores=ncores)
 
-    args = [(outbam(region), outbai(region), docker_config) for region in regions]
+    args = [(outbam(region), outbai(region), kwargs) for region in regions]
 
     helpers.run_in_parallel(index_bam_worker, args, ncores=ncores)
 
 
-def split_bam_file(bam, bai, outbam, outbai, interval, docker_config):
+def split_bam_file(bam, bai, outbam, outbai, interval, kwargs):
 
-    bamutils.bam_view(
-        bam, outbam, interval,
-        dockerize=docker_config['dockerize'],
-        mounts=docker_config['mounts'],
-        image=docker_config['images']['samtools']['image'],
-        username=docker_config['images']['samtools']['username'],
-        password=docker_config['images']['samtools']['password'],
-        server=docker_config['images']['samtools']['server'],
-    )
+    bamutils.bam_view(bam, outbam, interval, **kwargs)
 
-    bamutils.bam_index(
-        outbam, outbai,
-        dockerize=docker_config['dockerize'],
-        mounts=docker_config['mounts'],
-        image=docker_config['images']['samtools']['image'],
-        username=docker_config['images']['samtools']['username'],
-        password=docker_config['images']['samtools']['password'],
-        server=docker_config['images']['samtools']['server'],
-    )
+    bamutils.bam_index(outbam, outbai, **kwargs)
 
 
-def split_bam_file_by_reads(bam, bai, outbams, outbais, tempspace, intervals, docker_config):
+def split_bam_file_by_reads(bam, bai, outbams, outbais, tempspace, intervals, kwargs):
     # sort bam by reads and convert to sam
-
-    kwargs = {
-        'dockerize':kwargs.get('dockerize'),
-        'image':kwargs.get('image'),
-        'mounts':kwargs.get('mounts'),
-        'username':kwargs.get("username"),
-        'password':kwargs.get('password'),
-        'server':kwargs.get('server'),
-    }
 
     helpers.makedirs(tempspace)
 

@@ -1,7 +1,7 @@
 import os
 import pypeliner
 import pypeliner.managed as mgd
-
+from single_cell.utils import helpers
 
 def create_aneufinder_workflow(bam_file,
                                cell_ids,
@@ -10,7 +10,11 @@ def create_aneufinder_workflow(bam_file,
                                aneufinder_results_filename,
                                library_id):
 
-    singlecellimage = config['docker']['images']['single_cell_pipeline']
+    ctx = {'mem_retry_increment': 2, 'ncpus': 1}
+    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
+    ctx.update(docker_ctx)
+
+    aneufinder_docker = helpers.get_container_ctx(config['containers'], 'aneufinder', docker_only=True)
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -21,18 +25,9 @@ def create_aneufinder_workflow(bam_file,
 
     workflow.transform(
         name='run_aneufinder_on_individual_cells',
-        ctx={
-            'mem': config["memory"]['med'],
-            'pool_id': config['pools']['standard'],
-            'mem_retry_increment':2,
-            'ncpus': 1,
-            'image': singlecellimage['image'],
-            'dockerize': config['docker']['dockerize'],
-            'mounts': config['docker']['mounts'],
-            'username': singlecellimage['username'],
-            'password': singlecellimage['password'],
-            'server': singlecellimage['server'],
-            },
+        ctx=dict(mem=config['memory']['med'],
+                 pool_id=config['pools']['standard'],
+                 **ctx),
         func="single_cell.workflows.aneufinder.tasks.run_aneufinder",
         axes=('cell_id',),
         args=(
@@ -44,22 +39,14 @@ def create_aneufinder_workflow(bam_file,
             mgd.TempOutputFile('reads.csv', 'cell_id'),
             mgd.TempOutputFile('dnacopy.pdf', 'cell_id'),
         ),
+        kwargs={'docker_config': aneufinder_docker}
     )
 
     workflow.transform(
         name='merge_outputs',
-        ctx={
-            'mem': config["memory"]['low'],
-            'pool_id': config['pools']['standard'],
-            'mem_retry_increment':2,
-            'ncpus': 1,
-            'image': singlecellimage['image'],
-            'dockerize': config['docker']['dockerize'],
-            'mounts': config['docker']['mounts'],
-            'username': singlecellimage['username'],
-            'password': singlecellimage['password'],
-            'server': singlecellimage['server'],
-        },
+        ctx=dict(mem=config['memory']['med'],
+                 pool_id=config['pools']['standard'],
+                 **ctx),
         func="single_cell.workflows.aneufinder.tasks.merge_outputs_to_hdf",
         args=(
             mgd.TempInputFile('reads.csv', 'cell_id'),
@@ -75,18 +62,9 @@ def create_aneufinder_workflow(bam_file,
         '{}_reads.pdf'.format(library_id))
     workflow.transform(
         name='merge_aneufinder_pdfs',
-        ctx={
-            'mem': config["memory"]['med'],
-            'pool_id': config['pools']['standard'],
-            'mem_retry_increment':2,
-            'ncpus': 1,
-            'image': singlecellimage['image'],
-            'dockerize': config['docker']['dockerize'],
-            'mounts': config['docker']['mounts'],
-            'username': singlecellimage['username'],
-            'password': singlecellimage['password'],
-            'server': singlecellimage['server'],
-        },
+        ctx=dict(mem=config['memory']['med'],
+                 pool_id=config['pools']['standard'],
+                 **ctx),
         func="single_cell.workflows.aneufinder.tasks.merge_pdf",
         args=(
             [mgd.TempInputFile('dnacopy.pdf', 'cell_id')],

@@ -14,7 +14,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
                           tumour_cells, normal_cells, cloneid):
 
     ctx = {'mem_retry_increment': 2, 'ncpus': 1}
-    docker_ctx = helpers.build_docker_args(config['docker'], 'single_cell_pipeline')
+    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
     ctx.update(docker_ctx)
 
     results_files = os.path.join(raw_data_dir, 'results', 'sample.h5')
@@ -134,7 +134,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
             pypeliner.managed.TempOutputFile('params.tsv', 'init_param_id'),
             config["titan_params"],
         ),
-        kwargs={'docker_config': helpers.build_docker_args(config['docker'], 'titan')}
+        kwargs={'docker_config': helpers.get_container_ctx(config['containers'], 'titan')}
     )
 
     workflow.transform(
@@ -167,7 +167,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
             cloneid
         ),
         kwargs={
-            'docker_config': helpers.build_docker_args(config['docker'], 'titan'),
+            'docker_config': helpers.get_container_ctx(config['containers'], 'titan'),
             'breakpoints_filename': None,
         },
     )
@@ -182,7 +182,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
         axes=('chromosome',),
         ctx=dict(mem=config["memory"]['low'], pool_id=config['pools']['standard'],
                  ncpus=1, num_retry=3, mem_retry_increment=2,
-                 **helpers.build_docker_args(config['docker'], 'titan')),
+                 **helpers.get_container_ctx(config['containers'], 'titan')),
         args=(
             'plot_titan_chromosome.R',
             pypeliner.managed.Instance('chromosome'),
