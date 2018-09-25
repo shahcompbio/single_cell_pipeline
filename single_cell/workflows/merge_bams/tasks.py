@@ -11,28 +11,16 @@ from single_cell.utils import helpers
 from subprocess import Popen, PIPE
 
 
-def merge_bam_worker(input_bam_files, output_bam, output_bai, region, config):
+def merge_bam_worker(input_bam_files, output_bam, output_bai, region, kwargs):
 
     bamutils.bam_merge(
         input_bam_files, output_bam,
         region=region,
-        dockerize=config['dockerize'],
-        mounts=config['mounts'],
-        image=config['images']['samtools']['image'],
-        username=config['images']['samtools']['username'],
-        password=config['images']['samtools']['password'],
-        server=config['images']['samtools']['server'],
-    )
+        **kwargs)
 
     bamutils.bam_index(
         output_bam, output_bai,
-        dockerize=config['dockerize'],
-        mounts=config['mounts'],
-        image=config['images']['samtools']['image'],
-        username=config['images']['samtools']['username'],
-        password=config['images']['samtools']['password'],
-        server=config['images']['samtools']['server'],
-    )
+        **kwargs)
 
 
 def merge_bams(bams, bais, outputs, output_index, regions, docker_config, ncores=None):

@@ -53,17 +53,7 @@ def run_aneufinder(
         segments,
         reads,
         dnacopy_plot,
-        docker_config):
-
-    kwargs = {
-        'dockerize': docker_config['docker']['dockerize'],
-        'mounts': docker_config['docker']['mounts'],
-        'image': docker_config['docker']['images']['samtools']['image'],
-        'username': docker_config['docker']['images']['samtools']['username'],
-        'password': docker_config['docker']['images']['samtools']['password'],
-        'server': docker_config['docker']['images']['samtools']['server'],
-    }
-
+        docker_config=None):
 
     # Create an output folder for temp storage
     helpers.makedirs(working_dir)
@@ -87,11 +77,18 @@ def run_aneufinder(
     cmd = ['Rscript', run_aneufinder_rscript, working_dir, temp_output]
 
     try:
-        pypeliner.commandline.execute(*cmd, **kwargs)
+        pypeliner.commandline.execute(*cmd, **docker_config)
     except:
         print('Aneufinder failed on {}'.format(bam_file))
-        open(segments, 'w').close()
-        open(reads, 'w').close()
+
+        with open(segments, 'w') as segfile:
+            header = ['chr', 'start', 'end', 'mean.counts', 'state', 'cell_id']
+            header = ','.join(header)
+            segfile.write(header)
+        with open(reads, 'w') as readsfile:
+            header = ['chr', 'start', 'end', 'reads', 'GC', 'state']
+            header = ','.join(header)
+            readsfile.write(header)
         file(dnacopy_plot, 'w').close()
         return
 
@@ -124,7 +121,7 @@ def run_aneufinder(
 
     cmd = ['Rscript', rdata_to_csv_rscript, segments_rdata, segments, reads]
 
-    pypeliner.commandline.execute(*cmd, **kwargs)
+    pypeliner.commandline.execute(*cmd, **docker_config)
 
     convert_segments_to_hmmcopy_format(segments, cell_id)
     convert_reads_to_hmmcopy_format(reads, cell_id)

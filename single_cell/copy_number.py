@@ -18,7 +18,7 @@ def copy_number_calling_workflow(workflow, args):
     ctx = {'mem_retry_increment': 2, 'ncpus': 1,
            'mem': config["memory"]['low'],
            'pool_id': config['pools']['standard']}
-    docker_ctx = helpers.build_docker_args(config['docker'], 'single_cell_pipeline')
+    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
     ctx.update(docker_ctx)
 
     tumour_bam_files, tumour_bai_files = helpers.get_bams(args['tumour_yaml'])

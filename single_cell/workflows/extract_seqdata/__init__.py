@@ -5,6 +5,8 @@ Created on Apr 13, 2018
 '''
 import pypeliner
 import pypeliner.managed as mgd
+from single_cell.utils import helpers
+
 
 def create_extract_seqdata_workflow(
      bam_filename,
@@ -20,17 +22,10 @@ def create_extract_seqdata_workflow(
      multiprocess=False
 ):
 
-    singlecellimage = config['docker']['images']['single_cell_pipeline']
-    ctx = {
-              'mem_retry_increment': 2,
-              'ncpus': 1,
-              'image': singlecellimage['image'],
-              'dockerize': config['docker']['dockerize'],
-              'mounts': config['docker']['mounts'],
-              'username': singlecellimage['username'],
-              'password': singlecellimage['password'],
-              'server': singlecellimage['server'],
-          }
+
+    ctx = {'mem_retry_increment': 2, 'ncpus': 1}
+    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
+    ctx.update(docker_ctx)
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -38,12 +33,13 @@ def create_extract_seqdata_workflow(
     workflow.transform(
         name="get_chromosomes",
         ctx=dict(mem=2, pool_id=config['pools']['standard'], **ctx),
-        func="remixt.config.get_chromosomes",
+        func="single_cell.workflows.extract_seqdata.tasks.get_chromosomes",
         ret=mgd.TempOutputObj('chromosomes'),
         args=(
               remixt_config,
-              ref_data_dir
-        )
+              ref_data_dir,
+        ),
+        kwargs={'chromosomes':config['chromosomes']},
     )
 
     workflow.setobj(

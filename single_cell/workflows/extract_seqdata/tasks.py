@@ -1,5 +1,6 @@
 import remixt
 import remixt.seqdataio
+import remixt.config
 
 from single_cell.utils import helpers
 
@@ -34,3 +35,10 @@ def create_chromosome_seqdata(seqdata, bam_file, bai_file, snp_positions, chromo
     else:
         helpers.run_in_parallel(seqdata_worker, args, ncores=ncores)
 
+def get_chromosomes(remixt_config, refdata, chromosomes=None):
+    remixt_chromosomes = remixt.config.get_chromosomes(remixt_config, refdata)
+
+    if chromosomes:
+        remixt_chromosomes = [v for v in remixt_chromosomes if v in chromosomes]
+
+    return remixt_chromosomes

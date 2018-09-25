@@ -12,7 +12,7 @@ from single_cell.utils import helpers
 from single_cell.utils import vcfutils
 
 
-def run_museq(tumour, tumour_bai, normal, normal_bai, out, log, config, region):
+def run_museq(tumour, tumour_bai, normal, normal_bai, out, log, region, config, docker_kwargs={}):
     '''
     Run museq script for each chromosome
 
@@ -32,18 +32,9 @@ def run_museq(tumour, tumour_bai, normal, normal_bai, out, log, config, region):
 
     cmd = ['museq', 'normal:' + normal, 'tumour:' + tumour,
            'reference:' + reference, 'model:' + model, '--out', out,
-           '--log', log, '--config', conf, '--interval', region]
+           '--log', log, '--interval', region]
 
-    kwargs = {
-        'dockerize': config['docker']['dockerize'],
-        'mounts': config['docker']['mounts'],
-        'image': config['docker']['images']['mutationseq']['image'],
-        'username': config['docker']['images']['mutationseq']['username'],
-        'password': config['docker']['images']['mutationseq']['password'],
-        'server': config['docker']['images']['mutationseq']['server'],
-    }
-
-    pypeliner.commandline.execute(*cmd, **kwargs)
+    pypeliner.commandline.execute(*cmd, **docker_kwargs)
 
 
 def concatenate_vcfs(inputs, output):

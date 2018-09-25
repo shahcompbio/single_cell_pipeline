@@ -5,12 +5,14 @@ Created on Jul 24, 2017
 '''
 import pypeliner
 import pypeliner.managed as mgd
-
+from single_cell.utils import helpers
 def create_museq_workflow(
         normal_bam, normal_bai, tumour_bam, tumour_bai, ref_genome, snv_vcf,
         config):
 
-    singlecellimage = config['docker']['images']['single_cell_pipeline']
+    ctx = {'mem_retry_increment': 2, 'ncpus': 1}
+    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
+    ctx.update(docker_ctx)
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -21,17 +23,9 @@ def create_museq_workflow(
 
     workflow.transform(
         name='run_museq',
-        ctx={
-            'mem': config["memory"]['med'], 'num_retry': 3,
-            'mem_retry_increment': 2,
-            'pool_id': config['pools']['highmem'], 'ncpus': 1,
-            'image': singlecellimage['image'],
-            'dockerize': config['docker']['dockerize'],
-            'mounts': config['docker']['mounts'],
-            'username': singlecellimage['username'],
-            'password': singlecellimage['password'],
-            'server': singlecellimage['server'],
-        },
+        ctx=dict(mem=config["memory"]['med'],
+                 pool_id=config['pools']['highmem'],
+                 **ctx),
         axes=('region',),
         func="single_cell.workflows.mutationseq.tasks.run_museq",
         args=(
@@ -41,24 +35,17 @@ def create_museq_workflow(
             mgd.InputFile("normal.split.bam.bai", "region", fnames=normal_bai),
             mgd.TempOutputFile("museq.vcf", "region"),
             mgd.TempOutputFile("museq.log", "region"),
-            config,
             mgd.InputInstance("region"),
+            config
         ),
+        kwargs={'docker_kwargs': helpers.get_container_ctx(config['containers'], 'mutationseq')}
     )
 
     workflow.transform(
         name='merge_snvs',
-        ctx={
-            'mem': config["memory"]['med'], 'num_retry': 3,
-            'mem_retry_increment': 2,
-            'pool_id': config['pools']['standard'], 'ncpus': 1,
-            'image': singlecellimage['image'],
-            'dockerize': config['docker']['dockerize'],
-            'mounts': config['docker']['mounts'],
-            'username': singlecellimage['username'],
-            'password': singlecellimage['password'],
-            'server': singlecellimage['server'],
-        },
+        ctx=dict(mem=config["memory"]['med'],
+                 pool_id=config['pools']['standard'],
+                 **ctx),
         func="single_cell.workflows.mutationseq.tasks.concatenate_vcfs",
         args=(
             mgd.TempInputFile("museq.vcf", "region"),
@@ -68,23 +55,15 @@ def create_museq_workflow(
 
     workflow.transform(
         name='finalise_snvs',
-        ctx={
-            'mem': config["memory"]['med'], 'num_retry': 3,
-            'mem_retry_increment': 2,
-            'pool_id': config['pools']['standard'], 'ncpus': 1,
-            'image': singlecellimage['image'],
-            'dockerize': config['docker']['dockerize'],
-            'mounts': config['docker']['mounts'],
-            'username': singlecellimage['username'],
-            'password': singlecellimage['password'],
-            'server': singlecellimage['server'],
-        },
+        ctx=dict(mem=config["memory"]['med'],
+                 pool_id=config['pools']['standard'],
+                 **ctx),
         func="biowrappers.components.io.vcf.tasks.finalise_vcf",
         args=(
             pypeliner.managed.TempInputFile('museq.vcf'),
             pypeliner.managed.OutputFile(snv_vcf),
         ),
-        kwargs={'docker_config': config['docker']}
+        kwargs={'docker_config': helpers.get_container_ctx(config['containers'], 'vcftools')}
     )
 
     return workflow

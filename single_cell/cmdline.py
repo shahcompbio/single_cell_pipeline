@@ -198,7 +198,7 @@ def parse_args():
                                      help='''ID to identify the results''')
 
     #===========
-    # titan, remixt
+    # haplotype blocks
     #===========
     infer_haps = add_global_args(
         subparsers.add_parser("infer_haps"), dont_add_input_yaml=True)

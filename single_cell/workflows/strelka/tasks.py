@@ -61,16 +61,6 @@ def get_known_chromosome_sizes(size_file, chromosomes):
 
 def count_fasta_bases(ref_genome_fasta_file, out_file, docker_config):
 
-    kwargs = {
-        'dockerize': docker_config['dockerize'],
-        'mounts': docker_config['mounts'],
-        'image': docker_config['images']['strelka']['image'],
-        'username': docker_config['images']['strelka']['username'],
-        'password': docker_config['images']['strelka']['password'],
-        'server': docker_config['images']['strelka']['server'],
-    }
-
-
     cmd = [
         'countFastaBases',
         ref_genome_fasta_file,
@@ -78,7 +68,7 @@ def count_fasta_bases(ref_genome_fasta_file, out_file, docker_config):
         out_file
     ]
 
-    pypeliner.commandline.execute(*cmd, **kwargs)
+    pypeliner.commandline.execute(*cmd, **docker_config)
 
 
 def call_somatic_variants(
@@ -103,16 +93,6 @@ def call_somatic_variants(
         ssnv_noise=0.0000005,
         ssnv_noise_strand_bias_frac=0.5,
         ssnv_prior=0.000001):
-
-
-    kwargs = {
-        'dockerize': docker_config['dockerize'],
-        'mounts': docker_config['mounts'],
-        'image': docker_config['images']['strelka']['image'],
-        'username': docker_config['images']['strelka']['username'],
-        'password': docker_config['images']['strelka']['password'],
-        'server': docker_config['images']['strelka']['server'],
-    }
 
     chrom,beg,end = re.split("-", region)
 
@@ -168,7 +148,7 @@ def call_somatic_variants(
         '--tier2-single-align-score-rescue-mode'
     ]
 
-    pypeliner.commandline.execute(*cmd, **kwargs)
+    pypeliner.commandline.execute(*cmd, **docker_config)
 
 #=======================================================================================================================
 # SNV filtering

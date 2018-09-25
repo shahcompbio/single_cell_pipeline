@@ -35,6 +35,8 @@ run_hmmcopy_rscript = os.path.join(scripts_directory, 'hmmcopy.R')
 def run_correction_hmmcopy(
         bam_file, correct_reads_out, readcount_wig, config, hmmparams):
 
+    container_ctx = helpers.get_container_ctx(config['containers'], 'hmmcopy', docker_only=True)
+
     run_readcount_rscript = os.path.join(
         scripts_directory,
         'correct_read_count.R')
@@ -44,21 +46,13 @@ def run_correction_hmmcopy(
     rc.main()
 
     if hmmparams["smoothing_function"] == 'loess':
-        docker_args = config['docker']['images']['hmmcopy']
-
         cmd = ['Rscript', run_readcount_rscript,
                readcount_wig,
                hmmparams['gc_wig_file'],
                hmmparams['map_wig_file'],
                correct_reads_out
                ]
-        pypeliner.commandline.execute(
-            *cmd,
-                username = docker_args['username'],
-                password = docker_args['password'],
-                server = docker_args['server'],
-                dockerize = config['docker']['dockerize'],
-                image = docker_args['image'])
+        pypeliner.commandline.execute(*cmd, **container_ctx)
     elif hmmparams["smoothing_function"] == 'modal':
         CorrectReadCount(hmmparams["gc_wig_file"],
                          hmmparams['map_wig_file'],
@@ -74,19 +68,17 @@ def run_correction_hmmcopy(
 
 
 def run_hmmcopy_script(corrected_reads, tempdir, cell_id, hmmparams, config):
+    container_ctx = helpers.get_container_ctx(config['containers'], 'hmmcopy', docker_only=True)
 
-    docker_args = config['docker']['images']['hmmcopy']
-    mounts = config['docker']['mounts']
-
-    if config["docker"]["dockerize"]:
+    if container_ctx.get("container_type") == 'docker':
         cmd = ["hmmcopy"]
     else:
         cmd = ['Rscript', run_hmmcopy_rscript]
 
     # run hmmcopy
     cmd += ['--corrected_data=' + corrected_reads,
-           '--outdir=' + tempdir,
-           '--sample_id=' + cell_id]
+            '--outdir=' + tempdir,
+            '--sample_id=' + cell_id]
 
     multipliers = ','.join(map(str, hmmparams['multipliers']))
 
@@ -102,13 +94,8 @@ def run_hmmcopy_script(corrected_reads, tempdir, cell_id, hmmparams, config):
     cmd.append('--param_s=' + str(hmmparams['s']))
     cmd.append('--param_multiplier=' + multipliers)
 
-    pypeliner.commandline.execute(*cmd,
-                username = docker_args['username'],
-                password = docker_args['password'],
-                dockerize = config['docker']['dockerize'],
-                image = docker_args['image'],
-                server = docker_args['server'],
-                mounts = mounts)
+    pypeliner.commandline.execute(*cmd, **container_ctx)
+
 
 def run_hmmcopy(
         bam_file,
