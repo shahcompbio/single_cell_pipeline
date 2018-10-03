@@ -14,6 +14,7 @@ def split_bam_workflow(workflow, args):
 
     config = helpers.load_config(args)
 
+    info_file = os.path.join(args["out_dir"], 'info.yaml')
     split_bam_template = args["split_bam_template"]
     split_bai_template = args["split_bam_template"] + ".bai"
 
@@ -60,6 +61,7 @@ def split_bam_workflow(workflow, args):
             ),
             pypeliner.managed.TempInputObj(splitkeyword),
             config,
+            mgd.OutputFile(info_file)
         ),
         kwargs={"by_reads": by_reads}
     )

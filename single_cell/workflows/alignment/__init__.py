@@ -328,13 +328,12 @@ def create_alignment_workflow(
         ),
     )
 
-    files = {
-        'data': alignment_metrics,
-        'plots': plot_metrics,
-    }
+    inputs = helpers.get_fastq_files(args["input_yaml"])
+    outputs = {k: helpers.format_file_yaml(v) for k,v in bam_filename.iteritems()}
 
     metadata = {
         'alignment': {
+            'name': 'alignment',
             'cell_batch_realign': args["realign"],
             'metrics_table': '/alignment/metrics',
             'gc_metrics_table': '/alignment/gc_metrics',
@@ -344,8 +343,13 @@ def create_alignment_workflow(
             'picardtools_wgsmetrics_params': config['picard_wgs_params'],
             'ref_genome': config["ref_genome"],
             'version': single_cell.__version__,
-            'files': files,
-            'containers': config['containers']
+            'containers': config['containers'],
+            'output_datasets': outputs,
+            'input_datasets': inputs,
+            'results': {
+                'alignment_metrics': helpers.format_file_yaml(alignment_metrics),
+                'alignment_plots': helpers.format_file_yaml(plot_metrics),
+            },
         }
     }
 

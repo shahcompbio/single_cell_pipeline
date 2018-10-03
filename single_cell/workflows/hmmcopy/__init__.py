@@ -307,9 +307,21 @@ def create_hmmcopy_workflow(
         )
     )
 
+
+    results = {
+        'hmmcopy_metrics': helpers.format_file_yaml(hmmcopy_data),
+        'segments_plot':helpers.format_file_yaml(segs_pdf),
+        'bias_plot': helpers.format_file_yaml(bias_pdf),
+        'filtered_heatmap_plot': helpers.format_file_yaml(plot_heatmap_ec_filt_output),
+        'heatmap_plot': helpers.format_file_yaml(plot_heatmap_ec_output),
+        'kde_plot': helpers.format_file_yaml(plot_kernel_density_output),
+        'metrics_plot': helpers.format_file_yaml(plot_metrics_output)
+    }
+
+    input_datasets = {k: helpers.format_file_yaml(v) for k,v in bam_file.iteritems()}
+
     metadata = {
         'hmmcopy':{
-            'data': hmmcopy_data,
             'reads_table': '/hmmcopy/reads/0',
             'parameters_table': '/hmmcopy/params/0',
             'segments_table': '/hmmcopy/segments/0',
@@ -318,7 +330,12 @@ def create_hmmcopy_workflow(
             'hmmcopy_params': hmmparams,
             'chromosomes': config['chromosomes'],
             'ref_genome': config['ref_genome'],
-            'cell_filters': config["good_cells"]
+            'cell_filters': config["good_cells"],
+            'version': single_cell.__version__,
+            'results': results,
+            'containers': config['containers'],
+            'input_datasets': input_datasets,
+            'output_datasets': None
         }
     }
 

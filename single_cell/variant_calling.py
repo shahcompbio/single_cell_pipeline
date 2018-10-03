@@ -9,6 +9,7 @@ import pypeliner
 import pypeliner.managed as mgd
 from workflows import mutationseq 
 from workflows import strelka
+import single_cell
 from single_cell.utils import helpers
 
 
@@ -97,6 +98,8 @@ def variant_calling_workflow(workflow, args):
            'ncpus': 1}
     docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
     ctx.update(docker_ctx)
+
+    meta_yaml = os.path.join(args['out_dir'], 'info.yaml')
 
     bam_files, bai_files = helpers.get_bams(args['input_yaml'])
 
@@ -264,9 +267,37 @@ def variant_calling_workflow(workflow, args):
             pypeliner.managed.OutputFile(snv_h5_filename),
         ),
         kwargs={
-            'drop_duplicates' : True,
-            'in_memory' : False,
+            'drop_duplicates': True,
+            'in_memory': False,
         }
+    )
+
+
+    normals = {k: helpers.format_file_yaml(v) for k,v in normal_bam_template.iteritems()}
+    tumours = {k: helpers.format_file_yaml(v) for k,v in wgs_bam_template.iteritems()}
+    inputs = {'normal': normals, 'tumour': tumours}
+
+    metadata = {
+        'variant_calling': {
+            'name': 'variant_calling',
+            'version': single_cell.__version__,
+            'containers': config['containers'],
+            'output_datasets': None,
+            'input_datasets': inputs,
+            'results': {'variant_calling_data': helpers.format_file_yaml(snv_h5_filename)}
+        }
+    }
+
+    workflow.transform(
+        name='generate_meta_yaml',
+        ctx=dict(mem=config['memory']['med'],
+                 pool_id=config['pools']['standard'],
+                 **ctx),
+        func="single_cell.utils.helpers.write_to_yaml",
+        args=(
+            mgd.OutputFile(meta_yaml),
+            metadata
+        )
     )
 
     return workflow

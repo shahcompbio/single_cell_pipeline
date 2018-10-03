@@ -22,6 +22,8 @@ def aneufinder_workflow(workflow, args):
         value=cellids,
     )
 
+    info_file = os.path.join(args["out_dir"], "info.yaml")
+
     output = os.path.join(args['out_dir'], 'results', "aneufinder")
 
     helpers.makedirs(output)
@@ -36,7 +38,8 @@ def aneufinder_workflow(workflow, args):
             config,
             output,
             mgd.OutputFile(results_filename),
-            args['library_id']
+            args['library_id'],
+            mgd.OutputFile(info_file),
         ),
     )
 
