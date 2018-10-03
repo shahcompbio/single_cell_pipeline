@@ -12,7 +12,6 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 import statsmodels.api as sm
-from matplotlib.backends.backend_pdf import PdfPages
 import utils as utl
 import matplotlib.gridspec as gridspec
 
@@ -283,7 +282,7 @@ class GenHmmPlots(object):
         sns.despine(offset=10, trim=True)
 
         plt.tight_layout(rect=(0, 0.05, 1, 0.95))
-        pdfout.savefig(fig, pad_inches=0.2)
+        plt.savefig(pdfout, pad_inches=0.2)
         plt.close()
 
     def get_colors(self, num_states):
@@ -443,7 +442,7 @@ class GenHmmPlots(object):
         plt.tight_layout(rect=(0, 0.05, 1, 0.95))
         fig.text(0.85,0.02,"maximum copy number is 40, higher values are set to 40")
 
-        pdfout.savefig(fig)
+        plt.savefig(pdfout)
         plt.close()
 
     def plot_dist(self, fig, reads, params,
@@ -502,11 +501,8 @@ class GenHmmPlots(object):
         main
         """
 
-        with PdfPages(self.segs_pdf) as seg_pdf_out:
-            self.plot_segments(seg_pdf_out)
-
-        with PdfPages(self.bias_pdf) as bias_pdf_out:
-            self.plot_bias(bias_pdf_out)
+        self.plot_segments(self.segs_pdf)
+        self.plot_bias(self.bias_pdf)
 
 
 if __name__ == '__main__':

@@ -38,7 +38,8 @@ def format_file_yaml(filepath):
         ext = os.path.splitext(ext[0])
 
     mapping = {'.bam':'bam', '.pdf': 'PDF',
-               '.fastq': 'fastq', '.h5': 'H5'}
+               '.fastq': 'fastq', '.h5': 'H5',
+               '.tar': 'tar'}
 
     return {'filename': filepath, 'type': mapping[ext[1]]}
 
