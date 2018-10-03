@@ -95,7 +95,7 @@ error_exit_clean <- function(samp.uncorrected, chromosomes, sample_id, out_reads
         metrics_cols <- c("multiplier","MSRSI_non_integerness","MBRSI_dispersion_non_integerness",
                           "MBRSM_dispersion","autocorrelation_hmmcopy","cv_hmmcopy","empty_bins_hmmcopy",
                           "mad_hmmcopy","mean_hmmcopy_reads_per_bin","median_hmmcopy_reads_per_bin",
-                          "std_hmmcopy_reads_per_bin","total_mapped_reads","total_halfiness","scaled_halfiness",
+                          "std_hmmcopy_reads_per_bin","total_mapped_reads_hmmcopy","total_halfiness","scaled_halfiness",
                           "mean_state_mads","mean_state_vars","mad_neutral_state","breakpoints","mean_copy",
                           "state_mode","log_likelihood","true_multiplier","cell_id")
 
@@ -219,7 +219,7 @@ run_hmmcopy <- function(cell, corrected_reads_data, param, outdir, multipliers, 
             mean_hmmcopy_reads_per_bin = mean(reads, na.rm = TRUE),
             median_hmmcopy_reads_per_bin = median(reads, na.rm = TRUE),
             std_hmmcopy_reads_per_bin = sd(reads, na.rm = TRUE),
-            total_mapped_reads = sum(reads, na.rm = TRUE),
+            total_mapped_reads_hmmcopy = sum(reads, na.rm = TRUE),
             total_halfiness = sum(halfiness, na.rm = TRUE),
             scaled_halfiness = sum(halfiness / (state + 1), na.rm = TRUE)
         )
