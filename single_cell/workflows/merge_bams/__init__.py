@@ -7,6 +7,7 @@ Created on Jul 11, 2017
 import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import helpers
+import single_cell
 
 def create_merge_bams_workflow(
     input_bams,
@@ -15,7 +16,8 @@ def create_merge_bams_workflow(
     merged_bais,
     cell_ids,
     config,
-    regions):
+    regions,
+    meta_yaml):
  
  
     merged_bams = dict([(region, merged_bams[region])
@@ -57,5 +59,33 @@ def create_merge_bams_workflow(
         ),
         kwargs = {"ncores": config["max_cores"]}
     )
+
+    inputs = {k: helpers.format_file_yaml(v) for k,v in input_bams.iteritems()}
+    outputs = {k: helpers.format_file_yaml(v) for k,v in merged_bams.iteritems()}
+
+    metadata = {
+        'alignment': {
+            'name': 'merge_bams',
+            'ref_genome': config["ref_genome"],
+            'version': single_cell.__version__,
+            'containers': config['containers'],
+            'output_datasets': outputs,
+            'input_datasets': inputs,
+            'results': None
+        }
+    }
+
+    workflow.transform(
+        name='generate_meta_yaml',
+        ctx=dict(mem=config['memory']['med'],
+                 pool_id=config['pools']['standard'],
+                 **ctx),
+        func="single_cell.utils.helpers.write_to_yaml",
+        args=(
+            mgd.OutputFile(meta_yaml),
+            metadata
+        )
+    )
+
 
     return workflow

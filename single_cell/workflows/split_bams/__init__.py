@@ -6,10 +6,11 @@ Created on Nov 21, 2017
 import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import helpers
+import single_cell
 
 def create_split_workflow(
     normal_bam, normal_bai, normal_split_bam, normal_split_bai,
-    regions, config, by_reads=False
+    regions, config, meta_yaml, by_reads=False
 ):
 
     ctx = {'mem_retry_increment': 2}
@@ -103,5 +104,36 @@ def create_split_workflow(
                 helpers.get_container_ctx(config['containers'], 'samtools')
             )
         )
+
+
+    inputs = helpers.format_file_yaml(normal_bam)
+    outputs = {k: helpers.format_file_yaml(v) for k,v in normal_split_bam.iteritems()}
+
+    metadata = {
+        'split_bam': {
+            'name': 'split_bam',
+            'ref_genome': config["ref_genome"],
+            'version': single_cell.__version__,
+            'containers': config['containers'],
+            'output_datasets': outputs,
+            'input_datasets': inputs,
+            'split_by_reads': by_reads,
+            'one_job_for_splitting': one_split_job
+        }
+    }
+
+    workflow.transform(
+        name='generate_meta_yaml',
+        ctx=dict(mem=config['memory']['med'],
+                 pool_id=config['pools']['standard'],
+                 **ctx),
+        func="single_cell.utils.helpers.write_to_yaml",
+        args=(
+            mgd.OutputFile(meta_yaml),
+            metadata
+        )
+    )
+
+
 
     return workflow

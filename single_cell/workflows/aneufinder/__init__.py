@@ -1,6 +1,7 @@
 import os
 import pypeliner
 import pypeliner.managed as mgd
+import single_cell
 from single_cell.utils import helpers
 
 def create_aneufinder_workflow(bam_file,
@@ -8,7 +9,8 @@ def create_aneufinder_workflow(bam_file,
                                config,
                                aneufinder_output,
                                aneufinder_results_filename,
-                               library_id):
+                               library_id,
+                               meta_yaml):
 
     ctx = {'mem_retry_increment': 2, 'ncpus': 1}
     docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
@@ -71,5 +73,40 @@ def create_aneufinder_workflow(bam_file,
             [mgd.OutputFile(dnacopy_pdf_output)],
         )
     )
+
+
+    results = {
+        'aneufinder_plot': helpers.format_file_yaml(dnacopy_pdf_output),
+        'aneufinder_data':helpers.format_file_yaml(aneufinder_results_filename),
+    }
+
+    input_datasets = {k: helpers.format_file_yaml(v) for k,v in bam_file.iteritems()}
+
+    metadata = {
+        'aneufinder':{
+            'reads_table': '/aneufinder/reads',
+            'segments_table': '/aneufinder/segments/',
+            'chromosomes': config['chromosomes'],
+            'ref_genome': config['ref_genome'],
+            'version': single_cell.__version__,
+            'results': results,
+            'containers': config['containers'],
+            'input_datasets': input_datasets,
+            'output_datasets': None
+        }
+    }
+
+    workflow.transform(
+        name='generate_meta_yaml',
+        ctx=dict(mem=config['memory']['med'],
+                 pool_id=config['pools']['standard'],
+                 **ctx),
+        func="single_cell.utils.helpers.write_to_yaml",
+        args=(
+            mgd.OutputFile(meta_yaml),
+            metadata
+        )
+    )
+
 
     return workflow
