@@ -19,6 +19,29 @@ import multiprocessing
 from multiprocessing.pool import ThreadPool
 
 
+def get_fastq_files(input_yaml):
+    data = load_yaml(input_yaml)
+
+    items = {}
+    for cell_id, cell_data in data.iteritems():
+        items[cell_id] = {}
+        for lane, laneinfo in cell_data["fastqs"].iteritems():
+            items[cell_id][lane] = {}
+            items[cell_id][lane]['fastq_1'] = format_file_yaml(laneinfo['fastq_1'])
+            items[cell_id][lane]['fastq_2'] = format_file_yaml(laneinfo['fastq_2'])
+    return items
+
+def format_file_yaml(filepath):
+    ext = os.path.splitext(filepath)
+
+    if ext[1] == ".gz":
+        ext = os.path.splitext(ext[0])
+
+    mapping = {'.bam':'bam', '.pdf': 'PDF',
+               '.fastq': 'fastq', '.h5': 'H5'}
+
+    return {'filename': filepath, 'type': mapping[ext[1]]}
+
 def get_container_ctx(container_config, image_name, docker_only=False):
     if docker_only and not container_config['container_type'] == 'docker':
         return {}
@@ -50,7 +73,7 @@ def get_mount_dirs_docker(*args):
 
 def write_to_yaml(outfile, data):
     with open(outfile, 'w') as output:
-        yaml.safe_dump(data, output)
+        yaml.safe_dump(data, output, default_flow_style=False)
 
 
 def eval_expr(val, operation, threshold):
