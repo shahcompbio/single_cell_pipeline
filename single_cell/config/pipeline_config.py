@@ -206,11 +206,11 @@ def get_container_images(cluster):
     if cluster == 'azure':
         username = os.environ["CLIENT_ID"]
         password = os.environ["SECRET_KEY"]
-        server = "singlecellcontainers.azurecr.io"
+        server = "shahlab.azurecr.io"
 
-        image_urls = {v:"singlecellcontainers.azurecr.io/scp/{}".format(v)
+        image_urls = {v:"shahlab.azurecr.io/scp/{}:v0.0.1".format(v)
                       for v in images}
-        image_urls['snpeff'] = "singlecellcontainers.azurecr.io/scp/vcftools"
+        image_urls['snpeff'] = "shahlab.azurecr.io/scp/vcftools"
     else:
         username = None
         password = None
