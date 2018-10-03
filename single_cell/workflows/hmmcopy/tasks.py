@@ -4,6 +4,7 @@ Created on Jul 24, 2017
 @author: dgrewal
 '''
 import os
+import shutil
 import pypeliner
 import pandas as pd
 import numpy as np
@@ -329,7 +330,9 @@ def group_cells_by_row(cells, metrics, tableid, sort_by_col=False):
     return grouped_data
 
 
-def merge_pdf(in_filenames, outfilenames, metrics, cell_filters, rows):
+def merge_pdf(in_filenames, outfilenames, metrics, cell_filters, tempdir, labels):
+
+    helpers.makedirs(tempdir)
 
     good_cells = get_good_cells(
         metrics, cell_filters, '/hmmcopy/metrics/0'
@@ -339,22 +342,19 @@ def merge_pdf(in_filenames, outfilenames, metrics, cell_filters, rows):
         good_cells, metrics, '/hmmcopy/metrics/0', sort_by_col=True
     )
 
-    for infiles, outfiles in zip(in_filenames, outfilenames):
+    for infiles, outfiles, label in zip(in_filenames, outfilenames, labels):
 
-        for row in rows:
-            cells = grouped_data.get(row, None)
+        extension = os.path.splitext(infiles[good_cells[0]])[-1]
 
-            out_file = outfiles[row]
+        plotdir = os.path.join(tempdir, label)
 
-            # if all cells from a row are filtered
-            # generate empty file to avoid issues with pypeliner
-            if not cells:
-                open(out_file, 'w').close()
+        helpers.makedirs(plotdir)
 
-            else:
-                inputpdfs = [infiles[samp] for samp in cells]
+        for cell in good_cells:
+            shutil.copyfile(infiles[cell], os.path.join(plotdir, cell + extension))
 
-                pdfutils.merge_pdfs(inputpdfs, out_file)
+
+        helpers.make_tarfile(outfiles, plotdir)
 
 
 def create_igv_seg(merged_segs, merged_hmm_metrics,

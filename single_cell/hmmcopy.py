@@ -35,8 +35,8 @@ def hmmcopy_workflow(workflow, args):
         hmmcopy_data = os.path.join(results_dir, '{}_hmmcopy.h5'.format(lib))
 
         segs_pdf = os.path.join(
-            plots_dir, "segments", lib + '_segs_row_{row}.pdf')
-        bias_pdf = os.path.join(plots_dir, "bias", lib + '_bias_row_{row}.pdf')
+            plots_dir, "segments", lib + '_segs.tar.gz')
+        bias_pdf = os.path.join(plots_dir, "bias", lib + '_bias.tar.gz')
 
         heatmap_filt_pdf = os.path.join(
             plots_dir, '{}_heatmap_by_ec_filtered.pdf'.format(lib))

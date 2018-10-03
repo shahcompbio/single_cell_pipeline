@@ -62,8 +62,8 @@ def create_hmmcopy_workflow(
             mgd.TempOutputFile('segs.h5', 'cell_id'),
             mgd.TempOutputFile('params.h5', 'cell_id'),
             mgd.TempOutputFile('hmm_metrics.h5', 'cell_id'),
-            mgd.TempOutputFile('segments.pdf', 'cell_id'),
-            mgd.TempOutputFile('bias.pdf', 'cell_id'),
+            mgd.TempOutputFile('segments.png', 'cell_id'),
+            mgd.TempOutputFile('bias.png', 'cell_id'),
             mgd.InputInstance('cell_id'),
             config['ref_genome'],
             config,
@@ -182,16 +182,17 @@ def create_hmmcopy_workflow(
         func="single_cell.workflows.hmmcopy.tasks.merge_pdf",
         args=(
             [
-                mgd.TempInputFile('segments.pdf', 'cell_id'),
-                mgd.TempInputFile('bias.pdf', 'cell_id'),
+                mgd.TempInputFile('segments.png', 'cell_id'),
+                mgd.TempInputFile('bias.png', 'cell_id'),
             ],
             [
-                mgd.OutputFile("segs", "row", axes_origin=[], template=segs_pdf),
-                mgd.OutputFile("bias", "row", axes_origin=[], template=bias_pdf),
+                mgd.OutputFile(segs_pdf),
+                mgd.OutputFile(bias_pdf),
             ],
             mgd.TempInputFile("annotated_metrics.h5"),
             None,
-            rows
+            mgd.TempSpace("hmmcopy_plot_merge_temp"),
+            ['segments','bias']
         )
     )
 
