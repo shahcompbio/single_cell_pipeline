@@ -132,9 +132,6 @@ def create_vm_commands():
     # to the docker user group. This cannot be done during the image creation, image capture removes all user
     # information.
     commands = (
-        "if [ `sudo blockdev --getsize64 /dev/sdc` -le 40000000000 ]; then sudo mount /dev/sdc /refdata; else sudo mount /dev/sdd /refdata; fi\n"
-        "if [ `sudo blockdev --getsize64 /dev/sdd` -gt 900000000000 ]; then sudo mount /dev/sdd /datadrive; else sudo mount /dev/sdc /datadrive; fi\n"
-        "sudo chmod -R 777 /datadrive /refdata\n"
         "sudo gpasswd -a $USER docker"
     )
 
@@ -153,22 +150,13 @@ def get_vm_size_azure(numcores):
     else:
         # max 16 cores
         return "STANDARD_E16_V3"
-#     if numcores <= 2:
-#         return "STANDARD_DS11_V2"
-#     elif numcores <= 4:
-#         return "STANDARD_DS12_V2"
-#     elif numcores <= 8:
-#         return "STANDARD_DS13_V2"
-#     else:
-#         # max 16 cores
-#         return "STANDARD_DS14_V2"
 
 
 def get_vm_image_id(version):
     subscription = os.environ.get("SUBSCRIPTION_ID", "id-missing")
     resource_group = os.environ.get("RESOURCE_GROUP", "id-missing")
-    return "/subscriptions/{}/resourceGroups/{}/providers/Microsoft.Compute/images/singlecellpipeline_{}".format(
-        subscription, resource_group, version)
+    return "/subscriptions/{}/resourceGroups/{}/providers/Microsoft.Compute/images/docker-production".format(
+        subscription, resource_group)
 
 
 def get_pool_def(
@@ -206,8 +194,6 @@ def get_compute_start_commands():
     # and since the start task and compute task run under same process, we need
     # to explicitly specify the user group when running docker commands. sg in
     # linux can be used to set group when executing commands
-    dockeruser = os.environ["CLIENT_ID"]
-    dockerpass = os.environ["SECRET_KEY"]
 
     commands = (
         'clean_up () {',
@@ -216,13 +202,6 @@ def get_compute_start_commands():
         '  exit 0',
         '}',
         'trap clean_up EXIT',
-        'export PATH=/usr/local/miniconda2/bin/:$PATH',
-        'mkdir -p /datadrive/$AZ_BATCH_TASK_WORKING_DIR/',
-        'cd /datadrive/$AZ_BATCH_TASK_WORKING_DIR/',
-        'sg docker -c "docker login singlecellcontainers.azurecr.io -u {} -p {}"'.format(
-            dockeruser,
-            dockerpass),
-        'sg docker -c "docker pull singlecellcontainers.azurecr.io/scp/single_cell_pipeline"',
     )
 
     commands = '\n'.join(commands)
@@ -230,41 +209,6 @@ def get_compute_start_commands():
     commands = literal_unicode(commands)
 
     return {"compute_start_commands": commands}
-
-
-def get_compute_run_commands():
-
-    run_command  = ['pypeliner_delegate',
-                   '$AZ_BATCH_TASK_WORKING_DIR/{input_filename}',
-                   '$AZ_BATCH_TASK_WORKING_DIR/{output_filename}',
-                   ]
-    run_command = ' '.join(run_command)
-    run_command = literal_unicode(run_command)
-
-    docker_mounts = pipeline_config.get_docker_params(
-        'azure')['docker']['mounts']
-
-    mount_string = ['-v {}:{}'.format(mount, mount) for mount in docker_mounts]
-    mount_string += ['-v /mnt:/mnt']
-    mount_string = ' '.join(mount_string)
-
-    dockerize_run_command = ['docker run -w $PWD',
-                             mount_string,
-                             '-v /var/run/docker.sock:/var/run/docker.sock',
-                             '-v /usr/bin/docker:/usr/bin/docker',
-                             'singlecellcontainers.azurecr.io/scp/single_cell_pipeline',
-                             '{command}'
-                            ]
-    dockerize_run_command = ' '.join(dockerize_run_command)
-
-    # wrap it up as docker group command
-    dockerize_run_command = 'sg docker -c "{}"'.format(dockerize_run_command)
-
-    # use block format
-    dockerize_run_command = literal_unicode(dockerize_run_command)
-
-    return {"compute_run_command": run_command,
-            "dockerize_run_command": dockerize_run_command}
 
 
 def get_compute_finish_commands():
@@ -316,7 +260,6 @@ def get_batch_config(defaults, override=None):
     )
 
     config.update(get_compute_start_commands())
-    config.update(get_compute_run_commands())
     config.update(get_compute_finish_commands())
 
     config.update({"no_delete_pool": defaults["no_delete_pool"]})
