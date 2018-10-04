@@ -99,6 +99,12 @@ def parse_args():
                        required=True,
                        help='''Library id.''')
 
+    align.add_argument("--metrics_only",
+                       default=False,
+                       action="store_true",
+                       help='''only run alignment metrics extraction, assumes that bams are available''')
+
+
     #===========
     # hmmcopy
     #===========
