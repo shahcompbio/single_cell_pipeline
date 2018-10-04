@@ -54,13 +54,13 @@ def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename,
         'picard', '-Xmx' + mem, '-Xms' + mem,
         '-XX:ParallelGCThreads=1',
         'MarkDuplicates',
-                  'INPUT=' + bam_filename,
-                  'OUTPUT=' + markduped_bam_filename,
-                  'METRICS_FILE=' + metrics_filename,
+        'INPUT=' + bam_filename,
+        'OUTPUT=' + markduped_bam_filename,
+        'METRICS_FILE=' + metrics_filename,
         'REMOVE_DUPLICATES=False',
         'ASSUME_SORTED=True',
         'VALIDATION_STRINGENCY=LENIENT',
-                  'TMP_DIR=' + tempdir,
+        'TMP_DIR=' + tempdir,
         'MAX_RECORDS_IN_RAM=150000',
         **kwargs)
 
@@ -74,18 +74,18 @@ def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename,
         'picard', '-Xmx' + mem, '-Xms' + mem,
         '-XX:ParallelGCThreads=1',
         'CollectWgsMetrics',
-                  'INPUT=' + bam_filename,
-                  'OUTPUT=' + metrics_filename,
-                  'REFERENCE_SEQUENCE=' + ref_genome,
-                  'MINIMUM_BASE_QUALITY=' +
-                  str(config['picard_wgs_params']['min_bqual']),
-                  'MINIMUM_MAPPING_QUALITY=' +
-                  str(config['picard_wgs_params']['min_mqual']),
+        'INPUT=' + bam_filename,
+        'OUTPUT=' + metrics_filename,
+        'REFERENCE_SEQUENCE=' + ref_genome,
+        'MINIMUM_BASE_QUALITY=' +
+            str(config['picard_wgs_params']['min_bqual']),
+                'MINIMUM_MAPPING_QUALITY=' +
+            str(config['picard_wgs_params']['min_mqual']),
         'COVERAGE_CAP=500',
         'VALIDATION_STRINGENCY=LENIENT',
-                  'COUNT_UNPAIRED=' +
-                  ('True' if config['picard_wgs_params']['count_unpaired'] else 'False'),
-                  'TMP_DIR=' + tempdir,
+        'COUNT_UNPAIRED=' +
+            ('True' if config['picard_wgs_params']['count_unpaired'] else 'False'),
+        'TMP_DIR=' + tempdir,
         'MAX_RECORDS_IN_RAM=150000',
         **kwargs)
 
