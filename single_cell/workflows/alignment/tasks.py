@@ -276,6 +276,25 @@ def postprocess_bam(infile, outfile, outfile_index, tempdir,
     bamutils.bam_index(outfile, outfile_index, **container_ctx)
     bamutils.bam_flagstat(outfile, flagstat_metrics, **container_ctx)
 
+
+def get_postprocess_metrics(infile, tempdir,
+                    config, markdups_metrics, flagstat_metrics):
+
+    if not os.path.exists(tempdir):
+        helpers.makedirs(tempdir)
+
+    outfile = os.path.join(tempdir, 'markdps.bam')
+    outfile_index = outfile + '.bai'
+
+    container_ctx = helpers.get_container_ctx(config['containers'], 'picard', docker_only=True)
+
+    picardutils.bam_markdups(infile, outfile, markdups_metrics, tempdir,
+                             **container_ctx)
+
+    container_ctx = helpers.get_container_ctx(config['containers'], 'samtools', docker_only=True)
+    bamutils.bam_index(outfile, outfile_index, **container_ctx)
+    bamutils.bam_flagstat(outfile, flagstat_metrics, **container_ctx)
+
 def collect_gc(infiles, outfile, tempdir):
 
     helpers.makedirs(tempdir)
