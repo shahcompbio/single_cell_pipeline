@@ -34,7 +34,7 @@ def concatenate_csv(in_filenames, out_filename, nan_val='NA', compression=None, 
     data = []
 
     if not isinstance(in_filenames, dict):
-        in_filenames = zip(enumerage(in_filenames))
+        in_filenames = dict(enumerate(in_filenames))
 
     for key, in_filename in in_filenames.iteritems():
         with open(in_filename) as f:
