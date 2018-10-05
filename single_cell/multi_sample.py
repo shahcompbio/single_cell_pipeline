@@ -45,6 +45,10 @@ def create_multi_sample_workflow(
 ):
     """ Multiple sample pseudobulk workflow. """
 
+    ctx = {'mem_retry_increment': 2, 'ncpus': 1}
+    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
+    ctx.update(docker_ctx)
+
     raw_data_dir = os.path.join(results_dir, 'raw')
 
     normal_region_bam_template = os.path.join(raw_data_dir, 'normal_{region}.bam')
@@ -63,7 +67,7 @@ def create_multi_sample_workflow(
 
     regions = refgenome.get_split_regions(config["split_size"])
 
-    workflow = pypeliner.workflow.Workflow()
+    workflow = pypeliner.workflow.Workflow(default_ctx=ctx)
 
     workflow.set_filenames('normal_regions.bam', 'region', template=normal_region_bam_template)
     workflow.set_filenames('tumour_cells.bam', 'sample_id', 'cell_id', fnames=tumour_cell_bams)
@@ -100,6 +104,7 @@ def create_multi_sample_workflow(
             mgd.InputFile(normal_wgs_bam, extensions=['.bai']),
             mgd.OutputFile('normal_regions.bam', 'region', extensions=['.bai'], axes_origin=[]),
             mgd.InputChunks('region'),
+            helpers.get_container_ctx(config['containers'], 'samtools'),
         ),
         kwargs={
             'ncores': config['max_cores'],
