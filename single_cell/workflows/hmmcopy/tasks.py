@@ -351,7 +351,9 @@ def merge_pdf(in_filenames, outfilenames, metrics, cell_filters, tempdir, labels
         helpers.makedirs(plotdir)
 
         for cell in good_cells:
-            shutil.copyfile(infiles[cell], os.path.join(plotdir, cell + extension))
+            shutil.copyfile(
+                infiles[cell],
+                os.path.join(plotdir, cell + "_" + label + extension))
 
 
         helpers.make_tarfile(outfiles, plotdir)
