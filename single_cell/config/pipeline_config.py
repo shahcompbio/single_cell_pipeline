@@ -27,9 +27,9 @@ def get_config_params(override=None):
         'memory': {'high': 18, 'med': 6, 'low': 2}
     }
 
-    input_params["version"] = input_params["version"].replace('.', '_')
-
     input_params = override_config(input_params, override)
+
+    input_params["version"] = input_params["version"].replace('.', '_')
 
     return input_params
 
