@@ -14,7 +14,7 @@ def create_hmmcopy_workflow(
         bam_file, bai_file, hmmcopy_data, igv_seg_filename, segs_pdf, bias_pdf,
         plot_heatmap_ec_output,
         plot_heatmap_ec_filt_output, plot_metrics_output,
-        plot_kernel_density_output, meta_yaml, cell_ids, config, args,
+        plot_kernel_density_output, cell_ids, config, args,
         hmmparams, params_tag, results_dir, alignment_metrics=None):
 
     sample_info = helpers.get_sample_info(args["input_yaml"])
@@ -307,50 +307,5 @@ def create_hmmcopy_workflow(
             mgd.OutputFile(hmmcopy_data),
         )
     )
-
-
-    results = {
-        'hmmcopy_metrics': helpers.format_file_yaml(hmmcopy_data),
-        'segments_plot':helpers.format_file_yaml(segs_pdf),
-        'bias_plot': helpers.format_file_yaml(bias_pdf),
-        'filtered_heatmap_plot': helpers.format_file_yaml(plot_heatmap_ec_filt_output),
-        'heatmap_plot': helpers.format_file_yaml(plot_heatmap_ec_output),
-        'kde_plot': helpers.format_file_yaml(plot_kernel_density_output),
-        'metrics_plot': helpers.format_file_yaml(plot_metrics_output)
-    }
-
-    input_datasets = {k: helpers.format_file_yaml(v) for k,v in bam_file.iteritems()}
-
-    metadata = {
-        'hmmcopy':{
-            'reads_table': '/hmmcopy/reads/0',
-            'parameters_table': '/hmmcopy/params/0',
-            'segments_table': '/hmmcopy/segments/0',
-            'metrics_table': '/hmmcopy/metrics/0',
-            'hmmcopy_params_tag': params_tag,
-            'hmmcopy_params': hmmparams,
-            'chromosomes': config['chromosomes'],
-            'ref_genome': config['ref_genome'],
-            'cell_filters': config["good_cells"],
-            'version': single_cell.__version__,
-            'results': results,
-            'containers': config['containers'],
-            'input_datasets': input_datasets,
-            'output_datasets': None
-        }
-    }
-
-    workflow.transform(
-        name='generate_meta_yaml',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
-        func="single_cell.utils.helpers.write_to_yaml",
-        args=(
-            mgd.OutputFile(meta_yaml),
-            metadata
-        )
-    )
-
 
     return workflow

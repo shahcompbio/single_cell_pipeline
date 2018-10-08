@@ -9,7 +9,7 @@ import os
 import pypeliner.managed as mgd
 from workflows import aneufinder 
 from single_cell.utils import helpers
-
+import single_cell
 
 def aneufinder_workflow(workflow, args):
 
@@ -22,9 +22,12 @@ def aneufinder_workflow(workflow, args):
         value=cellids,
     )
 
-    info_file = os.path.join(args["out_dir"], "info.yaml")
+    info_file = os.path.join(args["out_dir"],'results', 'aneufinder', "info.yaml")
 
     output = os.path.join(args['out_dir'], 'results', "aneufinder")
+
+    aneufinder_pdf_file = os.path.join(
+        output, 'plots', '{}_reads.pdf'.format(args['library_id']))
 
     helpers.makedirs(output)
 
@@ -38,9 +41,44 @@ def aneufinder_workflow(workflow, args):
             config,
             output,
             mgd.OutputFile(results_filename),
+            mgd.OutputFile(aneufinder_pdf_file),
             args['library_id'],
-            mgd.OutputFile(info_file),
         ),
+    )
+
+
+
+    results = {
+        'aneufinder_plot': helpers.format_file_yaml(aneufinder_pdf_file),
+        'aneufinder_data':helpers.format_file_yaml(results_filename),
+    }
+
+    input_datasets = {k: helpers.format_file_yaml(v) for k,v in bam_files.iteritems()}
+
+    metadata = {
+        'aneufinder':{
+            'reads_table': '/aneufinder/reads',
+            'segments_table': '/aneufinder/segments/',
+            'chromosomes': config['chromosomes'],
+            'ref_genome': config['ref_genome'],
+            'version': single_cell.__version__,
+            'results': results,
+            'containers': config['containers'],
+            'input_datasets': input_datasets,
+            'output_datasets': None
+        }
+    }
+
+    workflow.transform(
+        name='generate_meta_yaml',
+        ctx=dict(mem=config['memory']['med'],
+                 pool_id=config['pools']['standard'],
+                 mem_retry_increment=2, ncpus=1),
+        func="single_cell.utils.helpers.write_to_yaml",
+        args=(
+            mgd.OutputFile(info_file),
+            metadata
+        )
     )
 
     return workflow

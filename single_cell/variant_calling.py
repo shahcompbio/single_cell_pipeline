@@ -287,10 +287,11 @@ def create_variant_calling_workflow(
         }
     )
 
-
-    normals = {k: helpers.format_file_yaml(v) for k,v in normal_bam_template.iteritems()}
-    tumours = {k: helpers.format_file_yaml(v) for k,v in wgs_bam_template.iteritems()}
-    inputs = {'normal': normals, 'tumour': tumours}
+    info_file = os.path.join(args["out_dir"],'results', 'variant_calling', "info.yaml")
+    normals = {k: helpers.format_file_yaml(v) for k,v in normal_region_bams.iteritems()}
+    tumours = {k: helpers.format_file_yaml(v) for k,v in tumour_region_bams.iteritems()}
+    cells = {k: helpers.format_file_yaml(v) for k,v in tumour_cell_bams.iteritems()}
+    inputs = {'normal': normals, 'tumour': tumours, 'cells':cells}
 
     metadata = {
         'variant_calling': {
@@ -299,18 +300,17 @@ def create_variant_calling_workflow(
             'containers': config['containers'],
             'output_datasets': None,
             'input_datasets': inputs,
-            'results': {'variant_calling_data': helpers.format_file_yaml(snv_h5_filename)}
+            'results': {'variant_calling_data': helpers.format_file_yaml(snv_h5)}
         }
     }
 
     workflow.transform(
         name='generate_meta_yaml',
         ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
+                 pool_id=config['pools']['standard']),
         func="single_cell.utils.helpers.write_to_yaml",
         args=(
-            mgd.OutputFile(meta_yaml),
+            mgd.OutputFile(info_file),
             metadata
         )
     )
