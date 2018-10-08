@@ -8,6 +8,7 @@ import pypeliner
 import pypeliner.managed as mgd
 from workflows import merge_bams
 from single_cell.utils import helpers
+import single_cell
 
 def merge_bams_workflow(workflow, args):
 
@@ -15,7 +16,7 @@ def merge_bams_workflow(workflow, args):
     input_yaml = args["input_yaml"]
     output_template = args["merged_bam_template"]
 
-    info_file = os.path.join(args["out_dir"], "info.yaml")
+    info_file = os.path.join(args["out_dir"], 'results','merge_bams', "info.yaml")
     config = helpers.load_config(args)
     bam_files, bai_files  = helpers.get_bams(input_yaml)
     cellids = helpers.get_samples(input_yaml)
@@ -49,9 +50,47 @@ def merge_bams_workflow(workflow, args):
             cellids,
             config,
             mgd.TempInputObj("region"),
-            mgd.OutputFile(info_file)
+        )
+    )
+
+    workflow.transform(
+        name="get_files",
+        func='single_cell.utils.helpers.resolve_template',
+        ret=pypeliner.managed.TempOutputObj('outputs'),
+        args=(
+            pypeliner.managed.TempInputObj('region'),
+            wgs_bam_template,
+            'region'
+        )
+
+    )
+
+    inputs = {k: helpers.format_file_yaml(v) for k,v in bam_files.iteritems()}
+
+    metadata = {
+        'merge_bams': {
+            'name': 'merge_bams',
+            'ref_genome': config["ref_genome"],
+            'version': single_cell.__version__,
+            'containers': config['containers'],
+            'output_datasets': pypeliner.managed.TempInputObj('outputs'),
+            'input_datasets': inputs,
+            'results': None
+        }
+    }
+
+    workflow.transform(
+        name='generate_meta_yaml',
+        ctx=dict(mem=config['memory']['med'],
+                 pool_id=config['pools']['standard'],),
+        func="single_cell.utils.helpers.write_to_yaml",
+        args=(
+            mgd.OutputFile(info_file),
+            metadata
         )
     )
 
 
     return workflow
+
+

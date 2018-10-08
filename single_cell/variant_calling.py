@@ -288,28 +288,31 @@ def create_variant_calling_workflow(
         }
     )
 
-    # TODO: will download results unnecessarily on cloud
+    info_file = os.path.join(args["out_dir"],'results', 'variant_calling', "info.yaml")
+    normals = {k: helpers.format_file_yaml(v) for k,v in normal_region_bams.iteritems()}
+    tumours = {k: helpers.format_file_yaml(v) for k,v in tumour_region_bams.iteritems()}
+    cells = {k: helpers.format_file_yaml(v) for k,v in tumour_cell_bams.iteritems()}
+    inputs = {'normal': normals, 'tumour': tumours, 'cells':cells}
+
+    metadata = {
+        'variant_calling': {
+            'name': 'variant_calling',
+            'version': single_cell.__version__,
+            'containers': config['containers'],
+            'output_datasets': None,
+            'input_datasets': inputs,
+            'results': {'variant_calling_data': helpers.format_file_yaml(snv_h5)}
+        }
+    }
+
     workflow.transform(
         name='generate_meta_yaml',
+        ctx=dict(mem=config['memory']['med'],
+                 pool_id=config['pools']['standard']),
         func="single_cell.utils.helpers.write_to_yaml",
         args=(
-            mgd.OutputFile(meta_yaml),
-            {
-                'name': 'variant_calling',
-                'version': single_cell.__version__,
-                'output_datasets': None,
-                'input_datasets': {
-                    'tumour_cell_bam': tumour_cell_bams,
-                    'tumour_region_bam': tumour_region_bams,
-                    'normal_bam': normal_region_bams,
-                },
-                'results': {
-                    'museq_vcf': mgd.InputFile(museq_vcf),
-                    'strelka_snv_vcf': mgd.InputFile(strelka_snv_vcf),
-                    'strelka_indel_vcf': mgd.InputFile(strelka_indel_vcf),
-                    'snv_annotations': mgd.InputFile(snv_h5),
-                },
-            },
+            mgd.OutputFile(info_file),
+            metadata
         )
     )
 

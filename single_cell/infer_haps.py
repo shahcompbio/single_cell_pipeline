@@ -10,7 +10,7 @@ import pypeliner.managed as mgd
 from single_cell.utils import helpers
 from workflows import extract_seqdata
 import remixt.config
-
+import single_cell
 
 def infer_haps_workflow(workflow, args):
 
@@ -179,6 +179,40 @@ def infer_haps_workflow(workflow, args):
             mgd.InputFile(haplotypes_filename),
             config,
         ),
+    )
+
+    info_file = os.path.join(args["out_dir"],'results','infer_haps', "info.yaml")
+
+    results = {
+        'infer_haps_allele_counts': helpers.format_file_yaml(allele_counts_filename),
+        'infer_haps_data': helpers.format_file_yaml(haplotypes_filename),
+    }
+
+    if args['input_yaml']:
+        input_datasets = {k: helpers.format_file_yaml(v) for k,v in bam_files.iteritems()}
+    else:
+        input_datasets = helpers.format_file_yaml(args['input_bam'])
+
+    metadata = {
+        'infer_haps': {
+            'version': single_cell.__version__,
+            'results': results,
+            'containers': config['containers'],
+            'input_datasets': input_datasets,
+            'output_datasets': None
+        }
+    }
+
+    workflow.transform(
+        name='generate_meta_yaml',
+        ctx=dict(mem=config['memory']['med'],
+                 pool_id=config['pools']['standard'],
+                 mem_retry_increment=2, ncpus=1),
+        func="single_cell.utils.helpers.write_to_yaml",
+        args=(
+            mgd.OutputFile(info_file),
+            metadata
+        )
     )
 
     return workflow
