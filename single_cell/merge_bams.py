@@ -59,6 +59,7 @@ def merge_bams_workflow(workflow, args):
             wgs_bam_template,
             'region'
         )
+
     )
 
     info_file = os.path.join(args["out_dir"], 'results','merge_bams', "info.yaml")
