@@ -9,7 +9,7 @@ import pypeliner
 import pypeliner.managed as mgd
 from workflows import germline
 from single_cell.utils import helpers
-
+import single_cell
 
 def germline_calling_workflow(workflow, args):
 
@@ -144,6 +144,36 @@ def germline_calling_workflow(workflow, args):
         kwargs={
             'drop_duplicates': True,
         }
+    )
+
+    info_file = os.path.join(args["out_dir"],'results', 'germline_calling', "info.yaml")
+
+    results = {
+        'germline_data': helpers.format_file_yaml(germline_h5_filename),
+    }
+
+    input_datasets = {k: helpers.format_file_yaml(v) for k,v in bam_files.iteritems()}
+
+    metadata = {
+        'germline_calling': {
+            'version': single_cell.__version__,
+            'results': results,
+            'containers': config['containers'],
+            'input_datasets': input_datasets,
+            'output_datasets': None
+        }
+    }
+
+    workflow.transform(
+        name='generate_meta_yaml',
+        ctx=dict(mem=config['memory']['med'],
+                 pool_id=config['pools']['standard'],
+                 mem_retry_increment=2, ncpus=1),
+        func="single_cell.utils.helpers.write_to_yaml",
+        args=(
+            mgd.OutputFile(info_file),
+            metadata
+        )
     )
 
     return workflow

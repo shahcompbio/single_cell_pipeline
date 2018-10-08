@@ -18,6 +18,9 @@ import multiprocessing
 
 from multiprocessing.pool import ThreadPool
 
+def resolve_template(regions, template, format_key):
+    outputs = {v: template.format(**{format_key:v}) for v in regions}
+    return outputs
 
 def get_fastq_files(input_yaml):
     data = load_yaml(input_yaml)
