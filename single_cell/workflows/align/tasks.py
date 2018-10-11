@@ -144,7 +144,7 @@ def bwa_aln_paired_end(fastq1, fastq2, output, tempdir,
     bamutils.bwa_aln_paired_end(fastq1, fastq2, samfile, tempdir, reference, readgroup,
                                 **container_ctx)
 
-    container_ctx = helpers.get_container_ctx(config['containers'], 'samtools', docker_only=True)
+    container_ctx = helpers.get_container_ctx(config, 'samtools', docker_only=True)
     bamutils.samtools_sam_to_bam(samfile, output, **container_ctx)
 
 def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
@@ -173,7 +173,7 @@ def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
         if not instrument == "N550":
             fastq1, fastq2 = trim_fastqs(
                 fastq1, fastq2, cell_id, tempdir, config)
-        bamutils.bwa_aln_paired_end(
+        bwa_aln_paired_end(
             fastq1,
             fastq2,
             aln_temp,
