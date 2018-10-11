@@ -9,9 +9,14 @@ from workflows import hmmcopy
 from utils import helpers
 import single_cell
 
+
 def hmmcopy_workflow(workflow, args):
 
     config = helpers.load_config(args)
+
+    ctx = {'mem_retry_increment': 2, 'ncpus': 1}
+    ctx.update(helpers.get_container_ctx(config['containers'], 'single_cell_pipeline'))
+
     cellids = helpers.get_samples(args['input_yaml'])
     bam_files, bai_files = helpers.get_bams(args['input_yaml'])
     lib = args['library_id']
@@ -105,7 +110,8 @@ def hmmcopy_workflow(workflow, args):
         workflow.transform(
             name='generate_meta_yaml',
             ctx=dict(mem=config['memory']['med'],
-                     pool_id=config['pools']['standard']),
+                     pool_id=config['pools']['standard'],
+                     **ctx),
             func="single_cell.utils.helpers.write_to_yaml",
             args=(
                 mgd.OutputFile(info_file),
