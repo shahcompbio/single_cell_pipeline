@@ -24,6 +24,10 @@ def merge_bams_workflow(workflow, args):
     wgs_bam_template = output_template
     wgs_bai_template = wgs_bam_template + ".bai"
 
+    ctx = {'mem_retry_increment': 2, 'ncpus': 1}
+    ctx.update(helpers.get_container_ctx(config['containers'], 'single_cell_pipeline'))
+
+
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
         value=cellids,
@@ -31,7 +35,7 @@ def merge_bams_workflow(workflow, args):
 
     workflow.transform(
         name="get_regions",
-        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 },
+        ctx=dict(mem=2, pool_id=config['pools']['standard'], **ctx),
         func="single_cell.utils.pysamutils.get_regions_from_reference",
         ret=pypeliner.managed.TempOutputObj('region'),
         args=(
@@ -55,6 +59,7 @@ def merge_bams_workflow(workflow, args):
 
     workflow.transform(
         name="get_files",
+        ctx=dict(mem=2, pool_id=config['pools']['standard'], **ctx),
         func='single_cell.utils.helpers.resolve_template',
         ret=pypeliner.managed.TempOutputObj('outputs'),
         args=(
@@ -81,8 +86,7 @@ def merge_bams_workflow(workflow, args):
 
     workflow.transform(
         name='generate_meta_yaml',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],),
+        ctx=dict(mem=2, pool_id=config['pools']['standard'], **ctx),
         func="single_cell.utils.helpers.write_to_yaml",
         args=(
             mgd.OutputFile(info_file),
