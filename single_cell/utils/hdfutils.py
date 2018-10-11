@@ -4,14 +4,40 @@ Created on May 9, 2018
 @author: dgrewal
 '''
 import pandas as pd
+import helpers
+import warnings
 
 from biowrappers.components.io.hdf5 import tasks as biowrappers_hdf5
 
+
+def get_min_itemsize(files):
+    min_itemsize = {}
+
+    itemsizes = biowrappers_hdf5._get_min_itemsize(files)
+
+    return itemsizes
+
+def cast_columns(df):
+
+    reference, ignore_cols = helpers.get_coltype_reference()
+
+    for col in df.columns.values:
+        if col in reference:
+            try:
+                df[col] = df[col].astype(reference[col])
+            except ValueError as exc:
+                warnings.warn("could not cast {} due to error: {}".format(col, exc.message))
+        else:
+            if col in ignore_cols:
+                warnings.warn('Could not cast {}, please add the expected data type to reference'.format(col))
+
+    return df
 
 def concat_csvs_to_hdf(infiles, outfile, tablenames):
     with pd.HDFStore(outfile, 'w', complevel=9, complib='blosc') as output:
         for infile, tablename in zip(infiles, tablenames):
             df = pd.read_csv(infile)
+            df = cast_columns(df)
 
             output.put(tablename, df)
 
@@ -21,6 +47,7 @@ def merge_csvs_to_hdf_in_memory(infiles, outfile, tablename):
     data = [pd.read_csv(infile) for infile in infiles]
 
     data = pd.concat(data)
+    data = cast_columns(data)
 
     with pd.HDFStore(outfile, 'w', complevel=9, complib='blosc') as output:
         output.put(tablename, data)
@@ -32,6 +59,7 @@ def merge_csvs_to_hdf_on_disk(infiles, outfile, tablename):
 
         for infile in infiles:
             data = pd.read_csv(infile)
+            data = cast_columns(data)
 
             if tablename not in output:
                 output.put(tablename, data, format='table')
@@ -43,6 +71,7 @@ def convert_csv_to_hdf(infile, outfile, tablename):
     df = pd.read_csv(infile)
 
     df = df.infer_objects()
+    df = cast_columns(df)
 
     with pd.HDFStore(outfile, 'w', complevel=9, complib='blosc') as out_store:
         out_store.put(tablename, df, format='table')
@@ -77,6 +106,9 @@ def merge_cells_in_memory(
             tables_to_merge = input_store.keys()
 
         for tableid in tables_to_merge:
+            df = input_store[tableid]
+            df = cast_columns(df)
+
             data.append(input_store[tableid])
 
     data = pd.concat(data)
@@ -99,6 +131,8 @@ def merge_cells_on_disk(
 
         for tableid in tables_to_merge:
             celldata = input_store[tableid]
+
+            celldata = cast_columns(celldata)
 
             for col, dtype in dtypes.iteritems():
                 celldata[col] = celldata[col].astype(dtype)
@@ -155,6 +189,7 @@ def annotate_per_cell_store_with_dict(infile, annotation_data, output):
 
             for colname, value in cell_info.iteritems():
                 data[colname] = value
+                data = cast_columns(data)
 
                 output.put(tableid, data, format="table")
 
@@ -187,6 +222,7 @@ def annotate_store_with_dict(infile, annotation_data, output, tables=None):
             for colname, value in cell_info.iteritems():
                 data.loc[data["cell_id"] == cellid, colname] = value
 
+        data = cast_columns(data)
         output_store.put(tableid, data, format="table")
 
     if not isinstance(output, pd.HDFStore):

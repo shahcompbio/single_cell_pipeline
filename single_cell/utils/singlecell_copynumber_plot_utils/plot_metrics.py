@@ -332,6 +332,8 @@ class PlotMetrics(object):
         df_melt = pd.melt(df, id_vars=['cell_id', 'experimental_condition',
                                        'cell_call'], value_vars=[metric])
 
+        df_melt.value = df_melt.value.astype(float)
+
         expt_conditions_ordered = sorted(df['experimental_condition'].unique())
         cell_calls_ordered = sorted(df['cell_call'].unique())
 
