@@ -15,8 +15,41 @@ from subprocess import Popen, PIPE
 
 import multiprocessing
 
-
 from multiprocessing.pool import ThreadPool
+
+
+def get_coltype_reference():
+    coltypes = {
+        'estimated_library_size': 'int', 'total_mapped_reads': 'int',
+        'total_reads_hmmcopy': 'float', 'cor_map': 'float',
+        'cv_neutral_state': 'float', 'MBRSM_dispersion': 'float',
+        'map': 'float', 'mad_hmmcopy': 'float', 'copy': 'float',
+        'modal_curve': 'float', 'sample_well': 'str', 'true_multiplier': 'float',
+        'reads': 'int', 'jira_id': 'str', 'gc': 'float', 'integer_copy_number': 'int',
+        'breakpoints': 'int', 'total_duplicate_reads': 'int',
+        'quality': 'float', 'cv_hmmcopy': 'float', 'empty_bins_hmmcopy': 'float',
+        'paired_mapped_reads': 'int', 'total_reads': 'int', 'end': 'int', 'width': 'int',
+        'MBRSI_dispersion_non_integerness': 'float', 'total_properly_paired': 'int',
+        'chr': 'str', 'sample_type': 'str', 'mean_insert_size': 'float', 'start': 'int',
+        'state': 'int', 'valid': 'bool', 'coverage_breadth': 'float', 'empty_bins_hmmcopy_chrY': 'int',
+        'too_even': 'bool', 'unpaired_duplicate_reads': 'int', 'unpaired_mapped_reads': 'int',
+        'unmapped_reads': 'int', 'mad_chr19': 'float', 'cell_id': 'str', 'cell_call': 'str',
+        'coverage_depth': 'float', 'median_insert_size': 'float', 'modal_quantile': 'float',
+        'sample_plate': 'str', 'mean_state_mads': 'float', 'ideal': 'bool',
+        'experimental_condition': 'str', 'mean_copy': 'float', 'mean_hmmcopy_reads_per_bin': 'float',
+        'multiplier': 'int', 'percent_duplicate_reads': 'float', 'i7_barcode': 'str',
+        'total_halfiness': 'float', 'std_hmmcopy_reads_per_bin': 'float',
+        'standard_deviation_insert_size': 'float', 'mean_state_vars': 'float',
+        'all_heatmap_order': 'int', 'scaled_halfiness': 'float', 'cor_gc': 'float',
+        'median': 'float', 'state_mode': 'int', 'paired_duplicate_reads': 'int',
+        'median_hmmcopy_reads_per_bin': 'float', 'mad_neutral_state': 'float',
+        'autocorrelation_hmmcopy': 'float', 'mad_autosomes': 'float', 'i5_barcode': 'str',
+        'loglikehood': 'float', 'MSRSI_non_integerness': 'float'}
+
+    ignore_cols = set(range(9))
+
+    return coltypes, ignore_cols
+
 
 def resolve_template(regions, template, format_key):
     outputs = {v: template.format(**{format_key:v}) for v in regions}
