@@ -122,6 +122,7 @@ def variant_calling_workflow(args):
         strelka_snv_vcf,
         strelka_indel_vcf,
         snv_h5,
+        meta_yaml,
         config,
         raw_data_dir,
     )
@@ -135,6 +136,7 @@ def create_variant_calling_workflow(
     strelka_snv_vcf,
     strelka_indel_vcf,
     snv_h5,
+    meta_yaml,
     config,
     raw_data_dir,
 ):
@@ -225,7 +227,6 @@ def create_variant_calling_workflow(
             ],
             mgd.TempOutputFile('all.snv.vcf')
         ),
-        kwargs={'docker_config': helpers.get_container_ctx(config['containers'], 'vcftools')}
     )
 
     workflow.transform(
