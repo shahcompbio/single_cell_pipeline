@@ -122,6 +122,7 @@ def variant_calling_workflow(args):
         strelka_snv_vcf,
         strelka_indel_vcf,
         snv_h5,
+        meta_yaml,
         config,
         raw_data_dir,
     )
@@ -135,6 +136,7 @@ def create_variant_calling_workflow(
     strelka_snv_vcf,
     strelka_indel_vcf,
     snv_h5,
+    meta_yaml,
     config,
     raw_data_dir,
 ):
@@ -225,7 +227,6 @@ def create_variant_calling_workflow(
             ],
             mgd.TempOutputFile('all.snv.vcf')
         ),
-        kwargs={'docker_config': helpers.get_container_ctx(config['containers'], 'vcftools')}
     )
 
     workflow.transform(
@@ -287,9 +288,8 @@ def create_variant_calling_workflow(
         }
     )
 
-
-    normals = {k: helpers.format_file_yaml(v) for k,v in normal_bam_template.iteritems()}
-    tumours = {k: helpers.format_file_yaml(v) for k,v in wgs_bam_template.iteritems()}
+    normals = {k: helpers.format_file_yaml(v) for k,v in normal_region_bams.iteritems()}
+    tumours = {k: helpers.format_file_yaml(v) for k,v in tumour_cell_bams.iteritems()}
     inputs = {'normal': normals, 'tumour': tumours}
 
     metadata = {
@@ -299,7 +299,7 @@ def create_variant_calling_workflow(
             'containers': config['containers'],
             'output_datasets': None,
             'input_datasets': inputs,
-            'results': {'variant_calling_data': helpers.format_file_yaml(snv_h5_filename)}
+            'results': {'variant_calling_data': helpers.format_file_yaml(snv_h5)}
         }
     }
 
