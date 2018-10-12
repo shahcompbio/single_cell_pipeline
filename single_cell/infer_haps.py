@@ -34,10 +34,10 @@ def infer_haps_workflow(workflow, args):
     haplotypes_filename = os.path.join(haps_dir, "results", "haplotypes.tsv")
     allele_counts_filename = os.path.join(haps_dir, "results", "allele_counts.tsv")
 
-    snp_positions_filename = remixt.config.get_filename(config, ref_data_dir, 'snp_positions')
-    bam_max_fragment_length = remixt.config.get_param(config, 'bam_max_fragment_length')
-    bam_max_soft_clipped = remixt.config.get_param(config, 'bam_max_soft_clipped')
-    bam_check_proper_pair = remixt.config.get_param(config, 'bam_check_proper_pair')
+#    snp_positions_filename = remixt.config.get_filename(config, ref_data_dir, 'snp_positions')
+#    bam_max_fragment_length = remixt.config.get_param(config, 'bam_max_fragment_length')
+#    bam_max_soft_clipped = remixt.config.get_param(config, 'bam_max_soft_clipped')
+#    bam_check_proper_pair = remixt.config.get_param(config, 'bam_check_proper_pair')
 
     workflow.setobj(
         obj=mgd.OutputChunks('chromosome'),
@@ -190,10 +190,12 @@ def infer_haps_from_bulk_normal(
     haplotypes_filename,
     config,
 ):
+    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
+
     remixt_config = config['remixt_config'].get('extract_seqdata', {})
     remixt_ref_data_dir = config['remixt_ref_data_dir']
 
-    chromosomes = remixt.config.get_chromosomes(config, remixt_ref_data_dir)
+    chromosomes = config['chromosomes'] #remixt.config.get_chromosomes(config, remixt_ref_data_dir)
 
     workflow = pypeliner.workflow.Workflow()
 

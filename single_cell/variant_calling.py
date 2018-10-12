@@ -91,12 +91,6 @@ def variant_calling_workflow(args):
 
     config = helpers.load_config(args)
 
-    ctx = {'num_retry': 3,
-           'mem_retry_increment': 2,
-           'ncpus': 1}
-    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
-    ctx.update(docker_ctx)
-
     meta_yaml = os.path.join(args['out_dir'], 'info.yaml')
 
     bam_files, bai_files = helpers.get_bams(args['input_yaml'])
@@ -144,6 +138,12 @@ def create_variant_calling_workflow(
     config,
     raw_data_dir,
 ):
+    ctx = {'num_retry': 3,
+           'mem_retry_increment': 2,
+           'ncpus': 1}
+    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
+    ctx.update(docker_ctx)
+
     workflow = pypeliner.workflow.Workflow()
 
     workflow.set_filenames('normal_regions.bam', 'region', fnames=normal_region_bams)
