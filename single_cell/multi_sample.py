@@ -122,6 +122,7 @@ def create_multi_sample_workflow(
         ),
         kwargs={
             'ncores': config['max_cores'],
+            'docker_config': helpers.get_container_ctx(config['containers'], 'samtools'),
         },
     )
 

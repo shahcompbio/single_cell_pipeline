@@ -28,13 +28,17 @@ def create_extract_seqdata_workflow(
         func="single_cell.workflows.extract_seqdata.tasks.create_chromosome_seqdata",
         args=(
             mgd.TempOutputFile('seqdata', 'chromosome'),
-            mgd.InputFile(bam_filename),
+            mgd.InputFile(bam_filename, extensions=['.bai']),
             remixt_config,
             remixt_ref_data_dir,
         ),
         kwargs={'multiprocess':multiprocess,
                 'ncores':config['max_cores']}
     )
+
+    ctx = {'mem_retry_increment': 2, 'ncpus': 1}
+    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
+    ctx.update(docker_ctx)
 
     workflow.transform(
         name='merge_seqdata',
