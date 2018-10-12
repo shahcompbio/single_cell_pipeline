@@ -60,6 +60,7 @@ def create_multi_sample_workflow(
     strelka_snv_template = os.path.join(results_dir, '{sample_id}_strelka_snv.vcf.gz')
     strelka_indel_template = os.path.join(results_dir, '{sample_id}_strelka_indel.vcf.gz')
     snv_annotations_template = os.path.join(results_dir, '{sample_id}_snv_annotations.h5')
+    snv_meta_template = os.path.join(results_dir, '{sample_id}_meta.yaml')
     snv_counts_template = os.path.join(results_dir, '{sample_id}_snv_counts.h5')
     haplotypes_file = os.path.join(results_dir, 'haplotypes.tsv')
     allele_counts_template = os.path.join(results_dir, '{sample_id}_allele_counts.tsv')
@@ -77,6 +78,7 @@ def create_multi_sample_workflow(
     workflow.set_filenames('strelka_snv.vcf', 'sample_id', template=strelka_snv_template)
     workflow.set_filenames('strelka_indel.vcf', 'sample_id', template=strelka_indel_template)
     workflow.set_filenames('snv_annotations.h5', 'sample_id', template=snv_annotations_template)
+    workflow.set_filenames('snv_meta.yaml', 'sample_id', template=snv_meta_template)
     workflow.set_filenames('snv_counts.h5', 'sample_id', template=snv_counts_template)
     workflow.set_filenames('tumour_cell_seqdata.h5', 'sample_id', 'cell_id', template=tumour_cell_seqdata_template)
     workflow.set_filenames('breakpoints.h5', 'sample_id', template=breakpoints_template)
@@ -119,6 +121,7 @@ def create_multi_sample_workflow(
             mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
             mgd.OutputFile('tumour_regions.bam', 'sample_id', 'region', axes_origin=[], extensions=['.bai']),
             regions,
+            helpers.get_container_ctx(config['containers'], 'samtools'),
         ),
         kwargs={
             'ncores': config['max_cores'],
@@ -138,6 +141,7 @@ def create_multi_sample_workflow(
             mgd.OutputFile('strelka_snv.vcf', 'sample_id'),
             mgd.OutputFile('strelka_indel.vcf', 'sample_id'),
             mgd.OutputFile('snv_annotations.h5', 'sample_id'),
+            mgd.OutputFile('snv_meta.yaml', 'sample_id'),
             config,
             raw_data_dir,
         ),
