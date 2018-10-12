@@ -264,7 +264,7 @@ def parse_args():
                                   nargs='+')
 
     #======================================
-    # count variants from multiple samples
+    # bulk analysis from multiple samples
     #======================================
     multi_sample_pseudo_bulk = add_global_args(
         subparsers.add_parser("multi_sample_pseudo_bulk"))
@@ -273,6 +273,18 @@ def parse_args():
     multi_sample_pseudo_bulk.add_argument("--normal_wgs_bam",
                                           required=True,
                                           help='''normal bam''')
+
+    multi_sample_pseudo_bulk.add_argument("--tumour_template",
+                           action=parseRegionTemplate,
+                           required=True,
+                           help='''template for saving the tumour bams split by region,
+                           use {} as place holder for genomic region''')
+
+    multi_sample_pseudo_bulk.add_argument("--normal_template",
+                           action=parseRegionTemplate,
+                           required=True,
+                           help='''template for saving the normal bams split by region,
+                           use {} as place holder for genomic region''')
 
     #======================================
     # generates pipeline and batch configs
