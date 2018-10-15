@@ -229,11 +229,13 @@ def annotate_metrics(
 
 
 def merge_hdf_files_on_disk(
-        reads, merged_reads, multipliers, tableprefix, dtypes={}, min_itemsize={}):
+        reads, merged_reads, multipliers, tableprefix, dtypes={}):
 
     output_store = pd.HDFStore(merged_reads, 'w', complevel=9, complib='blosc')
 
     cells = reads.keys()
+
+    min_itemsize = hdfutils.get_min_itemsize(reads.values())
 
     for cellid, infile in reads.iteritems():
         with pd.HDFStore(infile, 'r') as infilestore:
@@ -266,7 +268,7 @@ def merge_hdf_files_on_disk(
 
 
 def merge_hdf_files_in_memory(
-        reads, merged_reads, multipliers, tableprefix, dtypes={}, min_itemsize={}):
+        reads, merged_reads, multipliers, tableprefix, dtypes={}):
 
     output_store = pd.HDFStore(merged_reads, 'w', complevel=9, complib='blosc')
 
@@ -295,8 +297,7 @@ def merge_hdf_files_in_memory(
         output_store.put(
             out_tablename,
             all_cells_data,
-            format='table',
-            min_itemsize=min_itemsize)
+            format='table')
 
     output_store.close()
 
