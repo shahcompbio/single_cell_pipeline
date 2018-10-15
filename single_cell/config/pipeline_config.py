@@ -214,7 +214,7 @@ def get_container_images(cluster):
         password = os.environ["SECRET_KEY"]
         server = "shahlab.azurecr.io"
 
-        image_urls = {k:"shahlab.azurecr.io/scp/{}:v0.0.1".format(v)
+        image_urls = {k:"shahlab.azurecr.io/scp/{}".format(v)
                       for k, v in images.iteritems()}
     else:
         username = None
