@@ -199,18 +199,23 @@ def get_databases():
 
 
 def get_container_images(cluster):
-    images = ['bwa', 'samtools', 'python_base', 'single_cell_pipeline',
-              'picard', 'gatk', 'fastqc', 'hmmcopy', 'aneufinder',
-              'strelka', 'mutationseq', 'vcftools', 'snpeff', 'titan']
+    images = {
+        'bwa': 'bwa:v0.0.1', 'samtools': 'samtools:v0.0.1',
+        'python_base': 'python_base:v0.0.1', 'picard': 'picard:v0.0.1',
+        'single_cell_pipeline': 'single_cell_pipeline:v0.0.2',
+        'gatk': 'gatk:v0.0.1', 'fastqc': 'fastqc:v0.0.1',
+        'hmmcopy': 'hmmcopy:v0.0.1', 'aneufinder': 'aneufinder:v0.0.1',
+        'strelka': 'strelka:v0.0.1', 'mutationseq': 'mutationseq:v0.0.1',
+        'vcftools': 'vcftools:v0.0.1', 'snpeff': 'vcftools:v0.0.1',
+        'titan': 'titan:v0.0.1'}
 
     if cluster == 'azure':
         username = os.environ["CLIENT_ID"]
         password = os.environ["SECRET_KEY"]
         server = "shahlab.azurecr.io"
 
-        image_urls = {v:"shahlab.azurecr.io/scp/{}:v0.0.1".format(v)
-                      for v in images}
-        image_urls['snpeff'] = "shahlab.azurecr.io/scp/vcftools"
+        image_urls = {k:"shahlab.azurecr.io/scp/{}:v0.0.1".format(v)
+                      for k, v in images.iteritems()}
     else:
         username = None
         password = None
