@@ -15,7 +15,15 @@ def get_min_itemsize(files):
 
     itemsizes = biowrappers_hdf5._get_min_itemsize(files)
 
-    return itemsizes
+    for tablename, tableitemsizes in itemsizes.iteritems():
+        for col, len_item in tableitemsizes.iteritems():
+            if col in min_itemsize:
+                min_itemsize[col] = max(min_itemsize[col], len_item)
+            else:
+                min_itemsize[col] = len_item
+
+            min_itemsize[col] += 2
+    return min_itemsize
 
 def cast_columns(df):
 
