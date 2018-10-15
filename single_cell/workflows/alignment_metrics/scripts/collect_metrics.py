@@ -175,7 +175,11 @@ class CollectMetrics(object):
         median_ins_size = data[header['median_insert_size']]
         mean_ins_size = data[header['mean_insert_size']]
         std_dev_ins_size = data[header['standard_deviation']]
-    
+
+        median_ins_size = 0 if median_ins_size == '?' else median_ins_size
+        mean_ins_size = 0 if mean_ins_size == '?' else mean_ins_size
+        std_dev_ins_size = 0 if std_dev_ins_size == '?' else std_dev_ins_size
+
         return median_ins_size, mean_ins_size, std_dev_ins_size
     
     
