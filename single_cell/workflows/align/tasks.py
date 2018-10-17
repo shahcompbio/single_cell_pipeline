@@ -148,7 +148,8 @@ def bwa_aln_paired_end(fastq1, fastq2, output, tempdir,
     bamutils.samtools_sam_to_bam(samfile, output, **container_ctx)
 
 def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
-             reference, instrument, centre, sample_info, cell_id, lane_id, library_id, config):
+             reference, instrument, centre, sample_info, cell_id, lane_id, library_id,
+             config):
 
     readgroup = get_readgroup(
         lane_id,

@@ -10,35 +10,25 @@ import yaml
 import copy
 import os
 
-def get_version():
-    version = single_cell.__version__
-    # strip setuptools metadata
-    version = version.split("+")[0]
-    return version
-
 
 def get_config_params(override=None):
-    version = get_version()
     input_params = {
         "cluster": "azure", "aligner": "bwa-mem",
         "reference": "grch37", "smoothing_function": "modal",
         "bin_size": 500000, "copynumber_bin_size": 1000,
-        "version": version,
         'memory': {'high': 18, 'med': 6, 'low': 2}
     }
 
     input_params = override_config(input_params, override)
 
-    input_params["version"] = input_params["version"].replace('.', '_')
-
     return input_params
 
 
-def get_pools(reference, version):
+def get_pools(reference):
 
-    pools = {"standard": "singlecell{}standard_{}".format(reference, version),
-             "highmem": "singlecell{}highmem_{}".format(reference, version),
-             "multicore": "singlecell{}multicore_{}".format(reference, version)
+    pools = {"standard": "singlecell{}standard".format(reference),
+             "highmem": "singlecell{}highmem".format(reference),
+             "multicore": "singlecell{}multicore".format(reference)
              }
 
     return {"pools": pools}
@@ -79,7 +69,7 @@ def get_titan_params(cluster, reference, binsize):
                     'ref_data_dir': ref_data_dir,
                     'gc_wig': gc_wig,
                     'mappability_wig': mappability_wig,
-                    'chromosomes': map(str, range(1,23)) + ['X'],
+                    'chromosomes': plain_list(map(str, range(1,23)) + ['X']),
                     }
 
     return {'titan_params': titan_params}
@@ -202,7 +192,7 @@ def get_container_images(cluster):
     images = {
         'bwa': 'bwa:v0.0.1', 'samtools': 'samtools:v0.0.1',
         'python_base': 'python_base:v0.0.1', 'picard': 'picard:v0.0.1',
-        'single_cell_pipeline': 'single_cell_pipeline:v0.0.2',
+        'single_cell_pipeline': 'single_cell_pipeline:v0.2.3',
         'gatk': 'gatk:v0.0.1', 'fastqc': 'fastqc:v0.0.1',
         'hmmcopy': 'hmmcopy:v0.0.1', 'aneufinder': 'aneufinder:v0.0.1',
         'strelka': 'strelka:v0.0.1', 'mutationseq': 'mutationseq:v0.0.1',
@@ -268,7 +258,7 @@ def get_singlecell_pipeline_config(config_params, override=None):
 
     params = {}
 
-    params.update(get_pools(reference, config_params["version"]))
+    params.update(get_pools(reference))
 
     params.update(get_picard_wgs_params())
 
