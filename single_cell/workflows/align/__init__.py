@@ -64,6 +64,7 @@ def create_alignment_workflow(
         obj=mgd.TempOutputObj('sampleinfo', 'cell_id', axes_origin=[]),
         value=sample_info)
 
+
     fastqc_reports = os.path.join(
         lane_metrics,
         "fastqc",
