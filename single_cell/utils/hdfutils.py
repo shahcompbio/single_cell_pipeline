@@ -94,6 +94,8 @@ def concat_hdf_tables(in_files, out_file):
 
     min_itemsize = get_min_itemsize(in_files)
 
+    min_itemsize = get_min_itemsize(in_files)
+
     with pd.HDFStore(out_file, 'w', complevel=9, complib='blosc') as output:
         for infile in in_files:
             with pd.HDFStore(infile, 'r') as input_store:
