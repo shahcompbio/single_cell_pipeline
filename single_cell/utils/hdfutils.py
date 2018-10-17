@@ -92,6 +92,8 @@ def concat_hdf_tables(in_files, out_file):
 
     chunksize = 10 ** 5
 
+    min_itemsize = get_min_itemsize(in_files)
+
     with pd.HDFStore(out_file, 'w', complevel=9, complib='blosc') as output:
         for infile in in_files:
             with pd.HDFStore(infile, 'r') as input_store:
@@ -101,10 +103,12 @@ def concat_hdf_tables(in_files, out_file):
 
                 for chunk in pd.read_hdf(
                         infile, key=table, chunksize=chunksize):
+
+                    minitem = {v:min_itemsize[v] for v in chunk.columns.values if v in min_itemsize}
                     if table not in output:
-                        output.put(table, chunk, format='table')
+                        output.put(table, chunk, format='table', min_itemsize=minitem)
                     else:
-                        output.append(table, chunk, format='table')
+                        output.append(table, chunk, format='table', min_itemsize=minitem)
 
 
 def merge_cells_in_memory(
