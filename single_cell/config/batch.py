@@ -19,12 +19,14 @@ class literal_unicode(unicode):
     pass
 
 
+
 def folded_unicode_representer(dumper, data):
     return dumper.represent_scalar(u'tag:yaml.org,2002:str', data, style='>')
 
 
 def literal_unicode_representer(dumper, data):
     return dumper.represent_scalar(u'tag:yaml.org,2002:str', data, style='|')
+
 
 yaml.add_representer(folded_unicode, folded_unicode_representer)
 yaml.add_representer(literal_unicode, literal_unicode_representer)
@@ -45,13 +47,6 @@ def override_config(config, override):
     cfg = update(config, override)
 
     return cfg
-
-
-def get_version():
-    version = single_cell.__version__
-    # strip setuptools metadata
-    version = version.split("+")[0]
-    return version
 
 
 def get_batch_params(override=None):
@@ -79,13 +74,10 @@ def get_batch_params(override=None):
         "no_delete_pool": True,
         "no_delete_job": False,
         "pools": pools,
-        "version": get_version(),
         "reference": "grch37"
     }
 
     data = override_config(data, override)
-
-    data["version"] = data["version"].replace('.', '_')
 
     return data
 
@@ -152,7 +144,7 @@ def get_vm_size_azure(numcores):
         return "STANDARD_E16_V3"
 
 
-def get_vm_image_id(version):
+def get_vm_image_id():
     subscription = os.environ.get("SUBSCRIPTION_ID", "id-missing")
     resource_group = os.environ.get("RESOURCE_GROUP", "id-missing")
     return "/subscriptions/{}/resourceGroups/{}/providers/Microsoft.Compute/images/docker-production".format(
@@ -160,18 +152,18 @@ def get_vm_image_id(version):
 
 
 def get_pool_def(
-        tasks_per_node, reference, pool_type, version, numcores, primary=False):
+        tasks_per_node, reference, pool_type, numcores, primary=False):
 
     autoscale_formula = generate_autoscale_formula(tasks_per_node)
 
     vm_commands = create_vm_commands()
 
-    poolname = "singlecell{}{}_{}".format(reference, pool_type, version)
+    poolname = "singlecell{}{}".format(reference, pool_type)
 
     pooldata = {
         "pool_vm_size": get_vm_size_azure(numcores),
         "primary": primary,
-        'node_resource_id': get_vm_image_id(version),
+        'node_resource_id': get_vm_image_id(),
         'node_os_publisher': 'Canonical',
         'node_os_offer': 'UbuntuServer',
         'node_os_sku': 'batch.node.ubuntu 16.04',
@@ -222,7 +214,7 @@ def get_compute_finish_commands():
     return {"compute_finish_commands": commands}
 
 
-def get_all_pools(pool_config, reference, version):
+def get_all_pools(pool_config, reference):
 
     pooldefs = {}
 
@@ -233,7 +225,7 @@ def get_all_pools(pool_config, reference, version):
 
         pool_def = get_pool_def(
             tasks_per_node, reference, pooltype,
-            version, numcores, primary
+            numcores, primary
         )
 
         pooldefs.update(pool_def)
@@ -252,8 +244,7 @@ def get_batch_config(defaults, override=None):
     config.update(
         get_all_pools(
             defaults['pools'],
-            defaults['reference'],
-            defaults['version']))
+            defaults['reference']))
 
     config.update(
         {"storage_container_name": defaults["storage_container_name"]}
