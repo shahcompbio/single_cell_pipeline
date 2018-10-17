@@ -14,7 +14,7 @@ from single_cell.utils import helpers
 
 from single_cell.config import generate_batch_config
 from single_cell.config import generate_pipeline_config
-
+from single_cell import __version__
 
 class parseSentinelPattern(argparse.Action):
 
@@ -82,6 +82,9 @@ def add_global_args(parser, dont_add_input_yaml=False):
 def parse_args():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--version', action='version',
+                        version='{version}'.format(version=__version__))
 
     subparsers = parser.add_subparsers()
 
