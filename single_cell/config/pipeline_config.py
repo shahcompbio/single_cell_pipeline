@@ -233,7 +233,7 @@ def get_container_params(cluster,):
     params = {}
     params.update(get_container_images(cluster))
 
-    container_type = 'docker' if cluster == 'azure' else 'singularity'
+    container_type = 'docker' if cluster == 'azure' else None
     params["container_type"] = container_type
     params["mounts"] = ['/refdata', '/datadrive']
     if cluster == 'azure':
