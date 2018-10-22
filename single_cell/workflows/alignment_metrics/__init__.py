@@ -219,8 +219,21 @@ def create_alignment_metrics_workflow(
             [mgd.TempInputFile("alignment_metrics_annotated.h5"),
              mgd.TempInputFile("gc_metrics.h5"),
              ],
-            mgd.OutputFile(alignment_metrics),
+            mgd.TempOutputFile("alignment_precast.h5"),
         ),
     )
+
+    workflow.transform(
+        name='cast_h5',
+        ctx=dict(mem=config['memory']['med'],
+                 pool_id=config['pools']['standard'],
+                 **ctx),
+        func="single_cell.utils.hdfutils.cast_h5_file",
+        args=(
+            mgd.TempInputFile("alignment_precast.h5"),
+            mgd.OutputFile(alignment_metrics),
+        )
+    )
+
 
     return workflow
