@@ -235,8 +235,6 @@ def merge_hdf_files_on_disk(
 
     cells = reads.keys()
 
-    min_itemsize = hdfutils.get_min_itemsize(reads.values())
-
     for cellid, infile in reads.iteritems():
         with pd.HDFStore(infile, 'r') as infilestore:
             for multiplier in multipliers:
@@ -255,14 +253,12 @@ def merge_hdf_files_on_disk(
                     output_store.put(
                         out_tablename,
                         data,
-                        format='table',
-                        min_itemsize=min_itemsize)
+                        format='table',)
                 else:
                     output_store.append(
                         out_tablename,
                         data,
-                        format='table',
-                        min_itemsize=min_itemsize)
+                        format='table',)
 
     output_store.close()
 

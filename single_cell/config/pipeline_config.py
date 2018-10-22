@@ -11,6 +11,12 @@ import copy
 import os
 
 
+def get_version():
+    version = single_cell.__version__
+    # strip setuptools metadata
+    version = version.split("+")[0]
+    return version
+
 def get_config_params(override=None):
     input_params = {
         "cluster": "azure", "aligner": "bwa-mem",
@@ -189,10 +195,11 @@ def get_databases():
 
 
 def get_container_images(cluster):
+    version = get_version()
     images = {
         'bwa': 'bwa:v0.0.1', 'samtools': 'samtools:v0.0.1',
         'python_base': 'python_base:v0.0.1', 'picard': 'picard:v0.0.1',
-        'single_cell_pipeline': 'single_cell_pipeline:v0.2.3',
+        'single_cell_pipeline': 'single_cell_pipeline:v{}'.format(version),
         'gatk': 'gatk:v0.0.1', 'fastqc': 'fastqc:v0.0.1',
         'hmmcopy': 'hmmcopy:v0.0.1', 'aneufinder': 'aneufinder:v0.0.1',
         'strelka': 'strelka:v0.0.1', 'mutationseq': 'mutationseq:v0.0.1',
