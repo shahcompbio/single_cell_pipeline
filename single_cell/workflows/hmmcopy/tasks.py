@@ -235,6 +235,8 @@ def merge_hdf_files_on_disk(
 
     cells = reads.keys()
 
+    min_itemsize = {'cell_id': max(map(len, cells))+2}
+
     for cellid, infile in reads.iteritems():
         with pd.HDFStore(infile, 'r') as infilestore:
             for multiplier in multipliers:
@@ -449,7 +451,7 @@ def get_hierarchical_clustering_order(
         reads_filename, tablename, chromosomes=None):
 
     data = []
-    chunksize = 10 ** 6
+    chunksize = 10 ** 5
     for chunk in pd.read_hdf(
             reads_filename, chunksize=chunksize, key=tablename):
 
