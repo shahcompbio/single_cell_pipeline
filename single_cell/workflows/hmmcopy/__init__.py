@@ -304,8 +304,21 @@ def create_hmmcopy_workflow(
             mgd.TempInputFile("segments.h5"),
             mgd.TempInputFile("annotated_metrics.h5"),
             mgd.TempInputFile("params.h5"),
+            mgd.TempOutputFile("hmmcopy_precast.h5"),
+        )
+    )
+
+    workflow.transform(
+        name='cast_h5',
+        ctx=dict(mem=config['memory']['high'],
+                 pool_id=config['pools']['highmem'],
+                 **ctx),
+        func="single_cell.utils.hdfutils.cast_h5_file",
+        args=(
+            mgd.TempInputFile("hmmcopy_precast.h5"),
             mgd.OutputFile(hmmcopy_data),
         )
     )
+
 
     return workflow
