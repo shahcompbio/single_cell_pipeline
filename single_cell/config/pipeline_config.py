@@ -75,7 +75,7 @@ def get_titan_params(cluster, reference, binsize):
                     'ref_data_dir': ref_data_dir,
                     'gc_wig': gc_wig,
                     'mappability_wig': mappability_wig,
-                    'chromosomes': plain_list(map(str, range(1,23)) + ['X']),
+                    'chromosomes': map(str, range(1,23)) + ['X'],
                     }
 
     return {'titan_params': titan_params}
