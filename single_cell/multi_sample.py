@@ -60,7 +60,7 @@ def create_multi_sample_workflow(
     strelka_snv_template = os.path.join(results_dir, '{sample_id}_strelka_snv.vcf.gz')
     strelka_indel_template = os.path.join(results_dir, '{sample_id}_strelka_indel.vcf.gz')
     snv_annotations_template = os.path.join(results_dir, '{sample_id}_snv_annotations.h5')
-    snv_meta_template = os.path.join(results_dir, '{sample_id}_meta.yaml')
+    snv_meta_template = os.path.join(results_dir, '{sample_id}_snv_meta.yaml')
     snv_counts_template = os.path.join(results_dir, '{sample_id}_snv_counts.h5')
     haplotypes_file = os.path.join(results_dir, 'haplotypes.tsv')
     allele_counts_template = os.path.join(results_dir, '{sample_id}_allele_counts.tsv')
