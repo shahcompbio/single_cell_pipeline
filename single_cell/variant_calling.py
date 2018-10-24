@@ -288,9 +288,7 @@ def create_variant_calling_workflow(
         }
     )
 
-    normals = {k: helpers.format_file_yaml(v) for k,v in normal_region_bams.iteritems()}
-    tumours = {k: helpers.format_file_yaml(v) for k,v in tumour_cell_bams.iteritems()}
-    inputs = {'normal': normals, 'tumour': tumours}
+    inputs = {'normal': normal_region_bams, 'tumour': tumour_cell_bams}
 
     metadata = {
         'variant_calling': {
