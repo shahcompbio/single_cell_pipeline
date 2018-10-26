@@ -3,6 +3,7 @@ Created on Oct 24, 2017
 
 @author: dgrewal
 '''
+import warnings
 import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
@@ -171,6 +172,10 @@ class ClusterMap(object):
         # sort matrix based on dendrogram order
         leaves = hc.leaves_list(linkage)
         mat = mat[leaves, :]
+
+        if np.isnan(mat).all():
+            warnings.warn("skipping heatplot due to missing data")
+            return
 
         # get all values we're going to plot later and generate a colormap for
         # them
