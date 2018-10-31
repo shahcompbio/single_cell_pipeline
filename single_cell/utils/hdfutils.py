@@ -27,6 +27,9 @@ def get_min_itemsize(files):
 
 def cast_columns(df):
 
+    if not isinstance(df, pd.DataFrame):
+        return df
+
     reference, ignore_cols = helpers.get_coltype_reference()
 
     for col in df.columns.values:
