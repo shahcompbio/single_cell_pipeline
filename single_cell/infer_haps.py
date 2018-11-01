@@ -201,13 +201,12 @@ def infer_haps_from_bulk_normal(
 
     workflow.subworkflow(
         name='extract_seqdata',
-        func=extract_seqdata.create_extract_seqdata_workflow,
+        func='remixt.workflow.create_extract_seqdata_workflow',
         args=(
             mgd.InputFile(normal_bam_file, extensions=['.bai']),
             mgd.OutputFile(normal_seqdata_file),
             remixt_config,
             remixt_ref_data_dir,
-            config,
         ),
     )
 
