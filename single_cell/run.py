@@ -1,5 +1,6 @@
 import pypeliner
 from cmdline import parse_args
+from demultiplex_bam import demultiplex_bam_workflow
 from align import align_workflow
 from hmmcopy import hmmcopy_workflow
 from aneufinder import aneufinder_workflow
@@ -26,6 +27,12 @@ def main():
 
     if args["which"] == "clean_sentinels":
         clean_sentinels(args)
+
+    if args["which"] == "demultiplex_bam":
+        pyp = pypeliner.app.Pypeline(config=args)
+        workflow = pypeliner.workflow.Workflow()
+        workflow = demultiplex_bam_workflow(workflow, args)
+        pyp.run(workflow)
 
     if args["which"] == "align":
         pyp = pypeliner.app.Pypeline(config=args)

@@ -70,7 +70,7 @@ def add_global_args(parser, dont_add_input_yaml=False):
                         help='''Path to output directory.''')
 
     parser.add_argument("--config_file",
-                        help='''Path to output directory.''')
+                        help='''The auto-generated config file.''')
 
     parser.add_argument("--config_override",
                         type=json.loads,
@@ -87,6 +87,28 @@ def parse_args():
                         version='{version}'.format(version=__version__))
 
     subparsers = parser.add_subparsers()
+
+    # ===========
+    # demultiplex_bam
+    # ===========
+    demultiplex_bam = add_global_args(subparsers.add_parser("demultiplex_bam",
+                                                     description="Demultiplexes a BAM file by cell identifier (CB tag) and "
+                                                                 "converts the demultiplexed bam files to paired fastq "
+                                                                 "files. Reads alignments that don't contain the cell identifier "
+                                                                 "tag are assigned the cell identifier CB:Z:undetermined."
+                                                                 "This results in undetermined_1.fq and undetermined_2.fq"
+                                                                 " in the output."),
+                                                     dont_add_input_yaml=True)
+    demultiplex_bam.set_defaults(which='demultiplex_bam')
+
+    demultiplex_bam.add_argument('--bam',
+                          required=True,
+                          help='''Specify the path to the input bam file.''')
+
+    demultiplex_bam.add_argument('--barcode_csv',
+                           required=True,
+                           help='''CSV file containing cell identifiers (CB tag) to demultiplex with. ''' \
+                                '''The cell id/barcode must be in the first column of the CSV file.''')
 
     #===========
     # align

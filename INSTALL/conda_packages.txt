@@ -33,6 +33,9 @@ bioconductor-titan
 biowrappers
 remixt
 dill
+pandas
+networkx
+pytest
 r-data.table 
 # From biowrappers
 sambamba ==0.5.9
