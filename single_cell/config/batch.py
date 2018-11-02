@@ -205,8 +205,8 @@ def get_compute_start_commands():
 
 def get_compute_finish_commands():
     commands = (
-        "find /datadrive/$AZ_BATCH_TASK_WORKING_DIR/ -xtype l -delete\n"
-        "find /datadrive/$AZ_BATCH_TASK_WORKING_DIR/ -type f -delete\n"
+        "find $AZ_BATCH_TASK_WORKING_DIR/ -xtype l -delete\n"
+        "find $AZ_BATCH_TASK_WORKING_DIR/ -type f -delete\n"
     )
 
     commands = literal_unicode(commands)
