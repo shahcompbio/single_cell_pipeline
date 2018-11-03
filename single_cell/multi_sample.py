@@ -113,9 +113,9 @@ def create_multi_sample_workflow(
         },
     )
 
-    workflow.transform(
+    workflow.subworkflow(
         name='split_merge_tumour',
-        func='single_cell.workflows.merge_bams.tasks.merge_bams',
+        func='single_cell.workflows.merge_bams.create_cell_region_merge_workflow',
         axes=('sample_id',),
         args=(
             mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
@@ -123,10 +123,6 @@ def create_multi_sample_workflow(
             regions,
             helpers.get_container_ctx(config['containers'], 'samtools'),
         ),
-        kwargs={
-            'ncores': config['max_cores'],
-            'docker_config': helpers.get_container_ctx(config['containers'], 'samtools'),
-        },
     )
 
     workflow.subworkflow(
