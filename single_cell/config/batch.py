@@ -205,8 +205,8 @@ def get_compute_start_commands():
 
 def get_compute_finish_commands():
     commands = (
-        "find $AZ_BATCH_TASK_WORKING_DIR/ -xtype l -delete\n"
-        "find $AZ_BATCH_TASK_WORKING_DIR/ -type f -delete\n"
+        "docker run -v $(dirname $AZ_BATCH_TASK_WORKING_DIR):$(dirname $AZ_BATCH_TASK_WORKING_DIR) -w $AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype l -delete\n"
+        "docker run -v $(dirname $AZ_BATCH_TASK_WORKING_DIR):$(dirname $AZ_BATCH_TASK_WORKING_DIR) -w $AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype f -delete\n"
     )
 
     commands = literal_unicode(commands)
