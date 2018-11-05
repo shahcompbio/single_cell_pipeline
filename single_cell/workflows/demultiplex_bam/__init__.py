@@ -10,8 +10,6 @@ from single_cell.utils import helpers
 
 def create_demultiplex_bam_workflow(
         managed_input_file,
-        managed_output_file_1,
-        managed_output_file_2,
         config,
         out_dir,
         barcode_csv):
@@ -47,6 +45,9 @@ def create_demultiplex_bam_workflow(
     )
 
     # convert collated bams to fastq
+    outfile_r1 = os.path.join(out_dir, '{split}_r1.fastq.gz')
+    outfile_r2 = os.path.join(out_dir, '{split}_r2.fastq.gz')
+
     workflow.transform(
         name='fastq',
         ctx=dict(mem=config['memory']['med'],
@@ -55,8 +56,7 @@ def create_demultiplex_bam_workflow(
         axes=('split',),
         func="single_cell.workflows.demultiplex_bam.tasks.fastq",
         args=(pypeliner.managed.TempInputFile('collated', 'split'),
-              managed_output_file_1,
-              managed_output_file_2)
-    )
+              pypeliner.managed.OutputFile('fq1', 'split', template=outfile_r1),
+              pypeliner.managed.OutputFile('fq2', 'split', template=outfile_r2)))
 
     return workflow
