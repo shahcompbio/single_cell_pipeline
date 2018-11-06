@@ -417,3 +417,35 @@ before launching the hmmcopy will rerun the heatmap plotting  and any tasks that
 * add ``` --loglevel DEBUG``` for verbose logging
 * ```--submit_config <path to yaml config>``` for custom azure batch submission configuration file. see 10. Generate config for more details
 * ```--config_file <path to yaml config>``` to specify pipeline config file.
+
+## 13. Demultiplex BAM
+
+![align](readme_data/align.png)
+
+Demultiplexes a BAM file by cell identifier and converts the demultiplexed bam files to paired end fastq files.
+
+* Demultiplex bam files based on the optional CB (cell identifier) tag.
+* User shall specify list of cell ids/barcodes on which to demultiplex.
+* Aligned reads associated with barcodes not contained in user specified list must be filtered out.
+* Aligned reads that don't have CB tags must be assigned the special tag="undetermined".
+* Reconstruct the paired reads for each originating cell and output paired reads to _1 and _2 FASTQ files.
+
+### Input
+All input is via command line arguments. 
+
+### Run 
+
+```
+single_cell demultiplex_bam \
+--bam tests/data/demultiplex_bam/bj_mkn45_10pct_possorted_bam_10k_snippet.bam \
+--out_dir tests/data/demultiplex_bam/output/ \
+--barcode_csv tests/data/demultiplex_bam/bj_mkn45_10pct_per_cell_summary_metrics.csv \
+--submit local \
+--tmpdir temp \
+--pipelinedir pipeline \
+--maxjobs 1 \
+--config_file config.yaml \
+--loglevel DEBUG
+```
+
+ 
