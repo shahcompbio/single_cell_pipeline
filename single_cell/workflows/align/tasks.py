@@ -109,13 +109,14 @@ def get_readgroup(run_id, cell_id, library_id, centre, sample_info):
     barcode = sample_info["primer_i7"] + "-" + sample_info["primer_i5"]
 
     read_group_template = (
+        '\"' +
         '@RG\\tID:' + str(library_id) + '_' + cell_id + '_' + str(run_id) +
         '\\tPL:' + platform +
         '\\tPU:' + str(run_id) +
         '\\tLB:' + str(library_id) + '_' + cell_id +
         '\\tSM:' + cell_id +
         '\\tCN:' + centre +
-        '\\tKS:' + barcode)
+        '\\tKS:' + barcode+'\"')
 
     return read_group_template
 
