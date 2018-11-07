@@ -121,7 +121,7 @@ def create_multi_sample_workflow(
             mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
             mgd.OutputFile('tumour_regions.bam', 'sample_id', 'region', axes_origin=[], extensions=['.bai']),
             regions,
-            helpers.get_container_ctx(config['containers'], 'samtools'),
+            config,
         ),
     )
 

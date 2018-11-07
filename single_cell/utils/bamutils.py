@@ -120,7 +120,7 @@ def bam_flagstat(bam, metrics, **kwargs):
 
 def bam_merge(bams, output, **kwargs):
 
-    cmd = ['samtools', 'merge']
+    cmd = ['samtools', 'merge', '-f']
     if kwargs.get('region'):
         cmd.extend(['-R', kwargs.get('region')])
 
