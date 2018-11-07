@@ -270,10 +270,6 @@ def parse_args():
         subparsers.add_parser("multi_sample_pseudo_bulk"))
     multi_sample_pseudo_bulk.set_defaults(which='multi_sample_pseudo_bulk')
 
-    multi_sample_pseudo_bulk.add_argument("--normal_wgs_bam",
-                                          required=True,
-                                          help='''normal bam''')
-
     multi_sample_pseudo_bulk.add_argument("--tumour_template",
                            action=parseRegionTemplate,
                            required=True,
