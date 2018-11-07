@@ -288,19 +288,6 @@ def create_variant_calling_workflow(
         }
     )
 
-    inputs = {'normal': normal_region_bams, 'tumour': tumour_cell_bams}
-
-    metadata = {
-        'variant_calling': {
-            'name': 'variant_calling',
-            'version': single_cell.__version__,
-            'containers': config['containers'],
-            'output_datasets': None,
-            'input_datasets': inputs,
-            'results': {'variant_calling_data': helpers.format_file_yaml(snv_h5)}
-        }
-    }
-
     # TODO: will download results unnecessarily on cloud
     workflow.transform(
         name='generate_meta_yaml',
@@ -315,9 +302,9 @@ def create_variant_calling_workflow(
                 'version': single_cell.__version__,
                 'output_datasets': None,
                 'input_datasets': {
-                    'tumour_cell': tumour_cell_bams,
-                    'tumour_region': tumour_region_bams,
-                    'normal': normal_region_bams,
+                    'tumour_cell_bam': tumour_cell_bams,
+                    'tumour_region_bam': tumour_region_bams,
+                    'normal_bam': normal_region_bams,
                 },
                 'results': {
                     'museq_vcf': mgd.InputFile(museq_vcf),
@@ -336,19 +323,22 @@ def variant_counting_workflow(args):
 
     config = helpers.load_config(args)
 
+    meta_yaml = os.path.join(args['out_dir'], 'info.yaml')
+
     bam_files, bai_files  = helpers.get_bams(args['input_yaml'])
     vcfs = args['input_vcfs']
     results_file = os.path.join(args['out_dir'], 'results', 'variant_counting', 'counts.h5')
 
     cellids = helpers.get_samples(args['input_yaml'])
 
-    return create_variant_counting_workflow(vcfs, bam_files, results_file, config)
+    return create_variant_counting_workflow(vcfs, bam_files, results_file, meta_yaml, config)
 
 
 def create_variant_counting_workflow(
     vcfs,
     tumour_cell_bams,
     results_h5,
+    meta_yaml,
     config,
 ):
     """ Count variant reads for multiple sets of variants across cells.
@@ -377,7 +367,7 @@ def create_variant_counting_workflow(
             mgd.TempInputFile('all.snv.vcf'),
             mgd.TempOutputFile('all.snv.vcf.gz', extensions=['.tbi'])
         ),
-    kwargs={'docker_config': helpers.get_container_ctx(config['containers'], 'vcftools')}
+        kwargs={'docker_config': helpers.get_container_ctx(config['containers'], 'vcftools')}
     )
 
     workflow.subworkflow(
@@ -392,6 +382,29 @@ def create_variant_counting_workflow(
         kwargs={
             'docker_config': helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
         },
+    )
+
+    # TODO: will download results unnecessarily on cloud
+    workflow.transform(
+        name='generate_meta_yaml',
+        ctx=dict(mem=config['memory']['med'],
+                 pool_id=config['pools']['standard'],
+                 **ctx),
+        func="single_cell.utils.helpers.write_to_yaml",
+        args=(
+            mgd.OutputFile(meta_yaml),
+            {
+                'name': 'variant_counting',
+                'version': single_cell.__version__,
+                'output_datasets': None,
+                'input_datasets': {
+                    'tumour_cell_bam': tumour_cell_bams,
+                },
+                'results': {
+                    'snv_counts': mgd.InputFile(results_h5),
+                },
+            },
+        )
     )
 
     return workflow
