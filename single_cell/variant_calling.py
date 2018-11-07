@@ -305,6 +305,7 @@ def create_variant_calling_workflow(
         }
     }
 
+    # TODO: will download results unnecessarily on cloud
     workflow.transform(
         name='generate_meta_yaml',
         ctx=dict(mem=config['memory']['med'],
