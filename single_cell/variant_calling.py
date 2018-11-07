@@ -301,6 +301,7 @@ def create_variant_calling_workflow(
         }
     }
 
+    # TODO: will download results unnecessarily on cloud
     workflow.transform(
         name='generate_meta_yaml',
         ctx=dict(mem=config['memory']['med'],
@@ -309,7 +310,22 @@ def create_variant_calling_workflow(
         func="single_cell.utils.helpers.write_to_yaml",
         args=(
             mgd.OutputFile(meta_yaml),
-            metadata
+            {
+                'name': 'variant_calling',
+                'version': single_cell.__version__,
+                'output_datasets': None,
+                'input_datasets': {
+                    'tumour_cell': tumour_cell_bams,
+                    'tumour_region': tumour_region_bams,
+                    'normal': normal_region_bams,
+                },
+                'results': {
+                    'museq_vcf': mgd.InputFile(museq_vcf),
+                    'strelka_snv_vcf': mgd.InputFile(strelka_snv_vcf),
+                    'strelka_indel_vcf': mgd.InputFile(strelka_indel_vcf),
+                    'snv_annotations': mgd.InputFile(snv_h5),
+                },
+            },
         )
     )
 
