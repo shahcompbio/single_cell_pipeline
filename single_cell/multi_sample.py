@@ -60,11 +60,14 @@ def create_multi_sample_workflow(
     strelka_snv_template = os.path.join(results_dir, '{sample_id}_strelka_snv.vcf.gz')
     strelka_indel_template = os.path.join(results_dir, '{sample_id}_strelka_indel.vcf.gz')
     snv_annotations_template = os.path.join(results_dir, '{sample_id}_snv_annotations.h5')
-    snv_meta_template = os.path.join(results_dir, '{sample_id}_snv_meta.yaml')
     snv_counts_template = os.path.join(results_dir, '{sample_id}_snv_counts.h5')
     haplotypes_file = os.path.join(results_dir, 'haplotypes.tsv')
     allele_counts_template = os.path.join(results_dir, '{sample_id}_allele_counts.tsv')
     breakpoints_template = os.path.join(results_dir, '{sample_id}.h5')
+
+    snv_calling_info_template = os.path.join(results_dir, '{sample_id}_snv_calling_info.yaml')
+    snv_counting_info_template = os.path.join(results_dir, '{sample_id}_snv_counting_info.yaml')
+    multisample_info_filename = os.path.join(results_dir, '{sample_id}_multisample_info.yaml')
 
     regions = refgenome.get_split_regions(config["split_size"])
 
@@ -78,10 +81,13 @@ def create_multi_sample_workflow(
     workflow.set_filenames('strelka_snv.vcf', 'sample_id', template=strelka_snv_template)
     workflow.set_filenames('strelka_indel.vcf', 'sample_id', template=strelka_indel_template)
     workflow.set_filenames('snv_annotations.h5', 'sample_id', template=snv_annotations_template)
-    workflow.set_filenames('snv_meta.yaml', 'sample_id', template=snv_meta_template)
     workflow.set_filenames('snv_counts.h5', 'sample_id', template=snv_counts_template)
     workflow.set_filenames('tumour_cell_seqdata.h5', 'sample_id', 'cell_id', template=tumour_cell_seqdata_template)
+    workflow.set_filenames('allele_counts.csv', 'sample_id', template=allele_counts_template)
     workflow.set_filenames('breakpoints.h5', 'sample_id', template=breakpoints_template)
+
+    workflow.set_filenames('snv_calling_info.yaml', 'sample_id', template=snv_calling_info_template)
+    workflow.set_filenames('snv_counting_info.yaml', 'sample_id', template=snv_counting_info_template)
 
     workflow.setobj(
         obj=mgd.OutputChunks('region'),
@@ -137,7 +143,7 @@ def create_multi_sample_workflow(
             mgd.OutputFile('strelka_snv.vcf', 'sample_id'),
             mgd.OutputFile('strelka_indel.vcf', 'sample_id'),
             mgd.OutputFile('snv_annotations.h5', 'sample_id'),
-            mgd.OutputFile('snv_meta.yaml', 'sample_id'),
+            mgd.OutputFile('snv_calling_info.yaml', 'sample_id'),
             config,
             raw_data_dir,
         ),
@@ -172,6 +178,7 @@ def create_multi_sample_workflow(
             ],
             mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
             mgd.OutputFile('snv_counts.h5', 'sample_id'),
+            mgd.OutputFile('snv_counting_info.yaml', 'sample_id'),
             config,
         ),
     )
@@ -195,7 +202,7 @@ def create_multi_sample_workflow(
             mgd.InputFile(haplotypes_file),
             mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
             mgd.OutputFile('tumour_cell_seqdata.h5', 'sample_id', 'cell_id', axes_origin=[]),
-            mgd.OutputFile('allele_counts.h5', 'sample_id', template=allele_counts_template),
+            mgd.OutputFile('allele_counts.csv', 'sample_id', template=allele_counts_template),
             config,
         ),
     )
@@ -215,6 +222,32 @@ def create_multi_sample_workflow(
             mgd.OutputFile('breakpoints.h5', 'sample_id'),
             raw_data_dir,
         ),
+    )
+
+    # TODO: will download results unnecessarily on cloud
+    workflow.transform(
+        name='generate_meta_yaml',
+        ctx=dict(mem=config['memory']['med'],
+                 pool_id=config['pools']['standard'],
+                 **ctx),
+        func="single_cell.utils.helpers.write_to_yaml",
+        args=(
+            mgd.OutputFile(multisample_info_filename),
+            {
+                'name': 'multi_sample_pseudobulk',
+                'version': single_cell.__version__,
+                'output_datasets': None,
+                'input_datasets': {
+                    'normal_bam': normal_wgs_bam,
+                    'tumour_cell_bams': tumour_cell_bams,
+                },
+                'results': {
+                    'haplotypes': mgd.InputFile(haplotypes_file),
+                    'allele_counts': mgd.InputFile('allele_counts.csv', 'sample_id'),
+                    'breakpoints': mgd.InputFile('breakpoints.h5', 'sample_id'),
+                },
+            },
+        )
     )
 
     return workflow
