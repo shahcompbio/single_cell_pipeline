@@ -42,15 +42,35 @@ def create_museq_workflow(
     )
 
     workflow.transform(
+        name='finalise_region_vcfs',
+        axes=('region',),
+        func='biowrappers.components.io.vcf.tasks.finalise_vcf',
+        args=(
+            mgd.TempInputFile('museq.vcf', 'region'),
+            mgd.TempOutputFile('museq.vcf.gz', 'region', extensions=['.tbi', '.csi']),
+        )
+    )
+
+    workflow.transform(
         name='merge_snvs',
         ctx=dict(mem=config["memory"]['med'],
                  pool_id=config['pools']['standard'],
                  **ctx),
         func='biowrappers.components.io.vcf.tasks.concatenate_vcf',
         args=(
-            mgd.TempInputFile('museq.vcf', 'region'),
-            mgd.OutputFile(snv_vcf),
+            mgd.TempInputFile('museq.vcf.gz', 'region'),
+            mgd.TempOutputFile('museq.vcf.gz'),
         ),
     )
 
+    workflow.transform(
+        name='finalise_vcf',
+        func='biowrappers.components.io.vcf.tasks.finalise_vcf',
+        args=(
+            mgd.TempInputFile('museq.vcf.gz'),
+            mgd.OutputFile(snv_vcf, extensions=['.tbi', '.csi']),
+        )
+    )
+
     return workflow
+
