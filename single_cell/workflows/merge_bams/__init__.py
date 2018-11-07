@@ -89,6 +89,8 @@ def create_cell_region_merge_workflow(
     regions,
     config,
 ):
+    region_bams = dict([(region, region_bams[region]) for region in regions])
+
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
