@@ -61,6 +61,9 @@ def create_museq_workflow(
             mgd.TempInputFile('museq.vcf.gz', 'region'),
             mgd.TempOutputFile('museq.vcf.gz'),
         ),
+        kwargs={
+            'allow_overlap': True,
+        },
     )
 
     workflow.transform(
