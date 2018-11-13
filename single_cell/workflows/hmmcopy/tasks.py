@@ -247,6 +247,9 @@ def merge_hdf_files_on_disk(
                 if "cell_id" not in data:
                     data.cell_id = cellid
 
+                # make cellid categorical
+                data.cell_id = pd.Categorical(data.cell_id, cells)
+
                 for col, dtype in dtypes.iteritems():
                     data[col] = data[col].astype(dtype)
 
@@ -291,6 +294,9 @@ def merge_hdf_files_in_memory(
         all_cells_data = all_cells_data.reset_index()
 
         out_tablename = '/{}/{}'.format(tableprefix, multiplier)
+
+        # make cellid categorical
+        all_cells_data.cell_id = pd.Categorical(all_cells_data.cell_id, cells)
 
         output_store.put(
             out_tablename,
