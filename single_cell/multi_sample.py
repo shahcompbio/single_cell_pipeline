@@ -56,18 +56,21 @@ def create_multi_sample_workflow(
     normal_seqdata_file = os.path.join(raw_data_dir, 'normal_seqdata.h5')
     tumour_cell_seqdata_template = os.path.join(raw_data_dir, '{sample_id}_{cell_id}_seqdata.h5')
 
+    variant_calling_raw_data_template = os.path.join(raw_data_dir, '{sample_id}_variant_calling')
+    destruct_raw_data_template = os.path.join(raw_data_dir, '{sample_id}_destruct')
+
     museq_vcf_template = os.path.join(results_dir, '{sample_id}_museq.vcf.gz')
     strelka_snv_template = os.path.join(results_dir, '{sample_id}_strelka_snv.vcf.gz')
     strelka_indel_template = os.path.join(results_dir, '{sample_id}_strelka_indel.vcf.gz')
     snv_annotations_template = os.path.join(results_dir, '{sample_id}_snv_annotations.h5')
     snv_counts_template = os.path.join(results_dir, '{sample_id}_snv_counts.h5')
     haplotypes_file = os.path.join(results_dir, 'haplotypes.tsv')
-    allele_counts_template = os.path.join(results_dir, '{sample_id}_allele_counts.tsv')
-    breakpoints_template = os.path.join(results_dir, '{sample_id}.h5')
+    allele_counts_template = os.path.join(results_dir, '{sample_id}_allele_counts.csv')
+    breakpoints_template = os.path.join(results_dir, '{sample_id}_destruct.h5')
 
     snv_calling_info_template = os.path.join(results_dir, '{sample_id}_snv_calling_info.yaml')
     snv_counting_info_template = os.path.join(results_dir, '{sample_id}_snv_counting_info.yaml')
-    multisample_info_filename = os.path.join(results_dir, '{sample_id}_multisample_info.yaml')
+    multisample_info_filename = os.path.join(results_dir, 'multisample_info.yaml')
 
     regions = refgenome.get_split_regions(config["split_size"])
 
@@ -145,7 +148,7 @@ def create_multi_sample_workflow(
             mgd.OutputFile('snv_annotations.h5', 'sample_id'),
             mgd.OutputFile('snv_calling_info.yaml', 'sample_id'),
             config,
-            raw_data_dir,
+            mgd.Template(variant_calling_raw_data_template, 'sample_id'),
         ),
     )
 
@@ -220,16 +223,13 @@ def create_multi_sample_workflow(
             destruct_config,
             destruct_ref_data_dir,
             mgd.OutputFile('breakpoints.h5', 'sample_id'),
-            raw_data_dir,
+            mgd.Template(destruct_raw_data_template, 'sample_id'),
         ),
     )
 
     # TODO: will download results unnecessarily on cloud
     workflow.transform(
         name='generate_meta_yaml',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
         func="single_cell.utils.helpers.write_to_yaml",
         args=(
             mgd.OutputFile(multisample_info_filename),
