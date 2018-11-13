@@ -291,9 +291,6 @@ def create_variant_calling_workflow(
     # TODO: will download results unnecessarily on cloud
     workflow.transform(
         name='generate_meta_yaml',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
         func="single_cell.utils.helpers.write_to_yaml",
         args=(
             mgd.OutputFile(meta_yaml),
@@ -387,9 +384,6 @@ def create_variant_counting_workflow(
     # TODO: will download results unnecessarily on cloud
     workflow.transform(
         name='generate_meta_yaml',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
         func="single_cell.utils.helpers.write_to_yaml",
         args=(
             mgd.OutputFile(meta_yaml),
