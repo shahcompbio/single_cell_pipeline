@@ -305,6 +305,7 @@ def create_hmmcopy_workflow(
             mgd.TempInputFile("annotated_metrics.h5"),
             mgd.TempInputFile("params.h5"),
             mgd.TempOutputFile("hmmcopy_precast.h5"),
+            cell_ids
         )
     )
 
