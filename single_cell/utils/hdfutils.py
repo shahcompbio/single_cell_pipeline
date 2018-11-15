@@ -50,15 +50,14 @@ def cast_h5_file(h5data, output):
         with pd.HDFStore(h5data, 'r') as input:
             tablenames = input.keys()
             for tablename in tablenames:
-                output[tablename] = cast_columns(input[tablename])
+                output.put(tablename, cast_columns(input[tablename]), format='table')
 
 
 def concat_csvs_to_hdf(infiles, outfile, tablenames):
     with pd.HDFStore(outfile, 'w', complevel=9, complib='blosc') as output:
         for infile, tablename in zip(infiles, tablenames):
             df = pd.read_csv(infile)
-
-            output.put(tablename, df)
+            output.put(tablename, df, format='table')
 
 
 def merge_csvs_to_hdf_in_memory(infiles, outfile, tablename):
@@ -67,7 +66,7 @@ def merge_csvs_to_hdf_in_memory(infiles, outfile, tablename):
     data = pd.concat(data)
 
     with pd.HDFStore(outfile, 'w', complevel=9, complib='blosc') as output:
-        output.put(tablename, data)
+        output.put(tablename, data, format='table')
 
 
 def merge_csvs_to_hdf_on_disk(infiles, outfile, tablename):
@@ -121,7 +120,6 @@ def merge_cells_in_memory(
             tables_to_merge = input_store.keys()
 
         for tableid in tables_to_merge:
-            df = input_store[tableid]
             data.append(input_store[tableid])
 
     data = pd.concat(data)
