@@ -591,9 +591,9 @@ def plot_pcolor(infile, metrics, output, tempdir, multipliers, plot_title=None,
     pdfutils.merge_pdfs(multiplier_pdfs, output)
 
 
-def merge_tables(reads, segments, metrics, params, output):
-
-    hdfutils.concat_hdf_tables([reads, segments, metrics, params], output)
+def merge_tables(reads, segments, metrics, params, output, cells):
+    categories = {'cell_id': cells}
+    hdfutils.concat_hdf_tables([reads, segments, metrics, params], output, categories)
 
 
 def add_quality(hmmcopy_metrics, alignment_metrics, multipliers, output, training_data):
