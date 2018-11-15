@@ -89,10 +89,18 @@ def convert_csv_to_hdf(infile, outfile, tablename):
     with pd.HDFStore(outfile, 'w', complevel=9, complib='blosc') as out_store:
         out_store.put(tablename, df, format='table')
 
+def set_categories_df(df, categories):
+    if not isinstance(df, pd.DataFrame):
+        return df
+    for colname in df.columns.values:
+        if colname in categories:
+            df[colname] = df[colname].cat.set_categories(categories[colname])
+    return df
 
-def concat_hdf_tables(in_files, out_file):
 
-    chunksize = 10 ** 5
+def concat_hdf_tables(in_files, out_file, categories={}):
+
+    chunksize = 10 ** 6
 
     with pd.HDFStore(out_file, 'w', complevel=9, complib='blosc') as output:
         for infile in in_files:
@@ -100,9 +108,15 @@ def concat_hdf_tables(in_files, out_file):
                 tables = input_store.keys()
 
             for table in tables:
+                # metadata columns from original
+                # files can cause loading errors
+                if table.endswith("meta"):
+                    continue
 
                 for chunk in pd.read_hdf(
                         infile, key=table, chunksize=chunksize):
+
+                    chunk = set_categories_df(chunk, categories)
 
                     if table not in output:
                         output.put(table, chunk, format='table')
