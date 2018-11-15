@@ -13,8 +13,12 @@ def generate_submit_config_in_temp(args):
     if args.get("submit_config", None):
         return args
 
-    batch_yaml = "batch.yaml"
+    azure_submit = ['azurebatch',
+                    'pypeliner.contrib.azure.batchqueue.AzureJobQueue']
+    if not args.get("submit", None) in azure_submit:
+        return args
 
+    batch_yaml = "batch.yaml"
     tmpdir = args.get("tmpdir", None)
     pipelinedir = args.get("pipelinedir", None)
 
@@ -26,6 +30,8 @@ def generate_submit_config_in_temp(args):
     else:
         warnings.warn("no tmpdir specified, generating configs in working dir")
         batch_yaml = os.path.join(os.getcwd(), batch_yaml)
+
+    helpers.makedirs(batch_yaml, isfile=True)
 
     batch_yaml = helpers.get_incrementing_filename(batch_yaml)
 
