@@ -165,6 +165,14 @@ class PlotMetrics(object):
 
     def plot_metric_fraction(self, df, numerator_metric, denominator_metric,
                              ylab, pdf, plot_title):
+        if numerator_metric not in df.columns.values:
+            warnings.warn("{} column missing in data".format(numerator_metric))
+            return
+
+        if denominator_metric not in df.columns.values:
+            warnings.warn("{} column missing in data".format(denominator_metric))
+            return
+
         sns.set(context='talk',
                 style='ticks',
                 font='Helvetica',
@@ -211,6 +219,10 @@ class PlotMetrics(object):
         plt.close()
 
     def plot_metric(self, df, metric, ylab, text_spacing, pdf, plot_title):
+        if metric not in df.columns.values:
+            warnings.warn("{} column missing in data".format(metric))
+            return
+
         sns.set(context='talk',
                 style='ticks',
                 font='Helvetica',
@@ -260,6 +272,10 @@ class PlotMetrics(object):
     def plot_metric_heatmap(
             self, df, metric, title, pdf, plot_title,
             size=72, center=None, cmap=None):
+
+        if metric not in df.columns.values:
+            warnings.warn("{} column missing in data".format(metric))
+            return
 
         # set size based on the R-C in sample_plate
         size = int(max(size, max(df.row), max(df.column)))
@@ -329,6 +345,11 @@ class PlotMetrics(object):
         plt.close()
 
     def plot_metric_factorplot(self, df, metric, ylab, pdf, plot_title):
+
+        if metric not in df.columns.values:
+            warnings.warn("{} column missing in data".format(metric))
+            return
+
         df_melt = pd.melt(df, id_vars=['cell_id', 'experimental_condition',
                                        'cell_call'], value_vars=[metric])
 
@@ -726,6 +747,8 @@ class PlotMetrics(object):
             self.plot_metric(df, 'MBRSM_dispersion', 'MBRSM Dispersion', 0.01,
                              pdf, self.plot_title,)
 
+            self.plot_metric_heatmap(df, 'quality', 'Classifier Score',
+                                    pdf, self.plot_title, cmap="RdBu_r")
             self.plot_metric_heatmap(df, 'log_likelihood', 'Log Likelihood',
                                      pdf, self.plot_title)
             self.plot_metric_heatmap(df, 'mad_neutral_state', 'Mad Neutral State',
@@ -737,6 +760,8 @@ class PlotMetrics(object):
             self.plot_metric_heatmap(df, 'MBRSM_dispersion', 'MBRSM Dispersion',
                                      pdf, self.plot_title)
 
+            self.plot_metric_factorplot(df, 'quality', 'Classifier Score',
+                                        pdf, self.plot_title)
             self.plot_metric_factorplot(df, 'log_likelihood', 'Log Likelihood',
                                         pdf, self.plot_title)
             self.plot_metric_factorplot(df, 'mad_neutral_state', 'Mad Neutral State',
