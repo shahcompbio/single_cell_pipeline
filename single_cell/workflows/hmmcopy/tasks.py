@@ -243,6 +243,10 @@ def merge_hdf_files_on_disk(
                 tablename = '/{}/{}/{}'.format(tableprefix, cellid, multiplier)
                 data = infilestore[tablename]
 
+                data = data.dropna(axis=0, how='all')
+                if data.empty:
+                    continue
+
                 # remove later, only added to fix a run
                 if "cell_id" not in data:
                     data.cell_id = cellid
