@@ -57,6 +57,9 @@ def concat_csvs_to_hdf(infiles, outfile, tablenames):
     with pd.HDFStore(outfile, 'w', complevel=9, complib='blosc') as output:
         for infile, tablename in zip(infiles, tablenames):
             df = pd.read_csv(infile)
+            #pytables silently ignores empty tables
+            if df.empty:
+                df = df.append(pd.Series([]), ignore_index=True)
             output.put(tablename, df, format='table')
 
 
