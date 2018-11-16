@@ -169,6 +169,7 @@ class GenHmmPlots(object):
 
         df = self.segments_store[
             "/hmmcopy/segments/{}/{}".format(cell_id, multiplier)]
+        df = df.dropna(axis=0, how='all')
 
         if not df.empty:
             # just the sort order in here, dont need to change for mouse.
