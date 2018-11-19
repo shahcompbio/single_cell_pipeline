@@ -55,17 +55,20 @@ def get_batch_params(override=None):
         "standard": {
             "tasks_per_node": 4,
             "numcores": 4,
-            "primary": True
+            "mem": 8,
+            "dedicated": False
         },
         "highmem": {
             "tasks_per_node": 2,
             "numcores": 4,
-            "primary": False
+            "mem": 16,
+            "dedicated": False
         },
         "multicore": {
             "tasks_per_node": 1,
             "numcores": 8,
-            "primary": False
+            "mem": 8,
+            "dedicated": False
         }
     }
 
@@ -155,9 +158,9 @@ def get_vm_image_id():
     return imageid
 
 def get_pool_def(
-        tasks_per_node, reference, pool_type, numcores, primary=False):
+        tasks_per_node, reference, pool_type, numcores, memory, dedicated):
 
-    autoscale_formula = generate_autoscale_formula(tasks_per_node)
+    autoscale_formula = generate_autoscale_formula(tasks_per_node, dedicated)
 
     vm_commands = create_vm_commands()
 
@@ -165,7 +168,9 @@ def get_pool_def(
 
     pooldata = {
         "pool_vm_size": get_vm_size_azure(numcores),
-        "primary": primary,
+        "cpus": tasks_per_node,
+        'mem': memory,
+        'dedicated': dedicated,
         'node_resource_id': get_vm_image_id(),
         'node_os_publisher': 'Canonical',
         'node_os_offer': 'UbuntuServer',
@@ -224,11 +229,12 @@ def get_all_pools(pool_config, reference):
     for pooltype, poolinfo in pool_config.iteritems():
         tasks_per_node = poolinfo["tasks_per_node"]
         numcores = poolinfo["numcores"]
-        primary = poolinfo["primary"]
+        memory = poolinfo["mem"]
+        dedicated = poolinfo["dedicated"]
 
         pool_def = get_pool_def(
             tasks_per_node, reference, pooltype,
-            numcores, primary
+            numcores, memory, dedicated
         )
 
         pooldefs.update(pool_def)
