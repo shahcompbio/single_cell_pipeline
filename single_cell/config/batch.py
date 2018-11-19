@@ -147,9 +147,10 @@ def get_vm_size_azure(numcores):
 def get_vm_image_id():
     subscription = os.environ.get("SUBSCRIPTION_ID", "id-missing")
     resource_group = os.environ.get("RESOURCE_GROUP", "id-missing")
-    return "/subscriptions/{}/resourceGroups/{}/providers/Microsoft.Compute/images/docker-production".format(
-        subscription, resource_group)
-
+    imageid = ['subscriptions', subscription, 'resourceGroups',
+               resource_group, 'providers', 'Microsoft.Compute',
+               'images', 'dockerproduction-smalldisk']
+    return '/'.join(imageid)
 
 def get_pool_def(
         tasks_per_node, reference, pool_type, numcores, primary=False):
