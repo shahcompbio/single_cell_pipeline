@@ -150,7 +150,9 @@ def get_vm_image_id():
     imageid = ['subscriptions', subscription, 'resourceGroups',
                resource_group, 'providers', 'Microsoft.Compute',
                'images', 'dockerproduction-smalldisk']
-    return '/'.join(imageid)
+    imageid = '/'.join(imageid)
+    imageid = '/' + imageid
+    return imageid
 
 def get_pool_def(
         tasks_per_node, reference, pool_type, numcores, primary=False):
