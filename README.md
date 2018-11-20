@@ -420,15 +420,12 @@ before launching the hmmcopy will rerun the heatmap plotting  and any tasks that
 
 ## 13. Demultiplex BAM
 
-![align](readme_data/align.png)
-
 Demultiplexes a BAM file by cell identifier and converts the demultiplexed bam files to paired end fastq files.
 
-* Demultiplex bam files based on the optional CB (cell identifier) tag.
-* User shall specify list of cell ids/barcodes on which to demultiplex.
-* Aligned reads associated with barcodes not contained in user specified list must be filtered out.
-* Aligned reads that don't have CB tags must be assigned the special tag="undetermined".
-* Reconstruct the paired reads for each originating cell and output paired reads to _1 and _2 FASTQ files.
+* Demultiplex bam files based on a user specified list of CB (cell identifier or barcode) tags in csv format.
+* Aligned reads with barcodes not contained in the user specified list are filtered out.
+* Aligned reads that don't have CB tags are assigned the special tag="undetermined".
+* The paired end reads for each originating cell are output to _1 and _2 FASTQ files.
 
 ### Input
 All input is via command line arguments. 
