@@ -147,9 +147,12 @@ def get_vm_size_azure(numcores):
 def get_vm_image_id():
     subscription = os.environ.get("SUBSCRIPTION_ID", "id-missing")
     resource_group = os.environ.get("RESOURCE_GROUP", "id-missing")
-    return "/subscriptions/{}/resourceGroups/{}/providers/Microsoft.Compute/images/docker-production".format(
-        subscription, resource_group)
-
+    imageid = ['subscriptions', subscription, 'resourceGroups',
+               resource_group, 'providers', 'Microsoft.Compute',
+               'images', 'dockerproduction-smalldisk']
+    imageid = '/'.join(imageid)
+    imageid = '/' + imageid
+    return imageid
 
 def get_pool_def(
         tasks_per_node, reference, pool_type, numcores, primary=False):
@@ -205,8 +208,8 @@ def get_compute_start_commands():
 
 def get_compute_finish_commands():
     commands = (
-        "find /datadrive/$AZ_BATCH_TASK_WORKING_DIR/ -xtype l -delete\n"
-        "find /datadrive/$AZ_BATCH_TASK_WORKING_DIR/ -type f -delete\n"
+        "docker run -v $(dirname $AZ_BATCH_TASK_WORKING_DIR):$(dirname $AZ_BATCH_TASK_WORKING_DIR) -w $AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype l -delete\n"
+        "docker run -v $(dirname $AZ_BATCH_TASK_WORKING_DIR):$(dirname $AZ_BATCH_TASK_WORKING_DIR) -w $AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype f -delete\n"
     )
 
     commands = literal_unicode(commands)

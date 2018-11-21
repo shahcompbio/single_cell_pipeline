@@ -235,15 +235,24 @@ def merge_hdf_files_on_disk(
 
     cells = reads.keys()
 
+    min_itemsize = {'cell_id': max(map(len, cells))+2}
+
     for cellid, infile in reads.iteritems():
         with pd.HDFStore(infile, 'r') as infilestore:
             for multiplier in multipliers:
                 tablename = '/{}/{}/{}'.format(tableprefix, cellid, multiplier)
                 data = infilestore[tablename]
 
+                data = data.dropna(axis=0, how='all')
+                if data.empty:
+                    continue
+
                 # remove later, only added to fix a run
                 if "cell_id" not in data:
                     data.cell_id = cellid
+
+                # make cellid categorical
+                data.cell_id = pd.Categorical(data.cell_id, cells)
 
                 for col, dtype in dtypes.iteritems():
                     data[col] = data[col].astype(dtype)
@@ -289,6 +298,9 @@ def merge_hdf_files_in_memory(
         all_cells_data = all_cells_data.reset_index()
 
         out_tablename = '/{}/{}'.format(tableprefix, multiplier)
+
+        # make cellid categorical
+        all_cells_data.cell_id = pd.Categorical(all_cells_data.cell_id, cells)
 
         output_store.put(
             out_tablename,
@@ -449,7 +461,7 @@ def get_hierarchical_clustering_order(
         reads_filename, tablename, chromosomes=None):
 
     data = []
-    chunksize = 10 ** 6
+    chunksize = 10 ** 5
     for chunk in pd.read_hdf(
             reads_filename, chunksize=chunksize, key=tablename):
 
@@ -583,9 +595,9 @@ def plot_pcolor(infile, metrics, output, tempdir, multipliers, plot_title=None,
     pdfutils.merge_pdfs(multiplier_pdfs, output)
 
 
-def merge_tables(reads, segments, metrics, params, output):
-
-    hdfutils.concat_hdf_tables([reads, segments, metrics, params], output)
+def merge_tables(reads, segments, metrics, params, output, cells):
+    categories = {'cell_id': cells}
+    hdfutils.concat_hdf_tables([reads, segments, metrics, params], output, categories)
 
 
 def add_quality(hmmcopy_metrics, alignment_metrics, multipliers, output, training_data):

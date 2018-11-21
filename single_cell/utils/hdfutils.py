@@ -27,6 +27,9 @@ def get_min_itemsize(files):
 
 def cast_columns(df):
 
+    if not isinstance(df, pd.DataFrame):
+        return df
+
     reference, ignore_cols = helpers.get_coltype_reference()
 
     for col in df.columns.values:
@@ -47,7 +50,7 @@ def cast_h5_file(h5data, output):
         with pd.HDFStore(h5data, 'r') as input:
             tablenames = input.keys()
             for tablename in tablenames:
-                output[tablename] = cast_columns(input[tablename])
+                output.put(tablename, cast_columns(input[tablename]), format='table')
 
 
 def concat_csvs_to_hdf(infiles, outfile, tablenames):
@@ -55,7 +58,10 @@ def concat_csvs_to_hdf(infiles, outfile, tablenames):
         for infile, tablename in zip(infiles, tablenames):
             df = pd.read_csv(infile)
 
-            output.put(tablename, df)
+            #pytables silently ignores empty tables
+            if df.empty:
+                df = df.append(pd.Series([]), ignore_index=True)
+            output.put(tablename, df, format='table')
 
 
 def merge_csvs_to_hdf_in_memory(infiles, outfile, tablename):
@@ -64,7 +70,7 @@ def merge_csvs_to_hdf_in_memory(infiles, outfile, tablename):
     data = pd.concat(data)
 
     with pd.HDFStore(outfile, 'w', complevel=9, complib='blosc') as output:
-        output.put(tablename, data)
+        output.put(tablename, data, format='table')
 
 
 def merge_csvs_to_hdf_on_disk(infiles, outfile, tablename):
@@ -87,8 +93,16 @@ def convert_csv_to_hdf(infile, outfile, tablename):
     with pd.HDFStore(outfile, 'w', complevel=9, complib='blosc') as out_store:
         out_store.put(tablename, df, format='table')
 
+def set_categories_df(df, categories):
+    if not isinstance(df, pd.DataFrame):
+        return df
+    for colname in df.columns.values:
+        if colname in categories:
+            df[colname] = df[colname].cat.set_categories(categories[colname])
+    return df
 
-def concat_hdf_tables(in_files, out_file):
+
+def concat_hdf_tables(in_files, out_file, categories={}):
 
     chunksize = 10 ** 5
 
@@ -100,15 +114,20 @@ def concat_hdf_tables(in_files, out_file):
                 tables = input_store.keys()
 
             for table in tables:
+                # metadata columns from original
+                # files can cause loading errors
+                if table.endswith("meta"):
+                    continue
 
                 for chunk in pd.read_hdf(
                         infile, key=table, chunksize=chunksize):
 
-                    minitem = {v:min_itemsize[v] for v in chunk.columns.values if v in min_itemsize}
+                    chunk = set_categories_df(chunk, categories)
+
                     if table not in output:
-                        output.put(table, chunk, format='table', min_itemsize=minitem)
+                        output.put(table, chunk, format='table')
                     else:
-                        output.append(table, chunk, format='table', min_itemsize=minitem)
+                        output.append(table, chunk, format='table')
 
 
 def merge_cells_in_memory(
@@ -121,7 +140,6 @@ def merge_cells_in_memory(
             tables_to_merge = input_store.keys()
 
         for tableid in tables_to_merge:
-            df = input_store[tableid]
             data.append(input_store[tableid])
 
     data = pd.concat(data)

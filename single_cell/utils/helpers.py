@@ -75,9 +75,13 @@ def format_file_yaml(filepath):
 
     mapping = {'.bam':'bam', '.pdf': 'PDF',
                '.fastq': 'fastq', '.h5': 'H5',
-               '.tar': 'tar'}
+               '.tar': 'tar', '.fq': 'fastq'}
 
-    return {'filename': filepath, 'type': mapping[ext[1]]}
+    filetype = mapping.get(ext[1], None)
+    if not filetype:
+        filetype = "unknown"
+
+    return {'filename': filepath, 'type': filetype}
 
 def get_container_ctx(container_config, image_name, docker_only=False):
     if docker_only and not container_config['container_type'] == 'docker':
