@@ -43,16 +43,9 @@ def create_hmmcopy_workflow(
         value=rows,
     )
 
-    ctx = {'mem_retry_increment': 2, 'ncpus': 1}
-    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
-    ctx.update(docker_ctx)
-
-
     workflow.transform(
         name='run_hmmcopy',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'image': 'scp/single_cell_pipeline:v0.2.7'},
         func="single_cell.workflows.hmmcopy.tasks.run_hmmcopy",
         axes=('cell_id',),
         args=(
@@ -76,9 +69,7 @@ def create_hmmcopy_workflow(
 
     workflow.transform(
         name='merge_reads',
-        ctx=dict(mem=config['memory']['low'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'image': 'scp/single_cell_pipeline:v0.2.7'},
         func="single_cell.workflows.hmmcopy.tasks.merge_hdf_files_on_disk",
         args=(
             mgd.TempInputFile('reads.h5', 'cell_id'),
@@ -93,9 +84,7 @@ def create_hmmcopy_workflow(
 
     workflow.transform(
         name='merge_segs',
-        ctx=dict(mem=config['memory']['low'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'image': 'scp/single_cell_pipeline:v0.2.7'},
         func="single_cell.workflows.hmmcopy.tasks.merge_hdf_files_on_disk",
         args=(
             mgd.TempInputFile('segs.h5', 'cell_id'),
@@ -110,9 +99,7 @@ def create_hmmcopy_workflow(
 
     workflow.transform(
         name='merge_metrics',
-        ctx=dict(mem=config['memory']['low'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'image': 'scp/single_cell_pipeline:v0.2.7'},
         func="single_cell.workflows.hmmcopy.tasks.merge_hdf_files_in_memory",
         args=(
             mgd.TempInputFile('hmm_metrics.h5', 'cell_id'),
@@ -127,9 +114,7 @@ def create_hmmcopy_workflow(
 
     workflow.transform(
         name='merge_params',
-        ctx=dict(mem=config['memory']['low'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'image': 'scp/single_cell_pipeline:v0.2.7'},
         func="single_cell.workflows.hmmcopy.tasks.merge_hdf_files_in_memory",
         args=(
             mgd.TempInputFile('params.h5', 'cell_id'),
@@ -144,9 +129,7 @@ def create_hmmcopy_workflow(
         annotation_input = 'hmmcopy_quality_metrics.h5'
         workflow.transform(
             name="add_quality",
-            ctx=dict(mem=config['memory']['low'],
-                     pool_id=config['pools']['standard'],
-                     **ctx),
+            ctx={'mem': config['memory']['med'], 'ncpus': 1, 'image': 'scp/single_cell_pipeline:v0.2.7'},
             func="single_cell.workflows.hmmcopy.tasks.add_quality",
             args=(
                 mgd.TempInputFile('hmmcopy_metrics.h5'),
@@ -159,9 +142,7 @@ def create_hmmcopy_workflow(
 
     workflow.transform(
         name='annotate_metrics_with_info_and_clustering',
-        ctx=dict(mem=config['memory']['low'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'image': 'scp/single_cell_pipeline:v0.2.7'},
         func="single_cell.workflows.hmmcopy.tasks.annotate_metrics",
         args=(
             mgd.TempInputFile('reads.h5'),
@@ -176,9 +157,7 @@ def create_hmmcopy_workflow(
 
     workflow.transform(
         name='merge_hmm_copy_plots',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'image': 'scp/single_cell_pipeline:v0.2.7'},
         func="single_cell.workflows.hmmcopy.tasks.merge_pdf",
         args=(
             [
@@ -198,9 +177,7 @@ def create_hmmcopy_workflow(
 
     workflow.transform(
         name='create_igv_seg',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'image': 'scp/single_cell_pipeline:v0.2.7'},
         func="single_cell.workflows.hmmcopy.tasks.create_igv_seg",
         args=(
             mgd.TempInputFile("segments.h5"),
@@ -212,9 +189,7 @@ def create_hmmcopy_workflow(
 
     workflow.transform(
         name='plot_metrics',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'image': 'scp/single_cell_pipeline:v0.2.7'},
         func="single_cell.workflows.hmmcopy.tasks.plot_metrics",
         args=(
             mgd.TempInputFile("annotated_metrics.h5"),
@@ -227,9 +202,7 @@ def create_hmmcopy_workflow(
 
     workflow.transform(
         name='plot_kernel_density',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'image': 'scp/single_cell_pipeline:v0.2.7'},
         func="single_cell.workflows.hmmcopy.tasks.plot_kernel_density",
         args=(
             mgd.TempInputFile('annotated_metrics.h5'),
@@ -244,9 +217,7 @@ def create_hmmcopy_workflow(
 
     workflow.transform(
         name='plot_heatmap_ec',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'image': 'scp/single_cell_pipeline:v0.2.7'},
         func="single_cell.workflows.hmmcopy.tasks.plot_pcolor",
         args=(
             mgd.TempInputFile('reads.h5'),
@@ -269,9 +240,7 @@ def create_hmmcopy_workflow(
 
     workflow.transform(
         name='plot_heatmap_ec_filtered',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'image': 'scp/single_cell_pipeline:v0.2.7'},
         func="single_cell.workflows.hmmcopy.tasks.plot_pcolor",
         args=(
             mgd.TempInputFile('reads.h5'),
@@ -295,9 +264,7 @@ def create_hmmcopy_workflow(
 
     workflow.transform(
         name='merge_all_hdf5_stores',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'image': 'scp/single_cell_pipeline:v0.2.7'},
         func="single_cell.workflows.hmmcopy.tasks.merge_tables",
         args=(
             mgd.TempInputFile("reads.h5"),
@@ -311,15 +278,12 @@ def create_hmmcopy_workflow(
 
     workflow.transform(
         name='cast_h5',
-        ctx=dict(mem=config['memory']['high'],
-                 pool_id=config['pools']['highmem'],
-                 **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'image': 'scp/single_cell_pipeline:v0.2.7'},
         func="single_cell.utils.hdfutils.cast_h5_file",
         args=(
             mgd.TempInputFile("hmmcopy_precast.h5"),
             mgd.OutputFile(hmmcopy_data),
         )
     )
-
 
     return workflow
