@@ -36,8 +36,6 @@ run_hmmcopy_rscript = os.path.join(scripts_directory, 'hmmcopy.R')
 def run_correction_hmmcopy(
         bam_file, correct_reads_out, readcount_wig, config, hmmparams):
 
-    container_ctx = helpers.get_container_ctx(config['containers'], 'hmmcopy', docker_only=True)
-
     run_readcount_rscript = os.path.join(
         scripts_directory,
         'correct_read_count.R')
@@ -53,7 +51,7 @@ def run_correction_hmmcopy(
                hmmparams['map_wig_file'],
                correct_reads_out
                ]
-        pypeliner.commandline.execute(*cmd, **container_ctx)
+        pypeliner.commandline.execute(*cmd, image="scp/hmmcopy:v0.0.1")
     elif hmmparams["smoothing_function"] == 'modal':
         CorrectReadCount(hmmparams["gc_wig_file"],
                          hmmparams['map_wig_file'],
@@ -69,12 +67,7 @@ def run_correction_hmmcopy(
 
 
 def run_hmmcopy_script(corrected_reads, tempdir, cell_id, hmmparams, config):
-    container_ctx = helpers.get_container_ctx(config['containers'], 'hmmcopy', docker_only=True)
-
-    if container_ctx.get("container_type") == 'docker':
-        cmd = ["hmmcopy"]
-    else:
-        cmd = ['Rscript', run_hmmcopy_rscript]
+    cmd = ["hmmcopy"]
 
     # run hmmcopy
     cmd += ['--corrected_data=' + corrected_reads,
@@ -95,7 +88,7 @@ def run_hmmcopy_script(corrected_reads, tempdir, cell_id, hmmparams, config):
     cmd.append('--param_s=' + str(hmmparams['s']))
     cmd.append('--param_multiplier=' + multipliers)
 
-    pypeliner.commandline.execute(*cmd, **container_ctx)
+    pypeliner.commandline.execute(*cmd, image="scp/hmmcopy:v0.0.1")
 
 
 def run_hmmcopy(
