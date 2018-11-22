@@ -13,9 +13,6 @@ def hmmcopy_workflow(workflow, args):
 
     config = helpers.load_config(args)
 
-    ctx = {'mem_retry_increment': 2, 'ncpus': 1}
-    ctx.update(helpers.get_container_ctx(config['containers'], 'single_cell_pipeline'))
-
     cellids = helpers.get_samples(args['input_yaml'])
     bam_files, bai_files = helpers.get_bams(args['input_yaml'])
     lib = args['library_id']
@@ -100,7 +97,6 @@ def hmmcopy_workflow(workflow, args):
                 'cell_filters': config["good_cells"],
                 'version': single_cell.__version__,
                 'results': results,
-                'containers': config['containers'],
                 'input_datasets': input_datasets,
                 'output_datasets': None
             }
@@ -108,9 +104,7 @@ def hmmcopy_workflow(workflow, args):
 
         workflow.transform(
             name='generate_meta_yaml',
-            ctx=dict(mem=config['memory']['med'],
-                     pool_id=config['pools']['standard'],
-                     **ctx),
+            ctx={'mem': config['memory']['med'], 'ncpus': 1, 'image': 'scp/single_cell_pipeline:v0.2.7'},
             func="single_cell.utils.helpers.write_to_yaml",
             args=(
                 mgd.OutputFile(info_file),
