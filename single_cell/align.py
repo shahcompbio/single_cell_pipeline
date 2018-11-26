@@ -14,11 +14,14 @@ from single_cell.utils import helpers
 def align_workflow(workflow, args):
 
     config = helpers.load_config(args)
+    config = config['alignment']
+
+    baseimage = config['docker']['single_cell_pipeline']
 
     sampleinfo = helpers.get_sample_info(args['input_yaml'])
 
     cellids = helpers.get_samples(args['input_yaml'])
-    bam_files, bai_files = helpers.get_bams(args['input_yaml'])
+    bam_files, _ = helpers.get_bams(args['input_yaml'])
 
     lib = args["library_id"]
 
@@ -30,9 +33,6 @@ def align_workflow(workflow, args):
 
     plots_dir = os.path.join(outdir,  'plots')
     plot_metrics_output = os.path.join(plots_dir, '{}_plot_metrics.pdf'.format(lib))
-
-    ctx = {'mem_retry_increment': 2, 'ncpus': 1}
-    ctx.update(helpers.get_container_ctx(config['containers'], 'single_cell_pipeline'))
 
     if not args["metrics_only"]:
         fastq1_files, fastq2_files = helpers.get_fastqs(args['input_yaml'])
@@ -50,8 +50,7 @@ def align_workflow(workflow, args):
             args=(
                 mgd.InputFile('fastq_1', 'cell_id', 'lane', fnames=fastq1_files, axes_origin=[]),
                 mgd.InputFile('fastq_2', 'cell_id', 'lane', fnames=fastq2_files, axes_origin=[]),
-                mgd.OutputFile('bam_markdups', 'cell_id', fnames = bam_files, axes_origin=[]),
-                mgd.OutputFile('bai_markdups', 'cell_id', fnames = bai_files, axes_origin=[]),
+                mgd.OutputFile('bam_markdups', 'cell_id', fnames=bam_files, axes_origin=[], extensions=['.bai']),
                 config['ref_genome'],
                 config,
                 args,
@@ -71,8 +70,7 @@ def align_workflow(workflow, args):
         name='metrics_workflow',
         func=alignment_metrics.create_alignment_metrics_workflow,
         args=(
-            mgd.InputFile('bam_markdups', 'cell_id', fnames = bam_files, axes_origin=[]),
-            mgd.InputFile('bai_markdups', 'cell_id', fnames = bai_files, axes_origin=[]),
+            mgd.InputFile('bam_markdups', 'cell_id', fnames = bam_files, axes_origin=[], extensions=['.bai']),
             mgd.OutputFile(alignment_metrics_h5),
             mgd.OutputFile(plot_metrics_output),
             config['ref_genome'],
@@ -98,7 +96,7 @@ def align_workflow(workflow, args):
             'picardtools_wgsmetrics_params': config['picard_wgs_params'],
             'ref_genome': config["ref_genome"],
             'version': single_cell.__version__,
-            'containers': config['containers'],
+            'containers': config['docker'],
             'output_datasets': outputs,
             'input_datasets': inputs,
             'results': {
@@ -110,9 +108,7 @@ def align_workflow(workflow, args):
 
     workflow.transform(
         name='generate_meta_yaml',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.utils.helpers.write_to_yaml",
         args=(
             mgd.OutputFile(info_file),

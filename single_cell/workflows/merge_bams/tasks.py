@@ -25,20 +25,18 @@ def cell_region_merge_bams(cell_bams, region_bam, region, kwargs):
         **kwargs)
 
 
-def merge_bam_worker(input_bam_files, output_bam, region, kwargs):
-
+def merge_bam_worker(input_bam_files, output_bam, region, samtools_docker):
     bamutils.bam_merge(
         input_bam_files, output_bam,
         region=region,
-        **kwargs)
+        docker_image=samtools_docker)
 
     bamutils.bam_index(
         output_bam, output_bam+'.bai',
-        **kwargs)
+        docker_image=samtools_docker)
 
 
-def merge_bams(bams, outputs, regions, docker_config, ncores=None):
-
+def merge_bams(bams, outputs, regions, samtools_docker, ncores=None):
     count = multiprocessing.cpu_count()
 
     if ncores:
@@ -55,7 +53,7 @@ def merge_bams(bams, outputs, regions, docker_config, ncores=None):
 
         region = '{}:{}-{}'.format(*region.split('-'))
         task = pool.apply_async(merge_bam_worker,
-                         args=(bams, output_bam, region, docker_config)
+                         args=(bams, output_bam, region, samtools_docker)
                         )
         tasks.append(task)
 
@@ -63,4 +61,3 @@ def merge_bams(bams, outputs, regions, docker_config, ncores=None):
     pool.join()
 
     [task.get() for task in tasks]
-

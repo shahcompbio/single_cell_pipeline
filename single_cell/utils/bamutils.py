@@ -105,6 +105,7 @@ def bwa_aln_paired_end(fastq1, fastq2, output, tempdir,
 
 
 def bam_index(infile, outfile, **kwargs):
+
     pypeliner.commandline.execute(
         'samtools', 'index',
         infile,
@@ -131,20 +132,12 @@ def bam_merge(bams, output, **kwargs):
     cmd.append(output)
     cmd.extend(bams)
 
-    kwargs = {
-        'container_type':kwargs.get('container_type'),
-        'image':kwargs.get('image'),
-        'mounts':kwargs.get('mounts'),
-        'username':kwargs.get("username"),
-        'password':kwargs.get('password'),
-        'server':kwargs.get('server'),
-    }
-
-    pypeliner.commandline.execute(*cmd, **kwargs)
+    pypeliner.commandline.execute(*cmd, docker_image=kwargs.get('docker_image'))
 
 
 def bam_view(bam, output, region, **kwargs):
 
     cmd = ['samtools', 'view', '-b', bam, '-o', output, region]
+
     pypeliner.commandline.execute(*cmd, **kwargs)
 

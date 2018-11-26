@@ -49,11 +49,10 @@ def run_aneufinder(
         bam_file,
         working_dir,
         cell_id,
-        aneufinder_output,
         segments,
         reads,
         dnacopy_plot,
-        docker_config=None):
+        docker_image=None):
 
     # Create an output folder for temp storage
     helpers.makedirs(working_dir)
@@ -77,7 +76,7 @@ def run_aneufinder(
     cmd = ['Rscript', run_aneufinder_rscript, working_dir, temp_output]
 
     try:
-        pypeliner.commandline.execute(*cmd, **docker_config)
+        pypeliner.commandline.execute(*cmd, docker_image=docker_image)
     except:
         print('Aneufinder failed on {}'.format(bam_file))
 
@@ -121,7 +120,7 @@ def run_aneufinder(
 
     cmd = ['Rscript', rdata_to_csv_rscript, segments_rdata, segments, reads]
 
-    pypeliner.commandline.execute(*cmd, **docker_config)
+    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
 
     convert_segments_to_hmmcopy_format(segments, cell_id)
     convert_reads_to_hmmcopy_format(reads, cell_id)
