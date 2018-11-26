@@ -11,18 +11,15 @@ def create_samtools_germline_workflow(
         ref_genome_fasta_file,
         vcf_file,
         config,
-        chromosomes=default_chromosomes,
-        base_docker=None,
         samtools_docker=None,
         vcftools_docker=None
 ):
 
+    baseimage = config['docker']['single_cell_pipeline']
+
     ctx = {'mem': config["memory"]['low'],
-           'pool_id': config['pools']['standard'],
            'mem_retry_increment': 2,
-           'ncpus': 1}
-    if base_docker:
-        ctx.update(base_docker)
+           'ncpus': 1, 'docker_image': baseimage}
 
     regions = normal_bam_files.keys()
 

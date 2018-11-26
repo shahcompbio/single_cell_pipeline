@@ -17,26 +17,21 @@ default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 
 
 def create_snv_allele_counts_for_vcf_targets_workflow(
-        config,
         bam_files,
         vcf_file,
         out_file,
-        docker_config=None,
-        chromosomes=default_chromosomes,
+        memory_cfg,
         count_duplicates=False,
         min_bqual=0,
         min_mqual=0,
-        split_size=int(1e7),
         table_name='snv_allele_counts',
-        vcf_to_bam_chrom_map=None):
+        vcf_to_bam_chrom_map=None,
+):
 
-    ctx = {'mem': 2, 'num_retry': 3,
-           'mem_retry_increment': 2,
-           'pool_id': config['pools']['standard'], 'ncpus': 1}
-    if docker_config:
-        ctx.update(docker_config)
-
-    workflow = pypeliner.workflow.Workflow(default_ctx=ctx)
+    ctx = {
+        'mem': memory_cfg['low'], 'num_retry': 3, 'mem_retry_increment': 2, 'ncpus': 1
+    }
+    workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
@@ -65,7 +60,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
 
     workflow.transform(
         name='merge_snv_allele_counts',
-        ctx={'mem': config["memory"]['high'], 'pool_id': config['pools']['highmem'], 'ncpus':1},
+        ctx={'mem': memory_cfg['memory']['high'], 'num_retry': 3, 'mem_retry_increment': 2, 'ncpus': 1},
         func="biowrappers.components.io.hdf5.tasks.concatenate_tables",
         args=(
             mgd.TempInputFile('counts.h5', 'cell_id'),
@@ -90,6 +85,10 @@ def strelka_snv_callback(record):
 def variant_calling_workflow(args):
 
     config = helpers.load_config(args)
+
+    ctx = {'num_retry': 3,
+           'mem_retry_increment': 2,
+           'ncpus': 1}
 
     meta_yaml = os.path.join(args['out_dir'], 'info.yaml')
 

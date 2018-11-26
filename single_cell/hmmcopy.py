@@ -13,9 +13,10 @@ import single_cell
 def hmmcopy_workflow(workflow, args):
 
     config = helpers.load_config(args)
+    config = config['hmmcopy']
 
     cellids = helpers.get_samples(args['input_yaml'])
-    bam_files, bai_files = helpers.get_bams(args['input_yaml'])
+    bam_files, _ = helpers.get_bams(args['input_yaml'])
     lib = args['library_id']
 
     workflow.setobj(
@@ -23,7 +24,7 @@ def hmmcopy_workflow(workflow, args):
         value=cellids,
     )
 
-    for params_tag, params in config["hmmcopy_params"].iteritems():
+    for params_tag, params in config.iteritems():
         params_tag = "hmmcopy_" + params_tag
 
         results_dir = os.path.join(args['out_dir'], 'results', params_tag)
@@ -48,13 +49,13 @@ def hmmcopy_workflow(workflow, args):
         kernel_density_pdf = os.path.join(
             plots_dir, '{}_kernel_density.pdf'.format(lib))
 
+        baseimage = params['docker']['single_cell_pipeline']
+
         workflow.subworkflow(
             name='hmmcopy_workflow_' + params_tag,
             func=hmmcopy.create_hmmcopy_workflow,
             args=(
-                mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files),
-                mgd.InputFile(
-                    'bam_markdups_index', 'cell_id', fnames=bai_files),
+                mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files, extensions=['.bai']),
                 mgd.OutputFile(hmmcopy_data),
                 mgd.OutputFile(igv_seg_file),
                 segs_pdf,
@@ -64,11 +65,8 @@ def hmmcopy_workflow(workflow, args):
                 mgd.OutputFile(metrics_pdf),
                 mgd.OutputFile(kernel_density_pdf),
                 cellids,
-                config,
                 args,
                 params,
-                params_tag,
-                results_dir
             ),
             kwargs={'alignment_metrics': args['alignment_metrics']}
         )
@@ -93,10 +91,8 @@ def hmmcopy_workflow(workflow, args):
                 'metrics_table': '/hmmcopy/metrics/0',
                 'hmmcopy_params_tag': params_tag,
                 'hmmcopy_params': params,
-                'chromosomes': config['chromosomes'],
-                'ref_genome': config['ref_genome'],
-                'cell_filters': config["good_cells"],
                 'version': single_cell.__version__,
+                'containers': params['docker'],
                 'results': results,
                 'input_datasets': input_datasets,
                 'output_datasets': None
@@ -105,7 +101,7 @@ def hmmcopy_workflow(workflow, args):
 
         workflow.transform(
             name='generate_meta_yaml',
-            ctx={'mem': config['memory']['med'], 'ncpus': 1, 'image': 'scp/single_cell_pipeline:v0.2.7'},
+            ctx={'mem': params['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
             func="single_cell.utils.helpers.write_to_yaml",
             args=(
                 mgd.OutputFile(info_file),

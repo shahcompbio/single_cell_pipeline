@@ -15,14 +15,13 @@ def create_merge_bams_workflow(
     merged_bams,
     cell_ids,
     config,
-    regions):
+    regions
+):
+
+    baseimage = config['docker']['single_cell_pipeline']
 
     merged_bams = dict([(region, merged_bams[region])
                          for region in regions])
-
-    ctx = {'mem_retry_increment': 2}
-    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
-    ctx.update(docker_ctx)
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -36,19 +35,17 @@ def create_merge_bams_workflow(
         value=regions,
     )
 
-
     workflow.transform(
         name='merge_bams',
-        ctx=dict(mem=config['memory']['high'], pool_id=config['pools']['multicore'],
-                 ncpus=config['max_cores'], **ctx),
+        ctx={'mem': config['memory']['high'], 'ncpus': config['max_cores'], 'docker_image': baseimage},
         func="single_cell.workflows.merge_bams.tasks.merge_bams",
         args=(
-            mgd.InputFile('bam', 'cell_id', fnames=input_bams),
+            mgd.InputFile('bam', 'cell_id', fnames=input_bams, extensions=['.bai']),
             mgd.OutputFile('merged.bam', "region", fnames=merged_bams, axes_origin=[]),
             regions,
-            helpers.get_container_ctx(config['containers'], 'samtools')
+            config['docker']['samtools'],
         ),
-        kwargs = {"ncores": config["max_cores"]}
+        kwargs={"ncores": config["max_cores"]}
     )
 
     return workflow

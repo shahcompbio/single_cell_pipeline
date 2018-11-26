@@ -13,6 +13,9 @@ import single_cell
 def split_bam_workflow(workflow, args):
 
     config = helpers.load_config(args)
+    config = config['split_bam']
+
+    baseimage = config['docker']['single_cell_pipeline']
 
     info_file = os.path.join(args["out_dir"], 'results', 'split_bam', 'info.yaml')
     split_bam_template = args["split_bam_template"]
@@ -32,10 +35,7 @@ def split_bam_workflow(workflow, args):
     else:
         workflow.transform(
             name="get_regions",
-            ctx={
-                'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2,
-                'pool_id': config['pools']['standard'], 'ncpus': 1
-            },
+            ctx={'mem': config['memory']['low'], 'ncpus': 1, 'docker_image': baseimage},
             func="single_cell.utils.pysamutils.get_regions_from_reference",
             ret=pypeliner.managed.TempOutputObj('region'),
             args=(
@@ -70,6 +70,7 @@ def split_bam_workflow(workflow, args):
     workflow.transform(
         name="get_files",
         func='single_cell.utils.helpers.resolve_template',
+        ctx={'mem': config['memory']['low'], 'ncpus': 1, 'docker_image': baseimage},
         ret=pypeliner.managed.TempOutputObj('outputs'),
         args=(
             pypeliner.managed.TempInputObj('region'),
@@ -83,7 +84,7 @@ def split_bam_workflow(workflow, args):
             'name': 'merge_bams',
             'ref_genome': config["ref_genome"],
             'version': single_cell.__version__,
-            'containers': config['containers'],
+            'containers': config['docker'],
             'output_datasets': pypeliner.managed.TempInputObj('outputs'),
             'input_datasets': args['wgs_bam'],
             'results': None
@@ -92,8 +93,7 @@ def split_bam_workflow(workflow, args):
 
     workflow.transform(
         name='generate_meta_yaml',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],),
+        ctx={'mem': config['memory']['low'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.utils.helpers.write_to_yaml",
         args=(
             mgd.OutputFile(info_file),

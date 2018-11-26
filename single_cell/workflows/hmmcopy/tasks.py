@@ -34,13 +34,13 @@ run_hmmcopy_rscript = os.path.join(scripts_directory, 'hmmcopy.R')
 
 
 def run_correction_hmmcopy(
-        bam_file, correct_reads_out, readcount_wig, config, hmmparams):
+        bam_file, correct_reads_out, readcount_wig, hmmparams, docker_image):
 
     run_readcount_rscript = os.path.join(
         scripts_directory,
         'correct_read_count.R')
 
-    rc = ReadCounter(bam_file, readcount_wig, hmmparams['bin_size'], config['chromosomes'],
+    rc = ReadCounter(bam_file, readcount_wig, hmmparams['bin_size'], hmmparams['chromosomes'],
                      hmmparams['min_mqual'], excluded=hmmparams['exclude_list'])
     rc.main()
 
@@ -51,7 +51,7 @@ def run_correction_hmmcopy(
                hmmparams['map_wig_file'],
                correct_reads_out
                ]
-        pypeliner.commandline.execute(*cmd, image="scp/hmmcopy:v0.0.1")
+        pypeliner.commandline.execute(*cmd, docker_image=docker_image)
     elif hmmparams["smoothing_function"] == 'modal':
         CorrectReadCount(hmmparams["gc_wig_file"],
                          hmmparams['map_wig_file'],
@@ -66,7 +66,7 @@ def run_correction_hmmcopy(
     return correct_reads_out
 
 
-def run_hmmcopy_script(corrected_reads, tempdir, cell_id, hmmparams, config):
+def run_hmmcopy_script(corrected_reads, tempdir, cell_id, hmmparams, docker_image):
     cmd = ["hmmcopy"]
 
     # run hmmcopy
@@ -88,12 +88,11 @@ def run_hmmcopy_script(corrected_reads, tempdir, cell_id, hmmparams, config):
     cmd.append('--param_s=' + str(hmmparams['s']))
     cmd.append('--param_multiplier=' + multipliers)
 
-    pypeliner.commandline.execute(*cmd, image="scp/hmmcopy:v0.0.1")
+    pypeliner.commandline.execute(*cmd, docker_image="scp/hmmcopy:v0.0.1")
 
 
 def run_hmmcopy(
         bam_file,
-        bai_file,
         corrected_reads_filename,
         segments_filename,
         parameters_filename,
@@ -102,11 +101,12 @@ def run_hmmcopy(
         bias_pdf_filename,
         cell_id,
         reference,
-        config,
         hmmparams,
         multipliers,
         tempdir,
-        sample_info,):
+        sample_info,
+        docker_image
+):
 
     # generate wig file for hmmcopy
     helpers.makedirs(tempdir)
@@ -117,14 +117,17 @@ def run_hmmcopy(
         bam_file,
         corrected_reads,
         readcount_wig,
-        config,
-        hmmparams)
+        hmmparams,
+        docker_image
+    )
 
     run_hmmcopy_script(
         corrected_reads,
         tempdir,
         cell_id,
-        hmmparams, config)
+        hmmparams,
+        docker_image
+    )
 
     hmmcopy_reads_files = []
     hmmcopy_params_files = []
@@ -179,7 +182,7 @@ def run_hmmcopy(
 
     plot_hmmcopy(
         corrected_reads_filename, segments_filename, parameters_filename,
-        metrics_filename, config["ref_genome"], segs_pdf_filename,
+        metrics_filename, reference, segs_pdf_filename,
         bias_pdf_filename, cell_id, multipliers,
         num_states=hmmparams['num_states'],
         annotation_cols=annotation_cols,

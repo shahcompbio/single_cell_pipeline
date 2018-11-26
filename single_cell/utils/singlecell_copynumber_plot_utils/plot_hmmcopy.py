@@ -283,7 +283,7 @@ class GenHmmPlots(object):
         sns.despine(offset=10, trim=True)
 
         plt.tight_layout(rect=(0, 0.05, 1, 0.95))
-        plt.savefig(pdfout, pad_inches=0.2)
+        plt.savefig(pdfout, pad_inches=0.2, format='png')
         plt.close()
 
     def get_colors(self, num_states):
@@ -443,7 +443,7 @@ class GenHmmPlots(object):
         plt.tight_layout(rect=(0, 0.05, 1, 0.95))
         fig.text(0.85,0.02,"maximum copy number is 40, higher values are set to 40")
 
-        plt.savefig(pdfout)
+        plt.savefig(pdfout, format='png')
         plt.close()
 
     def plot_dist(self, fig, reads, params,
