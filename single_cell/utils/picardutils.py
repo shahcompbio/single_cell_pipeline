@@ -78,13 +78,13 @@ def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename,
         'OUTPUT=' + metrics_filename,
         'REFERENCE_SEQUENCE=' + ref_genome,
         'MINIMUM_BASE_QUALITY=' +
-            str(config['picard_wgs_params']['min_bqual']),
+            str(config['min_bqual']),
                 'MINIMUM_MAPPING_QUALITY=' +
-            str(config['picard_wgs_params']['min_mqual']),
+            str(config['min_mqual']),
         'COVERAGE_CAP=500',
         'VALIDATION_STRINGENCY=LENIENT',
         'COUNT_UNPAIRED=' +
-            ('True' if config['picard_wgs_params']['count_unpaired'] else 'False'),
+            ('True' if config['count_unpaired'] else 'False'),
         'TMP_DIR=' + tempdir,
         'MAX_RECORDS_IN_RAM=150000',
         **kwargs)

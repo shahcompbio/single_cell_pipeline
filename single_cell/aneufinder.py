@@ -11,11 +11,16 @@ from workflows import aneufinder
 from single_cell.utils import helpers
 import single_cell
 
+
 def aneufinder_workflow(workflow, args):
 
     config = helpers.load_config(args)
+    config = config['aneufinder']
+
+    baseimage = config['docker']['single_cell_pipeline']
+
     cellids = helpers.get_samples(args['input_yaml'])
-    bam_files, _  = helpers.get_bams(args['input_yaml'])
+    bam_files, _ = helpers.get_bams(args['input_yaml'])
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
@@ -39,21 +44,17 @@ def aneufinder_workflow(workflow, args):
             mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files),
             cellids,
             config,
-            output,
             mgd.OutputFile(results_filename),
             mgd.OutputFile(aneufinder_pdf_file),
-            args['library_id'],
         ),
     )
-
-
 
     results = {
         'aneufinder_plot': helpers.format_file_yaml(aneufinder_pdf_file),
         'aneufinder_data':helpers.format_file_yaml(results_filename),
     }
 
-    input_datasets = {k: helpers.format_file_yaml(v) for k,v in bam_files.iteritems()}
+    input_datasets = {k: helpers.format_file_yaml(v) for k, v in bam_files.iteritems()}
 
     metadata = {
         'aneufinder':{
@@ -63,7 +64,7 @@ def aneufinder_workflow(workflow, args):
             'ref_genome': config['ref_genome'],
             'version': single_cell.__version__,
             'results': results,
-            'containers': config['containers'],
+            'containers': config['docker'],
             'input_datasets': input_datasets,
             'output_datasets': None
         }
@@ -71,9 +72,7 @@ def aneufinder_workflow(workflow, args):
 
     workflow.transform(
         name='generate_meta_yaml',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 mem_retry_increment=2, ncpus=1),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.utils.helpers.write_to_yaml",
         args=(
             mgd.OutputFile(info_file),

@@ -16,12 +16,9 @@ from single_cell.utils import hdfutils
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotMetrics
 
 
-def merge_bams(inputs, output, output_index, config):
-    container_ctx = helpers.get_container_ctx(config['containers'], 'picard', docker_only=True)
-    picardutils.merge_bams(inputs, output, **container_ctx)
-
-    container_ctx = helpers.get_container_ctx(config['containers'], 'samtools', docker_only=True)
-    bamutils.bam_index(output, output_index, **container_ctx)
+def merge_bams(inputs, output, output_index, containers):
+    picardutils.merge_bams(inputs, output, docker_image=containers['picard'])
+    bamutils.bam_index(output, output_index, docker_image=containers['samtools'])
 
 
 def merge_realignment(input_filenames, output_filename,
@@ -73,13 +70,11 @@ def realign(input_bams, input_bais, output_bams, tempdir, config, interval):
         shutil.move(realigned_bai, output_bai_filename)
 
 
-def run_fastqc(fastq1, fastq2, reports, tempdir, config):
+def run_fastqc(fastq1, fastq2, reports, tempdir, containers):
     """
     run fastqc on both fastq files
     run trimgalore if needed, copy if not.
     """
-    container_ctx = helpers.get_container_ctx(config['containers'], 'fastqc', docker_only=True)
-
     reports_dir = os.path.join(tempdir, 'fastqc_reports')
     if not os.path.exists(reports_dir):
         helpers.makedirs(reports_dir)
@@ -88,7 +83,7 @@ def run_fastqc(fastq1, fastq2, reports, tempdir, config):
     out_plot = os.path.join(reports_dir, 'fastqc_R1.zip')
     if not os.path.getsize(fastq1) == 0:
         bamutils.produce_fastqc_report(fastq1, out_html, out_plot, tempdir,
-                                       **container_ctx)
+                                       docker_image=containers['fastqc'])
     else:
         warnings.warn("fastq file %s is empty, skipping fastqc" % fastq1)
 
@@ -96,7 +91,7 @@ def run_fastqc(fastq1, fastq2, reports, tempdir, config):
     out_plot = os.path.join(reports_dir, 'fastqc_R2.zip')
     if not os.path.getsize(fastq2) == 0:
         bamutils.produce_fastqc_report(fastq2, out_html, out_plot, tempdir,
-                                        **container_ctx)
+                                       docker_image=containers['fastqc'])
     else:
         warnings.warn("fastq file %s is empty, skipping fastqc" % fastq1)
 
@@ -122,34 +117,28 @@ def get_readgroup(run_id, cell_id, library_id, centre, sample_info):
 
 def bwa_mem_paired_end(fastq1, fastq2, output,
                        reference, readgroup, tempdir,
-                       config):
+                       containers):
 
-    container_ctx = helpers.get_container_ctx(config, 'bwa', docker_only=True)
     samfile = os.path.join(tempdir, "bwamem.sam")
-    
     bamutils.bwa_mem_paired_end(fastq1, fastq2, samfile, reference, readgroup,
-                                 **container_ctx)
+                                docker_image=containers['bwa'])
 
-    container_ctx = helpers.get_container_ctx(config, 'samtools', docker_only=True)
     bamutils.samtools_sam_to_bam(samfile, output,
-                                 **container_ctx)
+                                 docker_image=containers['samtools'])
 
 
 def bwa_aln_paired_end(fastq1, fastq2, output, tempdir,
-                         reference, readgroup, config):
-    container_ctx = helpers.get_container_ctx(config, 'bwa', docker_only=True)
-
-
+                         reference, readgroup, containers):
     samfile = os.path.join(tempdir, "bwamem.sam")
     bamutils.bwa_aln_paired_end(fastq1, fastq2, samfile, tempdir, reference, readgroup,
-                                **container_ctx)
+                                docker_image=containers['bwa'])
+    bamutils.samtools_sam_to_bam(samfile, output, docker_image=containers['samtools'])
 
-    container_ctx = helpers.get_container_ctx(config, 'samtools', docker_only=True)
-    bamutils.samtools_sam_to_bam(samfile, output, **container_ctx)
 
 def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
-             reference, instrument, centre, sample_info, cell_id, lane_id, library_id,
-             config):
+             reference, instrument, centre, sample_info, cell_id,
+             lane_id, library_id, aligner, containers, adapter,
+             adapter2):
 
     readgroup = get_readgroup(
         lane_id,
@@ -158,10 +147,10 @@ def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
         centre,
         sample_info)
 
-    run_fastqc(fastq1, fastq2, reports, tempdir, config)
+    run_fastqc(fastq1, fastq2, reports, tempdir, containers)
 
     aln_temp = os.path.join(tempdir, "temp_alignments.bam")
-    if config["aligner"] == "bwa-mem":
+    if aligner == "bwa-mem":
         bwa_mem_paired_end(
             fastq1,
             fastq2,
@@ -169,11 +158,11 @@ def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
             reference,
             readgroup,
             tempdir,
-            config['containers'])
-    elif config["aligner"] == "bwa-aln":
+            containers)
+    elif aligner == "bwa-aln":
         if not instrument == "N550":
             fastq1, fastq2 = trim_fastqs(
-                fastq1, fastq2, cell_id, tempdir, config)
+                fastq1, fastq2, cell_id, tempdir, adapter, adapter2)
         bwa_aln_paired_end(
             fastq1,
             fastq2,
@@ -181,37 +170,34 @@ def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
             tempdir,
             reference,
             readgroup,
-            config['containers'])
+            containers)
     else:
         raise Exception(
             "Aligner %s not supported, pipeline supports bwa-aln and bwa-mem" %
-            config["aligner"])
+            aligner)
 
-    container_ctx = helpers.get_container_ctx(config['containers'], 'picard', docker_only=True)
+    picardutils.bam_sort(aln_temp, output, tempdir, docker_image=containers['picard'])
 
-    picardutils.bam_sort(aln_temp, output, tempdir, **container_ctx)
-
-    container_ctx = helpers.get_container_ctx(config['containers'], 'samtools', docker_only=True)
-    bamutils.bam_flagstat(output, metrics, **container_ctx)
+    bamutils.bam_flagstat(output, metrics, docker_image=containers['samtools'])
 
 
-def postprocess_bam(infile, outfile, outfile_index, tempdir,
-                    config, markdups_metrics, flagstat_metrics):
+def postprocess_bam(infile, outfile, tempdir,
+                    containers, markdups_metrics, flagstat_metrics):
+
+    outfile_index = outfile + '.bai'
 
     if not os.path.exists(tempdir):
         helpers.makedirs(tempdir)
 
-    container_ctx = helpers.get_container_ctx(config['containers'], 'picard', docker_only=True)
     sorted_bam = os.path.join(tempdir, 'sorted.bam')
     picardutils.bam_sort(infile, sorted_bam, tempdir,
-                         **container_ctx)
+                         docker_image=containers['picard'])
 
     picardutils.bam_markdups(sorted_bam, outfile, markdups_metrics, tempdir,
-                             **container_ctx)
+                             docker_image=containers['picard'])
 
-    container_ctx = helpers.get_container_ctx(config['containers'], 'samtools', docker_only=True)
-    bamutils.bam_index(outfile, outfile_index, **container_ctx)
-    bamutils.bam_flagstat(outfile, flagstat_metrics, **container_ctx)
+    bamutils.bam_index(outfile, outfile_index, docker_image=containers['samtools'])
+    bamutils.bam_flagstat(outfile, flagstat_metrics, docker_image=containers['samtools'])
 
 
 def run_trimgalore(seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt, tempdir,

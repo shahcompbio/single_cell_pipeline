@@ -12,21 +12,14 @@ import single_cell
 
 def merge_bams_workflow(workflow, args):
 
-
-    input_yaml = args["input_yaml"]
-    output_template = args["merged_bam_template"]
-
-    info_file = os.path.join(args["out_dir"], 'results','merge_bams', "info.yaml")
     config = helpers.load_config(args)
-    bam_files, bai_files  = helpers.get_bams(input_yaml)
-    cellids = helpers.get_samples(input_yaml)
+    config = config['merge_bams']
 
-    wgs_bam_template = output_template
-    wgs_bai_template = wgs_bam_template + ".bai"
+    baseimage = config['docker']['single_cell_pipeline']
 
-    ctx = {'mem_retry_increment': 2, 'ncpus': 1}
-    ctx.update(helpers.get_container_ctx(config['containers'], 'single_cell_pipeline'))
-
+    bam_files, _ = helpers.get_bams(args["input_yaml"])
+    cellids = helpers.get_samples(args["input_yaml"])
+    wgs_bam_template = args["merged_bam_template"]
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
@@ -35,7 +28,7 @@ def merge_bams_workflow(workflow, args):
 
     workflow.transform(
         name="get_regions",
-        ctx=dict(mem=2, pool_id=config['pools']['standard'], **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.utils.pysamutils.get_regions_from_reference",
         ret=pypeliner.managed.TempOutputObj('region'),
         args=(
@@ -59,7 +52,7 @@ def merge_bams_workflow(workflow, args):
 
     workflow.transform(
         name="get_files",
-        ctx=dict(mem=2, pool_id=config['pools']['standard'], **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func='single_cell.utils.helpers.resolve_template',
         ret=pypeliner.managed.TempOutputObj('outputs'),
         args=(
@@ -67,8 +60,9 @@ def merge_bams_workflow(workflow, args):
             wgs_bam_template,
             'region'
         )
-
     )
+
+    info_file = os.path.join(args["out_dir"], 'results','merge_bams', "info.yaml")
 
     inputs = {k: helpers.format_file_yaml(v) for k,v in bam_files.iteritems()}
 
@@ -77,7 +71,7 @@ def merge_bams_workflow(workflow, args):
             'name': 'merge_bams',
             'ref_genome': config["ref_genome"],
             'version': single_cell.__version__,
-            'containers': config['containers'],
+            'containers': config['docker'],
             'output_datasets': pypeliner.managed.TempInputObj('outputs'),
             'input_datasets': inputs,
             'results': None
@@ -86,14 +80,13 @@ def merge_bams_workflow(workflow, args):
 
     workflow.transform(
         name='generate_meta_yaml',
-        ctx=dict(mem=2, pool_id=config['pools']['standard'], **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.utils.helpers.write_to_yaml",
         args=(
             mgd.OutputFile(info_file),
             metadata
         )
     )
-
 
     return workflow
 
