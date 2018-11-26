@@ -11,39 +11,39 @@ from single_cell.utils import helpers
 from single_cell.utils import bamutils
 
 
-def split_bam_worker(bam, output_bam, region, kwargs):
+def split_bam_worker(bam, output_bam, region, samtools_docker):
 
     region = '{}:{}-{}'.format(*region.split('-'))
 
     bamutils.bam_view(
-        bam, output_bam, region, **kwargs)
+        bam, output_bam, region, docker_image=samtools_docker)
 
 
-def index_bam_worker(bam, kwargs):
+def index_bam_worker(bam, samtools_docker):
 
     bamutils.bam_index(
-        bam, bam+'.bai', **kwargs)
+        bam, bam+'.bai', docker_image=samtools_docker)
 
 
-def split_bam_file_one_job(bam, outbam, regions, kwargs, ncores=None):
+def split_bam_file_one_job(bam, outbam, regions, samtools_docker, ncores=None):
 
-    args = [(bam, outbam[region], region, kwargs) for region in regions]
+    args = [(bam, outbam[region], region, {'docker_image': samtools_docker}) for region in regions]
 
     helpers.run_in_parallel(split_bam_worker, args, ncores=ncores)
 
-    args = [(outbam[region], kwargs) for region in regions]
+    args = [(outbam[region], {'docker_image': samtools_docker}) for region in regions]
 
     helpers.run_in_parallel(index_bam_worker, args, ncores=ncores)
 
 
-def split_bam_file(bam, bai, outbam, outbai, interval, kwargs):
+def split_bam_file(bam, bai, outbam, outbai, interval, samtools_docker):
 
-    bamutils.bam_view(bam, outbam, interval, **kwargs)
+    bamutils.bam_view(bam, outbam, interval, docker_image=samtools_docker)
 
-    bamutils.bam_index(outbam, outbai, **kwargs)
+    bamutils.bam_index(outbam, outbai, docker_image=samtools_docker)
 
 
-def split_bam_file_by_reads(bam, bai, outbams, outbais, tempspace, intervals, kwargs):
+def split_bam_file_by_reads(bam, bai, outbams, outbais, tempspace, intervals, samtools_docker):
     # sort bam by reads and convert to sam
 
     helpers.makedirs(tempspace)
@@ -51,7 +51,7 @@ def split_bam_file_by_reads(bam, bai, outbams, outbais, tempspace, intervals, kw
     headerfile = os.path.join(tempspace, "bam_header.sam")
 
     cmd = ['samtools', 'view', '-H', bam, '-o', headerfile]
-    pypeliner.commandline.execute(*cmd, **kwargs)
+    pypeliner.commandline.execute(*cmd, docker_image=samtools_docker)
 
     collate_prefix = os.path.join(
         tempspace, os.path.basename(bam) + "_collate_temp"
@@ -63,7 +63,7 @@ def split_bam_file_by_reads(bam, bai, outbams, outbais, tempspace, intervals, kw
         'samtools', 'view', '-', '-o', collated_bam
     ]
 
-    pypeliner.commandline.execute(*cmd, **kwargs)
+    pypeliner.commandline.execute(*cmd, docker_image=samtools_docker)
 
     tempoutputs = [
         os.path.join(tempspace, os.path.basename(outbams[interval]) + ".split.temp")
@@ -77,7 +77,7 @@ def split_bam_file_by_reads(bam, bai, outbams, outbais, tempspace, intervals, kw
 
         cmd = ['samtools', 'view', '-Sb', inputsam, '-o', outputbam]
 
-        pypeliner.commandline.execute(*cmd, **kwargs)
+        pypeliner.commandline.execute(*cmd, docker_image=samtools_docker)
 
 
 def get_file_handle(filename, mode="r"):

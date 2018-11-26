@@ -54,13 +54,13 @@ def get_batch_params(override=None):
     pools = {
         "standard": {
             "tasks_per_node": 4,
-            "numcores": 4,
+            "numcores": 1,
             "mem": 8,
             "dedicated": False
         },
         "highmem": {
             "tasks_per_node": 2,
-            "numcores": 4,
+            "numcores": 1,
             "mem": 16,
             "dedicated": False
         },
@@ -85,10 +85,15 @@ def get_batch_params(override=None):
     return data
 
 
-def generate_autoscale_formula(tasks_per_node):
+def generate_autoscale_formula(tasks_per_node, dedicated):
+
+    if dedicated:
+        node_type = "TargetDedicatedNodes"
+    else:
+        node_type = "TargetLowPriorityNodes"
 
     formula = (
-        "tasksPerNode = {};\n"
+        "tasksPerNode = {0};\n"
         "numAddMax = 20;\n"
         "numDelMax = 20;\n"
         "startingNumberOfVMs = 0;\n"
@@ -96,16 +101,16 @@ def generate_autoscale_formula(tasks_per_node):
         "maxNumberofVMs = 1000;\n"
         "pendingTaskSamplePercent = $PendingTasks.GetSamplePercent(180 * TimeInterval_Second);\n"
         "pendingTaskSamples = pendingTaskSamplePercent < 70 ? startingNumberOfVMs : avg($PendingTasks.GetSample(180 * TimeInterval_Second));\n"
-        "cores = $TargetLowPriorityNodes * tasksPerNode;\n"
+        "cores = ${1} * tasksPerNode;\n"
         "$extraVMs = (pendingTaskSamples - cores) / tasksPerNode;\n"
         "$extraVMs = $extraVMs + (tasksPerNode-1)/tasksPerNode;\n"
         "$extraVMs = min(numAddMax, $extraVMs);\n"
         "$extraVMs = max(-numDelMax, $extraVMs);\n"
-        "targetVMs = ($TargetLowPriorityNodes + $extraVMs);\n"
-        "$TargetLowPriorityNodes = max(minNumberofVMs,min(maxNumberofVMs, targetVMs));\n"
+        "targetVMs = (${1} + $extraVMs);\n"
+        "${1} = max(minNumberofVMs,min(maxNumberofVMs, targetVMs));\n"
     )
 
-    formula = formula.format(tasks_per_node)
+    formula = formula.format(tasks_per_node, node_type)
 
     formula = literal_unicode(formula)
 
@@ -167,8 +172,8 @@ def get_pool_def(
     poolname = "singlecell{}{}".format(reference, pool_type)
 
     pooldata = {
-        "pool_vm_size": get_vm_size_azure(numcores),
-        "cpus": tasks_per_node,
+        "pool_vm_size": get_vm_size_azure(tasks_per_node),
+        "cpus": numcores,
         'mem': memory,
         'dedicated': dedicated,
         'node_resource_id': get_vm_image_id(),

@@ -32,7 +32,7 @@ def generate_pipeline_config_in_temp(args):
     helpers.makedirs(config_yaml, isfile=True)
 
     config_params = pipeline_config.get_config_params(override=params_override)
-    config = pipeline_config.get_singlecell_pipeline_config(config_params)
+    config = pipeline_config.get_singlecell_pipeline_config(config_params, override=params_override)
     pipeline_config.write_config(config, config_yaml)
 
     args["config_file"] = config_yaml

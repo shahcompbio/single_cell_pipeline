@@ -13,9 +13,8 @@ def create_split_workflow(
     regions, config, by_reads=False
 ):
 
-    ctx = {'mem_retry_increment': 2}
-    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
-    ctx.update(docker_ctx)
+    baseimage = config['docker']['single_cell_pipeline']
+    samtoolsimage = config['docker']['samtools']
 
     normal_split_bam = dict([(ival, normal_split_bam[ival])
                              for ival in regions])
@@ -35,10 +34,7 @@ def create_split_workflow(
     if by_reads:
         workflow.transform(
             name='split_normal_bam',
-            ctx=dict(mem=config['memory']['low'],
-                     pool_id=config['pools']['multicore'],
-                     ncpus=config['max_cores'],
-                     **ctx),
+            ctx={'mem': config['memory']['low'], 'ncpus': config['max_cores'], 'docker_image': baseimage},
             func="single_cell.workflows.split_bams.tasks.split_bam_file_by_reads",
             args=(
                 mgd.InputFile(normal_bam),
@@ -53,17 +49,14 @@ def create_split_workflow(
                 ),
                 mgd.TempSpace("bam_split_by_reads"),
                 regions,
-                helpers.get_container_ctx(config['containers'], 'samtools')
+                samtoolsimage
             ),
         )
 
     elif one_split_job:
         workflow.transform(
             name='split_normal_bam',
-            ctx=dict(mem=config['memory']['low'],
-                     pool_id=config['pools']['multicore'],
-                     ncpus=config['max_cores'],
-                     **ctx),
+            ctx={'mem': config['memory']['low'], 'ncpus': config['max_cores'], 'docker_image': baseimage},
             func="single_cell.workflows.split_bams.tasks.split_bam_file_one_job",
             args=(
                 mgd.InputFile(normal_bam, extensions=['.bai']),
@@ -73,7 +66,7 @@ def create_split_workflow(
                     extensions=['.bai'],
                 ),
                 regions,
-                helpers.get_container_ctx(config['containers'], 'samtools')
+                samtoolsimage
             ),
             kwargs={"ncores": config["max_cores"]}
         )
@@ -81,10 +74,7 @@ def create_split_workflow(
     else:
         workflow.transform(
             name='split_normal_bam',
-            ctx=dict(mem=config['memory']['low'],
-                     pool_id=config['pools']['standard'],
-                     ncpus=1,
-                     **ctx),
+            ctx={'mem': config['memory']['low'], 'ncpus': config['max_cores'], 'docker_image': baseimage},
             axes=('region',),
             func="single_cell.workflows.split_bams.tasks.split_bam_file",
             args=(
@@ -97,7 +87,7 @@ def create_split_workflow(
                     "normal.split.bam.bai", "region", fnames=normal_split_bai
                 ),
                 mgd.InputInstance('region'),
-                helpers.get_container_ctx(config['containers'], 'samtools')
+                samtoolsimage
             )
         )
 

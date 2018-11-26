@@ -1,23 +1,19 @@
 import os
-import shutil
-import warnings
 from scripts import CollectMetrics
 from scripts import GenerateCNMatrix
-from scripts import RunTrimGalore
 from scripts import SummaryMetrics
 
 from single_cell.utils import picardutils
 from single_cell.utils import bamutils
 from single_cell.utils import helpers
 from single_cell.utils import csvutils
-from single_cell.utils import gatkutils
 from single_cell.utils import hdfutils
 
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotMetrics
 
 
-def get_postprocess_metrics(infile, infile_bai, tempdir,
-                    config, markdups_metrics, flagstat_metrics):
+def get_postprocess_metrics(infile, tempdir,
+                    containers, markdups_metrics, flagstat_metrics):
 
     if not os.path.exists(tempdir):
         helpers.makedirs(tempdir)
@@ -25,14 +21,11 @@ def get_postprocess_metrics(infile, infile_bai, tempdir,
     outfile = os.path.join(tempdir, 'markdps.bam')
     outfile_index = outfile + '.bai'
 
-    container_ctx = helpers.get_container_ctx(config['containers'], 'picard', docker_only=True)
-
     picardutils.bam_markdups(infile, outfile, markdups_metrics, tempdir,
-                             **container_ctx)
+                             docker_image=containers['picard'])
 
-    container_ctx = helpers.get_container_ctx(config['containers'], 'samtools', docker_only=True)
-    bamutils.bam_index(outfile, outfile_index, **container_ctx)
-    bamutils.bam_flagstat(outfile, flagstat_metrics, **container_ctx)
+    bamutils.bam_index(outfile, outfile_index, docker_image=containers['samtools'])
+    bamutils.bam_flagstat(outfile, flagstat_metrics, docker_image=containers['samtools'])
 
 def plot_metrics(metrics, output, plot_title, gc_matrix, gc_content):
 
@@ -58,23 +51,19 @@ def merge_all_metrics(infiles, outfile):
 
 
 def bam_collect_wgs_metrics(
-        bam_filename, ref_genome, metrics_filename, config, tempdir):
-
-    container_ctx = helpers.get_container_ctx(config['containers'], 'picard', docker_only=True)
+        bam_filename, ref_genome, metrics_filename, containers, picard_wgs_params, tempdir):
 
     picardutils.bam_collect_wgs_metrics(
         bam_filename,
         ref_genome,
         metrics_filename,
-        config,
+        picard_wgs_params,
         tempdir,
-        **container_ctx)
+        docker_image=containers['picard'])
 
 
 def bam_collect_gc_metrics(
-        bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, tempdir, config):
-    container_ctx = helpers.get_container_ctx(config['containers'], 'picard', docker_only=True)
-
+        bam_filename, ref_genome, metrics_filename, summary_filename, chart_filename, tempdir, containers):
     picardutils.bam_collect_gc_metrics(
         bam_filename,
         ref_genome,
@@ -82,20 +71,19 @@ def bam_collect_gc_metrics(
         summary_filename,
         chart_filename,
         tempdir,
-        **container_ctx)
+        docker_image=containers['picard'])
 
 
 
 def bam_collect_insert_metrics(
-        bam_filename, flagstat_metrics_filename, metrics_filename, histogram_filename, tempdir,config):
-    container_ctx = helpers.get_container_ctx(config['containers'], 'picard', docker_only=True)
+        bam_filename, flagstat_metrics_filename, metrics_filename, histogram_filename, tempdir,containers):
 
     picardutils.bam_collect_insert_metrics(
         bam_filename,
         flagstat_metrics_filename,
         metrics_filename,
         histogram_filename,
-        tempdir, **container_ctx)
+        tempdir, docker_image=containers['picard'])
 
 
 def collect_gc(infiles, outfile, tempdir):

@@ -13,7 +13,6 @@ def create_alignment_workflow(
         fastq_1_filename,
         fastq_2_filename,
         bam_filename,
-        bai_filename,
         ref_genome,
         config,
         args,
@@ -21,6 +20,8 @@ def create_alignment_workflow(
         centerinfo,
         sample_info,
         cell_ids):
+
+    baseimage = config['docker']['single_cell_pipeline']
 
     out_dir = args['out_dir']
 
@@ -31,14 +32,7 @@ def create_alignment_workflow(
     bam_filename = dict([(cellid, bam_filename[cellid])
                          for cellid in cell_ids])
 
-    bai_filename = dict([(cellid, bai_filename[cellid])
-                         for cellid in cell_ids])
-
     chromosomes = config["chromosomes"]
-
-    ctx = {'mem_retry_increment': 2, 'ncpus': 1}
-    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
-    ctx.update(docker_ctx)
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -72,9 +66,7 @@ def create_alignment_workflow(
     flagstat_metrics = os.path.join(lane_metrics, 'flagstat', '{cell_id}.txt')
     workflow.transform(
         name='align_reads',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         axes=('cell_id', 'lane',),
         func="single_cell.workflows.align.tasks.align_pe",
         args=(
@@ -94,15 +86,16 @@ def create_alignment_workflow(
             mgd.InputInstance('cell_id'),
             mgd.InputInstance('lane'),
             args['library_id'],
-            config
+            config['aligner'],
+            config['docker'],
+            config['adapter'],
+            config['adapter2'],
         )
     )
 
     workflow.transform(
         name='merge_bams',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.workflows.align.tasks.merge_bams",
         axes=('cell_id',),
         args=(
@@ -112,7 +105,7 @@ def create_alignment_workflow(
                 'lane'),
             mgd.TempOutputFile('merged_lanes.bam', 'cell_id'),
             mgd.TempOutputFile('merged_lanes.bam.bai', 'cell_id'),
-            config
+            config['docker']
         )
     )
 
@@ -120,9 +113,7 @@ def create_alignment_workflow(
         workflow.transform(
             name='realignment',
             axes=('chrom',),
-            ctx=dict(mem=config['memory']['high'],
-                     pool_id=config['pools']['highmem'],
-                     **ctx),
+            ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
             func="single_cell.workflows.align.tasks.realign",
             args=(
                 mgd.TempInputFile('merged_lanes.bam', 'cell_id'),
@@ -136,9 +127,7 @@ def create_alignment_workflow(
 
         workflow.transform(
             name='merge_realignment',
-            ctx=dict(mem=config['memory']['high'],
-                     pool_id=config['pools']['highmem'],
-                     **ctx),
+            ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
             axes=('cell_id',),
             func="single_cell.workflows.align.tasks.merge_realignment",
             args=(
@@ -163,18 +152,14 @@ def create_alignment_workflow(
         '{cell_id}.flagstat_metrics.txt')
     workflow.transform(
         name='postprocess_bam',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 **ctx),
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         axes=('cell_id',),
         func="single_cell.workflows.align.tasks.postprocess_bam",
         args=(
             final_bam,
-            mgd.OutputFile('sorted_markdups', 'cell_id', fnames=bam_filename),
-            mgd.OutputFile(
-                'sorted_markdups_index', 'cell_id', fnames=bai_filename),
+            mgd.OutputFile('sorted_markdups', 'cell_id', fnames=bam_filename, extensions=['.bai']),
             mgd.TempSpace('tempdir', 'cell_id'),
-            config,
+            config['docker'],
             mgd.OutputFile(markdups_metrics, 'cell_id'),
             mgd.OutputFile(flagstat_metrics, 'cell_id'),
         ),

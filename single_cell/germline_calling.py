@@ -14,24 +14,23 @@ import single_cell
 def germline_calling_workflow(workflow, args):
 
     config = helpers.load_config(args)
+    config = config['germline_calling']
 
-    ctx = {'mem_retry_increment': 2, 'ncpus': 1,
-           'mem': config["memory"]['low'],
-           'pool_id': config['pools']['standard'],
-           }
-    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
-    ctx.update(docker_ctx)
+    baseimage = config['docker']['single_cell_pipeline']
 
-    bam_files, bai_files  = helpers.get_bams(args['input_yaml'])
+    basedocker = {'docker_image': config['docker']['single_cell_pipeline']}
+    vcftoolsdocker = {'docker_image': config['docker']['vcftools']}
+    samtoolsdocker = {'docker_image': config['docker']['samtools']}
+    snpeffdocker = {'docker_image': config['docker']['snpeff']}
 
-    sampleids = helpers.get_samples(args['input_yaml'])
+
+    bam_files, _ = helpers.get_bams(args['input_yaml'])
 
     normal_bam_template = args["input_template"]
     normal_bai_template = args["input_template"] + ".bai"
 
     if "{reads}" in normal_bam_template:
         raise ValueError("input template for germline calling only support region based splits")
-
 
     varcalls_dir = os.path.join(
         args['out_dir'], 'results', 'germline_calling')
@@ -50,7 +49,7 @@ def germline_calling_workflow(workflow, args):
  
     workflow.transform(
         name="get_regions",
-        ctx=ctx,
+        ctx={'mem_retry_increment': 2, 'ncpus': 1, 'mem': config["memory"]['low'], 'docker_image': baseimage},
         func="single_cell.utils.pysamutils.get_regions_from_reference",
         ret=pypeliner.managed.OutputChunks('region'),
         args=(
@@ -70,10 +69,8 @@ def germline_calling_workflow(workflow, args):
             mgd.OutputFile(samtools_germline_vcf, extensions=['.tbi']),
             config,
         ),
-        kwargs={'chromosomes': config["chromosomes"],
-                'base_docker': helpers.get_container_ctx(config['containers'], 'single_cell_pipeline'),
-                'vcftools_docker': helpers.get_container_ctx(config['containers'], 'vcftools'),
-                'samtools_docker': helpers.get_container_ctx(config['containers'], 'samtools'),}
+        kwargs={'vcftools_docker': vcftoolsdocker,
+                'samtools_docker': samtoolsdocker,}
     )
 
     workflow.subworkflow(
@@ -84,15 +81,15 @@ def germline_calling_workflow(workflow, args):
             mgd.InputFile(samtools_germline_vcf, extensions=['.tbi']),
             mgd.OutputFile(mappability_filename),
         ),
-        kwargs={'base_docker': helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')}
+        kwargs={'base_docker': basedocker}
     )
 
     workflow.transform(
         name='annotate_genotype',
         func="single_cell.workflows.germline.tasks.annotate_normal_genotype",
-        ctx=ctx,
+        ctx={'mem_retry_increment': 2, 'ncpus': 1, 'mem': config["memory"]['low']},
         args=(
-            mgd.InputFile(samtools_germline_vcf, extensions=['.tbi']),
+            mgd.InputFile(samtools_germ1line_vcf, extensions=['.tbi']),
             mgd.OutputFile(normal_genotype_filename),
             config["chromosomes"],
         ),
@@ -108,9 +105,9 @@ def germline_calling_workflow(workflow, args):
         ),
         kwargs={
             'hdf5_output': False,
-            'base_docker': helpers.get_container_ctx(config['containers'], 'single_cell_pipeline'),
-            'vcftools_docker':helpers.get_container_ctx(config['containers'], 'vcftools'),
-            'snpeff_docker': helpers.get_container_ctx(config['containers'], 'snpeff'),
+            'base_docker': basedocker,
+            'vcftools_docker': vcftoolsdocker,
+            'snpeff_docker': snpeffdocker,
         }
     )
 
@@ -118,22 +115,21 @@ def germline_calling_workflow(workflow, args):
         name='read_counts',
         func="single_cell.variant_calling.create_snv_allele_counts_for_vcf_targets_workflow",
         args=(
-            config,
             mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files),
-            mgd.InputFile('tumour.bam.bai', 'cell_id', fnames=bai_files),
             mgd.InputFile(samtools_germline_vcf, extensions=['.tbi']),
             mgd.OutputFile(counts_template),
+            config['memory'],
         ),
         kwargs={
             'table_name': '/germline_allele_counts',
-            'docker_config': helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
+            'docker_config': basedocker
         },
     )
 
     workflow.transform(
         name='build_results_file',
         func="biowrappers.components.io.hdf5.tasks.concatenate_tables",
-        ctx=ctx,
+        ctx={'mem_retry_increment': 2, 'ncpus': 1, 'mem': config["memory"]['low'], 'docker_image': baseimage},
         args=([
                 mgd.InputFile(counts_template),
                 mgd.InputFile(mappability_filename),
@@ -158,7 +154,7 @@ def germline_calling_workflow(workflow, args):
         'germline_calling': {
             'version': single_cell.__version__,
             'results': results,
-            'containers': config['containers'],
+            'containers': config['docker'],
             'input_datasets': input_datasets,
             'output_datasets': None
         }
@@ -166,9 +162,7 @@ def germline_calling_workflow(workflow, args):
 
     workflow.transform(
         name='generate_meta_yaml',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 mem_retry_increment=2, ncpus=1),
+        ctx={'mem_retry_increment': 2, 'ncpus': 1, 'mem': config["memory"]['low'], 'docker_image': baseimage},
         func="single_cell.utils.helpers.write_to_yaml",
         args=(
             mgd.OutputFile(info_file),
