@@ -11,18 +11,18 @@ from single_cell.utils import helpers
 from subprocess import Popen, PIPE
 
 
-def cell_region_merge_bams(cell_bams, region_bam, region, kwargs):
+def cell_region_merge_bams(cell_bams, region_bam, region, docker_image):
     cell_bams = cell_bams.values()
     region = '{}:{}-{}'.format(*region.split('-'))
 
     bamutils.bam_merge(
         cell_bams, region_bam,
         region=region,
-        **kwargs)
+        docker_image=docker_image)
 
     bamutils.bam_index(
         region_bam, region_bam+'.bai',
-        **kwargs)
+        docker_image=docker_image)
 
 
 def merge_bam_worker(input_bam_files, output_bam, region, samtools_docker):

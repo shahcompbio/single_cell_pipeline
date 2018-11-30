@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from scripts import merge_wigs
+import warnings
 
 from single_cell.utils import csvutils
 import remixt
@@ -13,10 +14,22 @@ def merge_overlapping_seqdata(outfile, infiles, chromosomes):
 
     for _id, infile in infiles.iteritems():
         store = pd.HDFStore(infile)
+        tables = store.keys()
 
         for chromosome in chromosomes:
-            alleles = store['/alleles/chromosome_{}'.format(chromosome)]
-            fragments = store['/fragments/chromosome_{}'.format(chromosome)]
+            allele_table = '/alleles/chromosome_{}'.format(chromosome)
+            fragment_table = '/fragments/chromosome_{}'.format(chromosome)
+
+            if allele_table not in tables:
+                warnings.warn("missing table {}".format(allele_table))
+                continue
+
+            if fragment_table not in tables:
+                warnings.warn("missing table {}".format(fragment_table))
+                continue
+
+            alleles = store[allele_table]
+            fragments = store[fragment_table]
 
             alleles['fragment_id'] = alleles['fragment_id'].astype(np.int64)
             fragments['fragment_id'] = fragments['fragment_id'].astype(np.int64)
