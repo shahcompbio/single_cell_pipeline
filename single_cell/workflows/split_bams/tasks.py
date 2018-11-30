@@ -6,35 +6,26 @@ Created on Nov 21, 2017
 import os
 import gzip
 import pypeliner
-
 from single_cell.utils import helpers
 from single_cell.utils import bamutils
 
 
-def split_bam_worker(bam, output_bam, region, samtools_docker):
+def split_bam_file_one_job(bam, outbam, regions, samtools_docker, tempdir, ncores=None):
 
-    region = '{}:{}-{}'.format(*region.split('-'))
+    commands = []
+    for region in regions:
+        output = outbam[region]
+        region = '{}:{}-{}'.format(*region.split('-'))
+        commands.append(['samtools', 'view', '-b', bam, '-o', output, region])
 
-    bamutils.bam_view(
-        bam, output_bam, region, docker_image=samtools_docker)
+    helpers.run_in_gnu_parallel(commands, tempdir, samtools_docker, ncores=ncores)
 
+    commands = []
+    for region in regions:
+        output = outbam[region]
+        commands.append(['samtools', 'index', output, output+".bai"])
 
-def index_bam_worker(bam, samtools_docker):
-
-    bamutils.bam_index(
-        bam, bam+'.bai', docker_image=samtools_docker)
-
-
-def split_bam_file_one_job(bam, outbam, regions, samtools_docker, ncores=None):
-
-    args = [(bam, outbam[region], region, {'docker_image': samtools_docker}) for region in regions]
-
-    helpers.run_in_parallel(split_bam_worker, args, ncores=ncores)
-
-    args = [(outbam[region], {'docker_image': samtools_docker}) for region in regions]
-
-    helpers.run_in_parallel(index_bam_worker, args, ncores=ncores)
-
+    helpers.run_in_gnu_parallel(commands, tempdir, samtools_docker, ncores=ncores)
 
 def split_bam_file(bam, bai, outbam, outbai, interval, samtools_docker):
 

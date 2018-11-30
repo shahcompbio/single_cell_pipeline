@@ -66,7 +66,8 @@ def create_split_workflow(
                     extensions=['.bai'],
                 ),
                 regions,
-                samtoolsimage
+                samtoolsimage,
+                mgd.TempSpace("one_job_split_tempdir")
             ),
             kwargs={"ncores": config["max_cores"]}
         )
