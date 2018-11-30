@@ -15,33 +15,18 @@ import single_cell
 def infer_haps_workflow(workflow, args):
 
     config = helpers.load_config(args)
-    remixt_config = config['titan_params'].get('extract_seqdata', {})
+    config = config['infer_haps']
 
-    singlecellimage = config['docker']['images']['single_cell_pipeline']
-    ctx = {
-              'mem_retry_increment': 2,
-              'ncpus': 1,
-              'image': singlecellimage['image'],
-              'dockerize': config['docker']['dockerize'],
-              'mounts': config['docker']['mounts'],
-              'username': singlecellimage['username'],
-              'password': singlecellimage['password'],
-              'server': singlecellimage['server'],
-          }
+    baseimage = config['docker']['single_cell_pipeline']
 
     haps_dir = os.path.join(args["out_dir"], "infer_haps")
 
     haplotypes_filename = os.path.join(haps_dir, "results", "haplotypes.tsv")
     allele_counts_filename = os.path.join(haps_dir, "results", "allele_counts.tsv")
 
-#    snp_positions_filename = remixt.config.get_filename(config, ref_data_dir, 'snp_positions')
-#    bam_max_fragment_length = remixt.config.get_param(config, 'bam_max_fragment_length')
-#    bam_max_soft_clipped = remixt.config.get_param(config, 'bam_max_soft_clipped')
-#    bam_check_proper_pair = remixt.config.get_param(config, 'bam_check_proper_pair')
-
     workflow.setobj(
         obj=mgd.OutputChunks('chromosome'),
-        value=config['titan_params']['chromosomes']
+        value=config['chromosomes']
     )
 
     if args['input_yaml']:
@@ -61,30 +46,24 @@ def infer_haps_workflow(workflow, args):
                 mgd.InputFile(
                     'bam_markdups',
                     'cell_id',
-                    fnames=bam_files),
-                mgd.InputFile(
-                    'bam_markdups_index',
-                    'cell_id',
-                    fnames=bai_files),
+                    fnames=bam_files,
+                    extensions=['.bai']
+                ),
                 mgd.TempOutputFile("tumour.h5", "cell_id"),
+                config.get('extract_seqdata', {}),
+                config['ref_data_dir'],
                 config,
-                config['titan_params'].get('extract_seqdata', {}),
-                config['titan_params']['ref_data_dir'],
-                snp_positions_filename,
-                bam_max_fragment_length,
-                bam_max_soft_clipped,
-                bam_check_proper_pair,
             )
         )
 
         workflow.transform(
             name='merge_all_seqdata',
-            ctx=dict(mem=config["memory"]['high'], pool_id=config['pools']['highmem'], **ctx),
+            ctx={'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
             func="single_cell.workflows.titan.tasks.merge_overlapping_seqdata",
             args=(
                 mgd.TempOutputFile("seqdata_normal_all_cells_merged.h5"),
                 mgd.TempInputFile("tumour.h5", "cell_id"),
-                config["titan_params"]["chromosomes"]
+                config["chromosomes"]
             ),
         )
     else:
@@ -93,15 +72,10 @@ def infer_haps_workflow(workflow, args):
             func=extract_seqdata.create_extract_seqdata_workflow,
             args=(
                 mgd.InputFile(args['input_bam']),
-                mgd.InputFile(args['input_bam'] + '.bai'),
                 mgd.TempOutputFile("seqdata_normal_all_cells_merged.h5"),
+                config.get('extract_seqdata', {}),
+                config['ref_data_dir'],
                 config,
-                config['titan_params'].get('extract_seqdata', {}),
-                config['titan_params']['ref_data_dir'],
-                snp_positions_filename,
-                bam_max_fragment_length,
-                bam_max_soft_clipped,
-                bam_check_proper_pair,
             ),
             kwargs={'multiprocess': True}
         )
@@ -110,7 +84,7 @@ def infer_haps_workflow(workflow, args):
         workflow.transform(
             name='infer_snp_genotype',
             axes=('chromosome',),
-            ctx={'mem': 16},
+            ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
             func='remixt.analysis.haplotype.infer_snp_genotype_from_normal',
             args=(
                 mgd.TempOutputFile('snp_genotype.tsv', 'chromosome'),
@@ -123,7 +97,7 @@ def infer_haps_workflow(workflow, args):
         workflow.transform(
             name='infer_snp_genotype',
             axes=('chromosome',),
-            ctx={'mem': 16},
+            ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
             func='remixt.analysis.haplotype.infer_snp_genotype_from_tumour',
             args=(
                 mgd.TempOutputFile('snp_genotype.tsv', 'chromosome'),
@@ -136,7 +110,7 @@ def infer_haps_workflow(workflow, args):
     workflow.transform(
         name='infer_haps',
         axes=('chromosome',),
-        ctx={'mem': 16},
+        ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
         func='remixt.analysis.haplotype.infer_haps',
         args=(
             mgd.TempOutputFile('haps.tsv', 'chromosome'),
@@ -144,13 +118,13 @@ def infer_haps_workflow(workflow, args):
             mgd.InputInstance('chromosome'),
             mgd.TempSpace('haplotyping', 'chromosome'),
             config,
-            config['titan_params']['ref_data_dir'],
+            config['ref_data_dir'],
         )
     )
 
     workflow.transform(
         name='merge_haps',
-        ctx={'mem': 16},
+        ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
         func='remixt.utils.merge_tables',
         args=(
             mgd.OutputFile(haplotypes_filename),
@@ -160,22 +134,23 @@ def infer_haps_workflow(workflow, args):
 
     workflow.transform(
         name='create_segments',
+        ctx={'mem': 20, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
         func='remixt.analysis.segment.create_segments',
         args=(
             mgd.TempOutputFile('segments.tsv'),
             config,
-            config['titan_params']['ref_data_dir'],
+            config['ref_data_dir'],
         ),
     )
 
     workflow.transform(
         name='haplotype_allele_readcount',
-        ctx={'mem': 20},
+        ctx={'mem': 20, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
         func='remixt.analysis.readcount.haplotype_allele_readcount',
         args=(
             mgd.OutputFile(allele_counts_filename),
             mgd.TempInputFile('segments.tsv'),
-            mgd.TempInputFile('tumour.h5', 'cell_id'),
+            mgd.TempInputFile('seqdata_normal_all_cells_merged.h5'),
             mgd.InputFile(haplotypes_filename),
             config,
         ),
@@ -197,7 +172,7 @@ def infer_haps_workflow(workflow, args):
         'infer_haps': {
             'version': single_cell.__version__,
             'results': results,
-            'containers': config['containers'],
+            'containers': config['docker'],
             'input_datasets': input_datasets,
             'output_datasets': None
         }
@@ -205,9 +180,7 @@ def infer_haps_workflow(workflow, args):
 
     workflow.transform(
         name='generate_meta_yaml',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
-                 mem_retry_increment=2, ncpus=1),
+        ctx={'mem': 4, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.utils.helpers.write_to_yaml",
         args=(
             mgd.OutputFile(info_file),
@@ -224,8 +197,6 @@ def infer_haps_from_bulk_normal(
     haplotypes_filename,
     config,
 ):
-    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
-
     remixt_config = config['remixt_config'].get('extract_seqdata', {})
     remixt_ref_data_dir = config['remixt_ref_data_dir']
 
