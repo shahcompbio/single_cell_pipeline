@@ -21,6 +21,7 @@ def load_chromosome_lengths(file_name, chromosomes=None):
     return chromosome_lengths
 
 def get_regions_from_reference(reference_fastq, split_size, chromosomes):
+
     chromosome_lengths = load_chromosome_lengths(
         reference_fastq,
         chromosomes=chromosomes

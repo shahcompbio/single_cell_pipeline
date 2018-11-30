@@ -16,9 +16,11 @@ def seqdata_worker(chrom_seqdata, bam_file, snp_positions, chromosome,
 
 
 def create_chromosome_seqdata(seqdata, bam_file, config, ref_data_dir,
-                              multiprocess=False, ncores=1):
+                              multiprocess=False, ncores=1, chromosomes=None):
 
-    chromosomes = remixt.config.get_chromosomes(config, ref_data_dir)
+    if not chromosomes:
+        chromosomes = remixt.config.get_chromosomes(config, ref_data_dir)
+
     snp_positions_filename = remixt.config.get_filename(config, ref_data_dir, 'snp_positions')
 
     bam_max_fragment_length = remixt.config.get_param(config, 'bam_max_fragment_length')

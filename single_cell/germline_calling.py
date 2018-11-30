@@ -23,7 +23,6 @@ def germline_calling_workflow(workflow, args):
     samtoolsdocker = {'docker_image': config['docker']['samtools']}
     snpeffdocker = {'docker_image': config['docker']['snpeff']}
 
-
     bam_files, _ = helpers.get_bams(args['input_yaml'])
 
     normal_bam_template = args["input_template"]
@@ -58,7 +57,7 @@ def germline_calling_workflow(workflow, args):
             config["chromosomes"],
         )
     )
- 
+
     workflow.subworkflow(
         name='samtools_germline',
         func=germline.create_samtools_germline_workflow,
@@ -89,7 +88,7 @@ def germline_calling_workflow(workflow, args):
         func="single_cell.workflows.germline.tasks.annotate_normal_genotype",
         ctx={'mem_retry_increment': 2, 'ncpus': 1, 'mem': config["memory"]['low']},
         args=(
-            mgd.InputFile(samtools_germ1line_vcf, extensions=['.tbi']),
+            mgd.InputFile(samtools_germline_vcf, extensions=['.tbi']),
             mgd.OutputFile(normal_genotype_filename),
             config["chromosomes"],
         ),

@@ -16,15 +16,16 @@ def create_extract_seqdata_workflow(
      config,
      multiprocess=False,
 ):
-    ctx = {'mem_retry_increment': 2, 'ncpus': 1}
-    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
-    ctx.update(docker_ctx)
+
+    ctx = {'mem_retry_increment': 2, 'ncpus': 1,
+           'docker_image': config['docker']['single_cell_pipeline'],
+           'mem': config["memory"]['high']}
 
     workflow = pypeliner.workflow.Workflow()
 
     workflow.transform(
         name='create_chromosome_seqdata',
-        ctx=dict(mem=config["memory"]['high'], pool_id=config['pools']['highmem'], **ctx),
+        ctx=ctx,
         func="single_cell.workflows.extract_seqdata.tasks.create_chromosome_seqdata",
         args=(
             mgd.TempOutputFile('seqdata', 'chromosome'),
@@ -32,17 +33,14 @@ def create_extract_seqdata_workflow(
             remixt_config,
             remixt_ref_data_dir,
         ),
-        kwargs={'multiprocess':multiprocess,
-                'ncores':config['max_cores']}
+        kwargs={'multiprocess': multiprocess,
+                'ncores': config['max_cores'],
+                'chromosomes': config['chromosomes']}
     )
-
-    ctx = {'mem_retry_increment': 2, 'ncpus': 1}
-    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
-    ctx.update(docker_ctx)
 
     workflow.transform(
         name='merge_seqdata',
-        ctx=dict(mem=config["memory"]['high'], pool_id=config['pools']['highmem'], **ctx),
+        ctx=ctx,
         func="remixt.seqdataio.merge_seqdata",
         args=(
             mgd.OutputFile(seqdata_filename),

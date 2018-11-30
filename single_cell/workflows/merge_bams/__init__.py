@@ -35,18 +35,34 @@ def create_merge_bams_workflow(
         value=regions,
     )
 
-    workflow.transform(
-        name='merge_bams',
-        ctx={'mem': config['memory']['high'], 'ncpus': config['max_cores'], 'docker_image': baseimage},
-        func="single_cell.workflows.merge_bams.tasks.merge_bams",
-        args=(
-            mgd.InputFile('bam', 'cell_id', fnames=input_bams, extensions=['.bai']),
-            mgd.OutputFile('merged.bam', "region", fnames=merged_bams, axes_origin=[]),
-            regions,
-            config['docker']['samtools'],
-        ),
-        kwargs={"ncores": config["max_cores"]}
-    )
+    one_split_job = config["one_split_job"]
+
+    if one_split_job:
+        workflow.transform(
+            name='merge_bams',
+            ctx={'mem': config['memory']['high'], 'ncpus': config['max_cores'], 'docker_image': baseimage},
+            func="single_cell.workflows.merge_bams.tasks.merge_bams",
+            args=(
+                mgd.InputFile('bam', 'cell_id', fnames=input_bams, extensions=['.bai']),
+                mgd.OutputFile('merged.bam', "region", fnames=merged_bams, axes_origin=[]),
+                regions,
+                config['docker']['samtools'],
+            ),
+            kwargs={"ncores": config["max_cores"]}
+        )
+    else:
+        workflow.transform(
+            name='split_merge_tumour',
+            func='single_cell.workflows.merge_bams.tasks.cell_region_merge_bams',
+            axes=('region',),
+            args=(
+                mgd.InputFile('tumour_cells.bam', 'cell_id', extensions=['.bai'], fnames=input_bams),
+                mgd.OutputFile(
+                    'tumour_regions.bam', 'region', axes_origin=[], extensions=['.bai'], fnames=merged_bams),
+                mgd.Instance('region'),
+                config['docker']['samtools'],
+            ),
+        )
 
     return workflow
 
@@ -55,7 +71,7 @@ def create_cell_region_merge_workflow(
     cell_bams,
     region_bams,
     regions,
-    config,
+    docker_image,
 ):
     region_bams = dict([(region, region_bams[region]) for region in regions])
 
@@ -79,7 +95,7 @@ def create_cell_region_merge_workflow(
             mgd.InputFile('tumour_cells.bam', 'cell_id', extensions=['.bai'], fnames=cell_bams),
             mgd.OutputFile('tumour_regions.bam', 'region', axes_origin=[], extensions=['.bai'], fnames=region_bams),
             mgd.Instance('region'),
-            helpers.get_container_ctx(config['containers'], 'samtools'),
+            docker_image
         ),
     )
 

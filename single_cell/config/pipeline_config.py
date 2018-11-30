@@ -156,6 +156,7 @@ def get_merge_bams_params(cluster, reference):
         'ref_genome': referencedata['ref_genome'],
         'split_size': 10000000,
         'chromosomes': referencedata['chromosomes'],
+        'one_split_job': False
     }
     return {'merge_bams': params}
 
@@ -219,6 +220,27 @@ def get_germline_calling_params(cluster, reference):
     return {'germline_calling': params}
 
 
+def get_infer_haps_params(cluster, reference):
+    if cluster == "azure":
+        referencedata = config_reference.reference_data_azure(reference)
+    else:
+        referencedata = config_reference.reference_data_shahlab(reference)
+
+    docker_containers = config_reference.containers()['docker']
+
+    params = {
+        'memory': {'low': 4, 'med': 6, 'high': 18},
+        'max_cores': None,
+        'chromosomes': referencedata['chromosomes'],
+        'extract_seqdata': {},
+        'ref_data_dir': referencedata['copynumber_ref_data'],
+        'docker': {
+            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
+        },
+    }
+
+    return {'infer_haps': params}
+
 
 def get_singlecell_pipeline_config(config_params, override=None):
     reference = config_params["reference"]
@@ -249,6 +271,8 @@ def get_singlecell_pipeline_config(config_params, override=None):
     params.update(get_split_bam_params(cluster, reference))
 
     params.update(get_germline_calling_params(cluster, reference))
+
+    params.update(get_infer_haps_params(cluster, reference))
 
     params = override_config(params, override)
 
