@@ -6,7 +6,6 @@ Created on Feb 19, 2018
 import os
 import errno
 import tarfile
-import time
 import yaml
 
 import shutil
@@ -16,6 +15,7 @@ from subprocess import Popen, PIPE
 import multiprocessing
 
 from multiprocessing.pool import ThreadPool
+import pypeliner
 
 def resolve_template(regions, template, format_key):
     outputs = {v: template.format(**{format_key:v}) for v in regions}
@@ -160,6 +160,24 @@ def get_incrementing_filename(path):
         i += 1
 
     return "{}.{}".format(path, i)
+
+
+def run_in_gnu_parallel(commands, tempdir, docker_image, ncores=None):
+    helpers.makedirs(tempdir)
+    parallel_outfile = os.path.join(tempdir, "commands.txt")
+
+    with open(parallel_outfile, 'w') as outfile:
+        for cmd in commands:
+            if isinstance(cmd, list) or isinstance(cmd, tuple):
+                cmd = ' '.join(cmd) + '\n'
+            outfile.write(cmd)
+
+    if not ncores:
+        ncores = multiprocessing.cpu_count()
+
+    gnu_parallel_cmd = ['parallel', '--jobs', ncores, '<', parallel_outfile]
+    pypeliner.commandline.execute(*gnu_parallel_cmd, docker_image=docker_image)
+
 
 
 def run_in_parallel(worker, args, ncores=None):

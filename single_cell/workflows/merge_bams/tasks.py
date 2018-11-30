@@ -37,6 +37,7 @@ def merge_bam_worker(input_bam_files, output_bam, region, samtools_docker):
 
 
 def merge_bams(bams, outputs, regions, samtools_docker, ncores=None):
+
     count = multiprocessing.cpu_count()
 
     if ncores:
