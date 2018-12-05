@@ -299,7 +299,12 @@ class PlotMetrics(object):
         well_labels = False
         # if the cell call matches the C[1-9]+ format then add cell calls to
         # the plot
-        if all([re.match("C[0-9]+$|NTC", cc) for cc in df['cell_call']]):
+
+        # cant plot a chip heatmap if no row or column
+        if df["row"].isnull().all() or df["column"].isnull().all():
+            return
+
+        if not df["cell_call"].isnull().all() and all([re.match("C[0-9]+$|NTC", cc) for cc in df['cell_call']]):
             well_labels = np.empty((size, size,))
             well_labels[:] = np.nan
 
@@ -710,20 +715,24 @@ class PlotMetrics(object):
             return "csv"
 
     def read_input_data(self, infile, tablename):
-
         fileformat = self.get_file_format(infile)
 
         if fileformat == "csv":
-            return pd.read_csv(infile)
-
+            metrics = pd.read_csv(infile)
         else:
             with pd.HDFStore(infile, 'r') as metrics_store:
-
                 metrics = metrics_store[tablename]
-
             metrics = metrics.reset_index()
 
-            return metrics
+        if 'cell_call' in metrics.columns.values:
+            # plotting code doesnt work with nan
+            # tenx data will have nan for cell call, experimental condition
+            # row, col
+            metrics['cell_call'] = metrics["cell_call"].fillna("nan")
+            metrics['experimental_condition'] = metrics["experimental_condition"].fillna("nan")
+
+        return metrics
+
 
     #=========================================================================
     # Run script
