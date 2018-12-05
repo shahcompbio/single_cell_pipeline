@@ -80,7 +80,8 @@ def germline_calling_workflow(workflow, args):
             mgd.InputFile(samtools_germline_vcf, extensions=['.tbi']),
             mgd.OutputFile(mappability_filename),
         ),
-        kwargs={'base_docker': basedocker}
+        kwargs={'base_docker': basedocker,
+                'chromosomes': config['chromosomes']}
     )
 
     workflow.transform(
@@ -114,14 +115,13 @@ def germline_calling_workflow(workflow, args):
         name='read_counts',
         func="single_cell.variant_calling.create_snv_allele_counts_for_vcf_targets_workflow",
         args=(
-            mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files),
+            mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files, extensions=['.bai']),
             mgd.InputFile(samtools_germline_vcf, extensions=['.tbi']),
             mgd.OutputFile(counts_template),
             config['memory'],
         ),
         kwargs={
             'table_name': '/germline_allele_counts',
-            'docker_config': basedocker
         },
     )
 
