@@ -101,6 +101,10 @@ def run_fastqc(fastq1, fastq2, reports, tempdir, containers):
 def get_readgroup(run_id, cell_id, library_id, centre, sample_info):
     platform = 'illumina'
 
+    if not centre:
+        warnings.warn("no sequencing centre specified")
+        centre = "NA"
+
     barcode = sample_info["primer_i7"] + "-" + sample_info["primer_i5"]
 
     read_group_template = (
@@ -136,7 +140,7 @@ def bwa_aln_paired_end(fastq1, fastq2, output, tempdir,
 
 
 def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
-             reference, instrument, centre, sample_info, cell_id,
+             reference, trim, centre, sample_info, cell_id,
              lane_id, library_id, aligner, containers, adapter,
              adapter2):
 
@@ -160,7 +164,7 @@ def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
             tempdir,
             containers)
     elif aligner == "bwa-aln":
-        if not instrument == "N550":
+        if trim:
             fastq1, fastq2 = trim_fastqs(
                 fastq1, fastq2, cell_id, tempdir, adapter, adapter2)
         bwa_aln_paired_end(
@@ -211,7 +215,7 @@ def run_trimgalore(seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt, tempdir,
     run_tg.gather_outputs()
 
 
-def trim_fastqs(fastq1, fastq2, cell_id, tempdir, config):
+def trim_fastqs(fastq1, fastq2, cell_id, tempdir, adapter, adapter2):
     """
     run fastqc on both fastq files
     run trimgalore if needed, copy if not.
@@ -240,7 +244,7 @@ def trim_fastqs(fastq1, fastq2, cell_id, tempdir, config):
         '{}_trimgalore_qc_R2.zip'.format(cell_id))
 
     run_trimgalore(fastq1, fastq2, trim1, trim2, 'trim_galore', 'cutadapt',
-                   tempdir, config['adapter'], config['adapter2'],
+                   tempdir, adapter, adapter2,
                    rep1, rep2, qcrep1, qcrep2, qczip1, qczip2)
 
     return trim1, trim2

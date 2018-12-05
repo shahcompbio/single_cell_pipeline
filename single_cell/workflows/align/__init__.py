@@ -16,7 +16,7 @@ def create_alignment_workflow(
         ref_genome,
         config,
         args,
-        instrumentinfo,
+        triminfo,
         centerinfo,
         sample_info,
         cell_ids):
@@ -47,8 +47,8 @@ def create_alignment_workflow(
     )
 
     workflow.setobj(
-        obj=mgd.TempOutputObj('instrument', 'cell_id', 'lane', axes_origin=[]),
-        value=instrumentinfo)
+        obj=mgd.TempOutputObj('trim', 'cell_id', 'lane', axes_origin=[]),
+        value=triminfo)
 
     workflow.setobj(
         obj=mgd.TempOutputObj('center', 'cell_id', 'lane', axes_origin=[]),
@@ -80,7 +80,7 @@ def create_alignment_workflow(
             mgd.OutputFile(flagstat_metrics, 'cell_id', 'lane'),
             mgd.TempSpace('alignment_temp', 'cell_id', 'lane'),
             ref_genome,
-            mgd.TempInputObj('instrument', 'cell_id', 'lane'),
+            mgd.TempInputObj('trim', 'cell_id', 'lane'),
             mgd.TempInputObj('center', 'cell_id', 'lane'),
             mgd.TempInputObj('sampleinfo', 'cell_id'),
             mgd.InputInstance('cell_id'),
