@@ -7,6 +7,7 @@ import os
 import errno
 import tarfile
 import yaml
+import warnings
 
 import shutil
 
@@ -268,7 +269,7 @@ def get_fastqs(fastqs_file):
     return fastq_1_filenames, fastq_2_filenames
 
 
-def get_instrument_info(fastqs_file):
+def get_trim_info(fastqs_file):
 
     data = load_yaml(fastqs_file)
 
@@ -281,11 +282,19 @@ def get_instrument_info(fastqs_file):
         fastqs = data[cell]["fastqs"]
 
         for lane, paths in fastqs.iteritems():
-
-            if "sequencing_instrument" not in paths:
+            if 'trim' in paths:
+                seqinfo[(cell, lane)] = paths["trim"]
+            elif 'sequencing_instrument' in paths:
+                DeprecationWarning("sequencing instrument value is deprecated "
+                                   "and will be removed with v0.2.8")
+                if paths["sequencing_instrument"] == "N550":
+                    trim = False
+                else:
+                    trim = True
+                seqinfo[(cell, lane)] = trim
+            else:
                 raise Exception(
-                    "instrument key missing in cell: {}".format(cell))
-            seqinfo[(cell, lane)] = paths["sequencing_instrument"]
+                    "trim flag missing in cell: {}".format(cell))
 
     return seqinfo
 
