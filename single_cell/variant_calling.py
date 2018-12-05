@@ -43,7 +43,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
         axes=('cell_id',),
         func="biowrappers.components.variant_calling.snv_allele_counts.tasks.get_snv_allele_counts_for_vcf_targets",
         args=(
-            mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files),
+            mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files, extensions=['.bai']),
             mgd.InputFile(vcf_file),
             mgd.TempOutputFile('counts.h5', 'cell_id'),
             table_name,
@@ -60,7 +60,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
 
     workflow.transform(
         name='merge_snv_allele_counts',
-        ctx={'mem': memory_cfg['memory']['high'], 'num_retry': 3, 'mem_retry_increment': 2, 'ncpus': 1},
+        ctx={'mem': memory_cfg['high'], 'num_retry': 3, 'mem_retry_increment': 2, 'ncpus': 1},
         func="biowrappers.components.io.hdf5.tasks.concatenate_tables",
         args=(
             mgd.TempInputFile('counts.h5', 'cell_id'),
