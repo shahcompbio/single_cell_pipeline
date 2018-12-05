@@ -36,7 +36,7 @@ def align_workflow(workflow, args):
 
     if not args["metrics_only"]:
         fastq1_files, fastq2_files = helpers.get_fastqs(args['input_yaml'])
-        instrumentinfo = helpers.get_instrument_info(args['input_yaml'])
+        triminfo = helpers.get_trim_info(args['input_yaml'])
         centerinfo = helpers.get_center_info(args['input_yaml'])
 
         workflow.setobj(
@@ -54,7 +54,7 @@ def align_workflow(workflow, args):
                 config['ref_genome'],
                 config,
                 args,
-                instrumentinfo,
+                triminfo,
                 centerinfo,
                 sampleinfo,
                 cellids,
