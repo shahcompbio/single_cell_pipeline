@@ -6,7 +6,7 @@ Created on Apr 10, 2017
 from utils import Utils
 from parseutils import ParseUtils
 from ast import literal_eval as safe_eval
-import warnings
+import logging
 import gzip
 class Vcf(ParseUtils):
     def __init__(self, **kwargs):
@@ -240,8 +240,9 @@ class Vcf(ParseUtils):
                     geno = info[8].split('=')[1]
                     lkl = info[9].split('=')[1]
                 except IndexError:
-                    warnings.warn('''Single mode mutationseq but the genotype
-                                     information is missing''')
+                    logging.getLogger("single_cell.wgs.parse").warn(
+                        'Single mode mutationseq but the genotype information is missing'
+                    )
 
             dbsnp, th_gen, cosmic = self.get_annotations(info)
 

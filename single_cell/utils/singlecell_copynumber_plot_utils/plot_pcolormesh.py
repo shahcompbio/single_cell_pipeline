@@ -15,8 +15,7 @@ import seaborn as sns
 from collections import defaultdict
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-import warnings
-
+import logging
 
 from heatmap import ClusterMap
 
@@ -452,7 +451,7 @@ class PlotPcolor(object):
         pdfout = PdfPages(self.output)
 
         if not data.values.size:
-            warnings.warn("no data to plot")
+            logging.getLogger("single_cell.plot_heatmap").warn("no data to plot")
             return
 
         vmax = np.nanmax(data.values)
@@ -469,8 +468,10 @@ class PlotPcolor(object):
                 continue
 
             if len(samples) > 1000 and not self.high_memory:
-                warnings.warn('The output file will only plot 1000 cells per page,'
-                              ' add --high_memory to override')
+                logging.getLogger("single_cell.plot_heatmap").warn(
+                    'The output file will only plot 1000 cells per page,'
+                    ' add --high_memory to override'
+                )
 
                 samples = sorted(samples)
                 # plot in groups of 1000
@@ -491,7 +492,7 @@ class PlotPcolor(object):
         data = self.read_segs()
 
         if data.empty:
-            warnings.warn("no data to plot")
+            logging.getLogger("single_cell.plot_heatmap").warn("no data to plot")
             open(self.output, "w").close()
             return
 

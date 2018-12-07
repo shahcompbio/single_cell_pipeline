@@ -1,5 +1,5 @@
 import os
-import warnings
+import logging
 import pipeline_config
 from single_cell.utils import helpers
 
@@ -22,7 +22,9 @@ def generate_pipeline_config_in_temp(args):
     elif tmpdir:
         config_yaml = os.path.join(tmpdir, config_yaml)
     else:
-        warnings.warn("no tmpdir specified, generating configs in working dir")
+        logging.getLogger("single_cell.generate_pipeline_config").warn(
+            "no tmpdir specified, generating configs in working dir"
+        )
         config_yaml = os.path.join(os.getcwd(), config_yaml)
 
     config_yaml = helpers.get_incrementing_filename(config_yaml)

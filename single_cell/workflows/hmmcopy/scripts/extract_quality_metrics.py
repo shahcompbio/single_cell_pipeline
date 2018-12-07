@@ -8,7 +8,7 @@ from __future__ import division
 import os
 import numpy as np
 import pandas as pd
-import warnings
+import logging
 
 from statsmodels.robust.scale import stand_mad
 from statsmodels.tsa.stattools import acf
@@ -42,7 +42,7 @@ class ExtractHmmMetrics(object):
         elif ext == ".h5" or ext == ".hdf5":
             return "h5"
         else:
-            warnings.warn(
+            logging.getLogger("single_cell.hmmcopy.extract_metrics").warn(
                 "Couldn't detect output format. extension {}".format(ext))
             return "csv"
 

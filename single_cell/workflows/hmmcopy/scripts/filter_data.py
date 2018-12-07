@@ -4,7 +4,7 @@ Created on Nov 16, 2016
 @author: dgrewal
 '''
 from __future__ import division
-import warnings
+import logging
 import argparse
 import pandas as pd
 import math
@@ -121,7 +121,7 @@ class FilterHmmData(object):
             header = inp.readline()
             #if input file is empty
             if not header:
-                warnings.warn("no data to filter")
+                logging.getLogger("single_cell.hmmcopy.filter_data").warn("no data to filter")
                 return
 
             output.write(header)

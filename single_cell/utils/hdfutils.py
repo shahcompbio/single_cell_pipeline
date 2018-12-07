@@ -5,10 +5,8 @@ Created on May 9, 2018
 '''
 import pandas as pd
 import helpers
-import warnings
-
+import logging
 from biowrappers.components.io.hdf5 import tasks as biowrappers_hdf5
-
 
 def get_min_itemsize(files):
     min_itemsize = {}
@@ -37,10 +35,14 @@ def cast_columns(df):
             try:
                 df[col] = df[col].astype(reference[col])
             except ValueError as exc:
-                warnings.warn("could not cast {} due to error: {}".format(col, exc.message))
+                logging.getLogger("single_cell.helpers.hdfutils").warn(
+                    "could not cast {} due to error: {}".format(col, exc.message)
+                )
         else:
             if col in ignore_cols:
-                warnings.warn('Could not cast {}, please add the expected data type to reference'.format(col))
+                logging.getLogger("single_cell.helpers.hdfutils").warn(
+                    'Could not cast {}, please add the expected data type to reference'.format(col)
+                )
 
     return df
 

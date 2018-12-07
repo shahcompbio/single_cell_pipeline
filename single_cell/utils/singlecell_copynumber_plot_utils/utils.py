@@ -12,7 +12,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle
 from scipy.special import gamma
 from math import pi
-import warnings
+import logging
 
 def t_dist_pdf(x, mu, lmbda, nu):
     p = (gamma(nu/2+0.5)/gamma(nu/2))* \
@@ -96,7 +96,9 @@ def add_legend(ax, color_reference, num_columns, type='rectangle', location='upp
             object_list.append(Line2D(range(1), range(1), color=col, marker='o', markersize=15, linewidth=0))
 
         else:
-            warnings.warn('Legend type must be one of: rectangle, circle.')
+            logging.getLogger("single_cell.plot_hmmcopy").warn(
+                'Legend type must be one of: rectangle, circle.'
+            )
 
     return ax.legend(tuple(object_list), tuple(labels_list), loc=location, ncol=num_columns)
 
