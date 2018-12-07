@@ -3,7 +3,7 @@ Created on Oct 24, 2017
 
 @author: dgrewal
 '''
-import warnings
+import logging
 import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
@@ -174,7 +174,7 @@ class ClusterMap(object):
         mat = mat[leaves, :]
 
         if np.isnan(mat).all():
-            warnings.warn("skipping heatplot due to missing data")
+            logging.getLogger("single_cell.plot_heatmap").warn("skipping heatplot due to missing data")
             return
 
         # get all values we're going to plot later and generate a colormap for

@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import warnings
+import logging
 import re
 
 from matplotlib.lines import Line2D
@@ -72,7 +72,9 @@ class PlotMetrics(object):
                                    )
 
             else:
-                warnings.warn('Legend type must be one of: rectangle, circle.')
+                logging.getLogger("single_cell.plot_metrics").warn(
+                    'Legend type must be one of: rectangle, circle.'
+                )
 
         return ax.legend(tuple(object_list), tuple(labels), loc=location,
                          ncol=num_columns)
@@ -166,11 +168,15 @@ class PlotMetrics(object):
     def plot_metric_fraction(self, df, numerator_metric, denominator_metric,
                              ylab, pdf, plot_title):
         if numerator_metric not in df.columns.values:
-            warnings.warn("{} column missing in data".format(numerator_metric))
+            logging.getLogger("single_cell.plot_metrics").warn(
+                "{} column missing in data".format(numerator_metric)
+            )
             return
 
         if denominator_metric not in df.columns.values:
-            warnings.warn("{} column missing in data".format(denominator_metric))
+            logging.getLogger("single_cell.plot_metrics").warn(
+                "{} column missing in data".format(denominator_metric)
+            )
             return
 
         sns.set(context='talk',
@@ -220,7 +226,9 @@ class PlotMetrics(object):
 
     def plot_metric(self, df, metric, ylab, text_spacing, pdf, plot_title):
         if metric not in df.columns.values:
-            warnings.warn("{} column missing in data".format(metric))
+            logging.getLogger("single_cell.plot_metrics").warn(
+                "{} column missing in data".format(metric)
+            )
             return
 
         sns.set(context='talk',
@@ -233,7 +241,9 @@ class PlotMetrics(object):
                     'legend.fontsize': 12})
 
         if text_spacing > max(df[metric]):
-            warnings.warn('default text spacing is very high, overriding')
+            logging.getLogger("single_cell.plot_metrics").warn(
+                'default text spacing is very high, overriding'
+            )
             text_spacing = 0.2 * max(df[metric])
 
         fig = plt.figure(figsize=(len(df['cell_id']) / 4, 5))
@@ -274,7 +284,9 @@ class PlotMetrics(object):
             size=72, center=None, cmap=None):
 
         if metric not in df.columns.values:
-            warnings.warn("{} column missing in data".format(metric))
+            logging.getLogger("single_cell.plot_metrics").warn(
+                "{} column missing in data".format(metric)
+            )
             return
 
         # set size based on the R-C in sample_plate
@@ -345,14 +357,16 @@ class PlotMetrics(object):
 
             pdf.savefig(bbox_inches='tight', pad_inches=0.4)
         except ValueError:
-            warnings.warn("Couldn't generate plot")
+            logging.getLogger("single_cell.plot_metrics").warn("Couldn't generate plot")
 
         plt.close()
 
     def plot_metric_factorplot(self, df, metric, ylab, pdf, plot_title):
 
         if metric not in df.columns.values:
-            warnings.warn("{} column missing in data".format(metric))
+            logging.getLogger("single_cell.plot_metrics").warn(
+                "{} column missing in data".format(metric)
+            )
             return
 
         df_melt = pd.melt(df, id_vars=['cell_id', 'experimental_condition',
@@ -675,7 +689,9 @@ class PlotMetrics(object):
                           value_vars=[metric],)
 
         if df_melt.index_i5.isnull().all() or df_melt.index_i5.isnull().all():
-            warnings.warn("barcode information missing, skipping boxplots")
+            logging.getLogger("single_cell.plot_metrics").warn(
+                "barcode information missing, skipping boxplots"
+            )
             return
 
         fig_height = 6
@@ -710,8 +726,9 @@ class PlotMetrics(object):
         elif ext == ".h5" or ext == ".hdf5":
             return "h5"
         else:
-            warnings.warn(
-                "Couldn't detect output format. extension {}".format(ext))
+            logging.getLogger("single_cell.plot_metrics").warn(
+                "Couldn't detect output format. extension {}".format(ext)
+            )
             return "csv"
 
     def read_input_data(self, infile, tablename):

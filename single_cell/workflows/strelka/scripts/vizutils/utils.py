@@ -8,7 +8,7 @@ import argparse
 from collections import defaultdict
 import os, subprocess, math
 from shutil import copyfile
-import warnings
+import logging
 
 class Utils(object):
     '''
@@ -340,7 +340,7 @@ class Utils(object):
                 elif letter == "G":
                     out += "C"
                 else:
-                    warnings.warn('Invalid TC')
+                    logging.getLogger("single_cell.wgs.parse").warn('Invalid TC')
                     return
             out = out[::-1]  # reverse the string
             return out

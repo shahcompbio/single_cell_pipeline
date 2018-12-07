@@ -11,7 +11,7 @@ matplotlib.use('Agg')
 import seaborn as sns
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-import warnings
+import logging
 import numpy as np
 import statsmodels.nonparametric.api as smnp
 import math
@@ -129,7 +129,7 @@ class PlotKernelDensity(object):
                              [self.column_name]
 
             if mad_scores.isnull().all():
-                warnings.warn(
+                logging.getLogger("single_cell.plot_kernel_density").warn(
                     "all mad states in condition %s are NaN" %
                     expcond)
                 continue

@@ -9,7 +9,7 @@ Created on Aug 25, 2015
 
 from collections import defaultdict
 from intervaltree import IntervalTree
-import warnings
+import logging
 from utils import Utils
 
 class ParseUtils(object):
@@ -208,7 +208,8 @@ class ParseUtils(object):
         elif biotype == '':
             return None
         else:
-            warnings.warn('Cant determine gene_coding of %s' % biotype)
+            logging.getLogger("single_cell.wgs.parse").warn(
+                'Cant determine gene_coding of %s' % biotype)
             return None
 
     @classmethod

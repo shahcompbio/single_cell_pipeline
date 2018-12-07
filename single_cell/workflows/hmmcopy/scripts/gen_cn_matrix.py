@@ -3,7 +3,7 @@ Created on Sep 8, 2015
 
 @author: dgrewal
 '''
-import warnings
+import logging
 import numpy as np
 import pandas as pd
 import os
@@ -34,7 +34,7 @@ class GenerateCNMatrix(object):
         elif ext == ".h5" or ext == ".hdf5":
             return "h5"
         else:
-            warnings.warn(
+            logging.getLogger("single_cell.hmmcopy.cnmatrix").warn(
                 "Couldn't detect output format. extension {}".format(ext))
             return "csv"
 
@@ -103,7 +103,7 @@ class GenerateCNMatrix(object):
         try:
             data = pd.read_csv(self.input, sep='\t', skiprows=skiprows)
         except pd.io.common.EmptyDataError:
-            warnings.warn('No data in the GCBias output')
+            logging.getLogger("single_cell.hmmcopy.cnmatrix").warn('No data in the GCBias output')
             # If the file is empty (only header no data) then return 0s (dummy
             # data)
             data = np.array([np.arange(100), [0] * 100]).T

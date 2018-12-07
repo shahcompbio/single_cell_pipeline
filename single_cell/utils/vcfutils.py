@@ -4,8 +4,7 @@ Created on Feb 27, 2018
 @author: dgrewal
 '''
 import os
-import warnings
-import biowrappers.components.io.vcf.tasks
+import logging
 
 def _get_header(infile):
     '''
@@ -25,7 +24,9 @@ def _get_header(infile):
         else:
             raise Exception('invalid header: missing #CHROM line')
 
-    warnings.warn("One of the input files is empty")
+    logging.getLogger("single_cell.helpers.vcfutils").warn(
+        "One of the input files is empty"
+    )
     return []
 
 def concatenate_vcf(infiles, outfile):
@@ -42,7 +43,9 @@ def concatenate_vcf(infiles, outfile):
         for _,ifile in infiles.iteritems():
 
             if os.path.getsize(ifile) == 0:
-                warnings.warn('input file {} is empty'.format(ifile))
+                logging.getLogger("single_cell.helpers.vcfutils").warn(
+                    'input file {} is empty'.format(ifile)
+                )
                 continue
 
             with open(ifile) as f:
@@ -54,7 +57,9 @@ def concatenate_vcf(infiles, outfile):
                         ofile.write(line)
                 else:
                     if not _get_header(f) == header:
-                        warnings.warn('merging vcf files with mismatching headers')
+                        logging.getLogger("single_cell.helpers.vcfutils").warn(
+                            'merging vcf files with mismatching headers'
+                        )
 
                 for l in f:
                     print >> ofile, l,
