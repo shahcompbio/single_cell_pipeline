@@ -1,7 +1,7 @@
 
 import os
 from single_cell.utils import helpers
-import warnings
+import logging
 import batch
 
 
@@ -28,7 +28,9 @@ def generate_submit_config_in_temp(args):
     elif tmpdir:
         batch_yaml = os.path.join(tmpdir, batch_yaml)
     else:
-        warnings.warn("no tmpdir specified, generating configs in working dir")
+        logging.getLogger("single_cell.generate_batch_config").warn(
+            "no tmpdir specified, generating configs in working dir"
+        )
         batch_yaml = os.path.join(os.getcwd(), batch_yaml)
 
     helpers.makedirs(batch_yaml, isfile=True)

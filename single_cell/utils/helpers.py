@@ -7,7 +7,7 @@ import os
 import errno
 import tarfile
 import yaml
-import warnings
+import logging
 
 import shutil
 
@@ -114,6 +114,7 @@ def get_mount_dirs_docker(*args):
 
 
 def write_to_yaml(outfile, data):
+    logging.getLogger("test").warn("resr")
     with open(outfile, 'w') as output:
         yaml.safe_dump(data, output, default_flow_style=False)
 
@@ -161,7 +162,7 @@ def get_incrementing_filename(path):
 
 
 def run_in_gnu_parallel(commands, tempdir, docker_image, ncores=None):
-    helpers.makedirs(tempdir)
+    makedirs(tempdir)
     parallel_outfile = os.path.join(tempdir, "commands.txt")
 
     with open(parallel_outfile, 'w') as outfile:

@@ -7,6 +7,7 @@ Created on July 31, 2018
 import os
 import pandas as pd
 import pypeliner
+import logging
 
 
 def read_input_file(input_file):
@@ -46,7 +47,9 @@ def get_cn_matrix_from_hdf(hmmcopy_hdf_file, ploidy = '0'):
     dropped_cells = df.columns[df.isna().all()].tolist()
 
     if len(dropped_cells) != 0:
-        warnings.warn('Dropping {} cells: {}'.format(len(dropped_cells), dropped_cells))
+        logging.getLogger("single_cell.helpers.ltmutils").warn(
+            'Dropping {} cells: {}'.format(len(dropped_cells), dropped_cells)
+        )
 
     df = df.loc[:, ~df.isna().all()].astype(int)
     df.columns = df.columns.astype(str)

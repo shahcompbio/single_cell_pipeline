@@ -6,8 +6,8 @@ Created on Feb 19, 2018
 
 import pandas as pd
 import csv
-import warnings
 import gzip
+import logging
 
 def annotate_metrics(infile, sample_info, outfile, compression=None):
     metrics_df = pd.read_csv(infile)
@@ -145,7 +145,9 @@ def concatenate_csv_lowmem(in_filenames, out_filename, compression=None):
                 writer.writerow(row)
 
     if not writer:
-        warnings.warn("no data to merge, generating an empty file")
+        logging.getLogger("single_cell.helpers.csvutils").warn(
+            "no data to merge, generating an empty file"
+        )
 
         #if inputs have headers write header to output
         if reader._fieldnames:

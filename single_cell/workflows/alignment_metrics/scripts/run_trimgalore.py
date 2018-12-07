@@ -6,7 +6,7 @@ Created on Jan 4, 2017
 
 from subprocess import Popen
 import os
-import warnings
+import logging
 import argparse
 import shutil
 from shutil import copyfile
@@ -66,11 +66,13 @@ class RunTrimGalore(object):
             raise IOError("Couldn't find file: %s" % path)
 
         if os.path.getsize(path) < 1000:
-            warnings.warn("extremely small file detected: %s" % path)
+            logging.getLogger("single_cell.align.trim").warn(
+                "extremely small file detected: %s" % path)
 
         if not self.empty and os.path.getsize(path) == 0:
             self.empty = True
-            warnings.warn("empty file: %s, skipping trimming" %path)
+            logging.getLogger("single_cell.align.trim").warn(
+                "empty file: %s, skipping trimming" %path)
 
         ext = os.path.splitext(path)[1][1:]
         # get the last extension
@@ -162,7 +164,8 @@ class RunTrimGalore(object):
                     if ext == '.fq.gz':
                         raise Exception("Couldn't move %s files" % ext)
                     else:
-                        warnings.warn("Couldn't move %s files" % ext)
+                        logging.getLogger("single_cell.align.trim").warn(
+                            "Couldn't move %s files" % ext)
             return
 
         for rep in reps:
@@ -174,7 +177,7 @@ class RunTrimGalore(object):
                 if ext == '.fq.gz':
                     raise Exception("Couldn't move %s files" % ext)
                 else:
-                    warnings.warn("Couldn't move %s files" % ext)
+                    logging.getLogger("single_cell.align.trim").warn("Couldn't move %s files" % ext)
 
     def gather_outputs(self):
         """

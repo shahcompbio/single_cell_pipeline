@@ -9,7 +9,7 @@ Updated Oct 16 2017 by dgrewal
 import csv
 import os
 import argparse
-import warnings
+import logging
 
 import pandas as pd
 
@@ -38,7 +38,7 @@ class ConvertCSVToSEG(object):
         elif ext == ".h5" or ext == ".hdf5":
             return "h5"
         else:
-            warnings.warn(
+            logging.getLogger("single_cell.hmmcopy.igv_seg").warn(
                 "Couldn't detect output format. extension {}".format(ext))
             return "csv"
 

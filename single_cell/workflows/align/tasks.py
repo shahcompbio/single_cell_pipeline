@@ -1,6 +1,6 @@
 import os
 import shutil
-import warnings
+import logging
 from scripts import CollectMetrics
 from scripts import GenerateCNMatrix
 from scripts import RunTrimGalore
@@ -85,7 +85,8 @@ def run_fastqc(fastq1, fastq2, reports, tempdir, containers):
         bamutils.produce_fastqc_report(fastq1, out_html, out_plot, tempdir,
                                        docker_image=containers['fastqc'])
     else:
-        warnings.warn("fastq file %s is empty, skipping fastqc" % fastq1)
+        logging.getLogger("single_cell.align.tasks").warn(
+            "fastq file %s is empty, skipping fastqc" % fastq1)
 
     out_html = os.path.join(reports_dir, 'fastqc_R2.html')
     out_plot = os.path.join(reports_dir, 'fastqc_R2.zip')
@@ -93,7 +94,8 @@ def run_fastqc(fastq1, fastq2, reports, tempdir, containers):
         bamutils.produce_fastqc_report(fastq2, out_html, out_plot, tempdir,
                                        docker_image=containers['fastqc'])
     else:
-        warnings.warn("fastq file %s is empty, skipping fastqc" % fastq1)
+        logging.getLogger("single_cell.align.tasks").warn(
+            "fastq file %s is empty, skipping fastqc" % fastq1)
 
     helpers.make_tarfile(reports, reports_dir)
 
@@ -102,7 +104,7 @@ def get_readgroup(run_id, cell_id, library_id, centre, sample_info):
     platform = 'illumina'
 
     if not centre:
-        warnings.warn("no sequencing centre specified")
+        logging.getLogger("single_cell.align.tasks").warn("no sequencing centre specified")
         centre = "NA"
 
     barcode = sample_info["primer_i7"] + "-" + sample_info["primer_i5"]

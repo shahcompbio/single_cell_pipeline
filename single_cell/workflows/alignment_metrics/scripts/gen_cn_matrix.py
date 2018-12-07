@@ -3,7 +3,7 @@ Created on Sep 8, 2015
 
 @author: dgrewal
 '''
-import warnings
+import logging
 import numpy as np
 import pandas as pd
 
@@ -74,7 +74,8 @@ class GenerateCNMatrix(object):
         try:
             data = pd.read_csv(self.input, sep='\t', skiprows=skiprows)
         except pd.io.common.EmptyDataError:
-            warnings.warn('No data in the GCBias output')
+            logging.getLogger("single_cell.align.gcbias").warn(
+                'No data in the GCBias output')
             #If the file is empty (only header no data) then return 0s (dummy data)
             data = np.array([np.arange(100), [0]*100]).T
             data = pd.DataFrame(data, columns = ['gc', sample_id])
