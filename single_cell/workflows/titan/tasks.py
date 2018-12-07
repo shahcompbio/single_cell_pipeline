@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from scripts import merge_wigs
-import warnings
+import logging
 
 from single_cell.utils import csvutils
 import remixt
@@ -21,11 +21,15 @@ def merge_overlapping_seqdata(outfile, infiles, chromosomes):
             fragment_table = '/fragments/chromosome_{}'.format(chromosome)
 
             if allele_table not in tables:
-                warnings.warn("missing table {}".format(allele_table))
+                logging.getLogger("single_cell.titan").warn(
+                    "missing table {}".format(allele_table)
+                )
                 continue
 
             if fragment_table not in tables:
-                warnings.warn("missing table {}".format(fragment_table))
+                logging.getLogger("single_cell.titan").warn(
+                    "missing table {}".format(fragment_table)
+                )
                 continue
 
             alleles = store[allele_table]
