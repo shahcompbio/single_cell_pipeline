@@ -132,7 +132,9 @@ def create_vm_commands():
     # to the docker user group. This cannot be done during the image creation, image capture removes all user
     # information.
     commands = (
-        "sudo gpasswd -a $USER docker"
+        "sudo gpasswd -a $USER docker\n"
+        "sudo mkdir /datadrive\n"
+        "sudo chmod -R 777 /datadrive\n"
     )
 
     commands = literal_unicode(commands)
@@ -207,6 +209,8 @@ def get_compute_start_commands():
         '  exit 0',
         '}',
         'trap clean_up EXIT',
+        'mkdir -p /datadrive/$AZ_BATCH_TASK_WORKING_DIR/\n'
+        'cd /datadrive/$AZ_BATCH_TASK_WORKING_DIR/\n'
     )
 
     commands = '\n'.join(commands)
@@ -218,8 +222,8 @@ def get_compute_start_commands():
 
 def get_compute_finish_commands():
     commands = (
-        "docker run -v $(dirname $AZ_BATCH_TASK_WORKING_DIR):$(dirname $AZ_BATCH_TASK_WORKING_DIR) -w $AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype l -delete\n"
-        "docker run -v $(dirname $AZ_BATCH_TASK_WORKING_DIR):$(dirname $AZ_BATCH_TASK_WORKING_DIR) -w $AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype f -delete\n"
+        'sg docker -c "docker run -v /datadrive:/datadrive -w /datadrive/$AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype l -delete"\n'
+        'sg docker -c "docker run -v /datadrive:/datadrive -w /datadrive/$AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype f -delete"\n'
     )
 
     commands = literal_unicode(commands)
