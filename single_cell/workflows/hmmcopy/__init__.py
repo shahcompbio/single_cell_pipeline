@@ -13,9 +13,7 @@ def create_hmmcopy_workflow(
         plot_heatmap_ec_output,
         plot_heatmap_ec_filt_output, plot_metrics_output,
         plot_kernel_density_output, cell_ids, args,
-        hmmparams, alignment_metrics=None):
-
-    sample_info = helpers.get_sample_info(args["input_yaml"])
+        hmmparams, sample_info, alignment_metrics=None):
 
     chromosomes = hmmparams["chromosomes"]
 
