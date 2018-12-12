@@ -108,7 +108,7 @@ class PlotMetrics(object):
         return ax
 
     def plot_metric_fraction_total(self, df, metric, metric_label, pdf,
-                                   plot_title, from_top=False):
+                                   plot_title, from_top=False, cells_per_page=1000):
         sns.set(context='talk',
                 style='ticks',
                 font='Helvetica',
@@ -118,55 +118,61 @@ class PlotMetrics(object):
                     'ytick.labelsize': 12,
                     'legend.fontsize': 12})
 
-        fig = plt.figure(figsize=(len(df['cell_id']) / 4, 5))
+        dfs = [df.iloc[n:n+cells_per_page, :] for n in range(0, len(df), cells_per_page)]
 
-        ax = fig.gca()
+        if not plot_title:
+            plot_title = ""
 
-        total = df['total_reads'] / 1000000
-        fraction = df[metric] / 1000000
+        for i, df in enumerate(dfs):
 
-        col_total = '#cfcfcf'
-        col_fraction = '#595959'
+            fig = plt.figure(figsize=(len(df['cell_id']) / 4, 5))
 
-        if from_top:
-            fraction = total - fraction
-            sns.barplot(df['cell_id'], total, color=col_fraction, ax=ax)
-            sns.barplot(df['cell_id'], fraction, color=col_total, ax=ax)
-        else:
-            sns.barplot(df['cell_id'], total, color=col_total, ax=ax)
-            sns.barplot(df['cell_id'], fraction, color=col_fraction, ax=ax)
+            ax = fig.gca()
 
-        column_labels = [str(x) for x in df['cell_call']]
+            total = df['total_reads'] / 1000000
+            fraction = df[metric] / 1000000
 
-        ax = self.add_barplot_labels(ax, column_labels, 0.05, 12)
+            col_total = '#cfcfcf'
+            col_fraction = '#595959'
 
-        ax.set_xlabel('Sample')
-        ax.set_ylabel('Number of reads (millions)')
-        sns.despine(offset=10, trim=True)
+            if from_top:
+                fraction = total - fraction
+                sns.barplot(df['cell_id'], total, color=col_fraction, ax=ax)
+                sns.barplot(df['cell_id'], fraction, color=col_total, ax=ax)
+            else:
+                sns.barplot(df['cell_id'], total, color=col_total, ax=ax)
+                sns.barplot(df['cell_id'], fraction, color=col_fraction, ax=ax)
 
-        sample_condition = [' (' + str(x) + ')' for x in
-                            df['experimental_condition']]
-        sample_labels = [
-            x + y for x,
-            y in zip(
-                df['cell_id'],
-                sample_condition)]
+            column_labels = [str(x) for x in df['cell_call']]
 
-        ax.set_xticklabels(sample_labels)
+            ax = self.add_barplot_labels(ax, column_labels, 0.05, 12)
 
-        plt.xticks(rotation=90)
+            ax.set_xlabel('Sample')
+            ax.set_ylabel('Number of reads (millions)')
+            sns.despine(offset=10, trim=True)
 
-        if plot_title:
-            ax.set_title(plot_title, y=1.08, fontsize=10)
+            sample_condition = [' (' + str(x) + ')' for x in
+                                df['experimental_condition']]
+            sample_labels = [
+                x + y for x,
+                y in zip(
+                    df['cell_id'],
+                    sample_condition)]
 
-        self.add_legend(ax, ['Total', metric_label], [col_total, col_fraction], 1,
-                        location='upper right')
+            ax.set_xticklabels(sample_labels)
 
-        pdf.savefig(bbox_inches='tight', pad_inches=0.4)
-        plt.close()
+            plt.xticks(rotation=90)
+
+            ax.set_title("{}({})".format(plot_title, i), y=1.08, fontsize=10)
+
+            self.add_legend(ax, ['Total', metric_label], [col_total, col_fraction], 1,
+                            location='upper right')
+
+            pdf.savefig(bbox_inches='tight', pad_inches=0.4)
+            plt.close()
 
     def plot_metric_fraction(self, df, numerator_metric, denominator_metric,
-                             ylab, pdf, plot_title):
+                             ylab, pdf, plot_title, cells_per_page=1000):
         if numerator_metric not in df.columns.values:
             logging.getLogger("single_cell.plot_metrics").warn(
                 "{} column missing in data".format(numerator_metric)
@@ -188,41 +194,48 @@ class PlotMetrics(object):
                     'ytick.labelsize': 12,
                     'legend.fontsize': 12})
 
-        fig = plt.figure(figsize=(len(df['cell_id']) / 4, 5))
+        dfs = [df.iloc[n:n+cells_per_page, :] for n in range(0, len(df), cells_per_page)]
 
-        ax = fig.gca()
+        if not plot_title:
+            plot_title = ""
 
-        fraction = df[numerator_metric] / df[denominator_metric]
+        for i, df in enumerate(dfs):
 
-        col_fraction = '#595959'
+            fig = plt.figure(figsize=(len(df['cell_id']) / 4, 5))
 
-        sns.barplot(df['cell_id'], fraction, color=col_fraction, ax=ax)
+            ax = fig.gca()
 
-        column_labels = [str(x) for x in df['cell_call']]
+            fraction = df[numerator_metric] / df[denominator_metric]
 
-        ax = self.add_barplot_labels(ax, column_labels, 0.015, 12)
+            col_fraction = '#595959'
 
-        ax.set_xlabel('Sample')
-        ax.set_ylabel(ylab)
-        plt.ylim(0, 1)
-        sns.despine(offset=10, trim=True)
+            sns.barplot(df['cell_id'], fraction, color=col_fraction, ax=ax)
 
-        sample_condition = [' (' + str(x) + ')' for x in
-                            df['experimental_condition']]
-        sample_labels = [
-            x + y for x,
-            y in zip(
-                df['cell_id'],
-                sample_condition)]
+            column_labels = [str(x) for x in df['cell_call']]
 
-        ax.set_xticklabels(sample_labels)
+            ax = self.add_barplot_labels(ax, column_labels, 0.015, 12)
 
-        if plot_title:
-            ax.set_title(plot_title, y=1.08, fontsize=10)
-        plt.xticks(rotation=90)
+            ax.set_xlabel('Sample')
+            ax.set_ylabel(ylab)
+            plt.ylim(0, 1)
+            sns.despine(offset=10, trim=True)
 
-        pdf.savefig(bbox_inches='tight', pad_inches=0.4)
-        plt.close()
+            sample_condition = [' (' + str(x) + ')' for x in
+                                df['experimental_condition']]
+            sample_labels = [
+                x + y for x,
+                y in zip(
+                    df['cell_id'],
+                    sample_condition)]
+
+            ax.set_xticklabels(sample_labels)
+
+            ax.set_title("{}({})".format(plot_title, i), y=1.08, fontsize=10)
+
+            plt.xticks(rotation=90)
+
+            pdf.savefig(bbox_inches='tight', pad_inches=0.4)
+            plt.close()
 
     def plot_metric(self, df, metric, ylab, text_spacing, pdf, plot_title):
         if metric not in df.columns.values:
