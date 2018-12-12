@@ -46,6 +46,7 @@ def align_workflow(workflow, args):
 
         workflow.subworkflow(
             name='alignment_workflow',
+            ctx={'docker_image': baseimage},
             func=align.create_alignment_workflow,
             args=(
                 mgd.InputFile('fastq_1', 'cell_id', 'lane', fnames=fastq1_files, axes_origin=[]),
@@ -69,6 +70,7 @@ def align_workflow(workflow, args):
     workflow.subworkflow(
         name='metrics_workflow',
         func=alignment_metrics.create_alignment_metrics_workflow,
+        ctx={'docker_image': baseimage},
         args=(
             mgd.InputFile('bam_markdups', 'cell_id', fnames = bam_files, axes_origin=[], extensions=['.bai']),
             mgd.OutputFile(alignment_metrics_h5),

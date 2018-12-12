@@ -50,9 +50,12 @@ def hmmcopy_workflow(workflow, args):
 
         baseimage = params['docker']['single_cell_pipeline']
 
+        sample_info = helpers.get_sample_info(args["input_yaml"])
+
         workflow.subworkflow(
             name='hmmcopy_workflow_' + params_tag,
             func=hmmcopy.create_hmmcopy_workflow,
+            ctx={'docker_image': baseimage},
             args=(
                 mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files, extensions=['.bai']),
                 mgd.OutputFile(hmmcopy_data),
@@ -66,6 +69,7 @@ def hmmcopy_workflow(workflow, args):
                 cellids,
                 args,
                 params,
+                sample_info
             ),
             kwargs={'alignment_metrics': args['alignment_metrics']}
         )
