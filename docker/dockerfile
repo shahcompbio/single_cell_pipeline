@@ -8,7 +8,7 @@ FROM shahlab.azurecr.io/scp/python_singlecell_qc:v0.0.1
 ADD . /app
 
 # Install any needed packages specified in requirements.txt
-RUN pip install git+https://dgrewal@bitbucket.org/dranew/pypeliner.git@master
+RUN pip install git+https://dgrewal@bitbucket.org/dranew/pypeliner.git@dev_staging
 RUN pip install git+https://bitbucket.org/aroth85/biowrappers.git@singlecell
 RUN cd /app && python setup.py install
 # Make port 80 available to the world outside this container
