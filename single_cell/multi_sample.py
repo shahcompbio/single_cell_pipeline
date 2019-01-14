@@ -4,6 +4,8 @@ import pypeliner.managed as mgd
 
 from single_cell.utils import helpers
 from single_cell.utils import refgenome
+from workflows import split_bams
+from workflows import merge_bams
 import infer_haps
 import variant_calling
 import single_cell.workflows.split_bams.tasks
@@ -12,16 +14,23 @@ import single_cell.workflows.split_bams.tasks
 def get_bams(inputs_file):
     data = helpers.load_yaml(inputs_file)
 
-    bam_filenames = {}
+    tumour_bams = {}
     for sample_id in data['tumour'].keys():
         for cell in data['tumour'][sample_id].keys():
             if 'bam' not in data['tumour'][sample_id][cell]:
                 raise Exception('couldnt extract bam file paths from yaml input for cell: {}'.format(cell))
-            bam_filenames[(sample_id, cell)] = data['tumour'][sample_id][cell]['bam']
+            tumour_bams[(sample_id, cell)] = data['tumour'][sample_id][cell]['bam']
 
-    normal_bam = data['normal']['bam']
+    if 'bam' in data['normal']:
+        normal_bams = data['normal']['bam']
+    else:
+        normal_bams = {}
+        for cell in data['tumour'].keys():
+            if 'bam' not in data['tumour'][cell]:
+                raise Exception('couldnt extract bam file paths from yaml input for cell: {}'.format(cell))
+            normal_bams[cell] = data['tumour'][cell]['bam']
 
-    return bam_filenames, normal_bam
+    return tumour_bams, normal_bams
 
 
 def multi_sample_workflow(args):
@@ -38,16 +47,15 @@ def multi_sample_workflow(args):
 
 
 def create_multi_sample_workflow(
-    normal_wgs_bam,
-    tumour_cell_bams,
-    results_dir,
-    config,
+        normal_wgs_bam,
+        tumour_cell_bams,
+        results_dir,
+        config,
 ):
     """ Multiple sample pseudobulk workflow. """
 
+    baseimage = config['multi_sample']['docker']['single_cell_pipeline']
     ctx = {'mem_retry_increment': 2, 'ncpus': 1}
-    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
-    ctx.update(docker_ctx)
 
     raw_data_dir = os.path.join(results_dir, 'raw')
 
@@ -72,7 +80,7 @@ def create_multi_sample_workflow(
     snv_counting_info_template = os.path.join(results_dir, '{sample_id}_snv_counting_info.yaml')
     multisample_info_filename = os.path.join(results_dir, 'multisample_info.yaml')
 
-    regions = refgenome.get_split_regions(config["split_size"])
+    regions = refgenome.get_split_regions(config["split_bam"]["split_size"])
 
     workflow = pypeliner.workflow.Workflow(default_ctx=ctx)
 
@@ -108,30 +116,41 @@ def create_multi_sample_workflow(
         value=regions,
     )
 
-    workflow.transform(
-        name='split_normal',
-        func='single_cell.workflows.split_bams.tasks.split_bam_file_one_job',
-        args=(
-            mgd.InputFile(normal_wgs_bam, extensions=['.bai']),
-            mgd.OutputFile('normal_regions.bam', 'region', extensions=['.bai'], axes_origin=[]),
-            mgd.InputChunks('region'),
-            helpers.get_container_ctx(config['containers'], 'samtools'),
-        ),
-        kwargs={
-            'ncores': config['max_cores'],
-        },
-    )
+    if isinstance(normal_wgs_bam, dict):
+        workflow.set_filenames('normal_cells.bam', 'cell_id', fnames=normal_wgs_bam)
+        workflow.subworkflow(
+            name="split_normal",
+            func=merge_bams.create_merge_bams_workflow,
+            args=(
+                mgd.InputFile('normal_cells.bam', 'cell_id', extensions=['.bai']),
+                mgd.OutputFile('normal_regions.bam', 'region', axes_origin=[], extensions=['.bai']),
+                regions,
+                config['merge_bams'],
+            )
+        )
+    else:
+        workflow.subworkflow(
+            name="split_normal",
+            func=split_bams.create_split_workflow,
+            args=(
+                mgd.InputFile(normal_wgs_bam, extensions=['.bai']),
+                mgd.OutputFile('normal_regions.bam', 'region', extensions=['.bai'], axes_origin=[]),
+                pypeliner.managed.TempInputObj('region'),
+                config['split_bam'],
+            ),
+            kwargs={"by_reads": False}
+        )
 
     workflow.subworkflow(
-        name='split_merge_tumour',
-        func='single_cell.workflows.merge_bams.create_cell_region_merge_workflow',
+        name="split_merge_tumour",
         axes=('sample_id',),
+        func=merge_bams.create_merge_bams_workflow,
         args=(
             mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
             mgd.OutputFile('tumour_regions.bam', 'sample_id', 'region', axes_origin=[], extensions=['.bai']),
             regions,
-            config,
-        ),
+            config['merge_bams'],
+        )
     )
 
     workflow.subworkflow(
@@ -147,7 +166,7 @@ def create_multi_sample_workflow(
             mgd.OutputFile('strelka_indel.vcf', 'sample_id'),
             mgd.OutputFile('snv_annotations.h5', 'sample_id'),
             mgd.OutputFile('snv_calling_info.yaml', 'sample_id'),
-            config,
+            config['variant_calling'],
             mgd.Template(variant_calling_raw_data_template, 'sample_id'),
         ),
     )
@@ -157,7 +176,7 @@ def create_multi_sample_workflow(
         func='biowrappers.components.io.vcf.tasks.concatenate_vcf',
         args=(
             mgd.InputFile('museq.vcf', 'sample_id', axes_origin=[]),
-            mgd.TempOutputFile('museq.vcf'),
+            mgd.TempOutputFile('museq.vcf.gz', extensions=['.tbi', '.csi']),
         ),
     )
 
@@ -166,7 +185,7 @@ def create_multi_sample_workflow(
         func='biowrappers.components.io.vcf.tasks.concatenate_vcf',
         args=(
             mgd.InputFile('strelka_snv.vcf', 'sample_id', axes_origin=[]),
-            mgd.TempOutputFile('strelka_snv.vcf'),
+            mgd.TempOutputFile('strelka_snv.vcf.gz', extensions=['.tbi', '.csi']),
         ),
     )
 
@@ -176,13 +195,13 @@ def create_multi_sample_workflow(
         axes=('sample_id',),
         args=(
             [
-                mgd.TempInputFile('museq.vcf'),
-                mgd.TempInputFile('strelka_snv.vcf'),
+                mgd.TempInputFile('museq.vcf.gz', extensions=['.tbi', '.csi']),
+                mgd.TempInputFile('strelka_snv.vcf.gz', extensions=['.tbi', '.csi']),
             ],
             mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
             mgd.OutputFile('snv_counts.h5', 'sample_id'),
             mgd.OutputFile('snv_counting_info.yaml', 'sample_id'),
-            config,
+            config['variant_calling'],
         ),
     )
 
@@ -193,7 +212,7 @@ def create_multi_sample_workflow(
             mgd.InputFile(normal_wgs_bam, extensions=['.bai']),
             mgd.OutputFile(normal_seqdata_file),
             mgd.OutputFile(haplotypes_file),
-            config,
+            config['infer_haps'],
         ),
     )
 
@@ -206,12 +225,12 @@ def create_multi_sample_workflow(
             mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
             mgd.OutputFile('tumour_cell_seqdata.h5', 'sample_id', 'cell_id', axes_origin=[]),
             mgd.OutputFile('allele_counts.csv', 'sample_id', template=allele_counts_template),
-            config,
+            config['infer_haps'],
         ),
     )
 
-    destruct_config = config.get('destruct_config', {})
-    destruct_ref_data_dir = config['destruct_ref_data_dir']
+    destruct_config = config['breakpoint_calling'].get('destruct_config', {})
+    destruct_ref_data_dir = config['breakpoint_calling']['ref_data_directory']
 
     workflow.subworkflow(
         name='destruct',
@@ -227,28 +246,64 @@ def create_multi_sample_workflow(
         ),
     )
 
-    # TODO: will download results unnecessarily on cloud
+    workflow.transform(
+        name="get_allele_count_filename",
+        func='single_cell.utils.helpers.resolve_template',
+        ctx=dict(docker_image=baseimage, **ctx),
+        ret=pypeliner.managed.TempOutputObj('allele_counts'),
+        args=(
+            pypeliner.managed.TempInputObj('sample_id'),
+            allele_counts_template,
+            'sample_id'
+        )
+    )
+
+    workflow.transform(
+        name="get_breakpoint_filename",
+        func='single_cell.utils.helpers.resolve_template',
+        ctx=dict(docker_image=baseimage, **ctx),
+        ret=pypeliner.managed.TempOutputObj('breakpoints'),
+        args=(
+            pypeliner.managed.TempInputObj('sample_id'),
+            breakpoints_template,
+            'sample_id'
+        )
+    )
+
+    if isinstance(normal_wgs_bam, dict):
+        normal_wgs_bam = {
+            cell: helpers.format_file_yaml(bam) for cell, bam in normal_wgs_bam.iteritems()
+        }
+    else:
+        normal_wgs_bam = helpers.format_file_yaml(normal_wgs_bam)
+
+    tumour_cell_bams = {
+        ','.join(k): helpers.format_file_yaml(bam) for k, bam in tumour_cell_bams.iteritems()
+    }
+
+    metadata = {
+                   'name': 'multi_sample_pseudobulk',
+                   'version': single_cell.__version__,
+                   'output_datasets': None,
+                   'input_datasets': {
+                       'normal_bam': normal_wgs_bam,
+                       'tumour_cell_bams': tumour_cell_bams,
+                   },
+                   'results': {
+                       'haplotypes': helpers.format_file_yaml(haplotypes_file),
+                       'allele_counts': mgd.TempInputObj('allele_counts'),
+                       'breakpoints': mgd.TempInputObj('breakpoints'),
+                   },
+               },
+
     workflow.transform(
         name='generate_meta_yaml',
         func="single_cell.utils.helpers.write_to_yaml",
+        ctx=dict(docker_image=baseimage, **ctx),
         args=(
             mgd.OutputFile(multisample_info_filename),
-            {
-                'name': 'multi_sample_pseudobulk',
-                'version': single_cell.__version__,
-                'output_datasets': None,
-                'input_datasets': {
-                    'normal_bam': normal_wgs_bam,
-                    'tumour_cell_bams': tumour_cell_bams,
-                },
-                'results': {
-                    'haplotypes': mgd.InputFile(haplotypes_file),
-                    'allele_counts': mgd.InputFile('allele_counts.csv', 'sample_id'),
-                    'breakpoints': mgd.InputFile('breakpoints.h5', 'sample_id'),
-                },
-            },
+            metadata
         )
     )
 
     return workflow
-
