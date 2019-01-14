@@ -9,7 +9,7 @@ from single_cell.utils import helpers
 import single_cell
 
 def create_split_workflow(
-    normal_bam, normal_bai, normal_split_bam, normal_split_bai,
+    normal_bam, normal_split_bam,
     regions, config, by_reads=False
 ):
 
@@ -17,8 +17,6 @@ def create_split_workflow(
     samtoolsimage = config['docker']['samtools']
 
     normal_split_bam = dict([(ival, normal_split_bam[ival])
-                             for ival in regions])
-    normal_split_bai = dict([(ival, normal_split_bai[ival])
                              for ival in regions])
 
     one_split_job = config["one_split_job"]
@@ -37,15 +35,11 @@ def create_split_workflow(
             ctx={'mem': config['memory']['low'], 'ncpus': config['max_cores'], 'docker_image': baseimage},
             func="single_cell.workflows.split_bams.tasks.split_bam_file_by_reads",
             args=(
-                mgd.InputFile(normal_bam),
-                mgd.InputFile(normal_bai),
+                mgd.InputFile(normal_bam, extensions=['.bai']),
                 mgd.OutputFile(
                     "normal.split.bam", "region",
-                    fnames=normal_split_bam, axes_origin=[]
-                ),
-                mgd.OutputFile(
-                    "normal.split.bam.bai", "region",
-                    fnames=normal_split_bai, axes_origin=[]
+                    fnames=normal_split_bam, axes_origin=[],
+                    extensions=['.bai']
                 ),
                 mgd.TempSpace("bam_split_by_reads"),
                 regions,
@@ -79,13 +73,10 @@ def create_split_workflow(
             axes=('region',),
             func="single_cell.workflows.split_bams.tasks.split_bam_file",
             args=(
-                mgd.InputFile(normal_bam),
-                mgd.InputFile(normal_bai),
+                mgd.InputFile(normal_bam, extensions=['.bai']),
                 mgd.OutputFile(
-                    "normal.split.bam", "region", fnames=normal_split_bam
-                ),
-                mgd.OutputFile(
-                    "normal.split.bam.bai", "region", fnames=normal_split_bai
+                    "normal.split.bam", "region", fnames=normal_split_bam,
+                    extensions=['.bai']
                 ),
                 mgd.InputInstance('region'),
                 samtoolsimage

@@ -19,7 +19,6 @@ def split_bam_workflow(workflow, args):
 
     info_file = os.path.join(args["out_dir"], 'results', 'split_bam', 'info.yaml')
     split_bam_template = args["split_bam_template"]
-    split_bai_template = args["split_bam_template"] + ".bai"
 
     by_reads = False if "{region}" in split_bam_template else True
     splitkeyword = "region" if "{region}" in split_bam_template else "reads"
@@ -50,21 +49,15 @@ def split_bam_workflow(workflow, args):
         func=split_bams.create_split_workflow,
         args=(
             mgd.InputFile(args['wgs_bam']),
-            mgd.InputFile(args['wgs_bam'] + ".bai"),
             mgd.OutputFile(
                 "normal.split.bam", splitkeyword,
                 template=split_bam_template, axes_origin=[]
-            ),
-            mgd.OutputFile(
-                "normal.split.bam.bai", splitkeyword,
-                template=split_bai_template, axes_origin=[]
             ),
             pypeliner.managed.TempInputObj(splitkeyword),
             config,
         ),
         kwargs={"by_reads": by_reads}
     )
-
 
     regions = mgd.InputChunks('reads') if by_reads else pypeliner.managed.TempInputObj('region')
     workflow.transform(

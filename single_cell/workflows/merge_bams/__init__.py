@@ -11,23 +11,21 @@ import single_cell
 
 
 def create_merge_bams_workflow(
-    input_bams,
-    merged_bams,
-    cell_ids,
-    config,
-    regions
+        input_bams,
+        merged_bams,
+        regions,
+        config,
 ):
-
     baseimage = config['docker']['single_cell_pipeline']
 
     merged_bams = dict([(region, merged_bams[region])
-                         for region in regions])
+                        for region in regions])
 
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
-        value=cell_ids,
+        value=input_bams.keys(),
     )
 
     workflow.setobj(
@@ -44,7 +42,7 @@ def create_merge_bams_workflow(
             func="single_cell.workflows.merge_bams.tasks.merge_bams",
             args=(
                 mgd.InputFile('bam', 'cell_id', fnames=input_bams, extensions=['.bai']),
-                mgd.OutputFile('merged.bam', "region", fnames=merged_bams, axes_origin=[]),
+                mgd.OutputFile('merged.bam', "region", fnames=merged_bams, axes_origin=[], extensions=['.bai']),
                 regions,
                 config['docker']['samtools'],
             ),
@@ -68,10 +66,10 @@ def create_merge_bams_workflow(
 
 
 def create_cell_region_merge_workflow(
-    cell_bams,
-    region_bams,
-    regions,
-    docker_image,
+        cell_bams,
+        region_bams,
+        regions,
+        docker_image,
 ):
     region_bams = dict([(region, region_bams[region]) for region in regions])
 
@@ -100,4 +98,3 @@ def create_cell_region_merge_workflow(
     )
 
     return workflow
-

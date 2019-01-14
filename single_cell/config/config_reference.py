@@ -1,8 +1,5 @@
-
-
-
-
 import single_cell
+
 
 def get_version():
     version = single_cell.__version__
@@ -10,17 +7,20 @@ def get_version():
     version = version.split("+")[0]
     return version
 
+
 def containers():
     version = get_version()
     docker_images = {
-        'bwa': 'scp/bwa:v0.0.1', 'samtools': 'scp/samtools:v0.0.1',
+        'bwa': 'scp/bwa:v0.0.1', 'samtools': 'scp/samtools:v0.0.2',
         'python_base': 'scp/python_base:v0.0.1', 'picard': 'scp/picard:v0.0.1',
         'single_cell_pipeline': 'scp/single_cell_pipeline:v0.2.7'.format(version),
         'gatk': 'scp/gatk:v0.0.1', 'fastqc': 'scp/fastqc:v0.0.1',
         'hmmcopy': 'scp/hmmcopy:v0.0.1', 'aneufinder': 'scp/aneufinder:v0.0.1',
         'strelka': 'scp/strelka:v0.0.1', 'mutationseq': 'scp/mutationseq:v0.0.1',
         'vcftools': 'scp/vcftools:v0.0.1', 'snpeff': 'scp/vcftools:v0.0.1',
-        'titan': 'scp/titan:v0.0.1'}
+        'titan': 'scp/titan:v0.0.1', 'remixt': 'scp/remixt:v0.0.1',
+        'destruct': 'scp/destruct:v0.0.1'
+    }
 
     singularity = {}
 
@@ -28,7 +28,6 @@ def containers():
 
 
 def reference_data_shahlab(reference):
-
     if reference == 'grch37':
         gc_wig_file = {
             500000: '/shahlab/pipelines/reference/GRCh37-lite.gc.ws_500000.wig',
@@ -47,7 +46,7 @@ def reference_data_shahlab(reference):
         chromosomes = get_chromosomes('grch37')
         copynumber_ref_data = '/shahlab/pipelines/remixt_ref_data_dir'
         databases = {
-            'mappability':{
+            'mappability': {
                 'local_path': '/shahlab/pipelines/reference/wgEncodeCrgMapabilityAlign50mer.bigWig',
             }
         }
@@ -69,18 +68,15 @@ def reference_data_shahlab(reference):
         chromosomes = get_chromosomes('mm10')
         copynumber_ref_data = '/shahlab/pipelines/remixt_ref_data_dir'
         databases = {
-            'mappability':{
+            'mappability': {
                 'local_path': None,
             }
         }
 
-
     return locals()
 
 
-
 def reference_data_azure(reference):
-
     if reference == "grch37":
         classifier_training_data = '/refdata/classifier_training_data.h5'
         gc_wig_file = {
@@ -97,10 +93,16 @@ def reference_data_azure(reference):
         copynumber_ref_data = '/refdata/'
         chrom_info_filename = '/refdata/chromInfo.txt.gz'
         chromosomes = get_chromosomes('grch37')
-        copynumber_ref_data = '/datadrive/refdata/reference-grch37-decoys-remixt/'
+        copynumber_ref_data = '/refdata/reference-grch37-decoys-remixt/'
         databases = {
-            'mappability':{
+            'mappability': {
                 'local_path': '/refdata/wgEncodeCrgMapabilityAlign50mer.bigWig',
+            },
+            'cosmic': {
+                'local_path': '/refdata/cosmic_v75.vcf.gz',
+            },
+            'dbsnp': {
+                'local_path': '/refdata/dbsnp_b146_GRCh37p13.vcf.gz',
             }
         }
 
@@ -121,15 +123,15 @@ def reference_data_azure(reference):
         chromosomes = get_chromosomes('mm10')
         copynumber_ref_data = '/refdata/remixt_ref_data_dir'
         databases = {
-            'mappability':{
+            'mappability': {
+                'local_path': None,
+            },
+            'cosmic': {
                 'local_path': None,
             }
         }
 
-
     return locals()
-
-
 
 
 def get_chromosomes(reference):

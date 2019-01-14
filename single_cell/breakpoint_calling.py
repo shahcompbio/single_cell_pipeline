@@ -7,17 +7,20 @@ import single_cell
 def breakpoint_calling_workflow(workflow, args):
 
     config = helpers.load_config(args)
+    config = config['breakpoint_calling']
+
+    baseimage = config['docker']['single_cell_pipeline']
 
     normal_bam_file = args['matched_normal']
-    bam_files, bai_files  = helpers.get_bams(args['input_yaml'])
+    bam_files, bai_files = helpers.get_bams(args['input_yaml'])
 
     varcalls_dir = os.path.join(
         args['out_dir'], 'results', 'breakpoint_calling')
     raw_data_directory = os.path.join(varcalls_dir, 'raw')
     breakpoints_filename = os.path.join(varcalls_dir, 'breakpoints.h5')
-    ref_data_directory = '/refdata'
+    ref_data_directory = config['ref_data_directory']
 
-    pypeliner.workflow.Workflow()
+    pypeliner.workflow.Workflow(ctx={'docker_image': baseimage})
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
@@ -37,7 +40,6 @@ def breakpoint_calling_workflow(workflow, args):
         ),
     )
 
-
     info_file = os.path.join(args["out_dir"],'results','breakpoint_calling', "info.yaml")
 
     results = {
@@ -53,7 +55,7 @@ def breakpoint_calling_workflow(workflow, args):
             'ref_data': ref_data_directory,
             'version': single_cell.__version__,
             'results': results,
-            'containers': config['containers'],
+            'containers': config['docker'],
             'input_datasets': input_datasets,
             'output_datasets': None
         }
@@ -62,7 +64,7 @@ def breakpoint_calling_workflow(workflow, args):
     workflow.transform(
         name='generate_meta_yaml',
         ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard'],
+                 docker_image=baseimage,
                  mem_retry_increment=2, ncpus=1),
         func="single_cell.utils.helpers.write_to_yaml",
         args=(

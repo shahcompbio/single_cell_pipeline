@@ -197,7 +197,7 @@ def parse_args():
                                      help='''template for bams merged by region,
                                      use {} as place holder for genomic region''')
 
-    copy_number_calling.add_argument("--normal_yaml",
+    copy_number_calling.add_argument("--normal_template",
                                      required=True,
                                      help='''template for bams merged by region,
                                      use {} as place holder for genomic region''')
@@ -270,17 +270,17 @@ def parse_args():
         subparsers.add_parser("multi_sample_pseudo_bulk"))
     multi_sample_pseudo_bulk.set_defaults(which='multi_sample_pseudo_bulk')
 
-    multi_sample_pseudo_bulk.add_argument("--tumour_template",
-                           action=parseRegionTemplate,
-                           required=True,
-                           help='''template for saving the tumour bams split by region,
-                           use {} as place holder for genomic region''')
-
-    multi_sample_pseudo_bulk.add_argument("--normal_template",
-                           action=parseRegionTemplate,
-                           required=True,
-                           help='''template for saving the normal bams split by region,
-                           use {} as place holder for genomic region''')
+    # multi_sample_pseudo_bulk.add_argument("--tumour_template",
+    #                        action=parseRegionTemplate,
+    #                        required=True,
+    #                        help='''template for saving the tumour bams split by region,
+    #                        use {} as place holder for genomic region''')
+    #
+    # multi_sample_pseudo_bulk.add_argument("--normal_template",
+    #                        action=parseRegionTemplate,
+    #                        required=True,
+    #                        help='''template for saving the normal bams split by region,
+    #                        use {} as place holder for genomic region''')
 
     #======================================
     # generates pipeline and batch configs
