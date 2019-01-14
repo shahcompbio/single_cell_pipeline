@@ -88,7 +88,7 @@ def run_hmmcopy_script(corrected_reads, tempdir, cell_id, hmmparams, docker_imag
     cmd.append('--param_s=' + str(hmmparams['s']))
     cmd.append('--param_multiplier=' + multipliers)
 
-    pypeliner.commandline.execute(*cmd, docker_image="scp/hmmcopy:v0.0.1")
+    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
 
 
 def run_hmmcopy(

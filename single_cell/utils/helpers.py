@@ -114,7 +114,6 @@ def get_mount_dirs_docker(*args):
 
 
 def write_to_yaml(outfile, data):
-    logging.getLogger("test").warn("resr")
     with open(outfile, 'w') as output:
         yaml.safe_dump(data, output, default_flow_style=False)
 
@@ -174,7 +173,7 @@ def run_in_gnu_parallel(commands, tempdir, docker_image, ncores=None):
     if not ncores:
         ncores = multiprocessing.cpu_count()
 
-    gnu_parallel_cmd = ['parallel', '--jobs', ncores, '<', parallel_outfile]
+    gnu_parallel_cmd = ['cat', parallel_outfile, '|', 'parallel', '--jobs', ncores]
     pypeliner.commandline.execute(*gnu_parallel_cmd, docker_image=docker_image)
 
 

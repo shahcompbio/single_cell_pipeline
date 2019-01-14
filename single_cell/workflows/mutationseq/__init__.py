@@ -12,9 +12,12 @@ def create_museq_workflow(
         normal_bam, tumour_bam, ref_genome, snv_vcf,
         config):
 
-    ctx = {'mem_retry_increment': 2, 'ncpus': 1}
-    docker_ctx = helpers.get_container_ctx(config['containers'], 'single_cell_pipeline')
-    ctx.update(docker_ctx)
+
+    museq_docker = {'docker_image': config['docker']['mutationseq']}
+    vcftools_docker = {'docker_image': config['docker']['vcftools']}
+
+    ctx = {'mem_retry_increment': 2, 'ncpus': 1, 'num_retry': 3,
+           'docker_image': config['docker']['single_cell_pipeline']}
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -26,19 +29,18 @@ def create_museq_workflow(
     workflow.transform(
         name='run_museq',
         ctx=dict(mem=config["memory"]['med'],
-                 pool_id=config['pools']['highmem'],
                  **ctx),
         axes=('region',),
         func='single_cell.workflows.mutationseq.tasks.run_museq',
         args=(
-            mgd.InputFile('merged_bam', 'region', fnames=tumour_bam),
-            mgd.InputFile('normal.split.bam', 'region', fnames=normal_bam),
+            mgd.InputFile('merged_bam', 'region', fnames=tumour_bam, extensions=['.bai']),
+            mgd.InputFile('normal.split.bam', 'region', fnames=normal_bam, extensions=['.bai']),
             mgd.TempOutputFile('museq.vcf', 'region'),
             mgd.TempOutputFile('museq.log', 'region'),
             mgd.InputInstance('region'),
             config,
         ),
-        kwargs={'docker_kwargs': helpers.get_container_ctx(config['containers'], 'mutationseq')}
+        kwargs={'docker_kwargs': museq_docker}
     )
 
     workflow.transform(
@@ -54,15 +56,15 @@ def create_museq_workflow(
     workflow.transform(
         name='merge_snvs',
         ctx=dict(mem=config["memory"]['med'],
-                 pool_id=config['pools']['standard'],
                  **ctx),
         func='biowrappers.components.io.vcf.tasks.concatenate_vcf',
         args=(
-            mgd.TempInputFile('museq.vcf.gz', 'region'),
-            mgd.TempOutputFile('museq.vcf.gz'),
+            mgd.TempInputFile('museq.vcf.gz', 'region', extensions=['.tbi', '.csi']),
+            mgd.TempOutputFile('museq.vcf.gz', extensions=['.tbi', '.csi']),
         ),
         kwargs={
             'allow_overlap': True,
+            'docker_config': vcftools_docker
         },
     )
 
@@ -70,7 +72,7 @@ def create_museq_workflow(
         name='finalise_vcf',
         func='biowrappers.components.io.vcf.tasks.finalise_vcf',
         args=(
-            mgd.TempInputFile('museq.vcf.gz'),
+            mgd.TempInputFile('museq.vcf.gz', extensions=['.tbi', '.csi']),
             mgd.OutputFile(snv_vcf, extensions=['.tbi', '.csi']),
         )
     )

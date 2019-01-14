@@ -6,6 +6,7 @@ Created on Jun 6, 2018
 import yaml
 import config_reference
 import collections
+import copy
 
 def override_config(config, override):
     def update(d, u):
@@ -156,7 +157,7 @@ def get_merge_bams_params(cluster, reference):
         'ref_genome': referencedata['ref_genome'],
         'split_size': 10000000,
         'chromosomes': referencedata['chromosomes'],
-        'one_split_job': False
+        'one_split_job': True
     }
     return {'merge_bams': params}
 
@@ -180,7 +181,7 @@ def get_split_bam_params(cluster, reference):
         'ref_genome': referencedata['ref_genome'],
         'split_size': 10000000,
         'chromosomes': referencedata['chromosomes'],
-        'one_split_job': False
+        'one_split_job': True
     }
 
     return {'split_bam': params}
@@ -220,6 +221,107 @@ def get_germline_calling_params(cluster, reference):
     return {'germline_calling': params}
 
 
+def get_variant_calling_params(cluster, reference):
+
+    if cluster == "azure":
+        referencedata = config_reference.reference_data_azure(reference)
+    else:
+        referencedata = config_reference.reference_data_shahlab(reference)
+
+    docker_containers = config_reference.containers()['docker']
+
+    status_data = {
+        'kwargs': {
+            'split_size': 10000000
+        }
+    }
+
+    params = {
+        'memory': {'low': 4, 'med': 6, 'high': 18},
+        'max_cores': 8,
+        'docker': {
+            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
+            # 'samtools': docker_containers['samtools'],
+            'vcftools': docker_containers['vcftools'],
+            'strelka': docker_containers['strelka'],
+            'mutationseq': docker_containers['mutationseq'],
+            # 'snpeff': docker_containers['snpeff'],
+        },
+        'ref_genome': referencedata['ref_genome'],
+        'chromosomes': referencedata['chromosomes'],
+        'split_size': 10000000,
+        'cosmic_status': copy.deepcopy(status_data),
+        'dbsnp_status': copy.deepcopy(status_data),
+        'mappability': copy.deepcopy(status_data),
+        'snpeff': copy.deepcopy(status_data),
+        'tri_nucleotide_context': copy.deepcopy(status_data),
+        'databases': {
+            'cosmic': {
+                'download_method': 'sftp',
+                'user_name': 'awm3@sfu.ca',
+                'password': 'shahlabith',
+                'host': 'sftp-cancer.sanger.ac.uk',
+                'remote_paths': {
+                    'coding': '/files/grch37/cosmic/v75/VCF/CosmicCodingMuts.vcf.gz',
+                    'non_coding': '/files/grch37/cosmic/v75/VCF/CosmicNonCodingVariants.vcf.gz',
+                },
+                'local_path': referencedata['databases']['cosmic']['local_path'],
+            },
+            'dbsnp': {
+                'url': 'ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b146_GRCh37p13/VCF/common_all_20151104.vcf.gz',
+                'local_path': referencedata['databases']['dbsnp']['local_path'],
+            },
+            'mappability': {
+               'url': 'http://hgdownload-test.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/release3'
+                      '/wgEncodeCrgMapabilityAlign50mer.bigWig',
+               'local_path': referencedata['databases']['mappability']['local_path'],
+            },
+            'ref_genome': {
+                'url': 'http://www.bcgsc.ca/downloads/genomes/9606/hg19/1000genomes/bwa_ind/genome/GRCh37-lite.fa',
+                'local_path': referencedata['ref_genome'],
+            },
+            'snpeff': {"db": 'GRCh37.75'},
+        },
+    }
+
+    return {'variant_calling': params}
+
+
+def get_copy_number_calling_params(cluster, reference, binsize):
+    if cluster == "azure":
+        referencedata = config_reference.reference_data_azure(reference)
+    else:
+        referencedata = config_reference.reference_data_shahlab(reference)
+
+    docker_containers = config_reference.containers()['docker']
+
+    params = {
+        'memory': {'low': 4, 'med': 6, 'high': 18},
+        'ref_genome': referencedata['ref_genome'],
+        'chromosomes': referencedata['chromosomes'],
+        'split_size': 10000000,
+        'max_cores': None,
+        'chromosomes': referencedata['chromosomes'],
+        'extract_seqdata': {},
+        'ref_data_dir': referencedata['copynumber_ref_data'],
+        'docker': {
+            'single_cell_pipeline': docker_containers['remixt'],
+            'titan': docker_containers['titan']
+        },
+        'titan_params': {
+            "normal_contamination": [0.2, 0.4, 0.6, 0.8],
+            'num_clusters': [1, 2],
+            'ploidy': [1,2,3,4],
+            'chrom_info_filename': referencedata['chrom_info_filename'],
+            'window_size': binsize,
+            'gc_wig': referencedata['gc_wig_file'][binsize],
+            'mappability_wig': referencedata['gc_wig_file'][binsize],
+        }
+    }
+
+    return {'copy_number_calling': params}
+
+
 def get_infer_haps_params(cluster, reference):
     if cluster == "azure":
         referencedata = config_reference.reference_data_azure(reference)
@@ -240,6 +342,42 @@ def get_infer_haps_params(cluster, reference):
     }
 
     return {'infer_haps': params}
+
+
+def get_breakpoint_params(cluster, reference):
+    if cluster == "azure":
+        referencedata = config_reference.reference_data_azure(reference)
+    else:
+        referencedata = config_reference.reference_data_shahlab(reference)
+
+    docker_containers = config_reference.containers()['docker']
+
+    params = {
+        'memory': {'low': 4, 'med': 6, 'high': 18},
+        'ref_data_directory': '/refdata/reference-grch37-decoys-destruct',
+        'destruct': {
+            'genome_fasta': referencedata['ref_genome'],
+            'genome_fai': referencedata['ref_genome'] + '.fai',
+        },
+        'docker': {
+            'single_cell_pipeline': docker_containers['destruct'],
+        },
+    }
+
+    return {'breakpoint_calling': params}
+
+
+def get_multi_sample_params():
+    docker_containers = config_reference.containers()['docker']
+
+    params = {
+        'memory': {'low': 4, 'med': 6, 'high': 18},
+        'docker': {
+            'single_cell_pipeline': docker_containers['destruct'],
+        },
+    }
+    return {'multi_sample': params}
+
 
 
 def get_singlecell_pipeline_config(config_params, override=None):
@@ -272,7 +410,16 @@ def get_singlecell_pipeline_config(config_params, override=None):
 
     params.update(get_germline_calling_params(cluster, reference))
 
+    params.update(get_variant_calling_params(cluster, reference))
+
+    params.update(get_copy_number_calling_params(cluster, reference,
+                                                 config_params['copynumber_bin_size']))
+
     params.update(get_infer_haps_params(cluster, reference))
+
+    params.update(get_breakpoint_params(cluster, reference))
+
+    params.update(get_multi_sample_params())
 
     params = override_config(params, override)
 
