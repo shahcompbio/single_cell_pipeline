@@ -39,6 +39,7 @@ def aneufinder_workflow(workflow, args):
     results_filename = os.path.join(output, '{}_results.h5'.format(args['library_id']))
     workflow.subworkflow(
         name='aneufinder_workflow',
+        ctx={'docker_image': baseimage},
         func=aneufinder.create_aneufinder_workflow,
         args=(
             mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files),

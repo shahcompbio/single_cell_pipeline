@@ -323,7 +323,7 @@ class PlotPcolor(object):
             color_group_name = row[self.color_by_col]
 
             mad_score = row["mad_neutral_state"]
-            nreads = row["total_mapped_reads"]
+            nreads = row["total_mapped_reads_hmmcopy"]
             reads_per_bin = row["median_hmmcopy_reads_per_bin"]
 
             mad_data[cell] = mad_score

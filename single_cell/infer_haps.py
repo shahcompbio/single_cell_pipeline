@@ -9,7 +9,6 @@ import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import helpers
 from workflows import extract_seqdata
-import remixt.config
 import single_cell
 
 def infer_haps_workflow(workflow, args):
@@ -197,8 +196,8 @@ def infer_haps_from_bulk_normal(
     haplotypes_filename,
     config,
 ):
-    remixt_config = config['remixt_config'].get('extract_seqdata', {})
-    remixt_ref_data_dir = config['remixt_ref_data_dir']
+    remixt_config = config.get('extract_seqdata', {})
+    remixt_ref_data_dir = config['ref_data_dir']
 
     chromosomes = config['chromosomes'] #remixt.config.get_chromosomes(config, remixt_ref_data_dir)
 
@@ -270,8 +269,8 @@ def extract_allele_readcounts(
 ):
     tumour_cell_seqdata = {cell_id: tumour_cell_seqdata[cell_id] for cell_id in tumour_cell_bams}
 
-    remixt_config = config['remixt_config'].get('extract_seqdata', {})
-    remixt_ref_data_dir = config['remixt_ref_data_dir']
+    remixt_config = config.get('extract_seqdata', {})
+    remixt_ref_data_dir = config['ref_data_dir']
 
     workflow = pypeliner.workflow.Workflow()
 

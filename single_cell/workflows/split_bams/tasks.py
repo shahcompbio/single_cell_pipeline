@@ -27,14 +27,15 @@ def split_bam_file_one_job(bam, outbam, regions, samtools_docker, tempdir, ncore
 
     helpers.run_in_gnu_parallel(commands, tempdir, samtools_docker, ncores=ncores)
 
-def split_bam_file(bam, bai, outbam, outbai, interval, samtools_docker):
+def split_bam_file(bam, outbam, interval, samtools_docker):
 
+    outbai = outbam + '.bai'
     bamutils.bam_view(bam, outbam, interval, docker_image=samtools_docker)
 
     bamutils.bam_index(outbam, outbai, docker_image=samtools_docker)
 
 
-def split_bam_file_by_reads(bam, bai, outbams, outbais, tempspace, intervals, samtools_docker):
+def split_bam_file_by_reads(bam, outbams, tempspace, intervals, samtools_docker):
     # sort bam by reads and convert to sam
 
     helpers.makedirs(tempspace)
