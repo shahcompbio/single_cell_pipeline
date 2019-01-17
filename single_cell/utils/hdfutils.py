@@ -6,6 +6,7 @@ Created on May 9, 2018
 import pandas as pd
 import helpers
 import logging
+import gc
 from biowrappers.components.io.hdf5 import tasks as biowrappers_hdf5
 
 def get_min_itemsize(files):
@@ -52,8 +53,12 @@ def cast_h5_file(h5data, output):
         with pd.HDFStore(h5data, 'r') as input:
             tablenames = input.keys()
             for tablename in tablenames:
-                output.put(tablename, cast_columns(input[tablename]), format='table')
-
+                df = input[tablename]
+                df = cast_columns(df)
+                output.put(tablename, df, format='table')
+                # helps lower mem usage
+                df = None
+                gc.collect()
 
 def concat_csvs_to_hdf(infiles, outfile, tablenames):
     with pd.HDFStore(outfile, 'w', complevel=9, complib='blosc') as output:
