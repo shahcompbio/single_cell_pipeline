@@ -18,7 +18,7 @@ def create_hmmcopy_workflow(
     chromosomes = hmmparams["chromosomes"]
 
     multipliers = copy.deepcopy(hmmparams["multipliers"])
-    multipliers.append(0)
+    multipliers = [0] + multipliers
 
     baseimage = hmmparams['docker']['single_cell_pipeline']
     hmmcopy_docker = hmmparams['docker']['hmmcopy']
