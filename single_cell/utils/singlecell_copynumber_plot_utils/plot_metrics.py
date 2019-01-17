@@ -237,7 +237,7 @@ class PlotMetrics(object):
             pdf.savefig(bbox_inches='tight', pad_inches=0.4)
             plt.close()
 
-    def plot_metric(self, df, metric, ylab, text_spacing, pdf, plot_title):
+    def plot_metric(self, df, metric, ylab, text_spacing, pdf, plot_title, cells_per_page=1000):
         if metric not in df.columns.values:
             logging.getLogger("single_cell.plot_metrics").warn(
                 "{} column missing in data".format(metric)
@@ -259,38 +259,45 @@ class PlotMetrics(object):
             )
             text_spacing = 0.2 * max(df[metric])
 
-        fig = plt.figure(figsize=(len(df['cell_id']) / 4, 5))
+        dfs = [df.iloc[n:n+cells_per_page, :] for n in range(0, len(df), cells_per_page)]
+        num_pages = len(dfs) + 1
 
-        ax = fig.gca()
+        for i, df in enumerate(dfs):
 
-        col = '#595959'
+            fig = plt.figure(figsize=(len(df['cell_id']) / 4, 5))
 
-        sns.barplot(df['cell_id'], df[metric], color=col, ax=ax)
+            ax = fig.gca()
 
-        column_labels = [str(x) for x in df['cell_call']]
+            col = '#595959'
 
-        ax = self.add_barplot_labels(ax, column_labels, text_spacing, 12)
+            plt.bar(df['cell_id'], df[metric], color=col)
 
-        ax.set_xlabel('Sample')
-        ax.set_ylabel(ylab)
-        sns.despine(offset=10, trim=True)
+            column_labels = [str(x) for x in df['cell_call']]
 
-        sample_condition = [' (' + str(x) + ')' for x in
-                            df['experimental_condition']]
-        sample_labels = [
-            x + y for x,
-            y in zip(
-                df['cell_id'],
-                sample_condition)]
+            ax = self.add_barplot_labels(ax, column_labels, text_spacing, 12)
 
-        ax.set_xticklabels(sample_labels)
+            ax.set_xlabel('Sample')
+            ax.set_ylabel(ylab)
 
-        if plot_title:
-            ax.set_title(plot_title, y=1.08, fontsize=10)
-        plt.xticks(rotation=90)
+            sns.despine()
 
-        pdf.savefig(bbox_inches='tight', pad_inches=0.4)
-        plt.close()
+            sample_condition = [' (' + str(x) + ')' for x in
+                                df['experimental_condition']]
+            sample_labels = [
+                x + y for x,
+                y in zip(
+                    df['cell_id'],
+                    sample_condition)]
+
+            ax.set_xticklabels(sample_labels)
+
+            ax.set_title("{}(page {}/{})".format(plot_title, i+1, num_pages), y=1.08, fontsize=10)
+
+            plt.xticks(rotation=90)
+
+            pdf.savefig(bbox_inches='tight', pad_inches=0.4)
+            plt.close()
+
 
     def plot_metric_heatmap(
             self, df, metric, title, pdf, plot_title,
