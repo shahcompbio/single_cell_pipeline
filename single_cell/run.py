@@ -16,10 +16,17 @@ from ltm import ltm_workflow
 from infer_haps import infer_haps_workflow
 from multi_sample import multi_sample_workflow
 # from copyclone import copyclone_workflow
+from docker_run import run_with_docker
+import sys
+
 
 def main():
 
     args = parse_args()
+
+    if args["run_with_docker"]:
+        run_with_docker(args, sys.argv)
+        return
 
     if args["which"] == "generate_config":
         generate_config(args)
