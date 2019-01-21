@@ -100,21 +100,39 @@ def variant_calling_workflow(args):
     wgs_bam_template = args["tumour_template"]
     normal_bam_template = args["normal_template"]
 
-    tumour_region_bams = {r: wgs_bam_template.format(region=r) for r in regions}
-    normal_region_bams = {r: normal_bam_template.format(region=r) for r in regions}
+    workflow = pypeliner.workflow.Workflow()
 
-    return create_variant_calling_workflow(
-        bam_files,
-        tumour_region_bams,
-        normal_region_bams,
-        museq_vcf,
-        strelka_snv_vcf,
-        strelka_indel_vcf,
-        snv_h5,
-        meta_yaml,
-        config,
-        raw_data_dir,
+
+    workflow.transform(
+        name="get_regions",
+        ctx=dict(mem=config['memory']['low'], docker_image=config['docker']['single_cell_pipeline']),
+        func="single_cell.utils.pysamutils.get_regions_from_reference",
+        ret=pypeliner.managed.OutputChunks('region'),
+        args=(
+            config["ref_genome"],
+            config["split_size"],
+            config["chromosomes"],
+        )
     )
+
+    workflow.subworkflow(
+        func=create_variant_calling_workflow,
+        name='create_varcall',
+        args=(
+            bam_files,
+            mgd.Template('tumour.bam', 'region', template=wgs_bam_template),
+            mgd.Template('normal.bam', 'region', template=normal_bam_template),
+            mgd.OutputFile(museq_vcf),
+            mgd.OutputFile(strelka_snv_vcf),
+            mgd.OutputFile(strelka_indel_vcf),
+            mgd.OutputFile(snv_h5),
+            mgd.OutputFile(meta_yaml),
+            config,
+            raw_data_dir,
+        ),
+    )
+
+    return workflow
 
 
 def create_variant_calling_workflow(
@@ -135,11 +153,9 @@ def create_variant_calling_workflow(
            'docker_image': config['docker']['single_cell_pipeline']}
 
     basedocker = {'docker_image': config['docker']['single_cell_pipeline']}
-    vcftoolsdocker = {'docker_image': config['docker']['vcftools']}
-    # samtoolsdocker = {'docker_image': config['docker']['samtools']}
-    # snpeffdocker = {'docker_image': config['docker']['snpeff']}
+    vcftools_docker = {'docker_image': config['docker']['vcftools']}
 
-    workflow = pypeliner.workflow.Workflow()
+    workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     workflow.set_filenames('normal_regions.bam', 'region', fnames=normal_region_bams)
     workflow.set_filenames('tumour_cells.bam', 'cell_id', fnames=tumour_cell_bams)
@@ -237,12 +253,13 @@ def create_variant_calling_workflow(
             mgd.TempInputFile('all.snv.vcf'),
             mgd.TempOutputFile('all.snv.vcf.gz', extensions=['.tbi', '.csi'])
         ),
-        kwargs={'docker_config': vcftoolsdocker}
+        kwargs={'docker_config': vcftools_docker}
     )
 
     workflow.subworkflow(
         name='annotate_snvs',
         axes=(),
+        ctx=dict(mem=2, **ctx),
         func="biowrappers.pipelines.snv_call_and_annotate.create_annotation_workflow",
         args=(
             config,
@@ -252,7 +269,9 @@ def create_variant_calling_workflow(
         ),
         kwargs={
             'variant_type': 'snv',
-            'docker_config': basedocker
+            'docker_config': basedocker,
+            'snpeff_docker': vcftools_docker,
+            'vcftools_docker': vcftools_docker
         }
     )
 
@@ -286,33 +305,33 @@ def create_variant_calling_workflow(
         }
     )
 
-    # info_file = os.path.join(args["out_dir"],'results', 'variant_calling', "info.yaml")
-    # normals = {k: helpers.format_file_yaml(v) for k,v in normal_region_bams.iteritems()}
-    # tumours = {k: helpers.format_file_yaml(v) for k,v in tumour_region_bams.iteritems()}
-    # cells = {k: helpers.format_file_yaml(v) for k,v in tumour_cell_bams.iteritems()}
-    # inputs = {'normal': normals, 'tumour': tumours, 'cells':cells}
-    #
-    # metadata = {
-    #     'variant_calling': {
-    #         'name': 'variant_calling',
-    #         'version': single_cell.__version__,
-    #         'containers': config['containers'],
-    #         'output_datasets': None,
-    #         'input_datasets': inputs,
-    #         'results': {'variant_calling_data': helpers.format_file_yaml(snv_h5)}
-    #     }
-    # }
-    #
-    # workflow.transform(
-    #     name='generate_meta_yaml',
-    #     ctx=dict(mem=config['memory']['med'],
-    #              pool_id=config['pools']['standard']),
-    #     func="single_cell.utils.helpers.write_to_yaml",
-    #     args=(
-    #         mgd.OutputFile(info_file),
-    #         metadata
-    #     )
-    # )
+    info_file = os.path.join(args["out_dir"],'results', 'variant_calling', "info.yaml")
+    normals = {k: helpers.format_file_yaml(v) for k,v in normal_region_bams.iteritems()}
+    tumours = {k: helpers.format_file_yaml(v) for k,v in tumour_region_bams.iteritems()}
+    cells = {k: helpers.format_file_yaml(v) for k,v in tumour_cell_bams.iteritems()}
+    inputs = {'normal': normals, 'tumour': tumours, 'cells':cells}
+
+    metadata = {
+        'variant_calling': {
+            'name': 'variant_calling',
+            'version': single_cell.__version__,
+            'containers': config['containers'],
+            'output_datasets': None,
+            'input_datasets': inputs,
+            'results': {'variant_calling_data': helpers.format_file_yaml(snv_h5)}
+        }
+    }
+
+    workflow.transform(
+        name='generate_meta_yaml',
+        ctx=dict(mem=config['memory']['med'],
+                 pool_id=config['pools']['standard']),
+        func="single_cell.utils.helpers.write_to_yaml",
+        args=(
+            mgd.OutputFile(info_file),
+            metadata
+        )
+    )
 
     return workflow
 
