@@ -1,8 +1,8 @@
 # Single Cell Pipeline 
 
-For a detailed guide see [INSTALL](INSTALL/README.md)
+For a detailed guide see [INSTALL](docs/INSTALL)
 
-For azure documentation see [azure](azure/README.md)
+For azure documentation see [azure](docs/azure)
 
 ## Setup and installation
 
