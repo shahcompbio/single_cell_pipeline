@@ -46,11 +46,13 @@ def create_museq_workflow(
     workflow.transform(
         name='finalise_region_vcfs',
         axes=('region',),
+        ctx=dict(mem=config["memory"]['med'], **ctx),
         func='biowrappers.components.io.vcf.tasks.finalise_vcf',
         args=(
             mgd.TempInputFile('museq.vcf', 'region'),
             mgd.TempOutputFile('museq.vcf.gz', 'region', extensions=['.tbi', '.csi']),
-        )
+        ),
+        kwargs={'docker_config': vcftools_docker}
     )
 
     workflow.transform(
@@ -71,10 +73,13 @@ def create_museq_workflow(
     workflow.transform(
         name='finalise_vcf',
         func='biowrappers.components.io.vcf.tasks.finalise_vcf',
+        ctx=dict(mem=config["memory"]['med'],
+                 **ctx),
         args=(
             mgd.TempInputFile('museq.vcf.gz', extensions=['.tbi', '.csi']),
             mgd.OutputFile(snv_vcf, extensions=['.tbi', '.csi']),
-        )
+        ),
+        kwargs={'docker_config': vcftools_docker}
     )
 
     return workflow

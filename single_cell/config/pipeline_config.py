@@ -337,7 +337,7 @@ def get_infer_haps_params(cluster, reference):
         'extract_seqdata': {},
         'ref_data_dir': referencedata['copynumber_ref_data'],
         'docker': {
-            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
+            'single_cell_pipeline': docker_containers['remixt'],
         },
     }
 
