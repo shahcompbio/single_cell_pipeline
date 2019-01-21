@@ -176,7 +176,7 @@ def run_in_gnu_parallel(commands, tempdir, docker_image, ncores=None):
     if not ncores:
         ncores = multiprocessing.cpu_count()
 
-    gnu_parallel_cmd = ['cat', parallel_outfile, '|', 'parallel', '--jobs', ncores]
+    gnu_parallel_cmd = ['parallel', '--jobs', ncores, '<', parallel_outfile]
     pypeliner.commandline.execute(*gnu_parallel_cmd, docker_image=docker_image)
 
 
@@ -374,6 +374,8 @@ def makedirs(directory, isfile=False):
 
     if isfile:
         directory = os.path.dirname(directory)
+        if not directory:
+            return
 
     try:
         os.makedirs(directory)

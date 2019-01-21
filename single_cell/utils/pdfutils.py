@@ -6,8 +6,9 @@ Created on Feb 20, 2018
 
 
 from PyPDF2 import PdfFileMerger
+import helpers
 import os
-        
+
 def merge_pdfs(infiles, outfile):
 
     if isinstance(infiles, dict):
@@ -20,8 +21,7 @@ def merge_pdfs(infiles, outfile):
         if os.path.getsize(infile):
             merger.append(open(infile, 'rb'))
 
-    if not os.path.exists(os.path.dirname(outfile)):
-        os.makedirs(os.path.dirname(outfile))
+    helpers.makedirs(outfile, isfile=True)
 
     with open(outfile, 'wb') as fout:
         merger.write(fout)
