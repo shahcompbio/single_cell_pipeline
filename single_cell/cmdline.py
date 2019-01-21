@@ -1,17 +1,12 @@
-'''
+"""
 Created on Feb 19, 2018
 
 @author: dgrewal
-'''
+"""
+import os
+import json
 import argparse
 import pypeliner
-import os
-import sys
-import json
-
-from single_cell.utils import helpers
-
-
 from single_cell.config import generate_batch_config
 from single_cell.config import generate_pipeline_config
 from single_cell import __version__
@@ -75,6 +70,8 @@ def add_global_args(parser, dont_add_input_yaml=False):
     parser.add_argument("--config_override",
                         type=json.loads,
                         help='''json string to override the defaults in config''')
+
+    parser.add_argument('--run_with_docker')
 
     return parser
 
