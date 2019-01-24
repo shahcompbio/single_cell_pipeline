@@ -373,7 +373,7 @@ def get_multi_sample_params():
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 18},
         'docker': {
-            'single_cell_pipeline': docker_containers['destruct'],
+            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
         },
     }
     return {'multi_sample': params}

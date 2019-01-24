@@ -196,12 +196,14 @@ def infer_haps_from_bulk_normal(
     haplotypes_filename,
     config,
 ):
+    baseimage = {'docker_image': config['docker']['single_cell_pipeline']}
+
     remixt_config = config.get('extract_seqdata', {})
     remixt_ref_data_dir = config['ref_data_dir']
 
     chromosomes = config['chromosomes'] #remixt.config.get_chromosomes(config, remixt_ref_data_dir)
 
-    workflow = pypeliner.workflow.Workflow()
+    workflow = pypeliner.workflow.Workflow(ctx=baseimage)
 
     workflow.subworkflow(
         name='extract_seqdata',
@@ -267,12 +269,14 @@ def extract_allele_readcounts(
     allele_counts_filename,
     config,
 ):
+    baseimage = {'docker_image': config['docker']['single_cell_pipeline']}
+
     tumour_cell_seqdata = {cell_id: tumour_cell_seqdata[cell_id] for cell_id in tumour_cell_bams}
 
     remixt_config = config.get('extract_seqdata', {})
     remixt_ref_data_dir = config['ref_data_dir']
 
-    workflow = pypeliner.workflow.Workflow()
+    workflow = pypeliner.workflow.Workflow(ctx=baseimage)
 
     workflow.set_filenames('cell.bam', 'cell_id', fnames=tumour_cell_bams)
     workflow.set_filenames('seqdata.h5', 'cell_id', fnames=tumour_cell_seqdata)
@@ -287,7 +291,7 @@ def extract_allele_readcounts(
         axes=('cell_id',),
         func='remixt.workflow.create_extract_seqdata_workflow',
         args=(
-            mgd.InputFile('cell.bam', 'cell_id'),
+            mgd.InputFile('cell.bam', 'cell_id', extensions=['.bai']),
             mgd.OutputFile('seqdata.h5', 'cell_id', axes_origin=[]),
             remixt_config,
             remixt_ref_data_dir,
