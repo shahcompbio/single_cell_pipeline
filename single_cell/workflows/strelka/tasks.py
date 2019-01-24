@@ -94,7 +94,7 @@ def call_somatic_variants(
 
     chrom,beg,end = re.split("-", region)
 
-    known_chrom_sizes = known_sizes[chrom]
+    genome_size = sum(known_sizes.values())
 
     beg = int(beg)
     beg = beg+1 if beg==0 else beg
@@ -118,7 +118,7 @@ def call_somatic_variants(
 
         '-clobber',
         '-filter-unanchored',
-        '-genome-size', known_chrom_sizes,
+        '-genome-size', genome_size,
         '-indel-nonsite-match-prob', 0.5,
         '-max-indel-size', 50,
         '-max-window-mismatch', 3, 20,
