@@ -55,7 +55,7 @@ def create_multi_sample_workflow(
     """ Multiple sample pseudobulk workflow. """
 
     baseimage = config['multi_sample']['docker']['single_cell_pipeline']
-    ctx = {'mem_retry_increment': 2, 'ncpus': 1}
+    ctx = {'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage}
 
     raw_data_dir = os.path.join(results_dir, 'raw')
 
@@ -171,6 +171,7 @@ def create_multi_sample_workflow(
         ),
     )
 
+    vcftools_image = {'docker_image': config['variant_calling']['docker']['vcftools']}
     workflow.transform(
         name='merge_museq_snvs',
         func='biowrappers.components.io.vcf.tasks.concatenate_vcf',
@@ -178,6 +179,7 @@ def create_multi_sample_workflow(
             mgd.InputFile('museq.vcf', 'sample_id', axes_origin=[]),
             mgd.TempOutputFile('museq.vcf.gz', extensions=['.tbi', '.csi']),
         ),
+        kwargs={'docker_config': vcftools_image}
     )
 
     workflow.transform(
@@ -187,6 +189,7 @@ def create_multi_sample_workflow(
             mgd.InputFile('strelka_snv.vcf', 'sample_id', axes_origin=[]),
             mgd.TempOutputFile('strelka_snv.vcf.gz', extensions=['.tbi', '.csi']),
         ),
+        kwargs={'docker_config': vcftools_image}
     )
 
     workflow.subworkflow(
@@ -231,11 +234,12 @@ def create_multi_sample_workflow(
 
     destruct_config = config['breakpoint_calling'].get('destruct_config', {})
     destruct_ref_data_dir = config['breakpoint_calling']['ref_data_directory']
-
+    baseimage = config['breakpoint_calling']['docker']['single_cell_pipeline']
     workflow.subworkflow(
         name='destruct',
         func='biowrappers.components.breakpoint_calling.destruct.destruct_pipeline',
         axes=('sample_id',),
+        ctx={'docker_image': baseimage},
         args=(
             mgd.InputFile(normal_wgs_bam),
             mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),

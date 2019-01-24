@@ -16,6 +16,7 @@ def create_merge_bams_workflow(
         regions,
         config,
 ):
+
     baseimage = config['docker']['single_cell_pipeline']
 
     merged_bams = dict([(region, merged_bams[region])
@@ -38,7 +39,7 @@ def create_merge_bams_workflow(
     if one_split_job:
         workflow.transform(
             name='merge_bams',
-            ctx={'mem': config['memory']['high'], 'ncpus': config['max_cores'], 'docker_image': baseimage},
+            ctx={'mem': config['memory']['med'], 'ncpus': config['max_cores'], 'docker_image': baseimage},
             func="single_cell.workflows.merge_bams.tasks.merge_bams",
             args=(
                 mgd.InputFile('bam', 'cell_id', fnames=input_bams, extensions=['.bai']),
