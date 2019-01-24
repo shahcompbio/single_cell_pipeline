@@ -179,7 +179,10 @@ def create_multi_sample_workflow(
             mgd.InputFile('museq.vcf', 'sample_id', axes_origin=[]),
             mgd.TempOutputFile('museq.vcf.gz', extensions=['.tbi', '.csi']),
         ),
-        kwargs={'docker_config': vcftools_image}
+        kwargs={
+            'allow_overlap': True,
+            'docker_config': vcftools_image,
+        },
     )
 
     workflow.transform(
@@ -189,7 +192,10 @@ def create_multi_sample_workflow(
             mgd.InputFile('strelka_snv.vcf', 'sample_id', axes_origin=[]),
             mgd.TempOutputFile('strelka_snv.vcf.gz', extensions=['.tbi', '.csi']),
         ),
-        kwargs={'docker_config': vcftools_image}
+        kwargs={
+            'allow_overlap': True,
+            'docker_config': vcftools_image,
+        },
     )
 
     workflow.subworkflow(
@@ -250,64 +256,5 @@ def create_multi_sample_workflow(
         ),
     )
 
-    workflow.transform(
-        name="get_allele_count_filename",
-        func='single_cell.utils.helpers.resolve_template',
-        ctx=dict(docker_image=baseimage, **ctx),
-        ret=pypeliner.managed.TempOutputObj('allele_counts'),
-        args=(
-            pypeliner.managed.TempInputObj('sample_id'),
-            allele_counts_template,
-            'sample_id'
-        )
-    )
-
-    workflow.transform(
-        name="get_breakpoint_filename",
-        func='single_cell.utils.helpers.resolve_template',
-        ctx=dict(docker_image=baseimage, **ctx),
-        ret=pypeliner.managed.TempOutputObj('breakpoints'),
-        args=(
-            pypeliner.managed.TempInputObj('sample_id'),
-            breakpoints_template,
-            'sample_id'
-        )
-    )
-
-    if isinstance(normal_wgs_bam, dict):
-        normal_wgs_bam = {
-            cell: helpers.format_file_yaml(bam) for cell, bam in normal_wgs_bam.iteritems()
-        }
-    else:
-        normal_wgs_bam = helpers.format_file_yaml(normal_wgs_bam)
-
-    tumour_cell_bams = {
-        ','.join(k): helpers.format_file_yaml(bam) for k, bam in tumour_cell_bams.iteritems()
-    }
-
-    metadata = {
-                   'name': 'multi_sample_pseudobulk',
-                   'version': single_cell.__version__,
-                   'output_datasets': None,
-                   'input_datasets': {
-                       'normal_bam': normal_wgs_bam,
-                       'tumour_cell_bams': tumour_cell_bams,
-                   },
-                   'results': {
-                       'haplotypes': helpers.format_file_yaml(haplotypes_file),
-                       'allele_counts': mgd.TempInputObj('allele_counts'),
-                       'breakpoints': mgd.TempInputObj('breakpoints'),
-                   },
-               },
-
-    workflow.transform(
-        name='generate_meta_yaml',
-        func="single_cell.utils.helpers.write_to_yaml",
-        ctx=dict(docker_image=baseimage, **ctx),
-        args=(
-            mgd.OutputFile(multisample_info_filename),
-            metadata
-        )
-    )
-
     return workflow
+
