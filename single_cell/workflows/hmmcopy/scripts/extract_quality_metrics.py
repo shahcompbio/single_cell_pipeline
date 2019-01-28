@@ -285,7 +285,7 @@ class ExtractHmmMetrics(object):
                 MSRSI_non_integerness = float('NaN')
 
             metrics = pd.Series({'cell_id': sample_id,
-                                 'total_mapped_reads': total_reads,
+                                 'total_mapped_reads_hmmcopy': total_reads,
                                  'total_reads_hmmcopy': total_reads_hmmcopy,
                                  'mad_chr19': mad_chr19,
                                  'mad_hmmcopy': mad_hmmcopy,
@@ -305,7 +305,7 @@ class ExtractHmmMetrics(object):
 
         else:
             metrics = pd.Series({'cell_id': sample_id,
-                                 'total_mapped_reads': float('NaN'),
+                                 'total_mapped_reads_hmmcopy': float('NaN'),
                                  'total_reads_hmmcopy': float('NaN'),
                                  'mad_chr19': float('NaN'),
                                  'mad_hmmcopy': float('NaN'),

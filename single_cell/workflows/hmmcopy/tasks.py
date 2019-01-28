@@ -178,7 +178,7 @@ def run_hmmcopy(
 
     annotation_cols = ['cell_call', 'experimental_condition', 'sample_type',
                        'mad_neutral_state', 'MSRSI_non_integerness',
-                       'total_mapped_reads']
+                       'total_mapped_reads_hmmcopy']
 
     plot_hmmcopy(
         corrected_reads_filename, segments_filename, parameters_filename,
