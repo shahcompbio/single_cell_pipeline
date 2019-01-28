@@ -133,7 +133,7 @@ def infer_haps_workflow(workflow, args):
 
     workflow.transform(
         name='create_segments',
-        ctx={'mem': 20, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
+        ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
         func='remixt.analysis.segment.create_segments',
         args=(
             mgd.TempOutputFile('segments.tsv'),
@@ -144,7 +144,7 @@ def infer_haps_workflow(workflow, args):
 
     workflow.transform(
         name='haplotype_allele_readcount',
-        ctx={'mem': 20, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
+        ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
         func='remixt.analysis.readcount.haplotype_allele_readcount',
         args=(
             mgd.OutputFile(allele_counts_filename),
@@ -312,7 +312,7 @@ def extract_allele_readcounts(
     workflow.transform(
         name='haplotype_allele_readcount',
         axes=('cell_id',),
-        ctx={'mem': 20},
+        ctx={'mem': 16},
         func='remixt.analysis.readcount.haplotype_allele_readcount',
         args=(
             mgd.TempOutputFile('allele_counts.tsv', 'cell_id', axes_origin=[]),
@@ -325,7 +325,7 @@ def extract_allele_readcounts(
 
     workflow.transform(
         name='merge_allele_readcount',
-        ctx={'mem': 20},
+        ctx={'mem': 16},
         func='single_cell.utils.csvutils.concatenate_csv',
         args=(
             mgd.TempInputFile('allele_counts.tsv', 'cell_id'),
