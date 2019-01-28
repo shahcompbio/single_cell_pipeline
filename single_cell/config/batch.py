@@ -142,30 +142,36 @@ def create_vm_commands():
     return commands
 
 
-def get_vm_size_azure(numcores):
-    if numcores <= 2:
+def get_vm_size_azure(numcores, memory, tasks_per_node):
+    numcores = tasks_per_node * numcores
+    memory = memory * tasks_per_node
+
+    if numcores <= 2 and memory <= 16:
         return "STANDARD_E2_V3"
-    elif numcores <= 4:
+    elif numcores <= 4 and memory <= 32:
         return "STANDARD_E4_V3"
-    elif numcores <= 8:
+    elif numcores <= 8 and memory <= 64:
         return "STANDARD_E8_V3"
     else:
         # max 16 cores
         return "STANDARD_E16_V3"
 
 
-def get_vm_image_id():
+def get_vm_image_id(bigdisk=None):
+    imagename = 'dockerproduction-smalldisk'
+    if bigdisk:
+        imagename = 'docker-production'
     subscription = os.environ.get("SUBSCRIPTION_ID", "id-missing")
     resource_group = os.environ.get("RESOURCE_GROUP", "id-missing")
     imageid = ['subscriptions', subscription, 'resourceGroups',
                resource_group, 'providers', 'Microsoft.Compute',
-               'images', 'dockerproduction-smalldisk']
+               'images', imagename]
     imageid = '/'.join(imageid)
     imageid = '/' + imageid
     return imageid
 
 def get_pool_def(
-        tasks_per_node, reference, pool_type, numcores, memory, dedicated):
+        tasks_per_node, reference, pool_type, numcores, memory, dedicated, bigdisk=None):
 
     autoscale_formula = generate_autoscale_formula(tasks_per_node, dedicated)
 
@@ -174,11 +180,11 @@ def get_pool_def(
     poolname = "singlecell{}{}".format(reference, pool_type)
 
     pooldata = {
-        "pool_vm_size": get_vm_size_azure(tasks_per_node),
-        "cpus": numcores,
-        'mem': memory,
+        "pool_vm_size": get_vm_size_azure(numcores, memory, tasks_per_node),
+        "cpus_per_task": numcores,
+        'mem_per_task': memory,
         'dedicated': dedicated,
-        'node_resource_id': get_vm_image_id(),
+        'node_resource_id': get_vm_image_id(bigdisk=bigdisk),
         'node_os_publisher': 'Canonical',
         'node_os_offer': 'UbuntuServer',
         'node_os_sku': 'batch.node.ubuntu 16.04',
@@ -231,7 +237,7 @@ def get_compute_finish_commands():
     return {"compute_finish_commands": commands}
 
 
-def get_all_pools(pool_config, reference):
+def get_all_pools(pool_config, reference, bigdisk=None):
 
     pooldefs = {}
 
@@ -243,7 +249,8 @@ def get_all_pools(pool_config, reference):
 
         pool_def = get_pool_def(
             tasks_per_node, reference, pooltype,
-            numcores, memory, dedicated
+            numcores, memory, dedicated,
+            bigdisk=bigdisk
         )
 
         pooldefs.update(pool_def)
@@ -256,13 +263,16 @@ def write_config(params, filepath):
         yaml.dump(params, outputfile, default_flow_style=False)
 
 
-def get_batch_config(defaults, override=None):
+def get_batch_config(defaults, override={}):
     config = {}
 
     config.update(
         get_all_pools(
             defaults['pools'],
-            defaults['reference']))
+            defaults['reference'],
+            bigdisk=override.get('bigdisk')
+        )
+    )
 
     config.update(
         {"storage_container_name": defaults["storage_container_name"]}
