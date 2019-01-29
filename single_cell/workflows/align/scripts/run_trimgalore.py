@@ -11,6 +11,8 @@ import argparse
 import shutil
 from shutil import copyfile
 import signal
+import pypeliner
+
 
 class RunTrimGalore(object):
     """
@@ -19,7 +21,7 @@ class RunTrimGalore(object):
 
     def __init__(self, seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt, tempdir,
                 adapter, adapter2, report_r1, report_r2, qc_report_r1,
-                qc_report_r2, qc_zip_r1, qc_zip_r2):
+                qc_report_r2, qc_zip_r1, qc_zip_r2, docker_image):
         self.seq1 = seq1
         self.seq2 = seq2
         self.trimgalore_path = trimgalore
@@ -37,23 +39,18 @@ class RunTrimGalore(object):
         self.report_r2 = report_r2
         self.empty = False
 
+        self.docker_image = docker_image
+
         self.check_inputs()
 
         if not os.path.exists(self.tempdir):
             os.makedirs(self.tempdir)
 
-
-    @classmethod
-    def run_cmd(cls, cmd):
+    def run_cmd(self, cmd):
         """
         run a command with subprocess and return outputs
         """
-        import sys
-
-        proc = Popen(cmd, stdout=sys.stdout, stderr=sys.stderr,
-                     preexec_fn=lambda:signal.signal(signal.SIGPIPE, signal.SIG_DFL))
-
-        proc.communicate()
+        pypeliner.commandline.execute(*cmd, docker_image=self.docker_image)
 
     def check_file(self, path):
         """
