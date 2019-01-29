@@ -305,7 +305,6 @@ def create_variant_calling_workflow(
         }
     )
 
-    info_file = os.path.join(args["out_dir"],'results', 'variant_calling', "info.yaml")
     normals = {k: helpers.format_file_yaml(v) for k,v in normal_region_bams.iteritems()}
     tumours = {k: helpers.format_file_yaml(v) for k,v in tumour_region_bams.iteritems()}
     cells = {k: helpers.format_file_yaml(v) for k,v in tumour_cell_bams.iteritems()}
@@ -325,11 +324,10 @@ def create_variant_calling_workflow(
     # TODO: will download results unnecessarily on cloud
     workflow.transform(
         name='generate_meta_yaml',
-        ctx=dict(mem=config['memory']['med'],
-                 pool_id=config['pools']['standard']),
+        ctx=dict(mem=config['memory']['med']),
         func="single_cell.utils.helpers.write_to_yaml",
         args=(
-            mgd.OutputFile(info_file),
+            mgd.OutputFile(meta_yaml),
             metadata
         )
     )
