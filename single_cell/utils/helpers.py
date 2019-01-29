@@ -18,10 +18,6 @@ import multiprocessing
 from multiprocessing.pool import ThreadPool
 import pypeliner
 
-def resolve_template(regions, template, format_key):
-    outputs = {v: template.format(**{format_key:v}) for v in regions}
-    return outputs
-
 def get_coltype_reference():
     coltypes = {
         'estimated_library_size': 'int', 'total_mapped_reads': 'int',
