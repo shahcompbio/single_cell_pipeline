@@ -98,6 +98,7 @@ def get_align_params(cluster, reference, binsize, smoothing_function, aligner):
         'samtools': docker_containers['samtools'],
         'bwa': docker_containers['bwa'],
         'picard': docker_containers['picard'],
+        'trimgalore': docker_containers['trimgalore'],
     }
 
     params = {

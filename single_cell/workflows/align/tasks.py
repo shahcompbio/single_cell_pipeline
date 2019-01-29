@@ -170,7 +170,7 @@ def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
     elif aligner == "bwa-aln":
         if trim:
             fastq1, fastq2 = trim_fastqs(
-                fastq1, fastq2, cell_id, tempdir, adapter, adapter2)
+                fastq1, fastq2, cell_id, tempdir, adapter, adapter2, containers['trimgalore'])
         bwa_aln_paired_end(
             fastq1,
             fastq2,
@@ -210,16 +210,17 @@ def postprocess_bam(infile, outfile, tempdir,
 
 def run_trimgalore(seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt, tempdir,
                    adapter, adapter2, report_r1, report_r2, qc_report_r1,
-                   qc_report_r2, qc_zip_r1, qc_zip_r2):
+                   qc_report_r2, qc_zip_r1, qc_zip_r2, docker_image):
 
     run_tg = RunTrimGalore(seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt,
                            tempdir, adapter, adapter2, report_r1, report_r2,
-                           qc_report_r1, qc_report_r2, qc_zip_r1, qc_zip_r2)
+                           qc_report_r1, qc_report_r2, qc_zip_r1, qc_zip_r2,
+                           docker_image)
     run_tg.run_trimgalore()
     run_tg.gather_outputs()
 
 
-def trim_fastqs(fastq1, fastq2, cell_id, tempdir, adapter, adapter2):
+def trim_fastqs(fastq1, fastq2, cell_id, tempdir, adapter, adapter2, trimgalore_docker):
     """
     run fastqc on both fastq files
     run trimgalore if needed, copy if not.
@@ -249,6 +250,6 @@ def trim_fastqs(fastq1, fastq2, cell_id, tempdir, adapter, adapter2):
 
     run_trimgalore(fastq1, fastq2, trim1, trim2, 'trim_galore', 'cutadapt',
                    tempdir, adapter, adapter2,
-                   rep1, rep2, qcrep1, qcrep2, qczip1, qczip2)
+                   rep1, rep2, qcrep1, qcrep2, qczip1, qczip2, trimgalore_docker)
 
     return trim1, trim2
