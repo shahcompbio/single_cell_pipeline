@@ -118,6 +118,8 @@ def get_readgroup(run_id, cell_id, library_id, centre, sample_info):
         '\\tCN:' + centre +
         '\\tKS:' + barcode)
 
+    read_group_template = '"' + read_group_template + '"'
+
     return read_group_template
 
 
