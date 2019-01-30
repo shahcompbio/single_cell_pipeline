@@ -93,7 +93,7 @@ def reference_data_azure(reference):
         copynumber_ref_data = '/refdata/'
         chrom_info_filename = '/refdata/chromInfo.txt.gz'
         chromosomes = get_chromosomes('grch37')
-        copynumber_ref_data = '/refdata/reference-grch37-decoys-remixt/'
+        copynumber_ref_data = '/refdata/'
         databases = {
             'mappability': {
                 'local_path': '/refdata/wgEncodeCrgMapabilityAlign50mer.bigWig',
