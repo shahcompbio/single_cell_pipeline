@@ -25,40 +25,21 @@ def cell_region_merge_bams(cell_bams, region_bam, region, docker_image):
         docker_image=docker_image)
 
 
-def merge_bam_worker(input_bam_files, output_bam, region, samtools_docker):
-    bamutils.bam_merge(
-        input_bam_files, output_bam,
-        region=region,
-        docker_image=samtools_docker)
+def merge_bams(bams, outputs, regions, samtools_docker, tempdir, ncores=None):
 
-    bamutils.bam_index(
-        output_bam, output_bam+'.bai',
-        docker_image=samtools_docker)
-
-
-def merge_bams(bams, outputs, regions, samtools_docker, ncores=None):
-
-    count = multiprocessing.cpu_count()
-
-    if ncores:
-        count = min(ncores, count)
-
-    pool = multiprocessing.Pool(processes=count)
-
-    tasks = []
-
-    bams = bams.values()
-
+    commands = []
     for region in regions:
-        output_bam = outputs[region]
-
+        output = outputs[region]
         region = '{}:{}-{}'.format(*region.split('-'))
-        task = pool.apply_async(merge_bam_worker,
-                         args=(bams, output_bam, region, samtools_docker)
-                        )
-        tasks.append(task)
+        cmd = list(['samtools', 'merge', '-f', '-R', region])
+        cmd.append(output)
+        cmd.extend(bams.values())
+        commands.append(cmd)
+    helpers.run_in_gnu_parallel(commands, tempdir, samtools_docker, ncores=ncores)
 
-    pool.close()
-    pool.join()
+    commands = []
+    for region in regions:
+        output = outputs[region]
+        commands.append(['samtools', 'index', output, output+".bai"])
 
-    [task.get() for task in tasks]
+    helpers.run_in_gnu_parallel(commands, tempdir, samtools_docker, ncores=ncores)

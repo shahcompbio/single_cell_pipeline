@@ -46,6 +46,7 @@ def create_merge_bams_workflow(
                 mgd.OutputFile('merged.bam', "region", fnames=merged_bams, axes_origin=[], extensions=['.bai']),
                 regions,
                 config['docker']['samtools'],
+                mgd.TempSpace("merge_bams_tempdir")
             ),
             kwargs={"ncores": config["max_cores"]}
         )
