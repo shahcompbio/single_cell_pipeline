@@ -133,7 +133,7 @@ def create_vm_commands():
     # information.
     commands = (
         "sudo gpasswd -a $USER docker\n"
-        "sudo mkdir /datadrive\n"
+        "sudo mkdir -p /datadrive\n"
         "sudo chmod -R 777 /datadrive\n"
     )
 
