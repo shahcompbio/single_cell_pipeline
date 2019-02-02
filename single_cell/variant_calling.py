@@ -314,7 +314,7 @@ def create_variant_calling_workflow(
         'variant_calling': {
             'name': 'variant_calling',
             'version': single_cell.__version__,
-            'containers': config['containers'],
+            'containers': config['docker'],
             'output_datasets': None,
             'input_datasets': inputs,
             'results': {'variant_calling_data': helpers.format_file_yaml(snv_h5)}
