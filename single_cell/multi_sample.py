@@ -161,9 +161,9 @@ def create_multi_sample_workflow(
             mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
             mgd.InputFile('tumour_regions.bam', 'sample_id', 'region', extensions=['.bai']),
             mgd.InputFile('normal_regions.bam', 'region', extensions=['.bai']),
-            mgd.OutputFile('museq.vcf', 'sample_id'),
-            mgd.OutputFile('strelka_snv.vcf', 'sample_id'),
-            mgd.OutputFile('strelka_indel.vcf', 'sample_id'),
+            mgd.OutputFile('museq.vcf', 'sample_id', extensions=['.tbi', '.csi']),
+            mgd.OutputFile('strelka_snv.vcf', 'sample_id', extensions=['.tbi', '.csi']),
+            mgd.OutputFile('strelka_indel.vcf', 'sample_id', extensions=['.tbi', '.csi']),
             mgd.OutputFile('snv_annotations.h5', 'sample_id'),
             mgd.OutputFile('snv_calling_info.yaml', 'sample_id'),
             config['variant_calling'],
@@ -176,7 +176,7 @@ def create_multi_sample_workflow(
         name='merge_museq_snvs',
         func='biowrappers.components.io.vcf.tasks.concatenate_vcf',
         args=(
-            mgd.InputFile('museq.vcf', 'sample_id', axes_origin=[]),
+            mgd.InputFile('museq.vcf', 'sample_id', axes_origin=[], extensions=['.tbi', '.csi']),
             mgd.TempOutputFile('museq.vcf.gz', extensions=['.tbi', '.csi']),
         ),
         kwargs={
@@ -189,7 +189,7 @@ def create_multi_sample_workflow(
         name='merge_strelka_snvs',
         func='biowrappers.components.io.vcf.tasks.concatenate_vcf',
         args=(
-            mgd.InputFile('strelka_snv.vcf', 'sample_id', axes_origin=[]),
+            mgd.InputFile('strelka_snv.vcf', 'sample_id', axes_origin=[], extensions=['.tbi', '.csi']),
             mgd.TempOutputFile('strelka_snv.vcf.gz', extensions=['.tbi', '.csi']),
         ),
         kwargs={
