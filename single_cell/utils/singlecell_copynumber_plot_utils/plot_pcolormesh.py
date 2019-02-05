@@ -8,6 +8,7 @@ import sys
 import math
 import argparse
 import matplotlib
+
 matplotlib.use("Agg")
 import numpy as np
 import pandas as pd
@@ -119,13 +120,23 @@ class PlotPcolor(object):
         else:
             return self.read_segs_csv()
 
+    def sum_two_dataframes(self, df):
+        def sum_nan(y):
+            if np.isnan(y).all():
+                return float("nan")
+            return np.nansum(y)
+
+        if len(df) == 1:
+            return df.iloc[0]
+        else:
+            return df.apply(sum_nan)
+
     def read_segs_hdf(self):
 
         data = []
         chunksize = 10 ** 6
         for chunk in pd.read_hdf(
                 self.input, chunksize=chunksize, key=self.segs_tablename):
-
             # set low mapp regions to white
             chunk[
                 self.column_name].loc[
@@ -142,7 +153,7 @@ class PlotPcolor(object):
 
         # merge chunks, sum cells that get split across chunks
         table = pd.concat(data)
-        table = table.groupby(table.index).apply(pd.DataFrame.sum,skipna=False)
+        table = table.groupby(table.index).apply(self.sum_two_dataframes)
 
         bins = pd.DataFrame(
             table.columns.values.tolist(),
@@ -434,11 +445,12 @@ class PlotPcolor(object):
         """
         generate and save plot to output
         """
+
         def genplot(data, samples):
             pltdata = data.loc[samples]
 
             title = self.plot_title + \
-                ' (%s) n=%s/%s' % (sep, len(samples), num_samples)
+                    ' (%s) n=%s/%s' % (sep, len(samples), num_samples)
 
             self.plot_heatmap(pltdata, colordata, title, lims, pdfout)
 
@@ -459,7 +471,6 @@ class PlotPcolor(object):
         lims = (vmin, vmax)
 
         for sep, samples in sepdata.iteritems():
-
             num_samples = len(samples)
 
             samples = set(samples).intersection(set(data.index))
@@ -478,7 +489,6 @@ class PlotPcolor(object):
                 sample_sets = [samples[x:x + 1000]
                                for x in range(0, len(samples), 1000)]
                 for samples in sample_sets:
-
                     genplot(data, samples)
             else:
                 genplot(data, samples)
@@ -588,8 +598,8 @@ def parse_args():
     parser.add_argument('--high_memory',
                         action='store_true',
                         help='set this flag to override the default limit of 1000 cells'
-                        ' per plot. The code will use more memory and the pdf file size'
-                        ' will depend on number of cells')
+                             ' per plot. The code will use more memory and the pdf file size'
+                             ' will depend on number of cells')
 
     args = parser.parse_args()
 
@@ -599,8 +609,11 @@ def parse_args():
 if __name__ == '__main__':
     ARGS = parse_args()
     m = PlotPcolor(ARGS.input, ARGS.metrics, ARGS.output, column_name=ARGS.column_name,
-                   cellcalls=ARGS.cellcalls, mad_threshold=ARGS.mad_threshold, numreads_threshold=ARGS.numreads_threshold,
-                   median_hmmcopy_reads_per_bin_threshold=ARGS.median_hmmcopy_reads_per_bin_threshold, high_memory=ARGS.high_memory, plot_title=ARGS.plot_title,
+                   cellcalls=ARGS.cellcalls, mad_threshold=ARGS.mad_threshold,
+                   numreads_threshold=ARGS.numreads_threshold,
+                   median_hmmcopy_reads_per_bin_threshold=ARGS.median_hmmcopy_reads_per_bin_threshold,
+                   high_memory=ARGS.high_memory, plot_title=ARGS.plot_title,
                    color_by_col=ARGS.color_by_col, plot_by_col=ARGS.plot_by_col,
-                   separator=ARGS.separator, max_cn=ARGS.max_cn, scale_by_cells=ARGS.scale_by_cells, mappability_threshold=ARGS.mappability_threshold)
+                   separator=ARGS.separator, max_cn=ARGS.max_cn, scale_by_cells=ARGS.scale_by_cells,
+                   mappability_threshold=ARGS.mappability_threshold)
     m.main()
