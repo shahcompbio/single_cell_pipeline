@@ -19,7 +19,8 @@ def containers():
         'strelka': 'scp/strelka:v0.0.1', 'mutationseq': 'scp/mutationseq:v0.0.1',
         'vcftools': 'scp/vcftools:v0.0.1', 'snpeff': 'scp/vcftools:v0.0.1',
         'titan': 'scp/titan:v0.0.1', 'remixt': 'scp/remixt:v0.0.1',
-        'destruct': 'scp/destruct:v0.0.1', 'trimgalore': 'scp/trimgalore:v0.0.1'
+        'destruct': 'scp/destruct:v0.0.1', 'trimgalore': 'scp/trimgalore:v0.0.1',
+        'lumpy': 'scp/lumpy:v0.0.1'
     }
 
     singularity = {}

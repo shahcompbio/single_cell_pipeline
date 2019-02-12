@@ -247,6 +247,21 @@ def parse_args():
     breakpoint_calling.add_argument("--matched_normal",
                                     required=True,
                                     help='''normal bam file''')
+    breakpoint_calling.add_argument("--normal_id",
+                                    required=True,
+                                    help='''normal id''')
+    breakpoint_calling.add_argument("--tumour_id",
+                                    required=True,
+                                    help='''id for tumour''')
+    breakpoint_calling.add_argument("--destruct",
+                                    action='store_true',
+                                    default=False,
+                                    help='''run destruct''')
+    breakpoint_calling.add_argument("--lumpy",
+                                    action='store_true',
+                                    default=False,
+                                    help='''run lumpy''')
+
 
     #======================================
     # count variants from multiple samples
@@ -266,18 +281,6 @@ def parse_args():
     multi_sample_pseudo_bulk = add_global_args(
         subparsers.add_parser("multi_sample_pseudo_bulk"))
     multi_sample_pseudo_bulk.set_defaults(which='multi_sample_pseudo_bulk')
-
-    # multi_sample_pseudo_bulk.add_argument("--tumour_template",
-    #                        action=parseRegionTemplate,
-    #                        required=True,
-    #                        help='''template for saving the tumour bams split by region,
-    #                        use {} as place holder for genomic region''')
-    #
-    # multi_sample_pseudo_bulk.add_argument("--normal_template",
-    #                        action=parseRegionTemplate,
-    #                        required=True,
-    #                        help='''template for saving the normal bams split by region,
-    #                        use {} as place holder for genomic region''')
 
     #======================================
     # generates pipeline and batch configs

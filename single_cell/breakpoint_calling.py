@@ -27,19 +27,41 @@ def breakpoint_calling_workflow(workflow, args):
         value=bam_files.keys(),
     )
 
-    workflow.subworkflow(
-        name='destruct',
-        ctx={'docker_image': baseimage},
-        func="biowrappers.components.breakpoint_calling.destruct.destruct_pipeline",
-        args=(
-            mgd.InputFile(normal_bam_file),
-            mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files),
-            config.get('destruct', {}),
-            ref_data_directory,
-            mgd.OutputFile(breakpoints_filename),
-            raw_data_directory,
-        ),
-    )
+    if args['destruct']:
+        workflow.subworkflow(
+            name='destruct',
+            ctx={'docker_image': baseimage},
+            func="biowrappers.components.breakpoint_calling.destruct.destruct_pipeline",
+            args=(
+                mgd.InputFile(normal_bam_file),
+                mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files),
+                config.get('destruct', {}),
+                ref_data_directory,
+                mgd.OutputFile(breakpoints_filename),
+                raw_data_directory,
+            ),
+        )
+
+    if args['lumpy']:
+        varcalls_dir = os.path.join(
+            args['out_dir'], 'results', 'breakpoint_calling')
+        breakpoints_bed = os.path.join(varcalls_dir, 'lumpy_breakpoints.bed')
+        breakpoints_h5 = os.path.join(varcalls_dir, 'lumpy_breakpoints.h5')
+
+        workflow.subworkflow(
+            name='lumpy',
+            ctx={'docker_image': baseimage},
+            func="single_cell.workflows.lumpy.create_lumpy_workflow",
+            args=(
+                config,
+                mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files),
+                mgd.InputFile(normal_bam_file),
+                mgd.OutputFile(breakpoints_bed),
+                mgd.OutputFile(breakpoints_h5),
+                args['tumour_id'],
+                args['normal_id'],
+            ),
+        )
 
     info_file = os.path.join(args["out_dir"],'results','breakpoint_calling', "info.yaml")
 
@@ -73,6 +95,7 @@ def breakpoint_calling_workflow(workflow, args):
             metadata
         )
     )
+
 
     return workflow
 
