@@ -355,7 +355,7 @@ def get_breakpoint_params(cluster, reference):
 
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 18},
-        'ref_data_directory': '/refdata/reference-grch37-decoys-destruct',
+        'ref_data_directory': '/refdata/',
         'destruct': {
             'genome_fasta': referencedata['ref_genome'],
             'genome_fai': referencedata['ref_genome'] + '.fai',
