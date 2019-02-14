@@ -25,10 +25,10 @@ def get_bams(inputs_file):
         normal_bams = data['normal']['bam']
     else:
         normal_bams = {}
-        for cell in data['tumour'].keys():
-            if 'bam' not in data['tumour'][cell]:
+        for cell in data['normal'].keys():
+            if 'bam' not in data['normal'][cell]:
                 raise Exception('couldnt extract bam file paths from yaml input for cell: {}'.format(cell))
-            normal_bams[cell] = data['tumour'][cell]['bam']
+            normal_bams[cell] = data['normal'][cell]['bam']
 
     return tumour_bams, normal_bams
 
