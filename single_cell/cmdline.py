@@ -282,6 +282,10 @@ def parse_args():
         subparsers.add_parser("multi_sample_pseudo_bulk"))
     multi_sample_pseudo_bulk.set_defaults(which='multi_sample_pseudo_bulk')
 
+    multi_sample_pseudo_bulk.add_argument("--destruct",
+                                 help='''add destruct to list of analyses''')
+
+
     #======================================
     # generates pipeline and batch configs
     #======================================
