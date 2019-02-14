@@ -41,6 +41,7 @@ def multi_sample_workflow(args):
         tumour_cell_bams,
         args['out_dir'],
         helpers.load_config(args),
+        run_destruct=args['destruct']
     )
 
     return workflow
@@ -51,6 +52,7 @@ def create_multi_sample_workflow(
         tumour_cell_bams,
         results_dir,
         config,
+        run_destruct=False
 ):
     """ Multiple sample pseudobulk workflow. """
 
@@ -238,23 +240,24 @@ def create_multi_sample_workflow(
         ),
     )
 
-    destruct_config = config['breakpoint_calling'].get('destruct_config', {})
-    destruct_ref_data_dir = config['breakpoint_calling']['ref_data_directory']
-    baseimage = config['breakpoint_calling']['docker']['single_cell_pipeline']
-    workflow.subworkflow(
-        name='destruct',
-        func='biowrappers.components.breakpoint_calling.destruct.destruct_pipeline',
-        axes=('sample_id',),
-        ctx={'docker_image': baseimage},
-        args=(
-            mgd.InputFile(normal_wgs_bam),
-            mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
-            destruct_config,
-            destruct_ref_data_dir,
-            mgd.OutputFile('breakpoints.h5', 'sample_id'),
-            mgd.Template(destruct_raw_data_template, 'sample_id'),
-        ),
-    )
+    if run_destruct:
+        destruct_config = config['breakpoint_calling'].get('destruct_config', {})
+        destruct_ref_data_dir = config['breakpoint_calling']['ref_data_directory']
+        baseimage = config['breakpoint_calling']['docker']['single_cell_pipeline']
+        workflow.subworkflow(
+            name='destruct',
+            func='biowrappers.components.breakpoint_calling.destruct.destruct_pipeline',
+            axes=('sample_id',),
+            ctx={'docker_image': baseimage},
+            args=(
+                mgd.InputFile(normal_wgs_bam),
+                mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
+                destruct_config,
+                destruct_ref_data_dir,
+                mgd.OutputFile('breakpoints.h5', 'sample_id'),
+                mgd.Template(destruct_raw_data_template, 'sample_id'),
+            ),
+        )
 
     return workflow
 
