@@ -178,6 +178,8 @@ def get_pool_def(
     vm_commands = create_vm_commands()
 
     poolname = "singlecell{}{}".format(reference, pool_type)
+    if bigdisk:
+        poolname += "_bigdisk"
 
     pooldata = {
         "pool_vm_size": get_vm_size_azure(numcores, memory, tasks_per_node),
