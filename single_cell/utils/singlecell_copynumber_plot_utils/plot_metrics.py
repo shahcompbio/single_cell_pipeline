@@ -118,6 +118,10 @@ class PlotMetrics(object):
                     'ytick.labelsize': 12,
                     'legend.fontsize': 12})
 
+        yticks = None
+        yticklabels = None
+        ylim = None
+
         dfs = [df.iloc[n:n+cells_per_page, :] for n in range(0, len(df), cells_per_page)]
 
         if not plot_title:
@@ -167,6 +171,15 @@ class PlotMetrics(object):
 
             self.add_legend(ax, ['Total', metric_label], [col_total, col_fraction], 1,
                             location='upper right')
+
+            if ylim:
+                ax.set_ylim(ylim)
+                ax.set_yticks(yticks)
+                ax.set_yticklabels(yticklabels)
+            else:
+                ylim = ax.get_ylim()
+                yticklabels = ax.get_yticklabels()
+                yticks = ax.get_yticks()
 
             pdf.savefig(bbox_inches='tight', pad_inches=0.4)
             plt.close()
@@ -244,6 +257,10 @@ class PlotMetrics(object):
             )
             return
 
+        yticks = None
+        yticklabels = None
+        ylim = None
+
         sns.set(context='talk',
                 style='ticks',
                 font='Helvetica',
@@ -294,6 +311,15 @@ class PlotMetrics(object):
             ax.set_title("{}(page {}/{})".format(plot_title, i+1, num_pages), y=1.08, fontsize=10)
 
             plt.xticks(rotation=90)
+
+            if ylim:
+                ax.set_ylim(ylim)
+                ax.set_yticks(yticks)
+                ax.set_yticklabels(yticklabels)
+            else:
+                ylim = ax.get_ylim()
+                yticklabels = ax.get_yticklabels()
+                yticks = ax.get_yticks()
 
             pdf.savefig(bbox_inches='tight', pad_inches=0.4)
             plt.close()
