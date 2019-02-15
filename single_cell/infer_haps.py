@@ -262,6 +262,104 @@ def infer_haps_from_bulk_normal(
     return workflow
 
 
+def infer_haps_from_cells_normal(
+    normal_bam_files,
+    normal_seqdata_file,
+    haplotypes_filename,
+    config,
+):
+    baseimage = {'docker_image': config['docker']['single_cell_pipeline']}
+
+    remixt_config = config.get('extract_seqdata', {})
+    remixt_ref_data_dir = config['ref_data_dir']
+
+    chromosomes = config['chromosomes'] #remixt.config.get_chromosomes(config, remixt_ref_data_dir)
+
+    workflow = pypeliner.workflow.Workflow(ctx=baseimage)
+
+    cellids = normal_bam_files.keys()
+
+    workflow.setobj(
+        obj=mgd.OutputChunks('cell_id'),
+        value=cellids,
+    )
+
+    workflow.subworkflow(
+        name="extract_seqdata",
+        axes=('cell_id',),
+        func=extract_seqdata.create_extract_seqdata_workflow,
+        args=(
+            mgd.InputFile(
+                'bam_markdups',
+                'cell_id',
+                fnames=normal_bam_files,
+                extensions=['.bai']
+            ),
+            mgd.TempOutputFile("tumour.h5", "cell_id"),
+            config.get('extract_seqdata', {}),
+            config['ref_data_dir'],
+            config,
+        )
+    )
+
+    workflow.transform(
+        name='merge_all_seqdata',
+        ctx={'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
+        func="single_cell.workflows.titan.tasks.merge_overlapping_seqdata",
+        args=(
+            mgd.OutputFile(normal_seqdata_file),
+            mgd.TempInputFile("tumour.h5", "cell_id"),
+            config["chromosomes"]
+        ),
+    )
+
+    workflow.setobj(
+        obj=mgd.OutputChunks('chromosome'),
+        value=chromosomes,
+    )
+
+    workflow.transform(
+        name='infer_snp_genotype',
+        axes=('chromosome',),
+        ctx={'mem': 16},
+        func='remixt.analysis.haplotype.infer_snp_genotype_from_normal',
+        args=(
+            mgd.TempOutputFile('snp_genotype.tsv', 'chromosome'),
+            mgd.InputFile(normal_seqdata_file),
+            mgd.InputInstance('chromosome'),
+            config,
+        ),
+    )
+
+    workflow.transform(
+        name='infer_haps',
+        axes=('chromosome',),
+        ctx={'mem': 16},
+        func='remixt.analysis.haplotype.infer_haps',
+        args=(
+            mgd.TempOutputFile('haplotypes.tsv', 'chromosome'),
+            mgd.TempInputFile('snp_genotype.tsv', 'chromosome'),
+            mgd.InputInstance('chromosome'),
+            mgd.TempSpace('haplotyping', 'chromosome'),
+            remixt_config,
+            remixt_ref_data_dir,
+        ),
+    )
+
+    workflow.transform(
+        name='merge_haps',
+        ctx={'mem': 16},
+        func='remixt.utils.merge_tables',
+        args=(
+            mgd.OutputFile(haplotypes_filename),
+            mgd.TempInputFile('haplotypes.tsv', 'chromosome'),
+        )
+    )
+
+    return workflow
+
+
+
 def extract_allele_readcounts(
     haplotypes_filename,
     tumour_cell_bams,

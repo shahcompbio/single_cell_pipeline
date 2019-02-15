@@ -216,16 +216,28 @@ def create_multi_sample_workflow(
         ),
     )
 
-    workflow.subworkflow(
-        name='infer_haps_from_bulk_normal',
-        func=infer_haps.infer_haps_from_bulk_normal,
-        args=(
-            mgd.InputFile(normal_wgs_bam, extensions=['.bai']),
-            mgd.OutputFile(normal_seqdata_file),
-            mgd.OutputFile(haplotypes_file),
-            config['infer_haps'],
-        ),
-    )
+    if isinstance(normal_wgs_bam, dict):
+        workflow.subworkflow(
+            name='infer_haps_from_bulk_normal',
+            func=infer_haps.infer_haps_from_bulk_normal,
+            args=(
+                mgd.InputFile(normal_wgs_bam, extensions=['.bai']),
+                mgd.OutputFile(normal_seqdata_file),
+                mgd.OutputFile(haplotypes_file),
+                config['infer_haps'],
+            ),
+        )
+    else:
+        workflow.subworkflow(
+            name='infer_haps_from_cells_normal',
+            func=infer_haps.infer_haps_from_cells_normal,
+            args=(
+                mgd.InputFile(normal_wgs_bam, extensions=['.bai']),
+                mgd.OutputFile(normal_seqdata_file),
+                mgd.OutputFile(haplotypes_file),
+                config['infer_haps'],
+            ),
+        )
 
     workflow.subworkflow(
         name='extract_allele_readcounts',
