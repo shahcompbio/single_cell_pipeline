@@ -144,8 +144,10 @@ def get_merge_bams_params(cluster, reference):
 
     if cluster == "azure":
         referencedata = config_reference.reference_data_azure(reference)
+        one_split_job=True
     else:
         referencedata = config_reference.reference_data_shahlab(reference)
+        one_split_job=False
 
     docker_containers = config_reference.containers()['docker']
     params = {
@@ -158,7 +160,7 @@ def get_merge_bams_params(cluster, reference):
         'ref_genome': referencedata['ref_genome'],
         'split_size': 10000000,
         'chromosomes': referencedata['chromosomes'],
-        'one_split_job': True
+        'one_split_job': one_split_job
     }
     return {'merge_bams': params}
 
