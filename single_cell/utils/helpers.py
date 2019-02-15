@@ -159,15 +159,28 @@ def get_incrementing_filename(path):
     return "{}.{}".format(path, i)
 
 
+def build_shell_script(command, tag, tempdir):
+    outfile = os.path.join(tempdir, "{}.sh".format(tag))
+    with open(outfile, 'w') as scriptfile:
+        scriptfile.write("#!/bin/bash\n")
+        if isinstance(command, list) or isinstance(command, tuple):
+            command = ' '.join(command) + '\n'
+        scriptfile.write(command)
+    return outfile
+
+
 def run_in_gnu_parallel(commands, tempdir, docker_image, ncores=None):
     makedirs(tempdir)
-    parallel_outfile = os.path.join(tempdir, "commands.txt")
 
+    scriptfiles = []
+
+    for tag,command in enumerate(commands):
+        scriptfiles.append(build_shell_script(command, tag, tempdir))
+
+    parallel_outfile = os.path.join(tempdir, "commands.txt")
     with open(parallel_outfile, 'w') as outfile:
-        for cmd in commands:
-            if isinstance(cmd, list) or isinstance(cmd, tuple):
-                cmd = ' '.join(cmd) + '\n'
-            outfile.write(cmd)
+        for scriptfile in scriptfiles:
+            outfile.write("sh {}\n".format(scriptfile))
 
     if not ncores:
         ncores = multiprocessing.cpu_count()
