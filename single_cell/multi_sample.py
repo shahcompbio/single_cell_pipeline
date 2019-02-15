@@ -119,12 +119,16 @@ def create_multi_sample_workflow(
     )
 
     if isinstance(normal_wgs_bam, dict):
-        workflow.set_filenames('normal_cells.bam', 'cell_id', fnames=normal_wgs_bam)
+        workflow.setobj(
+            obj=mgd.OutputChunks('normal_cell_id'),
+            value=normal_wgs_bam.keys(),
+        )
+        workflow.set_filenames('normal_cells.bam', 'normal_cell_id', fnames=normal_wgs_bam)
         workflow.subworkflow(
             name="split_normal",
             func=merge_bams.create_merge_bams_workflow,
             args=(
-                mgd.InputFile('normal_cells.bam', 'cell_id', extensions=['.bai']),
+                mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai']),
                 mgd.OutputFile('normal_regions.bam', 'region', axes_origin=[], extensions=['.bai']),
                 regions,
                 config['merge_bams'],
@@ -218,10 +222,10 @@ def create_multi_sample_workflow(
 
     if isinstance(normal_wgs_bam, dict):
         workflow.subworkflow(
-            name='infer_haps_from_bulk_normal',
-            func=infer_haps.infer_haps_from_bulk_normal,
+            name='infer_haps_from_cells_normal',
+            func=infer_haps.infer_haps_from_cells_normal,
             args=(
-                mgd.InputFile(normal_wgs_bam, extensions=['.bai']),
+                mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai']),
                 mgd.OutputFile(normal_seqdata_file),
                 mgd.OutputFile(haplotypes_file),
                 config['infer_haps'],
@@ -229,8 +233,8 @@ def create_multi_sample_workflow(
         )
     else:
         workflow.subworkflow(
-            name='infer_haps_from_cells_normal',
-            func=infer_haps.infer_haps_from_cells_normal,
+            name='infer_haps_from_bulk_normal',
+            func=infer_haps.infer_haps_from_bulk_normal,
             args=(
                 mgd.InputFile(normal_wgs_bam, extensions=['.bai']),
                 mgd.OutputFile(normal_seqdata_file),
