@@ -142,13 +142,13 @@ def merge_readgroups(readgroups, histogram_data):
         return
     keys = sorted(keys)
 
-    keys = set([k for v in histogram_data for k in histogram_data[v].keys()])
-
     finalresult = []
     for i in keys:
         j = 0
         k = 0
         for rg in readgroups:
+            if not histogram_data[rg]:
+                continue
             values = histogram_data[rg].get(i, None)
             if not values:
                 continue

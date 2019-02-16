@@ -54,8 +54,8 @@ def breakpoint_calling_workflow(workflow, args):
             func="single_cell.workflows.lumpy.create_lumpy_workflow",
             args=(
                 config,
-                mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files),
-                mgd.InputFile(normal_bam_file),
+                mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files, extensions=['.bai']),
+                mgd.InputFile(normal_bam_file, extensions=['.bai']),
                 mgd.OutputFile(breakpoints_bed),
                 mgd.OutputFile(breakpoints_h5),
                 args['tumour_id'],
