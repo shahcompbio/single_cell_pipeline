@@ -26,7 +26,7 @@ def create_lumpy_workflow(config, bam_files, normal_bam, lumpy_bed, lumpy_h5, tu
         ctx={'mem': 8, 'ncpus': 1},
         func='single_cell.workflows.lumpy.tasks.process_bam',
         args=(
-            mgd.InputFile(normal_bam),
+            mgd.InputFile(normal_bam, extensions=['.bai']),
             mgd.TempOutputFile('normal.discordants.sorted.bam'),
             mgd.TempOutputFile('normal.splitters.sorted.bam'),
             mgd.TempOutputFile('hist_normal.csv'),
@@ -51,7 +51,7 @@ def create_lumpy_workflow(config, bam_files, normal_bam, lumpy_bed, lumpy_h5, tu
         ctx={'mem': 8, 'ncpus': 1},
         func='single_cell.workflows.lumpy.tasks.process_bam',
         args=(
-            mgd.InputFile('tumour_bam', 'sample_id', fnames=bam_files),
+            mgd.InputFile('tumour_bam', 'sample_id', fnames=bam_files, extensions=['.bai']),
             mgd.TempOutputFile('tumour.discordants.sorted.bam', 'sample_id'),
             mgd.TempOutputFile('tumour.splitters.sorted.bam', 'sample_id'),
             mgd.TempOutputFile('hist.csv', 'sample_id'),
