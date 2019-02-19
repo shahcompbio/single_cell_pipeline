@@ -257,6 +257,21 @@ def create_multi_sample_workflow(
     )
 
     if run_destruct:
+
+        if isinstance(normal_wgs_bam, dict):
+            workflow.subworkflow(
+                name='merge_normal_cells_destruct',
+                func='single_cell.utils.bamutils.bam_merge',
+                args=(
+                    mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai']),
+                    mgd.OutputFile("merged_tumour.bam"),
+                ),
+                kwargs={'docker_image': config['merge_bams']['docker']['samtools']}
+            )
+            final_wgs_bam = mgd.InputFile("merged_tumour.bam")
+        else:
+            final_wgs_bam = mgd.InputFile(normal_wgs_bam)
+
         destruct_config = config['breakpoint_calling'].get('destruct_config', {})
         destruct_ref_data_dir = config['breakpoint_calling']['ref_data_directory']
         baseimage = config['breakpoint_calling']['docker']['single_cell_pipeline']
@@ -266,7 +281,7 @@ def create_multi_sample_workflow(
             axes=('sample_id',),
             ctx={'docker_image': baseimage},
             args=(
-                mgd.InputFile(normal_wgs_bam),
+                final_wgs_bam,
                 mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
                 destruct_config,
                 destruct_ref_data_dir,
