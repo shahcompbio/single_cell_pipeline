@@ -363,7 +363,7 @@ def get_breakpoint_params(cluster, reference):
             'genome_fai': referencedata['ref_genome'] + '.fai',
         },
         'docker': {
-            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
+            'single_cell_pipeline': docker_containers['destruct'],
             'lumpy': docker_containers['lumpy'],
         },
     }
