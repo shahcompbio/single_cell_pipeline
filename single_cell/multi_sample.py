@@ -259,7 +259,7 @@ def create_multi_sample_workflow(
     if run_destruct:
 
         if isinstance(normal_wgs_bam, dict):
-            workflow.subworkflow(
+            workflow.transform(
                 name='merge_normal_cells_destruct',
                 func='single_cell.utils.bamutils.bam_merge',
                 args=(
