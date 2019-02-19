@@ -264,11 +264,11 @@ def create_multi_sample_workflow(
                 func='single_cell.utils.bamutils.bam_merge',
                 args=(
                     mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai']),
-                    mgd.OutputFile("merged_tumour.bam"),
+                    mgd.TempOutputFile("merged_tumour.bam"),
                 ),
                 kwargs={'docker_image': config['merge_bams']['docker']['samtools']}
             )
-            final_wgs_bam = mgd.InputFile("merged_tumour.bam")
+            final_wgs_bam = mgd.TempInputFile("merged_tumour.bam")
         else:
             final_wgs_bam = mgd.InputFile(normal_wgs_bam)
 
