@@ -6,8 +6,6 @@ Created on Jul 24, 2017
 import os
 import pypeliner
 
-from scripts import ParseMuseq
-
 from single_cell.utils import helpers
 from single_cell.utils import vcfutils
 
@@ -39,9 +37,3 @@ def concatenate_vcfs(inputs, output):
     vcfutils.concatenate_vcf(inputs, output)
 
 
-def parse_museq(infile, output):
-    parser = ParseMuseq(infile=infile, tid='NA', nid='NA', output=output,
-                        keep_dbsnp=True,keep_1000gen=True,
-                        remove_duplicates=True)
-
-    parser.main()

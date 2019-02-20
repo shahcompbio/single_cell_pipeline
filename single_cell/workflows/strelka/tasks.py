@@ -7,7 +7,6 @@ from __future__ import division
 
 from collections import OrderedDict
 
-from scripts import ParseStrelka
 import csv
 import ConfigParser
 import math
@@ -625,10 +624,3 @@ def convert_vcf_to_hdf5(in_file, out_file, data_type='snv', table_name=None):
     out_store.close()
 
 
-#parse strelka vcf into csv format
-def parse_strelka(infile, output):
-    parser = ParseStrelka(infile=infile, tid='NA', nid='NA', output=output,
-                        keep_dbsnp=True,keep_1000gen=True,
-                        remove_duplicates=True)
-
-    parser.main()
