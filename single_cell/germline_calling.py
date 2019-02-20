@@ -23,13 +23,30 @@ def germline_calling_workflow(workflow, args):
     samtoolsdocker = {'docker_image': config['docker']['samtools']}
     snpeffdocker = {'docker_image': config['docker']['snpeff']}
 
-    bam_files, _ = helpers.get_bams(args['input_yaml'])
+    data = helpers.load_pseudowgs_input(args['input_yaml'])
+    normal_bams = data['normal_bams']
+    tumour_cells = data['tumour_cells']
 
-    normal_bam_template = args["input_template"]
-    normal_bai_template = args["input_template"] + ".bai"
-
-    if "{reads}" in normal_bam_template:
-        raise ValueError("input template for germline calling only support region based splits")
+    if not isinstance(normal_bams, dict):
+        workflow.transform(
+            name="get_regions",
+            ctx={'mem_retry_increment': 2, 'ncpus': 1, 'mem': config["memory"]['low'], 'docker_image': baseimage},
+            func="single_cell.utils.pysamutils.get_regions_from_reference",
+            ret=pypeliner.managed.OutputChunks('region'),
+            args=(
+                config["ref_genome"],
+                config["split_size"],
+                config["chromosomes"],
+            )
+        )
+        assert '{region}' in normal_bams, 'only supports a list of files or a template on regions'
+        workflow.set_filenames('normal_split.bam', 'region', template=normal_bams)
+    else:
+        workflow.setobj(
+            obj=mgd.OutputChunks('region'),
+            value=normal_bams.keys(),
+        )
+        workflow.set_filenames('normal_split.bam', 'normal_split', fnames=normal_bams)
 
     varcalls_dir = os.path.join(
         args['out_dir'], 'results', 'germline_calling')
@@ -43,27 +60,14 @@ def germline_calling_workflow(workflow, args):
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
-        value=bam_files.keys(),
-    )
- 
-    workflow.transform(
-        name="get_regions",
-        ctx={'mem_retry_increment': 2, 'ncpus': 1, 'mem': config["memory"]['low'], 'docker_image': baseimage},
-        func="single_cell.utils.pysamutils.get_regions_from_reference",
-        ret=pypeliner.managed.OutputChunks('region'),
-        args=(
-            config["ref_genome"],
-            config["split_size"],
-            config["chromosomes"],
-        )
+        value=tumour_cells.keys(),
     )
 
     workflow.subworkflow(
         name='samtools_germline',
         func=germline.create_samtools_germline_workflow,
         args=(
-            mgd.InputFile("normal.split.bam", "region", template=normal_bam_template),
-            mgd.InputFile("normal.split.bam.bai", "region", template=normal_bai_template),
+            mgd.InputFile("normal_split.bam", "region", extensions=['.bai']),
             config['ref_genome'],
             mgd.OutputFile(samtools_germline_vcf, extensions=['.tbi']),
             config,
@@ -115,7 +119,7 @@ def germline_calling_workflow(workflow, args):
         name='read_counts',
         func="single_cell.variant_calling.create_snv_allele_counts_for_vcf_targets_workflow",
         args=(
-            mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files, extensions=['.bai']),
+            mgd.InputFile('tumour.bam', 'cell_id', fnames=tumour_cells, extensions=['.bai']),
             mgd.InputFile(samtools_germline_vcf, extensions=['.tbi']),
             mgd.OutputFile(counts_template),
             config['memory'],
@@ -147,7 +151,22 @@ def germline_calling_workflow(workflow, args):
         'germline_data': helpers.format_file_yaml(germline_h5_filename),
     }
 
-    input_datasets = {k: helpers.format_file_yaml(v) for k,v in bam_files.iteritems()}
+
+    tumour_datasets = {k: helpers.format_file_yaml(v) for k,v in tumour_cells.iteritems()}
+    workflow.transform(
+        name="get_files",
+        func='single_cell.utils.helpers.resolve_template',
+        ctx={'mem': config['memory']['low'], 'ncpus': 1, 'docker_image': baseimage},
+        ret=pypeliner.managed.TempOutputObj('normal_dataset'),
+        args=(
+            pypeliner.managed.TempInputObj('region'),
+            normal_bams,
+            'region'
+        )
+    )
+    input_datasets = {
+        'tumour': tumour_datasets, 'normal': mgd.TempInputObj('normal_dataset')
+    }
 
     metadata = {
         'germline_calling': {

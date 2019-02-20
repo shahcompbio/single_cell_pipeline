@@ -19,28 +19,37 @@ from multiprocessing.pool import ThreadPool
 import pypeliner
 
 
+def load_yaml_section(data, section_name):
+    if data.get(section_name):
+        assert len(data[section_name]) == 1
+        section_id = data[section_name].keys()[0]
+        section_data = data[section_name][section_id]
+        if 'bam' in section_data:
+            section_data = section_data['bam']
+        else:
+            section_data = {cell_id: bamdata['bam'] for cell_id, bamdata in section_data.iteritems()}
+    else:
+        section_id = None
+        section_data = None
+    return section_id, section_data
+
+
 def load_pseudowgs_input(inputs_file):
     data = load_yaml(inputs_file)
 
-    assert 'normal' in data
-    assert 'tumour' in data
+    normal_wgs_id, normal_wgs = load_yaml_section(data, 'normal_wgs')
+    tumour_wgs_id, tumour_wgs = load_yaml_section(data, 'tumour_wgs')
 
-    assert len(data['normal']) == 1
-    assert len(data['tumour']) == 1
+    tumour_cells_id, tumour_cells = load_yaml_section(data, 'tumour_cells')
+    normal_cells_id, normal_cells = load_yaml_section(data, 'normal_cells')
 
-    normal_id = data['normal'].keys()[0]
-    tumour_id = data['tumour'].keys()[0]
+    parsed_data = dict(
+        tumour_wgs_id=tumour_wgs_id, tumour_wgs=tumour_wgs,
+        normal_wgs_id=normal_wgs_id, normal_wgs=normal_wgs,
+        tumour_cells_id=tumour_cells_id, tumour_cells=tumour_cells,
+        normal_cells_id=normal_cells_id, normal_cells=normal_cells)
 
-    normal_bams = data['normal'][normal_id]
-    if 'bam' in normal_bams:
-        normal_bams = normal_bams['bam']
-    else:
-        normal_bams = {cell_id: bamdata['bam'] for cell_id, bamdata in normal_bams.iteritems()}
-
-    tumour_bams = data['tumour'][tumour_id]
-    tumour_bams = {cell_id: bamdata['bam'] for cell_id, bamdata in tumour_bams.iteritems()}
-
-    return tumour_id, tumour_bams, normal_id, normal_bams
+    return parsed_data
 
 
 def get_coltype_reference():

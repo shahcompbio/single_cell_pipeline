@@ -86,7 +86,10 @@ def variant_calling_workflow(args):
 
     meta_yaml = os.path.join(args['out_dir'], 'info.yaml')
 
-    bam_files, bai_files = helpers.get_bams(args['input_yaml'])
+    data = helpers.load_pseudowgs_input(args['input_yaml'])
+    tumour_bams = data['tumour_wgs']
+    normal_bams = data['normal_wgs']
+    tumour_cells = data['tumour_cells']
 
     varcalls_dir = os.path.join(args['out_dir'], 'results',
                                 'variant_calling')
@@ -97,31 +100,44 @@ def variant_calling_workflow(args):
     snv_h5 = os.path.join(varcalls_dir, 'snv_annotations.h5')
     raw_data_dir = os.path.join(varcalls_dir, 'raw')
 
-    wgs_bam_template = args["tumour_template"]
-    normal_bam_template = args["normal_template"]
+    baseimage = config['docker']['single_cell_pipeline']
 
     workflow = pypeliner.workflow.Workflow()
 
-
-    workflow.transform(
-        name="get_regions",
-        ctx=dict(mem=config['memory']['low'], docker_image=config['docker']['single_cell_pipeline']),
-        func="single_cell.utils.pysamutils.get_regions_from_reference",
-        ret=pypeliner.managed.OutputChunks('region'),
-        args=(
-            config["ref_genome"],
-            config["split_size"],
-            config["chromosomes"],
+    if isinstance(normal_bams, dict) and isinstance(tumour_bams, dict):
+        assert normal_bams.keys() == tumour_bams.keys(), 'keys for tumour and normal bams should be the same'
+        workflow.setobj(
+            obj=mgd.OutputChunks('region'),
+            value=normal_bams.keys(),
         )
-    )
+        workflow.set_filenames('normal_split.bam', 'normal_split', fnames=normal_bams)
+        workflow.set_filenames('tumour_split.bam', 'normal_split', fnames=tumour_bams)
+    else:
+        workflow.transform(
+            name="get_regions",
+            ctx={'mem_retry_increment': 2, 'ncpus': 1, 'mem': config["memory"]['low'], 'docker_image': baseimage},
+            func="single_cell.utils.pysamutils.get_regions_from_reference",
+            ret=pypeliner.managed.OutputChunks('region'),
+            args=(
+                config["ref_genome"],
+                config["split_size"],
+                config["chromosomes"],
+            )
+        )
+        assert '{region}' in normal_bams, 'only supports a list of files or a template on regions'
+        workflow.set_filenames('normal_split.bam', 'region', template=normal_bams)
+        assert '{region}' in tumour_bams, 'only supports a list of files or a template on regions'
+        workflow.set_filenames('tumour_split.bam', 'region', template=normal_bams)
+
+
 
     workflow.subworkflow(
         func=create_variant_calling_workflow,
         name='create_varcall',
         args=(
-            bam_files,
-            mgd.Template('tumour.bam', 'region', template=wgs_bam_template),
-            mgd.Template('normal.bam', 'region', template=normal_bam_template),
+            tumour_cells,
+            mgd.InputFile('tumour_split.bam', 'region', extensions=['bai']),
+            mgd.InputFile('normal_split.bam', 'region', extensions=['bai']),
             mgd.OutputFile(museq_vcf),
             mgd.OutputFile(strelka_snv_vcf),
             mgd.OutputFile(strelka_indel_vcf),

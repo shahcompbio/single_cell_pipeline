@@ -19,12 +19,12 @@ def copy_number_calling_workflow(workflow, args):
            'docker_image': config['docker']['single_cell_pipeline']
     }
 
-    tumour_bam_files, tumour_bai_files = helpers.get_bams(args['tumour_yaml'])
 
-    tumour_cellids = helpers.get_samples(args['tumour_yaml'])
+    data = helpers.load_pseudowgs_input(args['input_yaml'])
+    normal_wgs = data['normal_wgs']
+    tumour_cells = data['tumour_cells']
+    assert '{region}' in normal_wgs
 
-    if set(tumour_bam_files.keys()) != set(tumour_cellids):
-        raise ValueError()
 
     copynumber_dir = os.path.join(args["out_dir"], "copynumber")
 
@@ -36,7 +36,7 @@ def copy_number_calling_workflow(workflow, args):
 
     workflow.setobj(
         obj=mgd.OutputChunks('tumour_cell_id'),
-        value=tumour_cellids,
+        value=tumour_cells.keys(),
     )
 
     workflow.transform(
@@ -105,7 +105,7 @@ def copy_number_calling_workflow(workflow, args):
             mgd.InputFile(
                 'bam_markdups',
                 'tumour_cell_id',
-                fnames=tumour_bam_files,
+                fnames=tumour_cells,
                 extensions=['.bai']
             ),
             mgd.TempOutputFile("tumour.h5", "tumour_cell_id"),
@@ -123,7 +123,7 @@ def copy_number_calling_workflow(workflow, args):
             mgd.InputFile(
                 'bam_markdups',
                 'region',
-                template=args['normal_template'],
+                template=normal_wgs,
                 extensions=['.bai']
             ),
             mgd.TempOutputFile("normal.h5", "region"),
@@ -144,7 +144,7 @@ def copy_number_calling_workflow(workflow, args):
             mgd.OutputFile(out_file),
             config,
             args,
-            tumour_cellids,
+            tumour_cells.keys(),
             mgd.InputChunks('region'),
             cloneid
         ),
