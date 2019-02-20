@@ -40,7 +40,6 @@ def index_bcf(in_file, index_file=None):
 
 def run_samtools_variant_calling(
         bam_file,
-        bai_file,
         ref_genome_fasta_file,
         out_file,
         max_depth=int(1e7),

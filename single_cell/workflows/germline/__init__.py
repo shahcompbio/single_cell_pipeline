@@ -7,7 +7,6 @@ default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 
 def create_samtools_germline_workflow(
         normal_bam_files,
-        normal_bai_files,
         ref_genome_fasta_file,
         vcf_file,
         config,
@@ -36,8 +35,7 @@ def create_samtools_germline_workflow(
         axes=('regions',),
         func="single_cell.workflows.germline.tasks.run_samtools_variant_calling",
         args=(
-            pypeliner.managed.InputFile('normal.split.bam', 'regions', fnames=normal_bam_files),
-            pypeliner.managed.InputFile('normal.split.bam.bai', 'regions', fnames=normal_bai_files),
+            pypeliner.managed.InputFile('normal.split.bam', 'regions', fnames=normal_bam_files, extensions=['.bai']),
             ref_genome_fasta_file,
             pypeliner.managed.TempOutputFile('variants.vcf.gz', 'regions'),
         ),
