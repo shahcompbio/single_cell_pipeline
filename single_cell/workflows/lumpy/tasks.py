@@ -4,7 +4,7 @@ import pypeliner
 import single_cell
 import single_cell.utils.helpers as helpers
 import generate_histogram
-
+import yaml
 
 def process_bam(
         input_bam, discordant_bam, split_bam, histogram,
@@ -92,14 +92,19 @@ def merge_bams(inputs, output, tempdir, docker_image=None):
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
 
 
+def load_metadata(infile):
+    with open(infile) as fileinput:
+        data = yaml.load(fileinput)
+        return data['mean'], data['stdev']
+
 def run_lumpy(
         tumour_disc, tumour_split, tumour_hist, tumour_mean_stdev, tumour_id,
         normal_disc, normal_split, normal_hist, normal_mean_stdev, normal_id,
         vcf, tempdir, docker_image=None
 ):
 
-    tumour_mean, tumour_stdev = tumour_mean_stdev
-    normal_mean, normal_stdev = normal_mean_stdev
+    tumour_mean, tumour_stdev = load_metadata(tumour_mean_stdev)
+    normal_mean, normal_stdev = load_metadata(normal_mean_stdev)
 
     helpers.makedirs(tempdir)
     tempdir = tempdir + '/lumpy'

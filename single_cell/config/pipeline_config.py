@@ -365,6 +365,7 @@ def get_breakpoint_params(cluster, reference):
         'docker': {
             'single_cell_pipeline': docker_containers['destruct'],
             'lumpy': docker_containers['lumpy'],
+            'samtools': docker_containers['samtools']
         },
     }
 

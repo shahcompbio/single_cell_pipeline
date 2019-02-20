@@ -244,15 +244,6 @@ def parse_args():
         subparsers.add_parser("breakpoint_calling"))
     breakpoint_calling.set_defaults(which='breakpoint_calling')
 
-    breakpoint_calling.add_argument("--matched_normal",
-                                    required=True,
-                                    help='''normal bam file''')
-    breakpoint_calling.add_argument("--normal_id",
-                                    required=True,
-                                    help='''normal id''')
-    breakpoint_calling.add_argument("--tumour_id",
-                                    required=True,
-                                    help='''id for tumour''')
     breakpoint_calling.add_argument("--destruct",
                                     action='store_true',
                                     default=False,

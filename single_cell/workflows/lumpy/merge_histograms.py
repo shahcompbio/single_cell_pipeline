@@ -1,3 +1,4 @@
+import yaml
 
 def parse_histogram(infile):
     data = []
@@ -58,8 +59,11 @@ def write_histo_file(data, outfile):
         for i,val in data:
             histo_file.write("{}\t{}\n".format(i,val))
 
+def write_metadata(mean, stdev, outfile):
+    with open(outfile, 'w') as fileoutput:
+        yaml.dump({'mean': mean, 'stdev': stdev}, fileoutput)
 
-def merge_histograms(infiles, outfile):
+def merge_histograms(infiles, outfile, metadata):
 
     merged_data = {}
     total_reads = 0
@@ -93,5 +97,6 @@ def merge_histograms(infiles, outfile):
     stdev = stdevs/total_reads
 
     write_histo_file(final_histo, outfile)
-    return mean, stdev
+
+    write_metadata(mean, stdev, metadata)
 
