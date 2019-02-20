@@ -141,10 +141,6 @@ def parse_args():
     #===========
     merge_bams = add_global_args(subparsers.add_parser("merge_bams"))
     merge_bams.set_defaults(which='merge_bams')
-    merge_bams.add_argument("--merged_bam_template",
-                            required=True,
-                            help='''template for saving the bams merged by region,
-                            use {} as place holder for genomic region''')
 
     #===========
     # split bam
@@ -170,34 +166,13 @@ def parse_args():
     variant_calling = add_global_args(subparsers.add_parser("variant_calling"))
     variant_calling.set_defaults(which='variant_calling')
 
-    variant_calling.add_argument("--tumour_template",
-                                 required=True,
-                                 action=parseRegionTemplate,
-                                 help='''template for bams merged by region,
-                                 use {} as place holder for genomic region''')
-
-    variant_calling.add_argument("--normal_template",
-                                 required=True,
-                                 action=parseRegionTemplate,
-                                 help='''template for bams merged by region,
-                                 use {} as place holder for genomic region''')
 
     #===========
     # titan, remixt
     #===========
     copy_number_calling = add_global_args(
-        subparsers.add_parser("copy_number_calling"), dont_add_input_yaml=True)
+        subparsers.add_parser("copy_number_calling"))
     copy_number_calling.set_defaults(which='copy_number_calling')
-
-    copy_number_calling.add_argument("--tumour_yaml",
-                                     required=True,
-                                     help='''template for bams merged by region,
-                                     use {} as place holder for genomic region''')
-
-    copy_number_calling.add_argument("--normal_template",
-                                     required=True,
-                                     help='''template for bams merged by region,
-                                     use {} as place holder for genomic region''')
 
     copy_number_calling.add_argument("--clone_id",
                                      required=True,
@@ -207,18 +182,8 @@ def parse_args():
     # haplotype blocks
     #===========
     infer_haps = add_global_args(
-        subparsers.add_parser("infer_haps"), dont_add_input_yaml=True)
+        subparsers.add_parser("infer_haps"))
     infer_haps.set_defaults(which='infer_haps')
-
-    mutexgroup = infer_haps.add_mutually_exclusive_group(required=True)
-
-    mutexgroup.add_argument("--input_yaml",
-                            help='''template for bams merged by region,
-                                    use {} as place holder for genomic region''')
-
-    mutexgroup.add_argument("--input_bam",
-                            help='''template for bams merged by region,
-                                    use {} as place holder for genomic region''')
 
     infer_haps.add_argument("--normal",
                             default=False,
@@ -233,10 +198,6 @@ def parse_args():
         subparsers.add_parser("germline_calling"))
     germline_calling.set_defaults(which='germline_calling')
 
-    germline_calling.add_argument("--input_template",
-                                  required=True,
-                                  help='''template for bams merged by region,
-                                  use {} as place holder for genomic region''')
     #===========
     # destruct
     #===========

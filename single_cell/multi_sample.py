@@ -15,20 +15,20 @@ def get_bams(inputs_file):
     data = helpers.load_yaml(inputs_file)
 
     tumour_bams = {}
-    for sample_id in data['tumour'].keys():
-        for cell in data['tumour'][sample_id].keys():
-            if 'bam' not in data['tumour'][sample_id][cell]:
+    for sample_id in data['tumour_cells'].keys():
+        for cell in data['tumour_cells'][sample_id].keys():
+            if 'bam' not in data['tumour_cells'][sample_id][cell]:
                 raise Exception('couldnt extract bam file paths from yaml input for cell: {}'.format(cell))
-            tumour_bams[(sample_id, cell)] = data['tumour'][sample_id][cell]['bam']
+            tumour_bams[(sample_id, cell)] = data['tumour_cells'][sample_id][cell]['bam']
 
-    if 'bam' in data['normal']:
-        normal_bams = data['normal']['bam']
+    if 'normal_wgs' in data:
+        normal_bams = data['normal_wgs'].values()[0]['bam']
     else:
         normal_bams = {}
-        for cell in data['normal'].keys():
-            if 'bam' not in data['normal'][cell]:
+        for cell in data['normal_cells'].keys():
+            if 'bam' not in data['normal_cells'][cell]:
                 raise Exception('couldnt extract bam file paths from yaml input for cell: {}'.format(cell))
-            normal_bams[cell] = data['normal'][cell]['bam']
+            normal_bams[cell] = data['normal_cells'][cell]['bam']
 
     return tumour_bams, normal_bams
 
@@ -221,27 +221,22 @@ def create_multi_sample_workflow(
     )
 
     if isinstance(normal_wgs_bam, dict):
-        workflow.subworkflow(
-            name='infer_haps_from_cells_normal',
-            func=infer_haps.infer_haps_from_cells_normal,
-            args=(
-                mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai']),
-                mgd.OutputFile(normal_seqdata_file),
-                mgd.OutputFile(haplotypes_file),
-                config['infer_haps'],
-            ),
-        )
+        haps_input = mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai']),
     else:
-        workflow.subworkflow(
-            name='infer_haps_from_bulk_normal',
-            func=infer_haps.infer_haps_from_bulk_normal,
-            args=(
-                mgd.InputFile(normal_wgs_bam, extensions=['.bai']),
-                mgd.OutputFile(normal_seqdata_file),
-                mgd.OutputFile(haplotypes_file),
-                config['infer_haps'],
-            ),
-        )
+        haps_input = mgd.InputFile(normal_wgs_bam, extensions=['.bai'])
+
+    workflow.subworkflow(
+        name='infer_haps_from_cells_normal',
+        func=infer_haps.infer_haps,
+        args=(
+            haps_input,
+            mgd.OutputFile(normal_seqdata_file),
+            mgd.OutputFile(haplotypes_file),
+            mgd.TempOutputFile("allele_counts.csv"),
+            config['infer_haps'],
+        ),
+        kwargs={'normal': True}
+    )
 
     workflow.subworkflow(
         name='extract_allele_readcounts',
@@ -257,7 +252,6 @@ def create_multi_sample_workflow(
     )
 
     if run_destruct:
-
         if isinstance(normal_wgs_bam, dict):
             workflow.transform(
                 name='merge_normal_cells_destruct',

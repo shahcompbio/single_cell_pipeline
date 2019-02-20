@@ -12,7 +12,13 @@ def breakpoint_calling_workflow(workflow, args):
 
     baseimage = config['docker']['single_cell_pipeline']
 
-    tumour_id, tumour_bams, normal_id, normal_bams = helpers.load_pseudowgs_input(args['input_yaml'])
+    data = helpers.load_pseudowgs_input(args['input_yaml'])
+    tumour_cells = data['tumour_cells']
+    tumour_cells_id = data['tumour_cells_id']
+
+
+    normal_bams = data['normal_wgs'] if data['normal_wgs'] else data['normal_cells']
+    normal_id = data['normal_wgs_id'] if data['normal_wgs_id'] else data['normal_cells_id']
 
     varcalls_dir = os.path.join(
         args['out_dir'], 'results', 'breakpoint_calling')
@@ -24,7 +30,7 @@ def breakpoint_calling_workflow(workflow, args):
 
     workflow.setobj(
         obj=mgd.OutputChunks('tumour_cell_id'),
-        value=tumour_bams.keys(),
+        value=tumour_cells.keys(),
     )
 
     if isinstance(normal_bams, dict):
@@ -34,6 +40,20 @@ def breakpoint_calling_workflow(workflow, args):
         )
         workflow.set_filenames('normal_cells.bam', 'normal_cell_id', fnames=normal_bams)
         normal_bam = mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai'])
+    elif 'region' in normal_bams:
+        workflow.transform(
+            name="get_regions",
+            ctx={'mem_retry_increment': 2, 'ncpus': 1, 'mem': config["memory"]['low'], 'docker_image': baseimage},
+            func="single_cell.utils.pysamutils.get_regions_from_reference",
+            ret=pypeliner.managed.OutputChunks('region'),
+            args=(
+                config["ref_genome"],
+                config["split_size"],
+                config["chromosomes"],
+            )
+        )
+        workflow.set_filenames('normal_split.bam', 'region', template=normal_bams)
+        normal_bam = mgd.InputFile('normal_split.bam', 'region', extensions=['.bai'])
     else:
         normal_bam = mgd.InputFile(normal_bams, extensions=['.bai'])
 
@@ -58,7 +78,7 @@ def breakpoint_calling_workflow(workflow, args):
             func="biowrappers.components.breakpoint_calling.destruct.destruct_pipeline",
             args=(
                 final_wgs_bam,
-                mgd.InputFile('tumour.bam', 'tumour_cell_id', fnames=tumour_bams),
+                mgd.InputFile('tumour.bam', 'tumour_cell_id', fnames=tumour_cells),
                 config.get('destruct', {}),
                 ref_data_directory,
                 mgd.OutputFile(breakpoints_filename),
@@ -78,11 +98,11 @@ def breakpoint_calling_workflow(workflow, args):
             func="single_cell.workflows.lumpy.create_lumpy_workflow",
             args=(
                 config,
-                mgd.InputFile('tumour.bam', 'tumour_cell_id', fnames=tumour_bams, extensions=['.bai']),
+                mgd.InputFile('tumour.bam', 'tumour_cell_id', fnames=tumour_cells, extensions=['.bai']),
                 normal_bam,
                 mgd.OutputFile(breakpoints_bed),
                 mgd.OutputFile(breakpoints_h5),
-                tumour_id,
+                tumour_cells_id,
                 normal_id,
             ),
         )
@@ -93,7 +113,7 @@ def breakpoint_calling_workflow(workflow, args):
         'destruct_data': helpers.format_file_yaml(breakpoints_filename),
     }
 
-    tumour_dataset = {k: helpers.format_file_yaml(v) for k,v in tumour_bams.iteritems()}
+    tumour_dataset = {k: helpers.format_file_yaml(v) for k,v in tumour_cells.iteritems()}
     if isinstance(normal_bams, dict):
         normal_dataset = {k: helpers.format_file_yaml(v) for k, v in normal_bams.iteritems()}
     else:
