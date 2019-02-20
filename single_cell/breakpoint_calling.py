@@ -4,6 +4,7 @@ import pypeliner.managed as mgd
 from single_cell.utils import helpers
 import single_cell
 
+
 def breakpoint_calling_workflow(workflow, args):
 
     config = helpers.load_config(args)
@@ -11,8 +12,7 @@ def breakpoint_calling_workflow(workflow, args):
 
     baseimage = config['docker']['single_cell_pipeline']
 
-    normal_bam_file = args['matched_normal']
-    bam_files, bai_files = helpers.get_bams(args['input_yaml'])
+    tumour_id, tumour_bams, normal_id, normal_bams = helpers.load_pseudowgs_input(args['input_yaml'])
 
     varcalls_dir = os.path.join(
         args['out_dir'], 'results', 'breakpoint_calling')
@@ -23,18 +23,42 @@ def breakpoint_calling_workflow(workflow, args):
     pypeliner.workflow.Workflow(ctx={'docker_image': baseimage})
 
     workflow.setobj(
-        obj=mgd.OutputChunks('cell_id'),
-        value=bam_files.keys(),
+        obj=mgd.OutputChunks('tumour_cell_id'),
+        value=tumour_bams.keys(),
     )
 
+    if isinstance(normal_bams, dict):
+        workflow.setobj(
+            obj=mgd.OutputChunks('normal_cell_id'),
+            value=normal_bams.keys(),
+        )
+        workflow.set_filenames('normal_cells.bam', 'normal_cell_id', fnames=normal_bams)
+        normal_bam = mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai'])
+    else:
+        normal_bam = mgd.InputFile(normal_bams, extensions=['.bai'])
+
     if args['destruct']:
+        if isinstance(normal_bams, dict):
+            workflow.transform(
+                name='merge_normal_cells_destruct',
+                func='single_cell.utils.bamutils.bam_merge',
+                args=(
+                    normal_bam,
+                    mgd.TempOutputFile("merged_tumour.bam"),
+                ),
+                kwargs={'docker_image': config['docker']['samtools']}
+            )
+            final_wgs_bam = mgd.TempInputFile("merged_tumour.bam")
+        else:
+            final_wgs_bam = mgd.InputFile(normal_bams)
+
         workflow.subworkflow(
             name='destruct',
             ctx={'docker_image': baseimage},
             func="biowrappers.components.breakpoint_calling.destruct.destruct_pipeline",
             args=(
-                mgd.InputFile(normal_bam_file),
-                mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files),
+                final_wgs_bam,
+                mgd.InputFile('tumour.bam', 'tumour_cell_id', fnames=tumour_bams),
                 config.get('destruct', {}),
                 ref_data_directory,
                 mgd.OutputFile(breakpoints_filename),
@@ -54,12 +78,12 @@ def breakpoint_calling_workflow(workflow, args):
             func="single_cell.workflows.lumpy.create_lumpy_workflow",
             args=(
                 config,
-                mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files, extensions=['.bai']),
-                mgd.InputFile(normal_bam_file, extensions=['.bai']),
+                mgd.InputFile('tumour.bam', 'tumour_cell_id', fnames=tumour_bams, extensions=['.bai']),
+                normal_bam,
                 mgd.OutputFile(breakpoints_bed),
                 mgd.OutputFile(breakpoints_h5),
-                args['tumour_id'],
-                args['normal_id'],
+                tumour_id,
+                normal_id,
             ),
         )
 
@@ -69,9 +93,13 @@ def breakpoint_calling_workflow(workflow, args):
         'destruct_data': helpers.format_file_yaml(breakpoints_filename),
     }
 
-    input_datasets = {k: helpers.format_file_yaml(v) for k,v in bam_files.iteritems()}
-    input_datasets = {'normal': normal_bam_file,
-                      'tumour': input_datasets}
+    tumour_dataset = {k: helpers.format_file_yaml(v) for k,v in tumour_bams.iteritems()}
+    if isinstance(normal_bams, dict):
+        normal_dataset = {k: helpers.format_file_yaml(v) for k, v in normal_bams.iteritems()}
+    else:
+        normal_dataset = helpers.format_file_yaml(normal_bams)
+    input_datasets = {'normal': normal_dataset,
+                      'tumour': tumour_dataset}
 
     metadata = {
         'breakpoint_calling': {

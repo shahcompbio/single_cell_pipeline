@@ -18,6 +18,31 @@ import multiprocessing
 from multiprocessing.pool import ThreadPool
 import pypeliner
 
+
+def load_pseudowgs_input(inputs_file):
+    data = load_yaml(inputs_file)
+
+    assert 'normal' in data
+    assert 'tumour' in data
+
+    assert len(data['normal']) == 1
+    assert len(data['tumour']) == 1
+
+    normal_id = data['normal'].keys()[0]
+    tumour_id = data['tumour'].keys()[0]
+
+    normal_bams = data['normal'][normal_id]
+    if 'bam' in normal_bams:
+        normal_bams = normal_bams['bam']
+    else:
+        normal_bams = {cell_id: bamdata['bam'] for cell_id, bamdata in normal_bams.iteritems()}
+
+    tumour_bams = data['tumour'][tumour_id]
+    tumour_bams = {cell_id: bamdata['bam'] for cell_id, bamdata in tumour_bams.iteritems()}
+
+    return tumour_id, tumour_bams, normal_id, normal_bams
+
+
 def get_coltype_reference():
     coltypes = {
         'estimated_library_size': 'int', 'total_mapped_reads': 'int',
