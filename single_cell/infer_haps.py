@@ -9,32 +9,30 @@ import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import helpers
 from workflows import extract_seqdata
-import single_cell
 
-def infer_haps_workflow(workflow, args):
 
-    config = helpers.load_config(args)
-    config = config['infer_haps']
+def infer_haps(
+    bam_file,
+    seqdata_file,
+    haplotypes_filename,
+    allele_counts_filename,
+    config,
+    normal=False,
+):
 
-    baseimage = config['docker']['single_cell_pipeline']
+    baseimage = {'docker_image': config['docker']['single_cell_pipeline']}
 
-    haps_dir = os.path.join(args["out_dir"], "infer_haps")
+    remixt_config = config.get('extract_seqdata', {})
+    remixt_ref_data_dir = config['ref_data_dir']
 
-    haplotypes_filename = os.path.join(haps_dir, "results", "haplotypes.tsv")
-    allele_counts_filename = os.path.join(haps_dir, "results", "allele_counts.tsv")
+    chromosomes = config['chromosomes']
 
-    workflow.setobj(
-        obj=mgd.OutputChunks('chromosome'),
-        value=config['chromosomes']
-    )
+    workflow = pypeliner.workflow.Workflow(ctx=baseimage)
 
-    if args['input_yaml']:
-        bam_files, bai_files = helpers.get_bams(args['input_yaml'])
-        cellids = helpers.get_samples(args['input_yaml'])
-
+    if isinstance(bam_file, dict):
         workflow.setobj(
             obj=mgd.OutputChunks('cell_id'),
-            value=cellids,
+            value=bam_file.keys(),
         )
 
         workflow.subworkflow(
@@ -45,7 +43,7 @@ def infer_haps_workflow(workflow, args):
                 mgd.InputFile(
                     'bam_markdups',
                     'cell_id',
-                    fnames=bam_files,
+                    fnames=bam_file,
                     extensions=['.bai']
                 ),
                 mgd.TempOutputFile("tumour.h5", "cell_id"),
@@ -60,80 +58,74 @@ def infer_haps_workflow(workflow, args):
             ctx={'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
             func="single_cell.workflows.titan.tasks.merge_overlapping_seqdata",
             args=(
-                mgd.TempOutputFile("seqdata_normal_all_cells_merged.h5"),
+                mgd.OutputFile(seqdata_file),
                 mgd.TempInputFile("tumour.h5", "cell_id"),
                 config["chromosomes"]
             ),
         )
     else:
         workflow.subworkflow(
-            name="extract_seqdata",
-            func=extract_seqdata.create_extract_seqdata_workflow,
+            name='extract_seqdata',
+            func='remixt.workflow.create_extract_seqdata_workflow',
             args=(
-                mgd.InputFile(args['input_bam']),
-                mgd.TempOutputFile("seqdata_normal_all_cells_merged.h5"),
-                config.get('extract_seqdata', {}),
-                config['ref_data_dir'],
-                config,
+                mgd.InputFile(bam_file, extensions=['.bai']),
+                mgd.OutputFile(seqdata_file),
+                remixt_config,
+                remixt_ref_data_dir,
             ),
-            kwargs={'multiprocess': True}
         )
 
-    if args["normal"]:
-        workflow.transform(
-            name='infer_snp_genotype',
-            axes=('chromosome',),
-            ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
-            func='remixt.analysis.haplotype.infer_snp_genotype_from_normal',
-            args=(
-                mgd.TempOutputFile('snp_genotype.tsv', 'chromosome'),
-                mgd.TempInputFile("seqdata_normal_all_cells_merged.h5"),
-                mgd.InputInstance('chromosome'),
-                config,
-            ),
-        )
+    workflow.setobj(
+        obj=mgd.OutputChunks('chromosome'),
+        value=chromosomes,
+    )
+
+    if normal:
+        func = 'remixt.analysis.haplotype.infer_snp_genotype_from_normal'
     else:
-        workflow.transform(
-            name='infer_snp_genotype',
-            axes=('chromosome',),
-            ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
-            func='remixt.analysis.haplotype.infer_snp_genotype_from_tumour',
-            args=(
-                mgd.TempOutputFile('snp_genotype.tsv', 'chromosome'),
-                {'sample': mgd.TempInputFile("seqdata_normal_all_cells_merged.h5")},
-                mgd.InputInstance('chromosome'),
-                config,
-            ),
-        )
+        func = 'remixt.analysis.haplotype.infer_snp_genotype_from_tumour'
+
+    workflow.transform(
+        name='infer_snp_genotype',
+        axes=('chromosome',),
+        ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
+        func=func,
+        args=(
+            mgd.TempOutputFile('snp_genotype.tsv', 'chromosome'),
+            mgd.InputFile(seqdata_file),
+            mgd.InputInstance('chromosome'),
+            config,
+        ),
+    )
 
     workflow.transform(
         name='infer_haps',
         axes=('chromosome',),
-        ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
+        ctx={'mem': 16},
         func='remixt.analysis.haplotype.infer_haps',
         args=(
-            mgd.TempOutputFile('haps.tsv', 'chromosome'),
+            mgd.TempOutputFile('haplotypes.tsv', 'chromosome'),
             mgd.TempInputFile('snp_genotype.tsv', 'chromosome'),
             mgd.InputInstance('chromosome'),
             mgd.TempSpace('haplotyping', 'chromosome'),
-            config,
-            config['ref_data_dir'],
-        )
+            remixt_config,
+            remixt_ref_data_dir,
+        ),
     )
 
     workflow.transform(
         name='merge_haps',
-        ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
+        ctx={'mem': 16},
         func='remixt.utils.merge_tables',
         args=(
             mgd.OutputFile(haplotypes_filename),
-            mgd.TempInputFile('haps.tsv', 'chromosome'),
+            mgd.TempInputFile('haplotypes.tsv', 'chromosome'),
         )
     )
 
     workflow.transform(
         name='create_segments',
-        ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
+        ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1},
         func='remixt.analysis.segment.create_segments',
         args=(
             mgd.TempOutputFile('segments.tsv'),
@@ -144,244 +136,42 @@ def infer_haps_workflow(workflow, args):
 
     workflow.transform(
         name='haplotype_allele_readcount',
-        ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
+        ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1},
         func='remixt.analysis.readcount.haplotype_allele_readcount',
         args=(
             mgd.OutputFile(allele_counts_filename),
             mgd.TempInputFile('segments.tsv'),
-            mgd.TempInputFile('seqdata_normal_all_cells_merged.h5'),
+            mgd.InputFile(seqdata_file),
             mgd.InputFile(haplotypes_filename),
             config,
         ),
     )
 
-    info_file = os.path.join(args["out_dir"],'results','infer_haps', "info.yaml")
-
-    results = {
-        'infer_haps_allele_counts': helpers.format_file_yaml(allele_counts_filename),
-        'infer_haps_data': helpers.format_file_yaml(haplotypes_filename),
-    }
-
-    if args['input_yaml']:
-        input_datasets = {k: helpers.format_file_yaml(v) for k,v in bam_files.iteritems()}
-    else:
-        input_datasets = helpers.format_file_yaml(args['input_bam'])
-
-    metadata = {
-        'infer_haps': {
-            'version': single_cell.__version__,
-            'results': results,
-            'containers': config['docker'],
-            'input_datasets': input_datasets,
-            'output_datasets': None
-        }
-    }
-
-    workflow.transform(
-        name='generate_meta_yaml',
-        ctx={'mem': 4, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.utils.helpers.write_to_yaml",
-        args=(
-            mgd.OutputFile(info_file),
-            metadata
-        )
-    )
-
     return workflow
-
-
-def infer_haps_from_bulk_normal(
-    normal_bam_file,
-    normal_seqdata_file,
-    haplotypes_filename,
-    config,
-):
-    baseimage = {'docker_image': config['docker']['single_cell_pipeline']}
-
-    remixt_config = config.get('extract_seqdata', {})
-    remixt_ref_data_dir = config['ref_data_dir']
-
-    chromosomes = config['chromosomes'] #remixt.config.get_chromosomes(config, remixt_ref_data_dir)
-
-    workflow = pypeliner.workflow.Workflow(ctx=baseimage)
-
-    workflow.subworkflow(
-        name='extract_seqdata',
-        func='remixt.workflow.create_extract_seqdata_workflow',
-        args=(
-            mgd.InputFile(normal_bam_file, extensions=['.bai']),
-            mgd.OutputFile(normal_seqdata_file),
-            remixt_config,
-            remixt_ref_data_dir,
-        ),
-    )
-
-    workflow.setobj(
-        obj=mgd.OutputChunks('chromosome'),
-        value=chromosomes,
-    )
-
-    workflow.transform(
-        name='infer_snp_genotype',
-        axes=('chromosome',),
-        ctx={'mem': 16},
-        func='remixt.analysis.haplotype.infer_snp_genotype_from_normal',
-        args=(
-            mgd.TempOutputFile('snp_genotype.tsv', 'chromosome'),
-            mgd.InputFile(normal_seqdata_file),
-            mgd.InputInstance('chromosome'),
-            config,
-        ),
-    )
-
-    workflow.transform(
-        name='infer_haps',
-        axes=('chromosome',),
-        ctx={'mem': 16},
-        func='remixt.analysis.haplotype.infer_haps',
-        args=(
-            mgd.TempOutputFile('haplotypes.tsv', 'chromosome'),
-            mgd.TempInputFile('snp_genotype.tsv', 'chromosome'),
-            mgd.InputInstance('chromosome'),
-            mgd.TempSpace('haplotyping', 'chromosome'),
-            remixt_config,
-            remixt_ref_data_dir,
-        ),
-    )
-
-    workflow.transform(
-        name='merge_haps',
-        ctx={'mem': 16},
-        func='remixt.utils.merge_tables',
-        args=(
-            mgd.OutputFile(haplotypes_filename),
-            mgd.TempInputFile('haplotypes.tsv', 'chromosome'),
-        )
-    )
-
-    return workflow
-
-
-def infer_haps_from_cells_normal(
-    normal_bam_files,
-    normal_seqdata_file,
-    haplotypes_filename,
-    config,
-):
-    baseimage = {'docker_image': config['docker']['single_cell_pipeline']}
-
-    remixt_config = config.get('extract_seqdata', {})
-    remixt_ref_data_dir = config['ref_data_dir']
-
-    chromosomes = config['chromosomes'] #remixt.config.get_chromosomes(config, remixt_ref_data_dir)
-
-    workflow = pypeliner.workflow.Workflow(ctx=baseimage)
-
-    cellids = normal_bam_files.keys()
-
-    workflow.setobj(
-        obj=mgd.OutputChunks('cell_id'),
-        value=cellids,
-    )
-
-    workflow.subworkflow(
-        name="extract_seqdata",
-        axes=('cell_id',),
-        func=extract_seqdata.create_extract_seqdata_workflow,
-        args=(
-            mgd.InputFile(
-                'bam_markdups',
-                'cell_id',
-                fnames=normal_bam_files,
-                extensions=['.bai']
-            ),
-            mgd.TempOutputFile("tumour.h5", "cell_id"),
-            config.get('extract_seqdata', {}),
-            config['ref_data_dir'],
-            config,
-        )
-    )
-
-    workflow.transform(
-        name='merge_all_seqdata',
-        ctx={'mem_retry_increment': 2, 'ncpus': 1},
-        func="single_cell.workflows.titan.tasks.merge_overlapping_seqdata",
-        args=(
-            mgd.OutputFile(normal_seqdata_file),
-            mgd.TempInputFile("tumour.h5", "cell_id"),
-            config["chromosomes"]
-        ),
-    )
-
-    workflow.setobj(
-        obj=mgd.OutputChunks('chromosome'),
-        value=chromosomes,
-    )
-
-    workflow.transform(
-        name='infer_snp_genotype',
-        axes=('chromosome',),
-        ctx={'mem': 16},
-        func='remixt.analysis.haplotype.infer_snp_genotype_from_normal',
-        args=(
-            mgd.TempOutputFile('snp_genotype.tsv', 'chromosome'),
-            mgd.InputFile(normal_seqdata_file),
-            mgd.InputInstance('chromosome'),
-            config,
-        ),
-    )
-
-    workflow.transform(
-        name='infer_haps',
-        axes=('chromosome',),
-        ctx={'mem': 16},
-        func='remixt.analysis.haplotype.infer_haps',
-        args=(
-            mgd.TempOutputFile('haplotypes.tsv', 'chromosome'),
-            mgd.TempInputFile('snp_genotype.tsv', 'chromosome'),
-            mgd.InputInstance('chromosome'),
-            mgd.TempSpace('haplotyping', 'chromosome'),
-            remixt_config,
-            remixt_ref_data_dir,
-        ),
-    )
-
-    workflow.transform(
-        name='merge_haps',
-        ctx={'mem': 16},
-        func='remixt.utils.merge_tables',
-        args=(
-            mgd.OutputFile(haplotypes_filename),
-            mgd.TempInputFile('haplotypes.tsv', 'chromosome'),
-        )
-    )
-
-    return workflow
-
 
 
 def extract_allele_readcounts(
     haplotypes_filename,
-    tumour_cell_bams,
-    tumour_cell_seqdata,
+    cell_bams,
+    cell_seqdata,
     allele_counts_filename,
     config,
 ):
     baseimage = {'docker_image': config['docker']['single_cell_pipeline']}
 
-    tumour_cell_seqdata = {cell_id: tumour_cell_seqdata[cell_id] for cell_id in tumour_cell_bams}
+    cell_seqdata = {cell_id: cell_seqdata[cell_id] for cell_id in cell_bams}
 
     remixt_config = config.get('extract_seqdata', {})
     remixt_ref_data_dir = config['ref_data_dir']
 
     workflow = pypeliner.workflow.Workflow(ctx=baseimage)
 
-    workflow.set_filenames('cell.bam', 'cell_id', fnames=tumour_cell_bams)
-    workflow.set_filenames('seqdata.h5', 'cell_id', fnames=tumour_cell_seqdata)
+    workflow.set_filenames('cell.bam', 'cell_id', fnames=cell_bams)
+    workflow.set_filenames('seqdata.h5', 'cell_id', fnames=cell_seqdata)
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
-        value=tumour_cell_bams.keys(),
+        value=cell_bams.keys(),
     )
 
     workflow.subworkflow(
@@ -437,3 +227,52 @@ def extract_allele_readcounts(
 
     return workflow
 
+
+
+def infer_haps_workflow(workflow, args):
+
+    config = helpers.load_config(args)
+    config = config['infer_haps']
+    baseimage = config['docker']['single_cell_pipeline']
+
+    haps_dir = os.path.join(args["out_dir"], "infer_haps")
+    seqdata_merged = os.path.join(haps_dir, "results", "seqdata.h5")
+    haplotypes_filename = os.path.join(haps_dir, "results", "haplotypes.tsv")
+    allele_counts_filename = os.path.join(haps_dir, "results", "allele_counts.tsv")
+
+    data = helpers.load_pseudowgs_input(args['input_yaml'])
+    tumour_wgs = data['tumour_wgs']
+    normal_wgs = data['normal_wgs']
+    tumour_cells = data['tumour_cells']
+    normal_cells = data['normal_cells']
+
+    if args['normal']:
+        bam_file = normal_cells if normal_cells else normal_wgs
+    else:
+        bam_file = tumour_cells if tumour_cells else tumour_wgs
+
+    if isinstance(bam_file, dict):
+        workflow.setobj(
+            obj=mgd.OutputChunks('cell_id'),
+            value=bam_file.keys(),
+        )
+        bam_file = mgd.InputFile('tumour.bam','cell_id',fnames=bam_file, extensions=['.bai'])
+    else:
+        bam_file = mgd.InputFile(bam_file, extensions=['.bai'])
+
+
+    workflow.subworkflow(
+        name='infer_haps',
+        func=infer_haps,
+        ctx={'docker_image': baseimage},
+        args=(
+            bam_file,
+            mgd.OutputFile(seqdata_merged),
+            mgd.OutputFile(haplotypes_filename),
+            mgd.OutputFile(allele_counts_filename),
+            config,
+        ),
+        kwargs={'normal': args['normal']},
+    )
+
+    return workflow
