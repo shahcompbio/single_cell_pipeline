@@ -46,6 +46,8 @@ def prune_histogram(histogram):
     # towards the tail end, most cells will be 0
     # dividing by total reads will make most of these almost 0
     # remove these
+    if not histogram:
+        return histogram
     for idx in range(len(histogram) - 1, -1, -1):
         if float(histogram[idx][1]) >= 0.0001:
             break

@@ -102,9 +102,8 @@ def breakpoint_calling_workflow(workflow, args):
                 normal_bam,
                 mgd.OutputFile(breakpoints_bed),
                 mgd.OutputFile(breakpoints_h5),
-                tumour_cells_id,
-                normal_id,
             ),
+            kwargs={'tumour_id': tumour_cells_id,'normal_id': normal_id}
         )
 
     info_file = os.path.join(args["out_dir"],'results','breakpoint_calling', "info.yaml")
