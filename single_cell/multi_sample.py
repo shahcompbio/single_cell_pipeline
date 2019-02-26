@@ -77,6 +77,8 @@ def create_multi_sample_workflow(
     haplotypes_file = os.path.join(results_dir, 'haplotypes.tsv')
     allele_counts_template = os.path.join(results_dir, '{sample_id}_allele_counts.csv')
     breakpoints_template = os.path.join(results_dir, '{sample_id}_destruct.h5')
+    lumpy_breakpoints_bed = os.path.join(results_dir, '{sample_id}_lumpy_breakpoints.bed')
+    lumpy_breakpoints_h5 = os.path.join(results_dir, '{sample_id}_lumpy_breakpoints.h5')
 
     snv_calling_info_template = os.path.join(results_dir, '{sample_id}_snv_calling_info.yaml')
     snv_counting_info_template = os.path.join(results_dir, '{sample_id}_snv_counting_info.yaml')
@@ -98,6 +100,8 @@ def create_multi_sample_workflow(
     workflow.set_filenames('tumour_cell_seqdata.h5', 'sample_id', 'cell_id', template=tumour_cell_seqdata_template)
     workflow.set_filenames('allele_counts.csv', 'sample_id', template=allele_counts_template)
     workflow.set_filenames('breakpoints.h5', 'sample_id', template=breakpoints_template)
+    workflow.set_filenames('lumpy_breakpoints.h5', 'sample_id', template=lumpy_breakpoints_h5)
+    workflow.set_filenames('lumpy_breakpoints.bed', 'sample_id', template=lumpy_breakpoints_bed)
 
     workflow.set_filenames('snv_calling_info.yaml', 'sample_id', template=snv_calling_info_template)
     workflow.set_filenames('snv_counting_info.yaml', 'sample_id', template=snv_counting_info_template)
@@ -282,6 +286,26 @@ def create_multi_sample_workflow(
                 mgd.OutputFile('breakpoints.h5', 'sample_id'),
                 mgd.Template(destruct_raw_data_template, 'sample_id'),
             ),
+        )
+
+        if isinstance(normal_wgs_bam, dict):
+            normal_bam = mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai'])
+        else:
+            normal_bam = mgd.InputFile(normal_wgs_bam, extensions=['.bai'])
+
+        workflow.subworkflow(
+            name='lumpy',
+            ctx={'docker_image': baseimage},
+            axes=('sample_id',),
+            func="single_cell.workflows.lumpy.create_lumpy_workflow",
+            args=(
+                config['breakpoint_calling'],
+                mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
+                normal_bam,
+                mgd.OutputFile('lumpy_breakpoints.bed', 'sample_id'),
+                mgd.OutputFile('lumpy_breakpoints.h5', 'sample_id'),
+            ),
+            kwargs={'sample_id': mgd.InputInstance('sample_id')}
         )
 
     return workflow

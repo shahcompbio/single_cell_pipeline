@@ -13,7 +13,7 @@ def lumpy_preprocess_cells(
     lumpydocker = {'docker_image': config['docker']['lumpy']}
 
     histogram_settings = dict(
-        N=10000, skip=100000, min_elements=1000, mads=10, X=4, read_length=101
+        N=10000, skip=0, min_elements=100, mads=10, X=4, read_length=101
     )
     histogram_settings.update(lumpydocker)
 
@@ -77,15 +77,25 @@ def lumpy_preprocess_cells(
     return workflow
 
 
-def create_lumpy_workflow(config, bam_files, normal_bam, lumpy_bed, lumpy_h5, tumour_id, normal_id):
+def create_lumpy_workflow(
+        config, bam_files, normal_bam, lumpy_bed, lumpy_h5,
+        tumour_id=None, normal_id=None, sample_id=None
+):
+
+    if sample_id and not tumour_id:
+        tumour_id = sample_id
+    if sample_id and not normal_id:
+        normal_id = sample_id+'N'
+
     ctx = {'mem_retry_increment': 2, 'ncpus': 1,
            'docker_image': config['docker']['single_cell_pipeline']
            }
 
     lumpydocker = {'docker_image': config['docker']['lumpy']}
 
+
     histogram_settings = dict(
-        N=10000, skip=100000, min_elements=1000, mads=10, X=4, read_length=101
+        N=10000, skip=0, min_elements=100, mads=10, X=4, read_length=101
     )
     histogram_settings.update(lumpydocker)
 
