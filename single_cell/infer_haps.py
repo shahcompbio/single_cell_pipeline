@@ -304,7 +304,7 @@ def infer_haps_from_cells_normal(
 
     workflow.transform(
         name='merge_all_seqdata',
-        ctx={'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
+        ctx={'mem_retry_increment': 2, 'ncpus': 1},
         func="single_cell.workflows.titan.tasks.merge_overlapping_seqdata",
         args=(
             mgd.OutputFile(normal_seqdata_file),
