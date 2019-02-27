@@ -17,7 +17,7 @@ def create_extract_seqdata_workflow(
      multiprocess=False,
 ):
 
-    ctx = {'mem_retry_increment': 2, 'ncpus': 1,
+    ctx = {'mem_retry_increment': 2,
            'docker_image': config['docker']['single_cell_pipeline'],
            'mem': config["memory"]['high']}
 
@@ -25,7 +25,7 @@ def create_extract_seqdata_workflow(
 
     workflow.transform(
         name='create_chromosome_seqdata',
-        ctx=ctx,
+        ctx=dict(ncpus=config['max_cores'], **ctx),
         func="single_cell.workflows.extract_seqdata.tasks.create_chromosome_seqdata",
         args=(
             mgd.TempOutputFile('seqdata', 'chromosome'),

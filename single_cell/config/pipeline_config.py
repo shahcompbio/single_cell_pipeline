@@ -30,7 +30,7 @@ def get_config_params(override=None):
         "cluster": "azure", "aligner": "bwa-mem",
         "reference": "grch37", "smoothing_function": "modal",
         "bin_size": 500000, "copynumber_bin_size": 1000,
-        'memory': {'high': 18, 'med': 6, 'low': 2}
+        'memory': {'high': 16, 'med': 6, 'low': 2}
     }
 
     input_params = override_config(input_params, override)
@@ -151,7 +151,7 @@ def get_merge_bams_params(cluster, reference):
 
     docker_containers = config_reference.containers()['docker']
     params = {
-        'memory': {'med': 6, 'high': 18},
+        'memory': {'med': 6, 'high': 16},
         'max_cores': 8,
         'docker': {
             'single_cell_pipeline': docker_containers['single_cell_pipeline'],
@@ -175,7 +175,7 @@ def get_split_bam_params(cluster, reference):
     docker_containers = config_reference.containers()['docker']
 
     params = {
-        'memory': {'low':4, 'med': 6, 'high': 18},
+        'memory': {'low':4, 'med': 6, 'high': 16},
         'max_cores': 8,
         'docker': {
             'single_cell_pipeline': docker_containers['single_cell_pipeline'],
@@ -200,7 +200,7 @@ def get_germline_calling_params(cluster, reference):
     docker_containers = config_reference.containers()['docker']
 
     params = {
-        'memory': {'low': 4, 'med': 6, 'high': 18},
+        'memory': {'low': 4, 'med': 6, 'high': 16},
         'max_cores': 8,
         'docker': {
             'single_cell_pipeline': docker_containers['single_cell_pipeline'],
@@ -240,7 +240,7 @@ def get_variant_calling_params(cluster, reference):
     }
 
     params = {
-        'memory': {'low': 4, 'med': 6, 'high': 18},
+        'memory': {'low': 4, 'med': 6, 'high': 16},
         'max_cores': 8,
         'docker': {
             'single_cell_pipeline': docker_containers['single_cell_pipeline'],
@@ -299,7 +299,7 @@ def get_copy_number_calling_params(cluster, reference, binsize):
     docker_containers = config_reference.containers()['docker']
 
     params = {
-        'memory': {'low': 4, 'med': 6, 'high': 18},
+        'memory': {'low': 4, 'med': 6, 'high': 16},
         'ref_genome': referencedata['ref_genome'],
         'chromosomes': referencedata['chromosomes'],
         'split_size': 10000000,
@@ -334,7 +334,7 @@ def get_infer_haps_params(cluster, reference):
     docker_containers = config_reference.containers()['docker']
 
     params = {
-        'memory': {'low': 4, 'med': 6, 'high': 18},
+        'memory': {'low': 4, 'med': 6, 'high': 16},
         'max_cores': None,
         'chromosomes': referencedata['chromosomes'],
         'extract_seqdata': {},
@@ -356,7 +356,7 @@ def get_breakpoint_params(cluster, reference):
     docker_containers = config_reference.containers()['docker']
 
     params = {
-        'memory': {'low': 4, 'med': 6, 'high': 18},
+        'memory': {'low': 4, 'med': 6, 'high': 16},
         'ref_data_directory': '/refdata/',
         'destruct': {
             'genome_fasta': referencedata['ref_genome'],
@@ -375,7 +375,7 @@ def get_multi_sample_params():
     docker_containers = config_reference.containers()['docker']
 
     params = {
-        'memory': {'low': 4, 'med': 6, 'high': 18},
+        'memory': {'low': 4, 'med': 6, 'high': 16},
         'docker': {
             'single_cell_pipeline': docker_containers['single_cell_pipeline'],
         },
