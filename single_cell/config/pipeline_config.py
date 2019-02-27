@@ -151,7 +151,7 @@ def get_merge_bams_params(cluster, reference):
 
     docker_containers = config_reference.containers()['docker']
     params = {
-        'memory': {'low': 4, 'med': 6, 'high': 18},
+        'memory': {'low': 4, 'med': 6, 'high': 16},
         'max_cores': 8,
         'docker': {
             'single_cell_pipeline': docker_containers['single_cell_pipeline'],

@@ -38,6 +38,8 @@ def generate_submit_config_in_temp(args):
     batch_yaml = helpers.get_incrementing_filename(batch_yaml)
 
     params_override = args["config_override"]
+    if not params_override:
+        params_override = {}
 
     config_params = batch.get_batch_params(override=params_override)
     config = batch.get_batch_config(config_params, override=params_override)
