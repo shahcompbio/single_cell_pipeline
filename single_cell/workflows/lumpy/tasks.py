@@ -74,13 +74,21 @@ def run_samtools_sort(infile, outfile, docker_image=None):
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
 
 
-def merge_bams(inputs, output, docker_image=None):
+def merge_bams(inputs, output, tempdir, docker_image=None):
 
     inputs = inputs.values()
 
     cmd = ['samtools', 'merge', '-f', output]
     cmd.extend(inputs)
 
+    shell_script_path = os.path.join(tempdir, "run_merge.sh")
+
+    with open(shell_script_path, 'w') as scriptfile:
+        scriptfile.write("#!/bin/bash\n")
+        cmd = ' '.join(cmd) + '\n'
+        scriptfile.write(cmd)
+
+    cmd = ['sh', shell_script_path]
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
 
 

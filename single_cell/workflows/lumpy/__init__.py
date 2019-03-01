@@ -66,7 +66,8 @@ def create_lumpy_workflow(config, bam_files, normal_bam, lumpy_bed, lumpy_h5, tu
         func='single_cell.workflows.lumpy.tasks.merge_bams',
         args=(
             mgd.TempInputFile('tumour.discordants.sorted.bam', 'sample_id'),
-            mgd.TempOutputFile("merged_discordants.sorted.bam")
+            mgd.TempOutputFile("merged_discordants.sorted.bam"),
+            mgd.TempSpace("merge_disc_temp")
         ),
         kwargs=lumpydocker,
     )
@@ -77,7 +78,8 @@ def create_lumpy_workflow(config, bam_files, normal_bam, lumpy_bed, lumpy_h5, tu
         func='single_cell.workflows.lumpy.tasks.merge_bams',
         args=(
             mgd.TempInputFile('tumour.splitters.sorted.bam', 'sample_id'),
-            mgd.TempOutputFile("merged_splitters.sorted.bam")
+            mgd.TempOutputFile("merged_splitters.sorted.bam"),
+            mgd.TempSpace("merge_split_temp")
         ),
         kwargs=lumpydocker,
     )
