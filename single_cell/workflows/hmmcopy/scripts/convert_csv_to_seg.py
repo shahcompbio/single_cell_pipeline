@@ -83,16 +83,14 @@ class ConvertCSVToSEG(object):
                 for tableid in metrics.keys():
                     multiplier = tableid.split('/')[-1]
 
-                    if not multiplier == self.multiplier:
+                    if not multiplier == str(self.multiplier):
                         continue
 
                     data = metrics[tableid]
-                    cellid = data["cell_id"].iloc[0]
-                    mad_threshold = data["mad_neutral_state"].iloc[0]
-
-                    assert cellid not in mad_cell_map
-                    mad_cell_map[cellid] = mad_threshold
-
+                    mad_cell_map = {
+                        cell:mad for cell, mad in
+                        zip(data["cell_id"], data["mad_neutral_state"])
+                    }
         else:
             metrics = pd.read_csv(self.metrics)
             metrics = metrics[metrics["multiplier"] == self.multiplier]
@@ -121,7 +119,7 @@ class ConvertCSVToSEG(object):
 
                 multiplier = tableid.split('/')[-1]
 
-                if not multiplier == self.multiplier:
+                if not multiplier == str(self.multiplier):
                     continue
 
                 data = segs_store[tableid]
