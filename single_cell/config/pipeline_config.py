@@ -78,6 +78,7 @@ def get_hmmcopy_params(cluster, reference, binsize, smoothing_function):
         'chromosomes': referencedata['chromosomes'],
         'ref_genome': referencedata['ref_genome'],
         'docker': docker_containers,
+        'igv_segs_quality_threshold': 0.75,
         'memory': {'med': 6},
         'good_cells': [['median_hmmcopy_reads_per_bin', 'ge', 50]]
     }

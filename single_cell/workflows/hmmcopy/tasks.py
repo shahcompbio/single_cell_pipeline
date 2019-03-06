@@ -372,7 +372,7 @@ def create_igv_seg(merged_segs, merged_hmm_metrics,
         config['bin_size'],
         merged_hmm_metrics,
         igv_segs,
-        0.2, 0)
+        config['igv_segs_quality_threshold'], 0)
     converter.main()
 
 
