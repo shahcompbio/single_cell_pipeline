@@ -17,12 +17,12 @@ import pandas as pd
 class ConvertCSVToSEG(object):
 
     def __init__(
-            self, segs, bin_size, metrics, output_seg, mad_threshold, multiplier):
+            self, segs, bin_size, metrics, output_seg, quality_threshold, multiplier):
         self.segs = segs
         self.output_seg = output_seg
         self.bin_size = bin_size
         self.metrics = metrics
-        self.mad_threshold = mad_threshold
+        self.quality_threshold = quality_threshold
         self.multiplier = multiplier
 
     def get_file_format(self, infile):
@@ -74,7 +74,8 @@ class ConvertCSVToSEG(object):
         """
         read metrics and get cell to mad mapping
         """
-        mad_cell_map = {}
+        qual_cell_map = {}
+        cell_order = []
 
         fileformat = self.get_file_format(self.metrics)
 
@@ -87,20 +88,38 @@ class ConvertCSVToSEG(object):
                         continue
 
                     data = metrics[tableid]
-                    mad_cell_map = {
-                        cell:mad for cell, mad in
-                        zip(data["cell_id"], data["mad_neutral_state"])
+                    data = data.set_index("cell_id")
+                    cell_order = data.order.sort_values().index
+                    #assume all cells are good, dont filter
+                    if 'quality' not in data.columns.values:
+                        logging.getLogger("single_cell.hmmcopy.igv_seg").warn(
+                            "quality column missing in data"
+                        )
+                        data['quality'] = 1
+                    qual_cell_map = {
+                        cell: mad for cell, mad in
+                        zip(data.index, data["quality"])
                     }
         else:
             metrics = pd.read_csv(self.metrics)
             metrics = metrics[metrics["multiplier"] == self.multiplier]
 
-            mad_cell_map = {
+            metrics = metrics.set_index("cell_id")
+            cell_order = metrics.order.sort_values().index
+
+            # assume all cells are good, dont filter
+            if 'quality' not in metrics.columns.values:
+                logging.getLogger("single_cell.hmmcopy.igv_seg").warn(
+                    "quality column missing in data"
+                )
+                metrics['quality'] = 1
+
+            qual_cell_map = {
                 cell: mad for cell,
                 mad in zip(
                     metrics["cell_id"],
-                    metrics["mad_neutral_state"])}
-        return mad_cell_map
+                    metrics["quality"])}
+        return qual_cell_map, cell_order
 
     def parse_segs(self, segs, metrics):
 
@@ -113,6 +132,8 @@ class ConvertCSVToSEG(object):
         return data
 
     def parse_segs_h5(self, segs, metrics):
+
+        segs_data = {}
 
         with pd.HDFStore(segs, 'r') as segs_store:
             for tableid in segs_store.keys():
@@ -131,16 +152,21 @@ class ConvertCSVToSEG(object):
                     state = row["state"]
                     segment_length = int(end) - int(start) + 1
 
-                    if metrics[cell_id] > self.mad_threshold:
+                    if metrics[cell_id] > self.quality_threshold:
                         continue
-                    yield [cell_id, chrom, start, end, segment_length, state]
+                    segs_data[cell_id] = [cell_id, chrom, start, end, segment_length, state]
+
+        return segs_data
 
     def parse_segs_csv(self, segs, metrics):
         """parses hmmcopy segments data
         :param segs: path to hmmcopy segs file
         """
 
-        with open(self.segs, 'r') as segfile:
+        segs_data = {}
+
+
+        with open(segs, 'r') as segfile:
             segs = csv.reader(segfile)
 
             lines = enumerate(segs)
@@ -161,12 +187,14 @@ class ConvertCSVToSEG(object):
                 state = row[header["state"]]
                 segment_length = int(end) - int(start) + 1
 
-                if metrics[cell_id] > self.mad_threshold:
+                if metrics[cell_id] > self.quality_threshold:
                     continue
 
-                yield [cell_id, chrom, start, end, segment_length, state]
+                segs_data[cell_id] = [cell_id, chrom, start, end, segment_length, state]
+        return segs_data
 
-    def write_igv_segs(self, segdata, bin_width):
+
+    def write_igv_segs(self, segdata, bin_width, cell_order):
         """ writes IGV segs file
         :param segdata: parsed segments data,
                         format: [id, chr, start, end, width, state]
@@ -178,13 +206,18 @@ class ConvertCSVToSEG(object):
             outfile.write(
                 '\'ID\tchrom\tloc.start\tloc.end\tnum.mark\tseg.mean\n')
 
-            for dataval in segdata:
-                dataval[4] = str(dataval[4] / bin_width)
+            for cell in cell_order:
+                if cell not in segdata:
+                    continue
+                cell_data = segdata[cell]
 
-                dataval = map(str, dataval)
+                for dataval in cell_data:
+                    dataval[4] = str(dataval[4] / bin_width)
 
-                outstr = '\t'.join(dataval) + '\n'
-                outfile.write(outstr)
+                    dataval = map(str, dataval)
+
+                    outstr = '\t'.join(dataval) + '\n'
+                    outfile.write(outstr)
 
     def write_header(self, path):
         header = '\'ID\tchrom\tloc.start\tloc.end\tnum.mark\tseg.mean\n'
@@ -199,11 +232,11 @@ class ConvertCSVToSEG(object):
             self.write_header(self.output_seg)
             return
 
-        metrics = self.read_metrics()
+        qual_metrics, cell_order = self.read_metrics()
 
-        segdata = self.parse_segs(self.segs, metrics)
+        segdata = self.parse_segs(self.segs, qual_metrics)
 
-        self.write_igv_segs(segdata, self.bin_size)
+        self.write_igv_segs(segdata, self.bin_size, cell_order)
 
 
 def parse_args():
@@ -229,7 +262,7 @@ def parse_args():
                         required=True,
                         help='''Path to output IGV segs file''')
 
-    parser.add_argument('--mad_threshold',
+    parser.add_argument('--quality_threshold',
                         default=0.2,
                         type=float,
                         help='''Path to output IGV segs file''')
@@ -241,5 +274,5 @@ if __name__ == "__main__":
     args = parse_args()
 
     converter = ConvertCSVToSEG(args.segs, args.bin_size,
-                                args.metrics, args.output, args.mad_threshold)
+                                args.metrics, args.output, args.quality_threshold)
     converter.main()
