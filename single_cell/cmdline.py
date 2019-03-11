@@ -235,12 +235,25 @@ def parse_args():
     multi_sample_pseudo_bulk.set_defaults(which='multi_sample_pseudo_bulk')
 
     multi_sample_pseudo_bulk.add_argument(
-        "--destruct",
+        "--call_breakpoints",
         default=False,
         action='store_true',
         help='''add destruct to list of analyses'''
     )
 
+    multi_sample_pseudo_bulk.add_argument(
+        "--call_haps",
+        default=False,
+        action='store_true',
+        help='''add infer_haps to list of analyses'''
+    )
+
+    multi_sample_pseudo_bulk.add_argument(
+        "--call_variants",
+        default=False,
+        action='store_true',
+        help='''add variant calling to list of analyses'''
+    )
 
     #======================================
     # generates pipeline and batch configs

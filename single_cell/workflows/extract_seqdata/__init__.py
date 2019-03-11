@@ -14,7 +14,6 @@ def create_extract_seqdata_workflow(
      remixt_config,
      remixt_ref_data_dir,
      config,
-     multiprocess=False,
 ):
 
     ctx = {'mem_retry_increment': 2,
@@ -25,27 +24,16 @@ def create_extract_seqdata_workflow(
 
     workflow.transform(
         name='create_chromosome_seqdata',
-        ctx=dict(ncpus=config['max_cores'], **ctx),
+        ctx=ctx,
         func="single_cell.workflows.extract_seqdata.tasks.create_chromosome_seqdata",
         args=(
-            mgd.TempOutputFile('seqdata', 'chromosome'),
+            mgd.OutputFile(seqdata_filename),
             mgd.InputFile(bam_filename, extensions=['.bai']),
+            mgd.TempSpace("extract_seqdata_temp"),
             remixt_config,
             remixt_ref_data_dir,
         ),
-        kwargs={'multiprocess': multiprocess,
-                'ncores': config['max_cores'],
-                'chromosomes': config['chromosomes']}
-    )
-
-    workflow.transform(
-        name='merge_seqdata',
-        ctx=ctx,
-        func="remixt.seqdataio.merge_seqdata",
-        args=(
-            mgd.OutputFile(seqdata_filename),
-            mgd.TempInputFile('seqdata', 'chromosome'),
-        ),
+        kwargs={'chromosomes': config['chromosomes']}
     )
 
     return workflow
