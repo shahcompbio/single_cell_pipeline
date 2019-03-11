@@ -41,7 +41,9 @@ def multi_sample_workflow(args):
         tumour_cell_bams,
         args['out_dir'],
         helpers.load_config(args),
-        run_destruct=args['destruct']
+        run_breakpoint=args['call_breakpoints'],
+        run_haps=args['call_haps'],
+        run_varcall=args["call_variants"]
     )
 
     return workflow
@@ -52,9 +54,16 @@ def create_multi_sample_workflow(
         tumour_cell_bams,
         results_dir,
         config,
-        run_destruct=False
+        run_breakpoint=False,
+        run_haps=False,
+        run_varcall=False
 ):
     """ Multiple sample pseudobulk workflow. """
+
+    if not any((run_breakpoint, run_haps, run_varcall)):
+        run_breakpoint = True
+        run_haps = True
+        run_varcall = True
 
     baseimage = config['multi_sample']['docker']['single_cell_pipeline']
     ctx = {'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage}
@@ -163,99 +172,101 @@ def create_multi_sample_workflow(
         )
     )
 
-    workflow.subworkflow(
-        name='variant_calling',
-        func=variant_calling.create_variant_calling_workflow,
-        axes=('sample_id',),
-        args=(
-            mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
-            mgd.InputFile('tumour_regions.bam', 'sample_id', 'region', extensions=['.bai']),
-            mgd.InputFile('normal_regions.bam', 'region', extensions=['.bai']),
-            mgd.OutputFile('museq.vcf', 'sample_id', extensions=['.tbi', '.csi']),
-            mgd.OutputFile('strelka_snv.vcf', 'sample_id', extensions=['.tbi', '.csi']),
-            mgd.OutputFile('strelka_indel.vcf', 'sample_id', extensions=['.tbi', '.csi']),
-            mgd.OutputFile('snv_annotations.h5', 'sample_id'),
-            mgd.OutputFile('snv_calling_info.yaml', 'sample_id'),
-            config['variant_calling'],
-            mgd.Template(variant_calling_raw_data_template, 'sample_id'),
-        ),
-    )
+    if run_varcall:
+        workflow.subworkflow(
+            name='variant_calling',
+            func=variant_calling.create_variant_calling_workflow,
+            axes=('sample_id',),
+            args=(
+                mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
+                mgd.InputFile('tumour_regions.bam', 'sample_id', 'region', extensions=['.bai']),
+                mgd.InputFile('normal_regions.bam', 'region', extensions=['.bai']),
+                mgd.OutputFile('museq.vcf', 'sample_id', extensions=['.tbi', '.csi']),
+                mgd.OutputFile('strelka_snv.vcf', 'sample_id', extensions=['.tbi', '.csi']),
+                mgd.OutputFile('strelka_indel.vcf', 'sample_id', extensions=['.tbi', '.csi']),
+                mgd.OutputFile('snv_annotations.h5', 'sample_id'),
+                mgd.OutputFile('snv_calling_info.yaml', 'sample_id'),
+                config['variant_calling'],
+                mgd.Template(variant_calling_raw_data_template, 'sample_id'),
+            ),
+        )
 
-    vcftools_image = {'docker_image': config['variant_calling']['docker']['vcftools']}
-    workflow.transform(
-        name='merge_museq_snvs',
-        func='biowrappers.components.io.vcf.tasks.concatenate_vcf',
-        args=(
-            mgd.InputFile('museq.vcf', 'sample_id', axes_origin=[], extensions=['.tbi', '.csi']),
-            mgd.TempOutputFile('museq.vcf.gz', extensions=['.tbi', '.csi']),
-        ),
-        kwargs={
-            'allow_overlap': True,
-            'docker_config': vcftools_image,
-        },
-    )
+        vcftools_image = {'docker_image': config['variant_calling']['docker']['vcftools']}
+        workflow.transform(
+            name='merge_museq_snvs',
+            func='biowrappers.components.io.vcf.tasks.concatenate_vcf',
+            args=(
+                mgd.InputFile('museq.vcf', 'sample_id', axes_origin=[], extensions=['.tbi', '.csi']),
+                mgd.TempOutputFile('museq.vcf.gz', extensions=['.tbi', '.csi']),
+            ),
+            kwargs={
+                'allow_overlap': True,
+                'docker_config': vcftools_image,
+            },
+        )
 
-    workflow.transform(
-        name='merge_strelka_snvs',
-        func='biowrappers.components.io.vcf.tasks.concatenate_vcf',
-        args=(
-            mgd.InputFile('strelka_snv.vcf', 'sample_id', axes_origin=[], extensions=['.tbi', '.csi']),
-            mgd.TempOutputFile('strelka_snv.vcf.gz', extensions=['.tbi', '.csi']),
-        ),
-        kwargs={
-            'allow_overlap': True,
-            'docker_config': vcftools_image,
-        },
-    )
+        workflow.transform(
+            name='merge_strelka_snvs',
+            func='biowrappers.components.io.vcf.tasks.concatenate_vcf',
+            args=(
+                mgd.InputFile('strelka_snv.vcf', 'sample_id', axes_origin=[], extensions=['.tbi', '.csi']),
+                mgd.TempOutputFile('strelka_snv.vcf.gz', extensions=['.tbi', '.csi']),
+            ),
+            kwargs={
+                'allow_overlap': True,
+                'docker_config': vcftools_image,
+            },
+        )
 
-    workflow.subworkflow(
-        name='variant_counting',
-        func=variant_calling.create_variant_counting_workflow,
-        axes=('sample_id',),
-        args=(
-            [
-                mgd.TempInputFile('museq.vcf.gz', extensions=['.tbi', '.csi']),
-                mgd.TempInputFile('strelka_snv.vcf.gz', extensions=['.tbi', '.csi']),
-            ],
-            mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
-            mgd.OutputFile('snv_counts.h5', 'sample_id'),
-            mgd.OutputFile('snv_counting_info.yaml', 'sample_id'),
-            config['variant_calling'],
-        ),
-    )
+        workflow.subworkflow(
+            name='variant_counting',
+            func=variant_calling.create_variant_counting_workflow,
+            axes=('sample_id',),
+            args=(
+                [
+                    mgd.TempInputFile('museq.vcf.gz', extensions=['.tbi', '.csi']),
+                    mgd.TempInputFile('strelka_snv.vcf.gz', extensions=['.tbi', '.csi']),
+                ],
+                mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
+                mgd.OutputFile('snv_counts.h5', 'sample_id'),
+                mgd.OutputFile('snv_counting_info.yaml', 'sample_id'),
+                config['variant_calling'],
+            ),
+        )
 
-    if isinstance(normal_wgs_bam, dict):
-        haps_input = mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai']),
-    else:
-        haps_input = mgd.InputFile(normal_wgs_bam, extensions=['.bai'])
+    if run_haps:
+        if isinstance(normal_wgs_bam, dict):
+            haps_input = mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai']),
+        else:
+            haps_input = mgd.InputFile(normal_wgs_bam, extensions=['.bai'])
 
-    workflow.subworkflow(
-        name='infer_haps_from_cells_normal',
-        func=infer_haps.infer_haps,
-        args=(
-            haps_input,
-            mgd.OutputFile(normal_seqdata_file),
-            mgd.OutputFile(haplotypes_file),
-            mgd.TempOutputFile("allele_counts.csv"),
-            config['infer_haps'],
-        ),
-        kwargs={'normal': True}
-    )
+        workflow.subworkflow(
+            name='infer_haps_from_cells_normal',
+            func=infer_haps.infer_haps,
+            args=(
+                haps_input,
+                mgd.OutputFile(normal_seqdata_file),
+                mgd.OutputFile(haplotypes_file),
+                mgd.TempOutputFile("allele_counts.csv"),
+                config['infer_haps'],
+            ),
+            kwargs={'normal': True}
+        )
 
-    workflow.subworkflow(
-        name='extract_allele_readcounts',
-        func=infer_haps.extract_allele_readcounts,
-        axes=('sample_id',),
-        args=(
-            mgd.InputFile(haplotypes_file),
-            mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
-            mgd.OutputFile('tumour_cell_seqdata.h5', 'sample_id', 'cell_id', axes_origin=[]),
-            mgd.OutputFile('allele_counts.csv', 'sample_id', template=allele_counts_template),
-            config['infer_haps'],
-        ),
-    )
+        workflow.subworkflow(
+            name='extract_allele_readcounts',
+            func=infer_haps.extract_allele_readcounts,
+            axes=('sample_id',),
+            args=(
+                mgd.InputFile(haplotypes_file),
+                mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
+                mgd.OutputFile('tumour_cell_seqdata.h5', 'sample_id', 'cell_id', axes_origin=[]),
+                mgd.OutputFile('allele_counts.csv', 'sample_id', template=allele_counts_template),
+                config['infer_haps'],
+            ),
+        )
 
-    if run_destruct:
+    if run_breakpoint:
         if isinstance(normal_wgs_bam, dict):
             workflow.transform(
                 name='merge_normal_cells_destruct',

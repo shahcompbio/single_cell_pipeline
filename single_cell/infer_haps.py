@@ -177,7 +177,7 @@ def extract_allele_readcounts(
     workflow.subworkflow(
         name='create_chromosome_seqdata',
         axes=('cell_id',),
-        func='remixt.workflow.create_extract_seqdata_workflow',
+        func='single_cell.workflows.extract_seqdata.create_extract_seqdata_workflow',
         args=(
             mgd.InputFile('cell.bam', 'cell_id', extensions=['.bai']),
             mgd.OutputFile('seqdata.h5', 'cell_id', axes_origin=[]),
