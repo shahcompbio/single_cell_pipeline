@@ -181,8 +181,9 @@ def extract_allele_readcounts(
         args=(
             mgd.InputFile('cell.bam', 'cell_id', extensions=['.bai']),
             mgd.OutputFile('seqdata.h5', 'cell_id', axes_origin=[]),
-            remixt_config,
-            remixt_ref_data_dir,
+            config.get('extract_seqdata', {}),
+            config['ref_data_dir'],
+            config,
         ),
     )
 
