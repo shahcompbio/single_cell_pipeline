@@ -286,7 +286,7 @@ def create_multi_sample_workflow(
         baseimage = config['breakpoint_calling']['docker']['single_cell_pipeline']
         workflow.subworkflow(
             name='destruct',
-            func='biowrappers.components.breakpoint_calling.destruct.destruct_pipeline',
+            func='single_cell.workflows.destruct.create_destruct_workflow',
             axes=('sample_id',),
             ctx={'docker_image': baseimage},
             args=(
@@ -297,6 +297,9 @@ def create_multi_sample_workflow(
                 mgd.OutputFile('breakpoints.h5', 'sample_id'),
                 mgd.Template(destruct_raw_data_template, 'sample_id'),
             ),
+            kwargs={
+                'tumour_sample_id': mgd.Instance('sample_id'),
+            },
         )
 
         if isinstance(normal_wgs_bam, dict):
