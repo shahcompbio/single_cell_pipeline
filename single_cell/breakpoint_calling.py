@@ -75,7 +75,7 @@ def breakpoint_calling_workflow(workflow, args):
         workflow.subworkflow(
             name='destruct',
             ctx={'docker_image': baseimage},
-            func="biowrappers.components.breakpoint_calling.destruct.destruct_pipeline",
+            func="single_cell.workflows.destruct.create_destruct_workflow",
             args=(
                 final_wgs_bam,
                 mgd.InputFile('tumour.bam', 'tumour_cell_id', fnames=tumour_cells),
