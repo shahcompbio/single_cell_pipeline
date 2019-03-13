@@ -18,6 +18,8 @@ from matplotlib.patches import Rectangle
 from matplotlib.backends.backend_pdf import PdfPages
 matplotlib.rcParams['pdf.fonttype'] = 42
 
+from single_cell.utils import helpers
+
 
 def parse_args():
     #=========================================================================
@@ -762,26 +764,11 @@ class PlotMetrics(object):
         pdf.savefig(bbox_inches='tight', pad_inches=0.4)
         plt.close()
 
-    def get_file_format(self, output):
-        _, ext = os.path.splitext(output)
-
-        if ext == ".csv":
-            return "csv"
-        elif ext == ".gz":
-            return "gzip"
-        elif ext == ".h5" or ext == ".hdf5":
-            return "h5"
-        else:
-            logging.getLogger("single_cell.plot_metrics").warn(
-                "Couldn't detect output format. extension {}".format(ext)
-            )
-            return "csv"
-
     def read_input_data(self, infile, tablename):
-        fileformat = self.get_file_format(infile)
+        fileformat = helpers.get_file_format(infile)
 
-        if fileformat == "csv":
-            metrics = pd.read_csv(infile)
+        if fileformat == "csv" or fileformat == 'gzip':
+            metrics = pd.read_csv(infile, compression=helpers.get_compression_type_pandas(infile))
         else:
             with pd.HDFStore(infile, 'r') as metrics_store:
                 metrics = metrics_store[tablename]

@@ -12,6 +12,9 @@ from single_cell.utils import helpers
 def create_alignment_metrics_workflow(
         bam_filename,
         alignment_metrics,
+        alignment_metrics_yaml,
+        gc_metrics,
+        gc_metrics_yaml,
         plot_metrics,
         ref_genome,
         config,
@@ -143,9 +146,10 @@ def create_alignment_metrics_workflow(
         ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         args=(
             mgd.InputFile(gc_metrics_filename, 'cell_id', axes_origin=[]),
-            mgd.TempOutputFile("gc_metrics.h5"),
+            mgd.OutputFile(gc_metrics),
             mgd.TempSpace("temp_gc")
-        )
+        ),
+        kwargs={'yamlfile': mgd.OutputFile(gc_metrics_yaml)}
     )
 
     workflow.transform(
@@ -158,7 +162,7 @@ def create_alignment_metrics_workflow(
             mgd.InputFile(insert_metrics_filename, 'cell_id', axes_origin=[]),
             mgd.InputFile(wgs_metrics_filename, 'cell_id', axes_origin=[]),
             mgd.TempSpace("tempdir_collect_metrics"),
-            mgd.TempOutputFile("alignment_metrics.h5"),
+            mgd.TempOutputFile("alignment_metrics.csv.gz"),
         ),
     )
 
@@ -167,10 +171,11 @@ def create_alignment_metrics_workflow(
         ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.workflows.alignment_metrics.tasks.annotate_metrics",
         args=(
-            mgd.TempInputFile("alignment_metrics.h5"),
+            mgd.TempInputFile("alignment_metrics.csv.gz"),
             sample_info,
-            mgd.TempOutputFile("alignment_metrics_annotated.h5"),
-        )
+            mgd.OutputFile(alignment_metrics),
+        ),
+        kwargs={'yamlfile': mgd.OutputFile(alignment_metrics_yaml)}
     )
 
     workflow.transform(
@@ -178,35 +183,12 @@ def create_alignment_metrics_workflow(
         ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.workflows.alignment_metrics.tasks.plot_metrics",
         args=(
-            mgd.TempInputFile("alignment_metrics_annotated.h5"),
+            mgd.InputFile(alignment_metrics),
             mgd.OutputFile(plot_metrics),
             'QC pipeline metrics',
-            mgd.TempInputFile("gc_metrics.h5"),
+            mgd.InputFile(gc_metrics),
             config['gc_windows'],
         )
     )
-
-    workflow.transform(
-        name='concatenate_all_hdf_tables',
-        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.utils.hdfutils.concat_hdf_tables",
-        args=(
-            [mgd.TempInputFile("alignment_metrics_annotated.h5"),
-             mgd.TempInputFile("gc_metrics.h5"),
-             ],
-            mgd.TempOutputFile("alignment_precast.h5"),
-        ),
-    )
-
-    workflow.transform(
-        name='cast_h5',
-        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.utils.hdfutils.cast_h5_file",
-        args=(
-            mgd.TempInputFile("alignment_precast.h5"),
-            mgd.OutputFile(alignment_metrics),
-        )
-    )
-
 
     return workflow

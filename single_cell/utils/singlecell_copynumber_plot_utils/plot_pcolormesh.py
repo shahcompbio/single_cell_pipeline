@@ -8,7 +8,7 @@ import sys
 import math
 import argparse
 import matplotlib
-
+import gzip
 matplotlib.use("Agg")
 import numpy as np
 import pandas as pd
@@ -17,7 +17,7 @@ from collections import defaultdict
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import logging
-
+from single_cell.utils import helpers
 from heatmap import ClusterMap
 
 sys.setrecursionlimit(2000)
@@ -176,7 +176,10 @@ class PlotPcolor(object):
 
         bins = {}
 
-        freader = open(self.input)
+        if helpers.get_file_format(self.input) == 'gzip':
+            freader = gzip.open(self.input)
+        else:
+            freader = open(self.input)
 
         header = freader.readline()
         idxs = self.build_label_indices(header)
@@ -256,7 +259,10 @@ class PlotPcolor(object):
         sepdata = defaultdict(list)
         colordata = {}
 
-        freader = open(self.metrics)
+        if helpers.get_file_format(self.metrics) == 'gzip':
+            freader = gzip.open(self.metrics)
+        else:
+            freader = open(self.metrics)
 
         header = freader.readline()
         idxs = self.build_label_indices(header)

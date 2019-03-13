@@ -41,9 +41,9 @@ def get_summary_metrics(infile, output):
     summ.main()
 
 
-def annotate_metrics(infile, sample_info, outfile):
+def annotate_metrics(infile, sample_info, outfile, yamlfile=None):
 
-    hdfutils.annotate_store_with_dict(infile, sample_info, outfile)
+    csvutils.annotate_metrics(infile, sample_info, outfile, yamlfile=yamlfile)
 
 
 def merge_all_metrics(infiles, outfile):
@@ -86,7 +86,7 @@ def bam_collect_insert_metrics(
         tempdir, docker_image=containers['picard'])
 
 
-def collect_gc(infiles, outfile, tempdir):
+def collect_gc(infiles, outfile, tempdir, yamlfile=None):
 
     helpers.makedirs(tempdir)
 
@@ -102,10 +102,10 @@ def collect_gc(infiles, outfile, tempdir):
                                   'gcbias')
         gen_gc.main()
 
-    merged_csv = os.path.join(tempdir, "merged_gc_metrics.csv")
-    csvutils.concatenate_csv(tempouts, merged_csv)
+    csvutils.concatenate_csv(tempouts, outfile)
 
-    hdfutils.convert_csv_to_hdf(merged_csv, outfile, '/alignment/gc_metrics')
+    if yamlfile:
+        csvutils.generate_dtype_yaml(outfile, yamlfile)
 
 
 def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
@@ -125,11 +125,6 @@ def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
                                  mkdup, outfile, sample)
         collmet.main()
 
-    merged_metrics_csv = os.path.join(tempdir, 'merged_alignment_metrics.csv')
-    csvutils.concatenate_csv(sample_outputs, merged_metrics_csv)
+    csvutils.concatenate_csv(sample_outputs, merged_metrics)
 
-    hdfutils.convert_csv_to_hdf(
-        merged_metrics_csv,
-        merged_metrics,
-        '/alignment/metrics/')
 
