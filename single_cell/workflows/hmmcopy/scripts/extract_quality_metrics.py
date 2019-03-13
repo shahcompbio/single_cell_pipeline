@@ -49,10 +49,10 @@ class ExtractHmmMetrics(object):
     def write_df_to_file(self, df):
 
         if self.output_format == "csv":
-            df.to_csv(self.output, index=False)
+            df.to_csv(self.output, na_rep='NA', index=False)
 
         elif self.output_format == "gzip":
-            df.to_csv(self.output, index=False, compression="gzip")
+            df.to_csv(self.output, na_rep='NA', index=False, compression="gzip")
         else:
             df = df.infer_objects()
 

@@ -17,6 +17,7 @@ import matplotlib.gridspec as gridspec
 
 from matplotlib.colors import rgb2hex
 
+from single_cell.utils import helpers
 
 import numpy as np
 
@@ -94,10 +95,10 @@ class GenHmmPlots(object):
                  sample_id, multipliers, **kwargs):
 
         self.multipliers = multipliers
-        self.reads = reads
-        self.segments = segments
-        self.params = params
-        self.metrics = metrics
+        self.reads = self.index_by_multiplier(reads)
+        self.segments = self.index_by_multiplier(segments)
+        self.params = self.index_by_multiplier(params)
+        self.metrics = self.index_by_multiplier(metrics)
         self.ref_genome = ref_genome
         self.sample_id = sample_id
 
@@ -118,41 +119,40 @@ class GenHmmPlots(object):
         self.sample_info = kwargs.get("sample_info")
 
     def __enter__(self):
-        self.reads_store = pd.HDFStore(self.reads, 'r')
-        self.segments_store = pd.HDFStore(self.segments, 'r')
-        self.metrics_store = pd.HDFStore(self.metrics, 'r')
-        self.params_store = pd.HDFStore(self.params, 'r')
-
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.reads_store.close()
-        self.segments_store.close()
-        self.params_store.close()
-        self.metrics_store.close()
+        pass
+
+    def index_by_multiplier(self, infiles):
+        return {mult: infile for mult, infile in zip(self.multipliers, infiles)}
+
+    def read_csv(self, infile):
+        return pd.read_csv(
+            infile, compression=helpers.get_compression_type_pandas(infile)
+        )
 
     def read_metrics(self, cell_id, multiplier):
         """
 
         """
+        metrics_file = self.metrics[multiplier]
+        return self.read_csv(metrics_file)
 
-        return self.metrics_store[
-            "/hmmcopy/metrics/{}/{}".format(cell_id, multiplier)]
 
     def read_params(self, cell_id, multiplier):
         """
 
         """
-        return self.params_store[
-            "/hmmcopy/params/{}/{}".format(cell_id, multiplier)]
+        params_file = self.params[multiplier]
+        return self.read_csv(params_file)
 
     def read_corrected_reads(self, cell_id, multiplier):
         """
 
         """
-
-        df = self.reads_store[
-            "/hmmcopy/reads/{}/{}".format(cell_id, multiplier)]
+        reads_file = self.reads[multiplier]
+        df = self.read_csv(reads_file)
 
         df = utl.normalize_reads(df)
         df = utl.compute_chromosome_coordinates(df, self.ref_genome)
@@ -167,8 +167,9 @@ class GenHmmPlots(object):
 
         """
 
-        df = self.segments_store[
-            "/hmmcopy/segments/{}/{}".format(cell_id, multiplier)]
+        segs_file = self.segments[multiplier]
+        df = self.read_csv(segs_file)
+
         df = df.dropna(axis=0, how='all')
 
         if not df.empty:

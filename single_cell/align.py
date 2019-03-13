@@ -29,7 +29,10 @@ def align_workflow(workflow, args):
 
     info_file = os.path.join(outdir, "info.yaml")
 
-    alignment_metrics_h5 = os.path.join(outdir, '{}_alignment_metrics.h5'.format(lib))
+    alignment_metrics_csv = os.path.join(outdir, '{}_alignment_metrics.csv.gz'.format(lib))
+    alignment_metrics_yaml = os.path.join(outdir, '{}_alignment_metrics.yaml'.format(lib))
+    gc_metrics_csv = os.path.join(outdir, '{}_gc_metrics.csv.gz'.format(lib))
+    gc_metrics_yaml = os.path.join(outdir, '{}_gc_metrics.yaml'.format(lib))
 
     plots_dir = os.path.join(outdir,  'plots')
     plot_metrics_output = os.path.join(plots_dir, '{}_plot_metrics.pdf'.format(lib))
@@ -73,7 +76,10 @@ def align_workflow(workflow, args):
         ctx={'docker_image': baseimage},
         args=(
             mgd.InputFile('bam_markdups', 'cell_id', fnames = bam_files, axes_origin=[], extensions=['.bai']),
-            mgd.OutputFile(alignment_metrics_h5),
+            mgd.OutputFile(alignment_metrics_csv),
+            mgd.OutputFile(alignment_metrics_yaml),
+            mgd.OutputFile(gc_metrics_csv),
+            mgd.OutputFile(gc_metrics_yaml),
             mgd.OutputFile(plot_metrics_output),
             config['ref_genome'],
             config,
@@ -102,7 +108,6 @@ def align_workflow(workflow, args):
             'output_datasets': outputs,
             'input_datasets': inputs,
             'results': {
-                'alignment_metrics': helpers.format_file_yaml(alignment_metrics_h5),
                 'alignment_plots': helpers.format_file_yaml(plot_metrics_output),
             },
         }

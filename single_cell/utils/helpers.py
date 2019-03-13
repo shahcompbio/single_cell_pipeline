@@ -19,6 +19,46 @@ from multiprocessing.pool import ThreadPool
 import pypeliner
 
 
+def get_compression_type_pandas(filepath):
+    if get_file_format(filepath) == 'gzip':
+        return 'gzip'
+    else:
+        return None
+
+
+def is_gzip(filename):
+    """
+    Uses the file contents to check if the file is gzip or not.
+    The magic number for gzip is 1f 8b
+    See KRONOS-8 for details
+    """
+    with open(filename) as f:
+        file_start = f.read(4)
+
+        if file_start.startswith("\x1f\x8b\x08"):
+            return True
+        return False
+
+
+def get_file_format(filepath):
+    if filepath.endswith('.tmp'):
+        filepath = filepath[:-4]
+
+    _, ext = os.path.splitext(filepath)
+
+    if ext == ".csv":
+        return "csv"
+    elif ext == ".gz":
+        return "gzip"
+    elif ext == ".h5" or ext == ".hdf5":
+        return "h5"
+    else:
+        logging.getLogger("single_cell.plot_metrics").warn(
+            "Couldn't detect output format. extension {}".format(ext)
+        )
+        return "csv"
+
+
 def load_yaml_section(data, section_name):
     if data.get(section_name):
         assert len(data[section_name]) == 1
@@ -430,3 +470,16 @@ def makedirs(directory, isfile=False):
 def make_tarfile(output_filename, source_dir):
     with tarfile.open(output_filename, "w:gz") as tar:
         tar.add(source_dir, arcname=os.path.basename(source_dir))
+
+def is_gzip(filename):
+    """
+    Uses the file contents to check if the file is gzip or not.
+    The magic number for gzip is 1f 8b
+    See KRONOS-8 for details
+    """
+    with open(filename) as f:
+        file_start = f.read(4)
+
+        if file_start.startswith("\x1f\x8b\x08"):
+            return True
+        return False

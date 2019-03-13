@@ -10,6 +10,8 @@ import csv
 import os
 import argparse
 import logging
+import gzip
+from single_cell.utils import helpers
 
 import pandas as pd
 
@@ -24,23 +26,6 @@ class ConvertCSVToSEG(object):
         self.metrics = metrics
         self.quality_threshold = quality_threshold
         self.multiplier = multiplier
-
-    def get_file_format(self, infile):
-
-        if infile.endswith('.tmp'):
-            infile = infile[:-4]
-        _, ext = os.path.splitext(infile)
-
-        if ext == ".csv":
-            return "csv"
-        elif ext == ".gz":
-            return "gzip"
-        elif ext == ".h5" or ext == ".hdf5":
-            return "h5"
-        else:
-            logging.getLogger("single_cell.hmmcopy.igv_seg").warn(
-                "Couldn't detect output format. extension {}".format(ext))
-            return "csv"
 
     def check_empty_file(self, path):
         """checks if file is empty
@@ -77,15 +62,16 @@ class ConvertCSVToSEG(object):
         qual_cell_map = {}
         cell_order = []
 
-        fileformat = self.get_file_format(self.metrics)
+        fileformat = helpers.get_file_format(self.metrics)
 
         if fileformat == "h5":
             with pd.HDFStore(self.metrics, 'r') as metrics:
                 for tableid in metrics.keys():
                     multiplier = tableid.split('/')[-1]
 
-                    if not multiplier == str(self.multiplier):
-                        continue
+                    if not self.multiplier == '0':
+                        if not multiplier == str(self.multiplier):
+                            continue
 
                     data = metrics[tableid]
                     data = data.set_index("cell_id")
@@ -101,8 +87,9 @@ class ConvertCSVToSEG(object):
                         zip(data.index, data["quality"])
                     }
         else:
-            metrics = pd.read_csv(self.metrics)
-            metrics = metrics[metrics["multiplier"] == self.multiplier]
+            metrics = pd.read_csv(self.metrics, compression='gzip')
+            if not self.multiplier == 0:
+                metrics = metrics[metrics["multiplier"] == self.multiplier]
 
             metrics = metrics.set_index("cell_id")
             cell_order = metrics.order.sort_values().index
@@ -117,13 +104,13 @@ class ConvertCSVToSEG(object):
             qual_cell_map = {
                 cell: mad for cell,
                 mad in zip(
-                    metrics["cell_id"],
+                    metrics.index,
                     metrics["quality"])}
         return qual_cell_map, cell_order
 
     def parse_segs(self, segs, metrics):
 
-        fileformat = self.get_file_format(segs)
+        fileformat = helpers.get_file_format(segs)
 
         if fileformat == "h5":
             data = self.parse_segs_h5(segs, metrics)
@@ -166,7 +153,7 @@ class ConvertCSVToSEG(object):
         segs_data = {}
 
 
-        with open(segs, 'r') as segfile:
+        with gzip.open(segs, 'r') as segfile:
             segs = csv.reader(segfile)
 
             lines = enumerate(segs)
@@ -177,7 +164,7 @@ class ConvertCSVToSEG(object):
 
             # Read the segs file and write to the output file
             for _, row in lines:
-                if not row["multiplier"] == self.multiplier:
+                if not row[header["multiplier"]] == self.multiplier:
                     continue
 
                 chrom = row[header["chr"]]

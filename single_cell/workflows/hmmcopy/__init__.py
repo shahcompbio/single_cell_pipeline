@@ -8,17 +8,37 @@ import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import helpers
 
-def create_hmmcopy_workflow(
-        bam_file, hmmcopy_data, igv_seg_filename, segs_pdf, bias_pdf,
-        plot_heatmap_ec_output,
-        plot_heatmap_ec_filt_output, plot_metrics_output,
-        plot_kernel_density_output, cell_ids, args,
-        hmmparams, sample_info, alignment_metrics=None):
 
+def create_hmmcopy_workflow(
+        bam_file, reads, reads_yaml, segs, segs_yaml, metrics, metrics_yaml,
+        params, params_yaml, igv_seg_filename, segs_pdf, bias_pdf,
+        plot_heatmap_ec_output, plot_heatmap_ec_filt_output,
+        plot_metrics_output, plot_kernel_density_output, cell_ids,
+        hmmparams, sample_info, alignment_metrics=None
+):
     chromosomes = hmmparams["chromosomes"]
 
     multipliers = copy.deepcopy(hmmparams["multipliers"])
     multipliers = [0] + multipliers
+
+    igv_seg_filename = dict([(mult, igv_seg_filename[mult])
+                             for mult in multipliers])
+    reads = dict([(mult, reads[mult])
+                  for mult in multipliers])
+    reads_yaml = dict([(mult, reads_yaml[mult])
+                       for mult in multipliers])
+    segs = dict([(mult, segs[mult])
+                 for mult in multipliers])
+    segs_yaml = dict([(mult, segs_yaml[mult])
+                      for mult in multipliers])
+    metrics = dict([(mult, metrics[mult])
+                    for mult in multipliers])
+    metrics_yaml = dict([(mult, metrics_yaml[mult])
+                         for mult in multipliers])
+    params = dict([(mult, params[mult])
+                   for mult in multipliers])
+    params_yaml = dict([(mult, params_yaml[mult])
+                        for mult in multipliers])
 
     baseimage = hmmparams['docker']['single_cell_pipeline']
     hmmcopy_docker = hmmparams['docker']['hmmcopy']
@@ -26,8 +46,14 @@ def create_hmmcopy_workflow(
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
-        obj=mgd.OutputChunks('cell_id'),
-        value=cell_ids,
+        obj=mgd.OutputChunks('multiplier'),
+        value=multipliers,
+    )
+
+    allfiles = [(cell, mult) for cell in cell_ids for mult in multipliers]
+    workflow.setobj(
+        obj=mgd.OutputChunks('cell_id', 'multiplier'),
+        value=allfiles,
     )
 
     workflow.setobj(
@@ -41,12 +67,12 @@ def create_hmmcopy_workflow(
         axes=('cell_id',),
         args=(
             mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_file, extensions=['.bai']),
-            mgd.TempOutputFile('reads.h5', 'cell_id'),
-            mgd.TempOutputFile('segs.h5', 'cell_id'),
-            mgd.TempOutputFile('params.h5', 'cell_id'),
-            mgd.TempOutputFile('hmm_metrics.h5', 'cell_id'),
-            mgd.TempOutputFile('segments.png', 'cell_id'),
-            mgd.TempOutputFile('bias.png', 'cell_id'),
+            mgd.TempOutputFile('reads.csv.gz', 'cell_id', 'multiplier', axes_origin=[]),
+            mgd.TempOutputFile('segs.csv.gz', 'cell_id', 'multiplier', axes_origin=[]),
+            mgd.TempOutputFile('params.csv.gz', 'cell_id', 'multiplier', axes_origin=[]),
+            mgd.TempOutputFile('hmm_metrics.csv.gz', 'cell_id', 'multiplier', axes_origin=[]),
+            mgd.TempOutputFile('segments.png', 'cell_id', axes_origin=[]),
+            mgd.TempOutputFile('bias.png', 'cell_id', axes_origin=[]),
             mgd.InputInstance('cell_id'),
             hmmparams['ref_genome'],
             hmmparams,
@@ -60,72 +86,70 @@ def create_hmmcopy_workflow(
     workflow.transform(
         name='merge_reads',
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.workflows.hmmcopy.tasks.merge_hdf_files_on_disk",
+        func="single_cell.workflows.hmmcopy.tasks.concatenate_csv",
         args=(
-            mgd.TempInputFile('reads.h5', 'cell_id'),
-            mgd.TempOutputFile("reads.h5"),
+            mgd.TempInputFile('reads.csv.gz', 'cell_id', 'multiplier', axes_origin=[]),
+            mgd.OutputFile("reads.csv.gz", 'multiplier', fnames=reads, axes_origin=[]),
+            mgd.OutputFile("reads.yaml", 'multiplier', fnames=reads_yaml, axes_origin=[]),
             multipliers,
-            'hmmcopy/reads'
+            cell_ids
         ),
-        kwargs={
-            'dtypes': {'valid': bool, 'ideal': bool, 'state':float, 'multiplier':float}
-        }
+        kwargs={'low_memory': True}
     )
 
     workflow.transform(
         name='merge_segs',
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.workflows.hmmcopy.tasks.merge_hdf_files_on_disk",
+        func="single_cell.workflows.hmmcopy.tasks.concatenate_csv",
         args=(
-            mgd.TempInputFile('segs.h5', 'cell_id'),
-            mgd.TempOutputFile("segments.h5"),
+            mgd.TempInputFile('segs.csv.gz', 'cell_id', 'multiplier', axes_origin=[]),
+            mgd.OutputFile("segs.csv.gz", 'multiplier', fnames=segs, axes_origin=[]),
+            mgd.OutputFile("segs.yaml", 'multiplier', fnames=segs_yaml, axes_origin=[]),
             multipliers,
-            'hmmcopy/segments'
+            cell_ids
         ),
-        kwargs={
-            'dtypes': {'end': float, 'median': float}
-        }
+        kwargs={'low_memory': True}
     )
 
     workflow.transform(
         name='merge_metrics',
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.workflows.hmmcopy.tasks.merge_hdf_files_in_memory",
+        func="single_cell.workflows.hmmcopy.tasks.concatenate_csv",
         args=(
-            mgd.TempInputFile('hmm_metrics.h5', 'cell_id'),
-            mgd.TempOutputFile("hmmcopy_metrics.h5"),
+            mgd.TempInputFile('hmm_metrics.csv.gz', 'cell_id', 'multiplier', axes_origin=[]),
+            mgd.TempOutputFile("hmm_metrics.csv.gz", 'multiplier', axes_origin=[]),
+            None,
             multipliers,
-            'hmmcopy/metrics'
+            cell_ids
         ),
-        kwargs={
-            'dtypes': {'mad_neutral_state': float}
-        }
     )
 
     workflow.transform(
         name='merge_params',
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.workflows.hmmcopy.tasks.merge_hdf_files_in_memory",
+        func="single_cell.workflows.hmmcopy.tasks.concatenate_csv",
         args=(
-            mgd.TempInputFile('params.h5', 'cell_id'),
-            mgd.TempOutputFile("params.h5"),
+            mgd.TempInputFile('params.csv.gz', 'cell_id', 'multiplier', axes_origin=[]),
+            mgd.OutputFile("params.csv.gz", 'multiplier', fnames=params, axes_origin=[]),
+            mgd.OutputFile("params.yaml", 'multiplier', fnames=params_yaml, axes_origin=[]),
             multipliers,
-            'hmmcopy/params'
+            cell_ids
         ),
     )
 
-    annotation_input = 'hmmcopy_metrics.h5'
+    annotation_input = mgd.TempInputFile("hmm_metrics.csv.gz", "multiplier")
     if alignment_metrics:
-        annotation_input = 'hmmcopy_quality_metrics.h5'
+        annotation_input = mgd.TempInputFile("hmmcopy_quality_metrics.csv.gz", "multiplier")
         workflow.transform(
             name="add_quality",
             ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+            axes=('multiplier',),
             func="single_cell.workflows.hmmcopy.tasks.add_quality",
             args=(
-                mgd.TempInputFile('hmmcopy_metrics.h5'),
+                mgd.TempInputFile("hmm_metrics.csv.gz", 'multiplier'),
                 mgd.InputFile(alignment_metrics),
                 multipliers,
-                mgd.TempOutputFile("hmmcopy_quality_metrics.h5"),
+                mgd.TempOutputFile("hmmcopy_quality_metrics.csv.gz", "multiplier"),
                 hmmparams['classifier_training_data'],
             ),
         )
@@ -133,16 +157,21 @@ def create_hmmcopy_workflow(
     workflow.transform(
         name='annotate_metrics_with_info_and_clustering',
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        axes=('multiplier',),
         func="single_cell.workflows.hmmcopy.tasks.annotate_metrics",
         args=(
-            mgd.TempInputFile('reads.h5'),
-            mgd.TempInputFile(annotation_input),
-            mgd.TempOutputFile("annotated_metrics.h5"),
+            mgd.TempInputFile('reads.csv.gz', 'multiplier'),
+            annotation_input,
+            mgd.OutputFile("annotated_metrics.csv.gz", 'multiplier', fnames=metrics),
             sample_info,
             cell_ids,
-            multipliers,
         ),
-        kwargs={'chromosomes': hmmparams["chromosomes"]}
+        kwargs={
+            'chromosomes': hmmparams["chromosomes"],
+            'yamlfile': mgd.OutputFile(
+                "annotated_metrics.yaml", 'multiplier', fnames=metrics_yaml
+            ),
+        }
     )
 
     workflow.transform(
@@ -158,63 +187,85 @@ def create_hmmcopy_workflow(
                 mgd.OutputFile(segs_pdf),
                 mgd.OutputFile(bias_pdf),
             ],
-            mgd.TempInputFile("annotated_metrics.h5"),
+            mgd.TempInputFile("annotated_metrics.csv.gz", 'multiplier'),
             None,
             mgd.TempSpace("hmmcopy_plot_merge_temp"),
-            ['segments','bias']
+            ['segments', 'bias']
         )
     )
 
     workflow.transform(
         name='create_igv_seg',
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        axes=('multiplier',),
         func="single_cell.workflows.hmmcopy.tasks.create_igv_seg",
         args=(
-            mgd.TempInputFile("segments.h5"),
-            mgd.TempInputFile("annotated_metrics.h5"),
-            mgd.OutputFile(igv_seg_filename),
-            hmmparams
+            mgd.TempInputFile("segs.csv.gz", 'multiplier'),
+            mgd.TempInputFile("annotated_metrics.csv.gz", 'multiplier'),
+            mgd.OutputFile("igv.seg", 'multiplier', fnames=igv_seg_filename),
+            hmmparams,
+            mgd.InputInstance("multiplier")
         )
     )
 
     workflow.transform(
         name='plot_metrics',
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        axes=('multiplier',),
         func="single_cell.workflows.hmmcopy.tasks.plot_metrics",
         args=(
-            mgd.TempInputFile("annotated_metrics.h5"),
-            mgd.OutputFile(plot_metrics_output),
-            mgd.TempSpace("plot_metrics_temp"),
+            mgd.TempInputFile("annotated_metrics.csv.gz", 'multiplier'),
+            mgd.TempOutputFile("metrics.pdf", 'multiplier'),
             'QC pipeline metrics',
-            multipliers
+            mgd.InputInstance('multiplier')
+        )
+    )
+
+    workflow.transform(
+        name='merge_metrics_plots',
+        ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        func="single_cell.utils.pdfutils.merge_pdfs",
+        args=(
+            mgd.TempInputFile("metrics.pdf", 'multiplier'),
+            mgd.OutputFile(plot_metrics_output)
         )
     )
 
     workflow.transform(
         name='plot_kernel_density',
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        axes=('multiplier',),
         func="single_cell.workflows.hmmcopy.tasks.plot_kernel_density",
         args=(
-            mgd.TempInputFile('annotated_metrics.h5'),
-            mgd.OutputFile(plot_kernel_density_output),
-            mgd.TempSpace("hmmcopy_kde_plot_temp"),
+            mgd.TempInputFile("annotated_metrics.csv.gz", 'multiplier'),
+            mgd.TempOutputFile("kde.pdf", 'multiplier'),
             ',',
             'mad_neutral_state',
             'QC pipeline metrics',
-            multipliers
+            mgd.InputInstance('multiplier')
+        )
+    )
+
+    workflow.transform(
+        name='merge_kde_plots',
+        ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        func="single_cell.utils.pdfutils.merge_pdfs",
+        args=(
+            mgd.TempInputFile("kde.pdf", 'multiplier'),
+            mgd.OutputFile(plot_kernel_density_output),
         )
     )
 
     workflow.transform(
         name='plot_heatmap_ec',
+        axes=('multiplier',),
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.workflows.hmmcopy.tasks.plot_pcolor",
         args=(
-            mgd.TempInputFile('reads.h5'),
-            mgd.TempInputFile('annotated_metrics.h5'),
-            mgd.OutputFile(plot_heatmap_ec_output),
-            mgd.TempSpace("heatmap_ec_temp"),
-            multipliers
+            mgd.TempInputFile('reads.csv.gz', 'multiplier'),
+            mgd.TempInputFile('annotated_metrics.csv.gz', 'multiplier'),
+            mgd.TempOutputFile('plot_heatmap_ec_output.pdf', 'multiplier'),
+            mgd.InputInstance('multiplier')
         ),
         kwargs={
             'plot_title': 'QC pipeline metrics',
@@ -229,15 +280,25 @@ def create_hmmcopy_workflow(
     )
 
     workflow.transform(
+        name='merge_heatmaps',
+        ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        func="single_cell.utils.pdfutils.merge_pdfs",
+        args=(
+            mgd.TempInputFile('plot_heatmap_ec_output.pdf', 'multiplier'),
+            mgd.OutputFile(plot_heatmap_ec_output),
+        )
+    )
+
+    workflow.transform(
         name='plot_heatmap_ec_filtered',
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        axes=('multiplier',),
         func="single_cell.workflows.hmmcopy.tasks.plot_pcolor",
         args=(
-            mgd.TempInputFile('reads.h5'),
-            mgd.TempInputFile('annotated_metrics.h5'),
-            mgd.OutputFile(plot_heatmap_ec_filt_output),
-            mgd.TempSpace("heatmap_ec_filt_temp"),
-            multipliers
+            mgd.TempInputFile('reads.csv.gz', 'multiplier'),
+            mgd.TempInputFile('annotated_metrics.csv.gz', 'multiplier'),
+            mgd.TempOutputFile('plot_heatmap_ec_filt_output.pdf', 'multiplier'),
+            mgd.InputInstance('multiplier')
         ),
         kwargs={
             'plot_title': 'QC pipeline metrics',
@@ -253,26 +314,12 @@ def create_hmmcopy_workflow(
     )
 
     workflow.transform(
-        name='merge_all_hdf5_stores',
+        name='merge_filtered_heatmaps',
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.workflows.hmmcopy.tasks.merge_tables",
+        func="single_cell.utils.pdfutils.merge_pdfs",
         args=(
-            mgd.TempInputFile("reads.h5"),
-            mgd.TempInputFile("segments.h5"),
-            mgd.TempInputFile("annotated_metrics.h5"),
-            mgd.TempInputFile("params.h5"),
-            mgd.TempOutputFile("hmmcopy_precast.h5"),
-            cell_ids
-        )
-    )
-
-    workflow.transform(
-        name='cast_h5',
-        ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.utils.hdfutils.cast_h5_file",
-        args=(
-            mgd.TempInputFile("hmmcopy_precast.h5"),
-            mgd.OutputFile(hmmcopy_data),
+            mgd.TempInputFile('plot_heatmap_ec_filt_output.pdf', 'multiplier'),
+            mgd.OutputFile(plot_heatmap_ec_filt_output),
         )
     )
 
