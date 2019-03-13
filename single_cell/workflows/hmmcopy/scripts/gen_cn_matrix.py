@@ -7,7 +7,7 @@ import logging
 import numpy as np
 import pandas as pd
 import os
-
+from single_cell.utils import helpers
 
 class GenerateCNMatrix(object):
     '''
@@ -24,22 +24,8 @@ class GenerateCNMatrix(object):
         self.sample_id = sample_id
         self.type = typ
 
-    def get_file_format(self, output):
-        _, ext = os.path.splitext(output)
-
-        if ext == ".csv":
-            return "csv"
-        elif ext == ".gz":
-            return "gzip"
-        elif ext == ".h5" or ext == ".hdf5":
-            return "h5"
-        else:
-            logging.getLogger("single_cell.hmmcopy.cnmatrix").warn(
-                "Couldn't detect output format. extension {}".format(ext))
-            return "csv"
-
     def read_input_data(self):
-        fileformat = self.get_file_format(self.input)
+        fileformat = helpers.get_file_format(self.input)
 
         if fileformat == "h5":
             if not self.type == "hmmcopy_corrected_reads":

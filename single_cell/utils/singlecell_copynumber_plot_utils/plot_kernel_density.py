@@ -73,8 +73,6 @@ class PlotKernelDensity(object):
                                    sep=self.sep,
                                    dtype={'chromosome': str, 'start': int}
                                    )
-            if self.multiplier:
-                data = data[data["multiplier"] == self.multiplier]
 
         return data
 
