@@ -35,10 +35,11 @@ def infer_haps(
             value=bam_file.keys(),
         )
 
+        # dont parallelize over chromosomes for per cell bams
         workflow.subworkflow(
             name="extract_seqdata",
             axes=('cell_id',),
-            func=extract_seqdata.create_extract_seqdata_workflow,
+            func='single_cell.workflows.extract_seqdata.create_extract_seqdata_workflow',
             args=(
                 mgd.InputFile(
                     'bam_markdups',
@@ -46,24 +47,15 @@ def infer_haps(
                     fnames=bam_file,
                     extensions=['.bai']
                 ),
-                mgd.TempOutputFile("tumour.h5", "cell_id"),
+                mgd.OutputFile(seqdata_file),
                 config.get('extract_seqdata', {}),
                 config['ref_data_dir'],
                 config,
             )
         )
-
-        workflow.transform(
-            name='merge_all_seqdata',
-            ctx={'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
-            func="single_cell.workflows.titan.tasks.merge_overlapping_seqdata",
-            args=(
-                mgd.OutputFile(seqdata_file),
-                mgd.TempInputFile("tumour.h5", "cell_id"),
-                config["chromosomes"]
-            ),
-        )
     else:
+        # if its a single bam, then its probably whole genome
+        # so parallelize over chromosomes
         workflow.subworkflow(
             name='extract_seqdata',
             func='remixt.workflow.create_extract_seqdata_workflow',
@@ -88,7 +80,7 @@ def infer_haps(
     workflow.transform(
         name='infer_snp_genotype',
         axes=('chromosome',),
-        ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage},
+        ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1},
         func=func,
         args=(
             mgd.TempOutputFile('snp_genotype.tsv', 'chromosome'),
