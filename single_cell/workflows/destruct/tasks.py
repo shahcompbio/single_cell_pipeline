@@ -39,7 +39,7 @@ def merge_tag_cell_fastqs(input_fastqs_1, input_fastqs_2, output_fastq_1, output
     """ Merge a set of pairs of fastqs into a single pair.
 
     Merge per cell paired fastq files and modify each pair
-    of reads to have a name that starts with the cell id
+    of reads to have a comment that is the cell id
 
     Args:
         input_fastqs_1 (dict): fastq filenames keyed by cell_id
@@ -53,7 +53,9 @@ def merge_tag_cell_fastqs(input_fastqs_1, input_fastqs_2, output_fastq_1, output
             for read_end in (0, 1):
                 if fastq_lines[read_end][0][0] != '@':
                     raise ValueError('Expected @ as first character of read name')
-                fastq_lines[read_end][0] = '@' + cell_id + '_' + fastq_lines[read_end][0][1:]
+                if fastq_lines[read_end][2][0] != '+':
+                    raise ValueError('Expected + as first character of comment')
+                fastq_lines[read_end][2] = '+' + cell_id
             for line in fastq_lines[0]:
                 file_1.write(line + '\n')
             for line in fastq_lines[1]:
@@ -119,3 +121,33 @@ def merge_stats(input_stats, output_stats):
     data.to_csv(output_stats, sep='\t', index=False)
 
 
+def extract_cell_counts(breakpoint_reads_filename, cell_counts_filename):
+    """ Extract cell counts from a destruct breakpoint reads file
+
+    Assumes the cell_id has been stored in the comment of the fastq and
+    can be extracted from the comment column of the breakpoint reads
+    table output by destruct.
+
+    Args:
+        breakpoint_reads_filename: raw breakpoint reads table from destruct
+        cell_counts_filename: csv of cluster_id, cell_id, read_count
+    """
+    column_names = ['cluster_id', 'lib_id', 'read_id', 'read_end', 'sequence', 'quality', 'comment']
+    breakpoint_reads_iter = pd.read_csv(
+        breakpoint_reads_filename, sep='\t',
+        names=column_names, header=None,
+        iterator=True, chunksize=100000)
+
+    cell_counts = []
+    for breakpoint_reads in breakpoint_reads_iter:
+        # Only count end 1 entries to remove duplicates
+        breakpoint_reads = breakpoint_reads[breakpoint_reads['read_end'] == 1]
+        # Comment is cell id prefixed with +
+        assert breakpoint_reads['comment'].str.startswith('+').all()
+        breakpoint_reads['cell_id'] = breakpoint_reads['comment'].str.lstrip('+')
+
+        count_data = breakpoint_reads.groupby(['cluster_id', 'cell_id']).size().rename('read_count').reset_index()
+        cell_counts.append(count_data)
+
+    cell_counts = pd.concat(cell_counts, ignore_index=True)
+    cell_counts.to_csv(cell_counts_filename, index=False)
