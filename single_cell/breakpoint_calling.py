@@ -5,7 +5,7 @@ from single_cell.utils import helpers
 import single_cell
 
 
-def breakpoint_calling_workflow(workflow, args):
+def breakpoint_calling_workflow(args):
 
     config = helpers.load_config(args)
     config = config['breakpoint_calling']
@@ -27,7 +27,7 @@ def breakpoint_calling_workflow(workflow, args):
 
     ref_data_directory = config['ref_data_directory']
 
-    pypeliner.workflow.Workflow(ctx={'docker_image': config['docker']['single_cell_pipeline']})
+    workflow = pypeliner.workflow.Workflow(ctx={'docker_image': config['docker']['single_cell_pipeline']})
 
     workflow.setobj(
         obj=mgd.OutputChunks('tumour_cell_id'),

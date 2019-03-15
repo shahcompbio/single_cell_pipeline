@@ -10,8 +10,9 @@ from workflows import split_bams
 from single_cell.utils import helpers
 import single_cell
 
-def split_bam_workflow(workflow, args):
+def split_bam_workflow(args):
 
+    workflow = pypeliner.workflow.Workflow()
     config = helpers.load_config(args)
     config = config['split_bam']
 

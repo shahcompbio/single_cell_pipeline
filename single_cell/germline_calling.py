@@ -11,7 +11,8 @@ from workflows import germline
 from single_cell.utils import helpers
 import single_cell
 
-def germline_calling_workflow(workflow, args):
+def germline_calling_workflow(args):
+    workflow = pypeliner.workflow.Workflow()
 
     config = helpers.load_config(args)
     config = config['germline_calling']

@@ -11,7 +11,7 @@ from workflows import align,alignment_metrics
 from single_cell.utils import helpers
 
 
-def align_workflow(workflow, args):
+def align_workflow(args):
 
     config = helpers.load_config(args)
     config = config['alignment']
@@ -36,6 +36,8 @@ def align_workflow(workflow, args):
 
     plots_dir = os.path.join(outdir,  'plots')
     plot_metrics_output = os.path.join(plots_dir, '{}_plot_metrics.pdf'.format(lib))
+
+    workflow = pypeliner.workflow.Workflow()
 
     if not args["metrics_only"]:
         fastq1_files, fastq2_files = helpers.get_fastqs(args['input_yaml'])

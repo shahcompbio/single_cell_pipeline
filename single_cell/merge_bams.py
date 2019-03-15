@@ -10,7 +10,8 @@ from workflows import merge_bams
 from single_cell.utils import helpers
 import single_cell
 
-def merge_bams_workflow(workflow, args):
+def merge_bams_workflow(args):
+    workflow = pypeliner.workflow.Workflow()
 
     config = helpers.load_config(args)
     config = config['merge_bams']

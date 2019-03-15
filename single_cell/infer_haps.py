@@ -222,7 +222,8 @@ def extract_allele_readcounts(
 
 
 
-def infer_haps_workflow(workflow, args):
+def infer_haps_workflow(args):
+    workflow = pypeliner.workflow.Workflow()
 
     config = helpers.load_config(args)
     config = config['infer_haps']

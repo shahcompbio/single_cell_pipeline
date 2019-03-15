@@ -10,7 +10,8 @@ from utils import helpers
 import single_cell
 import copy
 
-def hmmcopy_workflow(workflow, args):
+def hmmcopy_workflow(args):
+    workflow = hmmcopy_workflow(args)
 
     config = helpers.load_config(args)
     config = config['hmmcopy']
