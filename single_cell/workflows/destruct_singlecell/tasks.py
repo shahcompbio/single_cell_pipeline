@@ -2,6 +2,27 @@ import shutil
 import random
 import gzip
 import pandas as pd
+import pypeliner
+
+
+def destruct_bamdisc(
+        destruct_config, normal_bam_file, stats,
+        reads_1, reads_2, sample_1, sample_2, tempdir
+):
+    cmd = ['destruct_bamdiscordantfastq',
+           '-r',
+           '-c', destruct_config['bam_max_soft_clipped'],
+           '-f', destruct_config['bam_max_fragment_length'],
+           '-b', normal_bam_file,
+           '-s', stats,
+           '--fastq1', reads_1,
+           '--fastq2', reads_2,
+           '-t', tempdir,
+           '-n', destruct_config['num_read_samples'],
+           '--sample1', sample_1,
+           '--sample2', sample_2,
+           ]
+    pypeliner.commandline.execute(*cmd)
 
 
 def read_paired_cell_fastqs(input_fastqs_1, input_fastqs_2):
@@ -28,14 +49,14 @@ def read_paired_cell_fastqs(input_fastqs_1, input_fastqs_2):
                 fastq_lines[0].append(fastq_1_line.rstrip())
                 fastq_lines[1].append(fastq_2_line.rstrip())
                 if len(fastq_lines[0]) == 4:
-                    yield fastq_lines
+                    yield cell_id, fastq_lines
                     fastq_lines = [[], []]
-    assert len(fastq_lines[0]) == 0 or len(fastq_lines[0]) == 4
+    assert len(fastq_lines[0]) == 0 or len(fastq_lines[0]) == 4, fastq_lines
     if len(fastq_lines[0]) == 4:
         yield cell_id, fastq_lines
 
 
-def merge_tag_cell_fastqs(input_fastqs_1, input_fastqs_2, output_fastq_1, output_fastq_2):
+def merge_cell_fastqs(input_fastqs_1, input_fastqs_2, output_fastq_1, output_fastq_2, tag=False):
     """ Merge a set of pairs of fastqs into a single pair.
 
     Merge per cell paired fastq files and modify each pair
@@ -55,7 +76,8 @@ def merge_tag_cell_fastqs(input_fastqs_1, input_fastqs_2, output_fastq_1, output
                     raise ValueError('Expected @ as first character of read name')
                 if fastq_lines[read_end][2][0] != '+':
                     raise ValueError('Expected + as first character of comment')
-                fastq_lines[read_end][2] = '+' + cell_id
+                if tag:
+                    fastq_lines[read_end][2] = '+' + cell_id
             for line in fastq_lines[0]:
                 file_1.write(line + '\n')
             for line in fastq_lines[1]:

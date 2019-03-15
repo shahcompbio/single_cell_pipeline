@@ -86,6 +86,8 @@ def create_multi_sample_workflow(
     haplotypes_file = os.path.join(results_dir, 'haplotypes.tsv')
     allele_counts_template = os.path.join(results_dir, '{sample_id}_allele_counts.csv')
     breakpoints_template = os.path.join(results_dir, '{sample_id}_destruct.h5')
+    breakpoints_library_template = os.path.join(results_dir, '{sample_id}_destruct_library.h5')
+    cell_counts_template = os.path.join(results_dir, '{sample_id}_cell_counts_destruct.h5')
     lumpy_breakpoints_bed = os.path.join(results_dir, '{sample_id}_lumpy_breakpoints.bed')
     lumpy_breakpoints_h5 = os.path.join(results_dir, '{sample_id}_lumpy_breakpoints.h5')
 
@@ -109,6 +111,8 @@ def create_multi_sample_workflow(
     workflow.set_filenames('tumour_cell_seqdata.h5', 'sample_id', 'cell_id', template=tumour_cell_seqdata_template)
     workflow.set_filenames('allele_counts.csv', 'sample_id', template=allele_counts_template)
     workflow.set_filenames('breakpoints.h5', 'sample_id', template=breakpoints_template)
+    workflow.set_filenames('breakpoints_library.h5', 'sample_id', template=breakpoints_library_template)
+    workflow.set_filenames('cell_counts.h5', 'sample_id', template=cell_counts_template)
     workflow.set_filenames('lumpy_breakpoints.h5', 'sample_id', template=lumpy_breakpoints_h5)
     workflow.set_filenames('lumpy_breakpoints.bed', 'sample_id', template=lumpy_breakpoints_bed)
 
@@ -286,7 +290,7 @@ def create_multi_sample_workflow(
         baseimage = config['breakpoint_calling']['docker']['single_cell_pipeline']
         workflow.subworkflow(
             name='destruct',
-            func='single_cell.workflows.destruct.create_destruct_workflow',
+            func='single_cell.workflows.destruct_singlecell.create_destruct_workflow',
             axes=('sample_id',),
             ctx={'docker_image': baseimage},
             args=(
@@ -295,6 +299,8 @@ def create_multi_sample_workflow(
                 destruct_config,
                 destruct_ref_data_dir,
                 mgd.OutputFile('breakpoints.h5', 'sample_id'),
+                mgd.OutputFile('breakpoints_library.h5', 'sample_id'),
+                mgd.OutputFile('cell_counts.h5', 'sample_id'),
                 mgd.Template(destruct_raw_data_template, 'sample_id'),
             ),
             kwargs={

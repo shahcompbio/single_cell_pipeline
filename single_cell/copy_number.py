@@ -9,8 +9,10 @@ import pypeliner.managed as mgd
 from workflows import titan
 from single_cell.utils import helpers
 from workflows import extract_seqdata
+import pypeliner
 
-def copy_number_calling_workflow(workflow, args):
+def copy_number_calling_workflow(args):
+    workflow = pypeliner.workflow.Workflow()
 
     config = helpers.load_config(args)
     config = config['copy_number_calling']

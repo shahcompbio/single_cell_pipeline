@@ -10,9 +10,11 @@ import pypeliner.managed as mgd
 from workflows import aneufinder 
 from single_cell.utils import helpers
 import single_cell
+import pypeliner
 
 
-def aneufinder_workflow(workflow, args):
+def aneufinder_workflow(args):
+    workflow = pypeliner.workflow.Workflow()
 
     config = helpers.load_config(args)
     config = config['aneufinder']

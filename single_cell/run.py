@@ -30,21 +30,21 @@ def main():
 
     if args["which"] == "generate_config":
         generate_config(args)
+        return
 
     if args["which"] == "clean_sentinels":
         clean_sentinels(args)
+        return
+
+    pyp = pypeliner.app.Pypeline(config=args)
+
+    workflow = None
 
     if args["which"] == "align":
-        pyp = pypeliner.app.Pypeline(config=args)
-        workflow = pypeliner.workflow.Workflow()
-        workflow = align_workflow(workflow, args)
-        pyp.run(workflow)
+        workflow = align_workflow(args)
 
     if args["which"] == "hmmcopy":
-        pyp = pypeliner.app.Pypeline(config=args)
-        workflow = pypeliner.workflow.Workflow()
-        workflow = hmmcopy_workflow(workflow, args)
-        pyp.run(workflow)
+        workflow = hmmcopy_workflow(args)
 
 #     if args["which"] == "copyclone":
 #         pyp = pypeliner.app.Pypeline(config=args)
@@ -53,66 +53,39 @@ def main():
 #         pyp.run(workflow)
 
     if args["which"] == "aneufinder":
-        pyp = pypeliner.app.Pypeline(config=args)
-        workflow = pypeliner.workflow.Workflow()
-        workflow = aneufinder_workflow(workflow, args)
-        pyp.run(workflow)
+        workflow = aneufinder_workflow(args)
 
     if args["which"] == "merge_bams":
-        pyp = pypeliner.app.Pypeline(config=args)
-        workflow = pypeliner.workflow.Workflow()
-        workflow = merge_bams_workflow(workflow, args)
-        pyp.run(workflow)
+        workflow = merge_bams_workflow(args)
 
     if args["which"] == "split_bam":
-        pyp = pypeliner.app.Pypeline(config=args)
-        workflow = pypeliner.workflow.Workflow()
-        workflow = split_bam_workflow(workflow, args)
-        pyp.run(workflow)
+        workflow = split_bam_workflow(args)
 
     if args["which"] == "variant_calling":
-        pyp = pypeliner.app.Pypeline(config=args)
         workflow = variant_calling_workflow(args)
-        pyp.run(workflow)
 
     if args["which"] == "copy_number_calling":
-        pyp = pypeliner.app.Pypeline(config=args)
-        workflow = pypeliner.workflow.Workflow()
-        workflow = copy_number_calling_workflow(workflow, args)
-        pyp.run(workflow)
+        workflow = copy_number_calling_workflow(args)
 
     if args["which"] == "infer_haps":
-        pyp = pypeliner.app.Pypeline(config=args)
-        workflow = pypeliner.workflow.Workflow()
-        workflow = infer_haps_workflow(workflow, args)
-        pyp.run(workflow)
+        workflow = infer_haps_workflow(args)
 
     if args["which"] == "germline_calling":
-        pyp = pypeliner.app.Pypeline(config=args)
-        workflow = pypeliner.workflow.Workflow()
-        workflow = germline_calling_workflow(workflow, args)
-        pyp.run(workflow)
+        workflow = germline_calling_workflow(args)
 
     if args["which"] == "breakpoint_calling":
-        pyp = pypeliner.app.Pypeline(config=args)
-        workflow = pypeliner.workflow.Workflow()
-        workflow = breakpoint_calling_workflow(workflow, args)
-        pyp.run(workflow)
+        workflow = breakpoint_calling_workflow(args)
 
     if args["which"] == "variant_counting":
-        pyp = pypeliner.app.Pypeline(config=args)
         workflow = variant_counting_workflow(args)
-        pyp.run(workflow)
 
     if args["which"] == "ltm":
-        pyp = pypeliner.app.Pypeline(config=args)
-        workflow = pypeliner.workflow.Workflow()
-        workflow = ltm_workflow(workflow, args)
-        pyp.run(workflow)
+        workflow = ltm_workflow(args)
 
     if args["which"] == "multi_sample_pseudo_bulk":
-        pyp = pypeliner.app.Pypeline(config=args)
         workflow = multi_sample_workflow(args)
+
+    if workflow:
         pyp.run(workflow)
 
 

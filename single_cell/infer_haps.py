@@ -8,7 +8,6 @@ import os
 import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import helpers
-from workflows import extract_seqdata
 
 
 def infer_haps(
@@ -233,7 +232,8 @@ def extract_allele_readcounts(
 
 
 
-def infer_haps_workflow(workflow, args):
+def infer_haps_workflow(args):
+    workflow = pypeliner.workflow.Workflow()
 
     config = helpers.load_config(args)
     config = config['infer_haps']
