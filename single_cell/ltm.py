@@ -14,7 +14,8 @@ from single_cell.utils import ltmutils
 import single_cell
 
 
-def ltm_workflow(workflow, args):
+def ltm_workflow(args):
+    workflow = pypeliner.workflow.Workflow()
 
     config = helpers.load_config(args)
 
