@@ -76,6 +76,8 @@ def run_samtools_sort(infile, outfile, docker_image=None):
 
 def merge_bams(inputs, output, tempdir, docker_image=None):
 
+    helpers.makedirs(tempdir)
+
     inputs = inputs.values()
 
     cmd = ['samtools', 'merge', '-f', output]
