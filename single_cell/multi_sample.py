@@ -236,7 +236,7 @@ def create_multi_sample_workflow(
 
     if run_haps:
         if isinstance(normal_wgs_bam, dict):
-            haps_input = mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai']),
+            haps_input = mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai'])
         else:
             haps_input = mgd.InputFile(normal_wgs_bam, extensions=['.bai'])
 
