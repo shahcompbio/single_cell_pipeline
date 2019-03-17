@@ -47,12 +47,23 @@ def infer_haps(
                     fnames=bam_file,
                     extensions=['.bai']
                 ),
-                mgd.OutputFile(seqdata_file),
+                mgd.TempOutputFile('seqdata_cell.h5','cell_id'),
                 config.get('extract_seqdata', {}),
                 config['ref_data_dir'],
                 config,
             )
         )
+        workflow.transform(
+            name='merge_all_seqdata',
+            ctx={'mem_retry_increment': 2, 'ncpus': 1},
+            func="single_cell.workflows.titan.tasks.merge_overlapping_seqdata",
+            args=(
+                mgd.OutputFile(seqdata_file),
+                mgd.TempInputFile("seqdata_cell.h5", "cell_id"),
+                config["chromosomes"]
+            ),
+        )
+
     else:
         # if its a single bam, then its probably whole genome
         # so parallelize over chromosomes
