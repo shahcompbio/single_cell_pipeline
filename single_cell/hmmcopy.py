@@ -42,19 +42,19 @@ def hmmcopy_workflow(args):
         reads_csvs = os.path.join(
             results_dir, 'multiplier_{multiplier}', '{}_reads.csv.gz'.format(lib))
         reads_yaml = os.path.join(
-            results_dir, 'multiplier_{multiplier}', '{}_reads.yaml'.format(lib))
+            results_dir, 'multiplier_{multiplier}', '{}_reads.csv.gz.yaml'.format(lib))
         segs_csvs = os.path.join(
             results_dir, 'multiplier_{multiplier}', '{}_segments.csv.gz'.format(lib))
         segs_yaml = os.path.join(
-            results_dir, 'multiplier_{multiplier}', '{}_segments.yaml'.format(lib))
+            results_dir, 'multiplier_{multiplier}', '{}_segments.csv.gz.yaml'.format(lib))
         params_csvs = os.path.join(
             results_dir, 'multiplier_{multiplier}', '{}_params.csv.gz'.format(lib))
         params_yaml = os.path.join(
-            results_dir, 'multiplier_{multiplier}', '{}_params.yaml'.format(lib))
+            results_dir, 'multiplier_{multiplier}', '{}_params.csv.gz.yaml'.format(lib))
         metrics_csvs = os.path.join(
             results_dir, 'multiplier_{multiplier}', '{}_metrics.csv.gz'.format(lib))
         metrics_yaml = os.path.join(
-            results_dir, 'multiplier_{multiplier}', '{}_metrics.yaml'.format(lib))
+            results_dir, 'multiplier_{multiplier}', '{}_metrics.csv.gz.yaml'.format(lib))
         igv_csvs = os.path.join(
             results_dir, 'multiplier_{multiplier}', '{}_igv_segments.seg'.format(lib))
 
