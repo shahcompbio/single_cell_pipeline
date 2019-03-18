@@ -20,6 +20,7 @@ def process_cells_destruct(
     workflow.transform(
         name='bamdisc_cell',
         func="single_cell.workflows.destruct_singlecell.tasks.destruct_bamdisc",
+        axes=('cell_id',),
         ctx={'io': 1, 'mem': 8},
         args=(
             destruct_config,
