@@ -41,7 +41,8 @@ def multi_sample_workflow(args):
         tumour_cell_bams,
         args['out_dir'],
         helpers.load_config(args),
-        run_breakpoint=args['call_breakpoints'],
+        run_destruct=args['call_destruct'],
+        run_lumpy=args['call_lumpy'],
         run_haps=args['call_haps'],
         run_varcall=args["call_variants"]
     )
@@ -54,14 +55,16 @@ def create_multi_sample_workflow(
         tumour_cell_bams,
         results_dir,
         config,
-        run_breakpoint=False,
+        run_destruct=False,
+        run_lumpy=False,
         run_haps=False,
         run_varcall=False
 ):
     """ Multiple sample pseudobulk workflow. """
 
-    if not any((run_breakpoint, run_haps, run_varcall)):
-        run_breakpoint = True
+    if not any((run_destruct, run_lumpy, run_haps, run_varcall)):
+        run_destruct = True
+        run_lumpy = True
         run_haps = True
         run_varcall = True
 
@@ -119,6 +122,11 @@ def create_multi_sample_workflow(
     workflow.set_filenames('snv_calling_info.yaml', 'sample_id', template=snv_calling_info_template)
     workflow.set_filenames('snv_counting_info.yaml', 'sample_id', template=snv_counting_info_template)
 
+    if isinstance(normal_wgs_bam, dict):
+        normal_bam = mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai'])
+    else:
+        normal_bam = mgd.InputFile(normal_wgs_bam, extensions=['.bai'])
+
     workflow.setobj(
         obj=mgd.OutputChunks('region'),
         value=regions,
@@ -135,48 +143,48 @@ def create_multi_sample_workflow(
         value=regions,
     )
 
-    if isinstance(normal_wgs_bam, dict):
-        workflow.setobj(
-            obj=mgd.OutputChunks('normal_cell_id'),
-            value=normal_wgs_bam.keys(),
-        )
-        workflow.set_filenames('normal_cells.bam', 'normal_cell_id', fnames=normal_wgs_bam)
+    if run_varcall:
+        if isinstance(normal_wgs_bam, dict):
+            workflow.setobj(
+                obj=mgd.OutputChunks('normal_cell_id'),
+                value=normal_wgs_bam.keys(),
+            )
+            workflow.set_filenames('normal_cells.bam', 'normal_cell_id', fnames=normal_wgs_bam)
+            workflow.subworkflow(
+                name="merge_normal_cells",
+                func=merge_bams.create_merge_bams_workflow,
+                args=(
+                    mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai']),
+                    mgd.OutputFile('normal_regions.bam', 'region', axes_origin=[], extensions=['.bai']),
+                    regions,
+                    config['merge_bams'],
+                )
+            )
+        else:
+            workflow.subworkflow(
+                name="split_normal",
+                func=split_bams.create_split_workflow,
+                args=(
+                    mgd.InputFile(normal_wgs_bam, extensions=['.bai']),
+                    mgd.OutputFile('normal_regions.bam', 'region', extensions=['.bai'], axes_origin=[]),
+                    pypeliner.managed.TempInputObj('region'),
+                    config['split_bam'],
+                ),
+                kwargs={"by_reads": False}
+            )
+
         workflow.subworkflow(
-            name="split_normal",
+            name="split_merge_tumour",
+            axes=('sample_id',),
             func=merge_bams.create_merge_bams_workflow,
             args=(
-                mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai']),
-                mgd.OutputFile('normal_regions.bam', 'region', axes_origin=[], extensions=['.bai']),
+                mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
+                mgd.OutputFile('tumour_regions.bam', 'sample_id', 'region', axes_origin=[], extensions=['.bai']),
                 regions,
                 config['merge_bams'],
             )
         )
-    else:
-        workflow.subworkflow(
-            name="split_normal",
-            func=split_bams.create_split_workflow,
-            args=(
-                mgd.InputFile(normal_wgs_bam, extensions=['.bai']),
-                mgd.OutputFile('normal_regions.bam', 'region', extensions=['.bai'], axes_origin=[]),
-                pypeliner.managed.TempInputObj('region'),
-                config['split_bam'],
-            ),
-            kwargs={"by_reads": False}
-        )
 
-    workflow.subworkflow(
-        name="split_merge_tumour",
-        axes=('sample_id',),
-        func=merge_bams.create_merge_bams_workflow,
-        args=(
-            mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
-            mgd.OutputFile('tumour_regions.bam', 'sample_id', 'region', axes_origin=[], extensions=['.bai']),
-            regions,
-            config['merge_bams'],
-        )
-    )
-
-    if run_varcall:
         workflow.subworkflow(
             name='variant_calling',
             func=variant_calling.create_variant_calling_workflow,
@@ -239,16 +247,11 @@ def create_multi_sample_workflow(
         )
 
     if run_haps:
-        if isinstance(normal_wgs_bam, dict):
-            haps_input = mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai'])
-        else:
-            haps_input = mgd.InputFile(normal_wgs_bam, extensions=['.bai'])
-
         workflow.subworkflow(
             name='infer_haps_from_cells_normal',
             func=infer_haps.infer_haps,
             args=(
-                haps_input,
+                normal_bam,
                 mgd.OutputFile(normal_seqdata_file),
                 mgd.OutputFile(haplotypes_file),
                 mgd.TempOutputFile("allele_counts.csv"),
@@ -270,31 +273,17 @@ def create_multi_sample_workflow(
             ),
         )
 
-    if run_breakpoint:
-        if isinstance(normal_wgs_bam, dict):
-            workflow.transform(
-                name='merge_normal_cells_destruct',
-                func='single_cell.utils.bamutils.bam_merge',
-                args=(
-                    mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai']),
-                    mgd.TempOutputFile("merged_tumour.bam"),
-                ),
-                kwargs={'docker_image': config['merge_bams']['docker']['samtools']}
-            )
-            final_wgs_bam = mgd.TempInputFile("merged_tumour.bam")
-        else:
-            final_wgs_bam = mgd.InputFile(normal_wgs_bam)
-
-        destruct_config = config['breakpoint_calling'].get('destruct_config', {})
-        destruct_ref_data_dir = config['breakpoint_calling']['ref_data_directory']
-        baseimage = config['breakpoint_calling']['docker']['single_cell_pipeline']
+    if run_destruct:
+        config = config['breakpoint_calling']
+        destruct_config = config.get('destruct_config', {})
+        destruct_ref_data_dir = config['ref_data_directory']
         workflow.subworkflow(
             name='destruct',
             func='single_cell.workflows.destruct_singlecell.create_destruct_workflow',
             axes=('sample_id',),
-            ctx={'docker_image': baseimage},
+            ctx={'docker_image': config['docker']['destruct']},
             args=(
-                final_wgs_bam,
+                normal_bam,
                 mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
                 destruct_config,
                 destruct_ref_data_dir,
@@ -308,18 +297,14 @@ def create_multi_sample_workflow(
             },
         )
 
-        if isinstance(normal_wgs_bam, dict):
-            normal_bam = mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai'])
-        else:
-            normal_bam = mgd.InputFile(normal_wgs_bam, extensions=['.bai'])
-
+    if run_lumpy:
         workflow.subworkflow(
             name='lumpy',
-            ctx={'docker_image': baseimage},
+            ctx={'docker_image': config['docker']['single_cell_pipeline']},
             axes=('sample_id',),
             func="single_cell.workflows.lumpy.create_lumpy_workflow",
             args=(
-                config['breakpoint_calling'],
+                config,
                 mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
                 normal_bam,
                 mgd.OutputFile('lumpy_breakpoints.bed', 'sample_id'),

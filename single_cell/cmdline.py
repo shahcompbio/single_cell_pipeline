@@ -235,10 +235,17 @@ def parse_args():
     multi_sample_pseudo_bulk.set_defaults(which='multi_sample_pseudo_bulk')
 
     multi_sample_pseudo_bulk.add_argument(
-        "--call_breakpoints",
+        "--call_destruct",
         default=False,
         action='store_true',
         help='''add destruct to list of analyses'''
+    )
+
+    multi_sample_pseudo_bulk.add_argument(
+        "--call_lumpy",
+        default=False,
+        action='store_true',
+        help='''add lumpy to list of analyses'''
     )
 
     multi_sample_pseudo_bulk.add_argument(
