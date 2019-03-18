@@ -30,9 +30,9 @@ def align_workflow(args):
     info_file = os.path.join(outdir, "info.yaml")
 
     alignment_metrics_csv = os.path.join(outdir, '{}_alignment_metrics.csv.gz'.format(lib))
-    alignment_metrics_yaml = os.path.join(outdir, '{}_alignment_metrics.yaml'.format(lib))
+    alignment_metrics_yaml = os.path.join(outdir, '{}_alignment_metrics.csv.gz.yaml'.format(lib))
     gc_metrics_csv = os.path.join(outdir, '{}_gc_metrics.csv.gz'.format(lib))
-    gc_metrics_yaml = os.path.join(outdir, '{}_gc_metrics.yaml'.format(lib))
+    gc_metrics_yaml = os.path.join(outdir, '{}_gc_metrics.csv.gz.yaml'.format(lib))
 
     plots_dir = os.path.join(outdir,  'plots')
     plot_metrics_output = os.path.join(plots_dir, '{}_plot_metrics.pdf'.format(lib))
