@@ -160,7 +160,7 @@ def create_hmmcopy_workflow(
         axes=('multiplier',),
         func="single_cell.workflows.hmmcopy.tasks.annotate_metrics",
         args=(
-            mgd.TempInputFile('reads.csv.gz', 'multiplier'),
+            mgd.InputFile("reads.csv.gz", 'multiplier', fnames=reads),
             annotation_input,
             mgd.OutputFile("annotated_metrics.csv.gz", 'multiplier', fnames=metrics),
             sample_info,
@@ -187,7 +187,7 @@ def create_hmmcopy_workflow(
                 mgd.OutputFile(segs_pdf),
                 mgd.OutputFile(bias_pdf),
             ],
-            mgd.TempInputFile("annotated_metrics.csv.gz", 'multiplier'),
+            mgd.InputFile("annotated_metrics.csv.gz", 'multiplier', fnames=metrics),
             None,
             mgd.TempSpace("hmmcopy_plot_merge_temp"),
             ['segments', 'bias']
@@ -200,8 +200,8 @@ def create_hmmcopy_workflow(
         axes=('multiplier',),
         func="single_cell.workflows.hmmcopy.tasks.create_igv_seg",
         args=(
-            mgd.TempInputFile("segs.csv.gz", 'multiplier'),
-            mgd.TempInputFile("annotated_metrics.csv.gz", 'multiplier'),
+            mgd.InputFile("segs.csv.gz", 'multiplier', fnames=segs),
+            mgd.InputFile("annotated_metrics.csv.gz", 'multiplier', fnames=metrics),
             mgd.OutputFile("igv.seg", 'multiplier', fnames=igv_seg_filename),
             hmmparams,
             mgd.InputInstance("multiplier")
@@ -214,7 +214,7 @@ def create_hmmcopy_workflow(
         axes=('multiplier',),
         func="single_cell.workflows.hmmcopy.tasks.plot_metrics",
         args=(
-            mgd.TempInputFile("annotated_metrics.csv.gz", 'multiplier'),
+            mgd.InputFile("annotated_metrics.csv.gz", 'multiplier', fnames=metrics),
             mgd.TempOutputFile("metrics.pdf", 'multiplier'),
             'QC pipeline metrics',
             mgd.InputInstance('multiplier')
@@ -237,7 +237,7 @@ def create_hmmcopy_workflow(
         axes=('multiplier',),
         func="single_cell.workflows.hmmcopy.tasks.plot_kernel_density",
         args=(
-            mgd.TempInputFile("annotated_metrics.csv.gz", 'multiplier'),
+            mgd.InputFile("annotated_metrics.csv.gz", 'multiplier', fnames=metrics),
             mgd.TempOutputFile("kde.pdf", 'multiplier'),
             ',',
             'mad_neutral_state',
@@ -262,8 +262,8 @@ def create_hmmcopy_workflow(
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.workflows.hmmcopy.tasks.plot_pcolor",
         args=(
-            mgd.TempInputFile('reads.csv.gz', 'multiplier'),
-            mgd.TempInputFile('annotated_metrics.csv.gz', 'multiplier'),
+            mgd.InputFile("reads.csv.gz", 'multiplier', fnames=reads),
+            mgd.InputFile("annotated_metrics.csv.gz", 'multiplier', fnames=metrics),
             mgd.TempOutputFile('plot_heatmap_ec_output.pdf', 'multiplier'),
             mgd.InputInstance('multiplier')
         ),
@@ -295,8 +295,8 @@ def create_hmmcopy_workflow(
         axes=('multiplier',),
         func="single_cell.workflows.hmmcopy.tasks.plot_pcolor",
         args=(
-            mgd.TempInputFile('reads.csv.gz', 'multiplier'),
-            mgd.TempInputFile('annotated_metrics.csv.gz', 'multiplier'),
+            mgd.InputFile("reads.csv.gz", 'multiplier', fnames=reads),
+            mgd.InputFile("annotated_metrics.csv.gz", 'multiplier', fnames=metrics),
             mgd.TempOutputFile('plot_heatmap_ec_filt_output.pdf', 'multiplier'),
             mgd.InputInstance('multiplier')
         ),
