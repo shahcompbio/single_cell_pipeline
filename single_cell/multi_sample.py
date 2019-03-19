@@ -123,6 +123,11 @@ def create_multi_sample_workflow(
     workflow.set_filenames('snv_counting_info.yaml', 'sample_id', template=snv_counting_info_template)
 
     if isinstance(normal_wgs_bam, dict):
+        workflow.setobj(
+            obj=mgd.OutputChunks('normal_cell_id'),
+            value=normal_wgs_bam.keys(),
+        )
+        workflow.set_filenames('normal_cells.bam', 'normal_cell_id', fnames=normal_wgs_bam)
         normal_bam = mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai'])
     else:
         normal_bam = mgd.InputFile(normal_wgs_bam, extensions=['.bai'])
@@ -145,16 +150,11 @@ def create_multi_sample_workflow(
 
     if run_varcall:
         if isinstance(normal_wgs_bam, dict):
-            workflow.setobj(
-                obj=mgd.OutputChunks('normal_cell_id'),
-                value=normal_wgs_bam.keys(),
-            )
-            workflow.set_filenames('normal_cells.bam', 'normal_cell_id', fnames=normal_wgs_bam)
             workflow.subworkflow(
                 name="merge_normal_cells",
                 func=merge_bams.create_merge_bams_workflow,
                 args=(
-                    mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai']),
+                    normal_bam,
                     mgd.OutputFile('normal_regions.bam', 'region', axes_origin=[], extensions=['.bai']),
                     regions,
                     config['merge_bams'],
@@ -165,7 +165,7 @@ def create_multi_sample_workflow(
                 name="split_normal",
                 func=split_bams.create_split_workflow,
                 args=(
-                    mgd.InputFile(normal_wgs_bam, extensions=['.bai']),
+                    normal_bam,
                     mgd.OutputFile('normal_regions.bam', 'region', extensions=['.bai'], axes_origin=[]),
                     pypeliner.managed.TempInputObj('region'),
                     config['split_bam'],
