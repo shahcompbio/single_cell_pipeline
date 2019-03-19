@@ -9,9 +9,10 @@ from workflows import hmmcopy
 from utils import helpers
 import single_cell
 import copy
+import pypeliner
 
 def hmmcopy_workflow(args):
-    workflow = hmmcopy_workflow(args)
+    workflow = pypeliner.workflow.Workflow()
 
     config = helpers.load_config(args)
     config = config['hmmcopy']
