@@ -6,7 +6,7 @@ Created on Jun 26, 2018
 import argparse
 import pandas as pd
 import numpy as np
-
+import single_cell.utils.helpers
 import shutil
 
 from sklearn.ensemble import RandomForestClassifier
@@ -48,8 +48,28 @@ def read_from_h5(filename, tablename):
     return data
 
 
-def train_classifier(filename):
+def read_from_csv(filename, gzipped=False):
+    compression = 'gzip' if gzipped else None
+    data = pd.read_csv(filename, compression=compression)
+    return data
 
+
+def read_data(filename, tablename, gzipped=True):
+    fileformat = single_cell.utils.helpers.get_file_format(filename)
+
+    if fileformat == 'h5':
+        data = read_from_h5(filename, tablename)
+    elif fileformat == 'csv':
+        data = read_from_csv(filename)
+    elif fileformat == 'gzip':
+        data = read_from_csv(filename, gzipped=True)
+    else:
+        raise Exception("unknown file format")
+
+    return data
+
+
+def train_classifier(filename):
     training_data = read_from_h5(filename, '/training_data')
 
     labels = training_data["label"]
@@ -68,10 +88,9 @@ def train_classifier(filename):
 
 def load_data(hmmcopy_filename, alignment_filename,
               hmmcopy_tables, alignment_table, colnames):
-
     for hmmcopy_table in hmmcopy_tables:
-        hmmcopy_data = read_from_h5(hmmcopy_filename, hmmcopy_table)
-        alignment_data = read_from_h5(alignment_filename, alignment_table)
+        hmmcopy_data = read_data(hmmcopy_filename, hmmcopy_table)
+        alignment_data = read_data(alignment_filename, alignment_table)
 
         hmmcopy_data = hmmcopy_data.set_index('cell_id')
         alignment_data = alignment_data.set_index('cell_id')
@@ -96,10 +115,10 @@ def load_data(hmmcopy_filename, alignment_filename,
 
         yield (hmmcopy_table, data)
 
-def classify(model, data):
 
+def classify(model, data):
     ##TODO: remove this with v0.2.3, also handled in collect_metrics
-    #picardtools sometimes reports missing as ?
+    # picardtools sometimes reports missing as ?
     data = data.replace('?', 0)
     predictions = model.predict_proba(data)
 
@@ -116,15 +135,32 @@ def classify(model, data):
     return predictions
 
 
-def write_to_output(hmmcopy_filename, hmmcopy_tablename, output, predictions):
+def write_to_hdf(output, hmmcopy_tablename, data):
+    with pd.HDFStore(output, 'a', complevel=9, complib='blosc') as outstore:
+        outstore.put(hmmcopy_tablename, data, format='table')
 
-    data = read_from_h5(hmmcopy_filename, hmmcopy_tablename)
+
+def write_to_csv(output, data, gzipped=False):
+    compression = 'gzip' if gzipped else None
+    data.to_csv(output, index=False, compression=compression)
+
+
+def write_to_output(hmmcopy_filename, hmmcopy_tablename, output, predictions):
+    data = read_data(hmmcopy_filename, hmmcopy_tablename)
 
     data['quality'] = data['cell_id'].map(predictions)
     data.quality = data.quality.astype(float)
 
-    with pd.HDFStore(output, 'a', complevel=9, complib='blosc') as outstore:
-        outstore.put(hmmcopy_tablename, data, format='table')
+    fileformat = single_cell.utils.helpers.get_file_format(output)
+
+    if fileformat == 'h5':
+        write_to_hdf(output, hmmcopy_tablename, data)
+    elif fileformat == 'csv':
+        write_to_csv(output, data)
+    elif fileformat == "gzip":
+        write_to_csv(output, data, gzipped=True)
+    else:
+        raise Exception("unknown file format")
 
 
 if __name__ == "__main__":
@@ -137,8 +173,8 @@ if __name__ == "__main__":
     feature_names = model.feature_names_
 
     data = load_data(args.hmmcopy_metrics, args.alignment_metrics,
-                           args.hmmcopy_tables, args.alignment_table,
-                           feature_names)
+                     args.hmmcopy_tables, args.alignment_table,
+                     feature_names)
 
     for hmmcopy_table, tabledata in data:
         predictions = classify(model, tabledata)
