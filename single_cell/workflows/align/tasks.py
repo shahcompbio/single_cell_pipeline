@@ -110,15 +110,13 @@ def get_readgroup(run_id, cell_id, library_id, centre, sample_info):
     barcode = sample_info["primer_i7"] + "-" + sample_info["primer_i5"]
 
     read_group_template = (
-        '@RG\\tID:' + str(library_id) + '_' + cell_id + '_' + str(run_id) +
-        '\\tPL:' + platform +
-        '\\tPU:' + str(run_id) +
-        '\\tLB:' + str(library_id) + '_' + cell_id +
-        '\\tSM:' + cell_id +
-        '\\tCN:' + centre +
-        '\\tKS:' + barcode)
-
-    read_group_template = '"' + read_group_template + '"'
+        r'@RG\tID:' + str(library_id) + '_' + cell_id + '_' + str(run_id) +
+        r'\tPL:' + platform +
+        r'\tPU:' + str(run_id) +
+        r'\tLB:' + str(library_id) + '_' + cell_id +
+        r'\tSM:' + cell_id +
+        r'\tCN:' + centre +
+        r'\tKS:' + barcode)
 
     return read_group_template
 

@@ -44,11 +44,20 @@ def bwa_mem_paired_end(fastq1, fastq2, output,
     run bwa aln on both fastq files,
     bwa sampe to align, and convert to bam with samtools view
     """
-    pypeliner.commandline.execute(
-        'bwa', 'mem', '-M', '-R', readgroup,
-        reference, fastq1, fastq2,
-        '>', output,
-        **kwargs)
+
+    try:
+        readgroup_literal = '"' + readgroup + '"'
+        pypeliner.commandline.execute(
+            'bwa', 'mem', '-M', '-R', readgroup_literal,
+            reference, fastq1, fastq2,
+            '>', output,
+            **kwargs)
+    except pypeliner.commandline.CommandLineException:
+        pypeliner.commandline.execute(
+            'bwa', 'mem', '-M', '-R', readgroup,
+            reference, fastq1, fastq2,
+            '>', output,
+            **kwargs)
 
 
 def samtools_sam_to_bam(samfile, bamfile,
