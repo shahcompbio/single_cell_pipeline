@@ -186,7 +186,7 @@ def get_vm_size_azure(numcores, memory, tasks_per_node):
 def get_vm_image_id(disk_per_task, tasks_per_node):
     required_disk_size = disk_per_task * tasks_per_node
 
-    if required_disk_size <= 40:
+    if required_disk_size <= 80:
         # uses the temp disk on node, usually 40 GB
         imagename = 'dockerproduction-verysmalldisk'
     elif required_disk_size < 200:
@@ -253,26 +253,24 @@ def get_compute_start_commands(imageid):
     # to explicitly specify the user group when running docker commands. sg in
     # linux can be used to set group when executing commands
 
+    if 'dockerproduction-smalldisk' in imageid or 'docker-production' in imageid:
+        prefix = '/datadrive'
+    else:
+        prefix = '/mnt/datadrive'
+
     commands = [
         'clean_up () {',
         '  echo "clean_up task executed"',
-        '  find $AZ_BATCH_TASK_WORKING_DIR/ -xtype l -delete',
+        '  find {}/$AZ_BATCH_TASK_WORKING_DIR/ -xtype l -delete'.format(prefix),
         '  exit 0',
         '}',
         'trap clean_up EXIT',
     ]
 
-    if 'dockerproduction-smalldisk' in imageid or 'docker-production' in imageid:
-        commands.extend([
-            'mkdir -p /datadrive/$AZ_BATCH_TASK_WORKING_DIR/\n',
-            'cd /datadrive/$AZ_BATCH_TASK_WORKING_DIR/\n'
-        ])
-    else:
-        commands.extend([
-            'mkdir -p /mnt/datadrive/$AZ_BATCH_TASK_WORKING_DIR/\n',
-            'cd /mnt/datadrive/$AZ_BATCH_TASK_WORKING_DIR/\n'
-        ])
-
+    commands.extend([
+        'mkdir -p {}/$AZ_BATCH_TASK_WORKING_DIR/\n'.format(prefix),
+        'cd {}/$AZ_BATCH_TASK_WORKING_DIR/\n'.format(prefix)
+    ])
 
     commands = '\n'.join(commands)
 
@@ -284,15 +282,15 @@ def get_compute_start_commands(imageid):
 def get_compute_finish_commands(imageid):
 
     if 'dockerproduction-smalldisk' in imageid or 'docker-production' in imageid:
-        commands = (
-            'sg docker -c "docker run -v /datadrive:/datadrive -w /datadrive/$AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype l"\n'
-            'sg docker -c "docker run -v /datadrive:/datadrive -w /datadrive/$AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype f"\n'
-        )
+        prefix = '/datadrive'
     else:
-        commands = (
-            'sg docker -c "docker run -v /mnt:/mnt -w /mnt/datadrive/$AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype l"\n'
-            'sg docker -c "docker run -v /mnt:/mnt -w /mnt/datadrive/$AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype f"\n'
-        )
+        prefix = '/mnt/datadrive'
+
+    commands = (
+        'sg docker -c "docker run -v {0}:{0} -w {0}/$AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype l -delete"\n'.format(prefix),
+        'sg docker -c "docker run -v {0}:{0} -w {0}/$AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype f -delete"\n'.format(prefix)
+    )
+    commands = ''.join(commands)
 
     commands = literal_unicode(commands)
 
@@ -342,7 +340,6 @@ def get_batch_config(defaults, override={}):
 
     config.update({"no_delete_pool": defaults["no_delete_pool"]})
     config.update({"no_delete_job": defaults["no_delete_job"]})
-    config.update({"no_delete_job": True})
 
     config.update({"pypeliner_storage_account": "singlecellpipelinetasks"})
 

@@ -34,8 +34,15 @@ def destruct_bamdisc(
     :param tag: Tag reads in fastq with cell_id if set
     :type tag: bool
     """
-    disc_reads_1 = os.path.join(tempdir, "pre_tagged_r1.fastq.gz")
-    disc_reads_2 = os.path.join(tempdir, "pre_tagged_r2.fastq.gz")
+
+    pypeliner.helpers.makedirs(tempdir)
+
+    if tag:
+        disc_reads_1 = os.path.join(tempdir, "pre_tagged_r1.fastq.gz")
+        disc_reads_2 = os.path.join(tempdir, "pre_tagged_r2.fastq.gz")
+    else:
+        disc_reads_1 = reads_1
+        disc_reads_2 = reads_2
 
     cmd = ['destruct_bamdiscordantfastq',
            '-r',
@@ -73,10 +80,10 @@ def tag_reads(input_fastq, output_fastq, tag):
         while True:
             fastq_read = list(islice(infile, 4))
 
-            assert len(fastq_read) == 4, 'fastq file format error'
-
             if not fastq_read:
                 break
+
+            assert len(fastq_read) == 4, 'fastq file format error'
 
             if not fastq_read[0].startswith('@'):
                 raise ValueError('Expected @ as first character of read name')

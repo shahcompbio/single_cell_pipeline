@@ -110,7 +110,7 @@ def create_destruct_workflow(
         workflow.transform(
             name='bamdisc_normal',
             func="single_cell.workflows.destruct_singlecell.tasks.destruct_bamdisc",
-            ctx={'io': 1, 'mem': 8, 'disk': 200},
+            ctx={'io': 1, 'mem': 8, 'disk': 8},
             args=(
                 mgd.TempInputObj("destruct_config"),
                 mgd.InputFile(normal_bam_files),
@@ -120,6 +120,7 @@ def create_destruct_workflow(
                 mgd.TempOutputFile('normal_sample_1.fastq.gz'),
                 mgd.TempOutputFile('normal_sample_2.fastq.gz'),
                 mgd.TempSpace('bamdisc_normal_tempspace'),
+                None
             )
         )
     else:
