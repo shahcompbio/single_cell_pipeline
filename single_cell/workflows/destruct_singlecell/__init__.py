@@ -31,20 +31,29 @@ def process_cells_destruct(
             mgd.TempOutputFile('cell_sample_1.fastq.gz', 'cell_id'),
             mgd.TempOutputFile('cell_sample_2.fastq.gz', 'cell_id'),
             mgd.TempSpace('bamdisc_cell_tempspace', 'cell_id'),
-        )
+            mgd.InputInstance('cell_id'),
+        ),
+        kwargs={'tag': tag}
     )
 
     workflow.transform(
-        name='merge_reads',
+        name='merge_reads_r1',
         ctx={'io': 1, 'mem': 8},
         func="single_cell.workflows.destruct_singlecell.tasks.merge_cell_fastqs",
         args=(
             mgd.TempInputFile('cell_reads_1.fastq.gz', 'cell_id'),
-            mgd.TempInputFile('cell_reads_2.fastq.gz', 'cell_id'),
             mgd.OutputFile(reads_1),
+        ),
+    )
+
+    workflow.transform(
+        name='merge_reads_r2',
+        ctx={'io': 1, 'mem': 8},
+        func="single_cell.workflows.destruct_singlecell.tasks.merge_cell_fastqs",
+        args=(
+            mgd.TempInputFile('cell_reads_2.fastq.gz', 'cell_id'),
             mgd.OutputFile(reads_2),
         ),
-        kwargs={'tag': tag}
     )
 
     workflow.transform(
