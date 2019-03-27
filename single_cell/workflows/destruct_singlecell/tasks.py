@@ -1,22 +1,50 @@
-import shutil
-import random
 import gzip
+import os
+import random
+from itertools import islice
+
 import pandas as pd
 import pypeliner
 
 
 def destruct_bamdisc(
         destruct_config, normal_bam_file, stats,
-        reads_1, reads_2, sample_1, sample_2, tempdir
+        reads_1, reads_2, sample_1, sample_2, tempdir, cell_id,
+        tag=False
 ):
+    """
+    :param destruct_config: dict object with destruct params
+    :type destruct_config: dict
+    :param normal_bam_file: normal bam file path
+    :type normal_bam_file: str
+    :param stats: path to output stats file
+    :type stats: str
+    :param reads_1: path to output R1 fastq
+    :type reads_1: str
+    :param reads_2: path to output R2 fastq
+    :type reads_2: str
+    :param sample_1: path to output R1 sample fastq
+    :type sample_1: str
+    :param sample_2: path to output R2 sample fastq
+    :type sample_2: str
+    :param tempdir: path to dir for storing temp file
+    :type tempdir: str
+    :param cell_id: cell_id to tag reads with
+    :type cell_id: str
+    :param tag: Tag reads in fastq with cell_id if set
+    :type tag: bool
+    """
+    disc_reads_1 = os.path.join(tempdir, "pre_tagged_r1.fastq.gz")
+    disc_reads_2 = os.path.join(tempdir, "pre_tagged_r2.fastq.gz")
+
     cmd = ['destruct_bamdiscordantfastq',
            '-r',
            '-c', destruct_config['bam_max_soft_clipped'],
            '-f', destruct_config['bam_max_fragment_length'],
            '-b', normal_bam_file,
            '-s', stats,
-           '--fastq1', reads_1,
-           '--fastq2', reads_2,
+           '--fastq1', disc_reads_1,
+           '--fastq2', disc_reads_2,
            '-t', tempdir,
            '-n', destruct_config['num_read_samples'],
            '--sample1', sample_1,
@@ -24,64 +52,60 @@ def destruct_bamdisc(
            ]
     pypeliner.commandline.execute(*cmd)
 
+    if tag:
+        tag_reads(disc_reads_1, reads_1, cell_id)
+        tag_reads(disc_reads_2, reads_2, cell_id)
 
-def read_paired_cell_fastqs(input_fastqs_1, input_fastqs_2):
-    """ Generator for fastq entries from paired fastq files.
 
-    Read per cell paired fastq files and for each entry in the
-    matching fastq pair, return the cell id and a list of
-    two lists of fastq lines.
-
-    Args:
-        input_fastqs_1 (dict): fastq filenames keyed by cell_id
-        input_fastqs_2 (dict): fastq filenames keyed by cell_id
-
-    Yields:
-        cell_id (str), fastq_lines (list)
+def tag_reads(input_fastq, output_fastq, tag):
     """
-    assert set(input_fastqs_1.keys()) == set(input_fastqs_2.keys())
-    for idx, cell_id in enumerate(input_fastqs_1.keys()):
-        opener_1 = (open, gzip.open)[input_fastqs_1[cell_id].endswith('.gz')]
-        opener_2 = (open, gzip.open)[input_fastqs_2[cell_id].endswith('.gz')]
-        with opener_1(input_fastqs_1[cell_id], 'r') as file_1, opener_2(input_fastqs_2[cell_id], 'r') as file_2:
-            fastq_lines = [[], []]
-            for fastq_1_line, fastq_2_line in zip(file_1, file_2):
-                fastq_lines[0].append(fastq_1_line.rstrip())
-                fastq_lines[1].append(fastq_2_line.rstrip())
-                if len(fastq_lines[0]) == 4:
-                    yield cell_id, fastq_lines
-                    fastq_lines = [[], []]
-    assert len(fastq_lines[0]) == 0 or len(fastq_lines[0]) == 4, fastq_lines
-    if len(fastq_lines[0]) == 4:
-        yield cell_id, fastq_lines
-
-
-def merge_cell_fastqs(input_fastqs_1, input_fastqs_2, output_fastq_1, output_fastq_2, tag=False):
-    """ Merge a set of pairs of fastqs into a single pair.
-
-    Merge per cell paired fastq files and modify each pair
-    of reads to have a comment that is the cell id
-
-    Args:
-        input_fastqs_1 (dict): fastq filenames keyed by cell_id
-        input_fastqs_2 (dict): fastq filenames keyed by cell_id
-        output_fastq_1 (str): output fastq filename
-        output_fastq_2 (str): output fastq filename
+    tag the reads in the fastq file with the provided tag
+    :param input_fastq: path to fastq file
+    :type input_fastq: str
+    :param output_fastq: path to output tagged fastq
+    :type output_fastq: str
+    :param tag: value to tag reads with
+    :type tag: str
     """
-    fastq_iterator = read_paired_cell_fastqs(input_fastqs_1, input_fastqs_2)
-    with gzip.open(output_fastq_1, 'w') as file_1, gzip.open(output_fastq_2, 'w') as file_2:
-        for cell_id, fastq_lines in fastq_iterator:
-            for read_end in (0, 1):
-                if fastq_lines[read_end][0][0] != '@':
-                    raise ValueError('Expected @ as first character of read name')
-                if fastq_lines[read_end][2][0] != '+':
-                    raise ValueError('Expected + as first character of comment')
-                if tag:
-                    fastq_lines[read_end][2] = '+' + cell_id
-            for line in fastq_lines[0]:
-                file_1.write(line + '\n')
-            for line in fastq_lines[1]:
-                file_2.write(line + '\n')
+    opener = (open, gzip.open)[input_fastq.endswith('.gz')]
+    with opener(input_fastq, 'r') as infile, opener(output_fastq, 'w') as outfile:
+
+        while True:
+            fastq_read = list(islice(infile, 4))
+
+            assert len(fastq_read) == 4, 'fastq file format error'
+
+            if not fastq_read:
+                break
+
+            if not fastq_read[0].startswith('@'):
+                raise ValueError('Expected @ as first character of read name')
+
+            if not fastq_read[2].startswith('+'):
+                raise ValueError('Expected @ as first character of read name')
+
+            if tag:
+                fastq_read[2] = '+' + tag + "\n"
+
+            for fastq_line in fastq_read:
+                outfile.write(fastq_line)
+
+
+def merge_cell_fastqs(input_fastqs_1, output_fastq_1):
+    """
+    concatenates all fastq files
+    if inputs are gzip: dont need to use gzip to uncompress
+    and compress again since gzip files can be concatenated
+    :param input_fastqs_1: input fastq file
+    :type input_fastqs_1: dict or list
+    :param output_fastq_1: merged fastq file
+    :type output_fastq_1: str
+    """
+    with open(output_fastq_1, 'w') as outfile:
+        for cell_id, filepath in input_fastqs_1.iteritems():
+            with open(filepath) as infile:
+                for line in infile:
+                    outfile.write(line)
 
 
 def random_subset(iterator, K):
