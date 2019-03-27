@@ -54,20 +54,44 @@ def get_batch_params(override=None):
     pools = {
         "standard": {
             "tasks_per_node": 4,
-            "numcores": 1,
-            "mem": 8,
+            "cpus_per_task": 1,
+            'disk_per_task': 10,
+            "mem_per_task": 8,
             "dedicated": False
         },
         "highmem": {
             "tasks_per_node": 2,
-            "numcores": 1,
-            "mem": 16,
+            "cpus_per_task": 1,
+            "mem_per_task": 16,
+            'disk_per_task': 20,
             "dedicated": False
         },
         "multicore": {
             "tasks_per_node": 1,
-            "numcores": 8,
-            "mem": 8,
+            "cpus_per_task": 8,
+            "mem_per_task": 8,
+            'disk_per_task': 200,
+            "dedicated": False
+        },
+        "standard_bigdisk": {
+            "tasks_per_node": 4,
+            "cpus_per_task": 1,
+            "mem_per_task": 8,
+            'disk_per_task': 200,
+            "dedicated": False
+        },
+        "highmem_bigdisk": {
+            "tasks_per_node": 2,
+            "cpus_per_task": 1,
+            "mem_per_task": 16,
+            'disk_per_task': 450,
+            "dedicated": False
+        },
+        "multicore_bigdisk": {
+            "tasks_per_node": 1,
+            "cpus_per_task": 8,
+            "mem_per_task": 8,
+            'disk_per_task': 900,
             "dedicated": False
         }
     }
@@ -134,7 +158,9 @@ def create_vm_commands():
     commands = (
         "sudo gpasswd -a $USER docker\n"
         "sudo mkdir -p /datadrive\n"
+        "sudo mkdir -p /mnt/datadrive\n"
         "sudo chmod -R 777 /datadrive\n"
+        "sudo chmod -R 777 /mnt/datadrive\n"
     )
 
     commands = literal_unicode(commands)
@@ -157,12 +183,19 @@ def get_vm_size_azure(numcores, memory, tasks_per_node):
         return "STANDARD_E16_V3"
 
 
-def get_vm_image_id(bigdisk=None):
-    imagename = 'dockerproduction-smalldisk'
-    if bigdisk:
+def get_vm_image_id(disk_per_task, tasks_per_node):
+    required_disk_size = disk_per_task * tasks_per_node
+
+    if required_disk_size <= 40:
+        # uses the temp disk on node, usually 40 GB
+        imagename = 'dockerproduction-verysmalldisk'
+    elif required_disk_size < 200:
+        imagename = 'dockerproduction-smalldisk'
+    else:
         imagename = 'docker-production'
+
     subscription = os.environ.get("SUBSCRIPTION_ID", "id-missing")
-    resource_group = os.environ.get("RESOURCE_GROUP", "id-missing")
+    resource_group = os.environ.get("RESOURCE_GROUP", "sccompute")
     imageid = ['subscriptions', subscription, 'resourceGroups',
                resource_group, 'providers', 'Microsoft.Compute',
                'images', imagename]
@@ -170,37 +203,47 @@ def get_vm_image_id(bigdisk=None):
     imageid = '/' + imageid
     return imageid
 
+
 def get_pool_def(
-        tasks_per_node, reference, pool_type, numcores, memory, dedicated, bigdisk=None):
+        tasks_per_node, reference, pool_type, cpus_per_task, mem_per_task, dedicated, disk_per_task):
 
     autoscale_formula = generate_autoscale_formula(tasks_per_node, dedicated)
 
     vm_commands = create_vm_commands()
 
+    vm_image = get_vm_image_id(disk_per_task, tasks_per_node)
+    node_sku = "batch.node.ubuntu 16.04"
+    if 'dockerproduction-verysmalldisk' in vm_image:
+        node_sku = "batch.node.ubuntu 18.04"
+
+    task_start_commands = get_compute_start_commands(vm_image)
+    task_finish_commands = get_compute_finish_commands(vm_image)
+
     poolname = "singlecell{}{}".format(reference, pool_type)
-    if bigdisk:
-        poolname += "_bigdisk"
 
     pooldata = {
-        "pool_vm_size": get_vm_size_azure(numcores, memory, tasks_per_node),
-        "cpus_per_task": numcores,
-        'mem_per_task': memory,
+        "pool_vm_size": get_vm_size_azure(cpus_per_task, mem_per_task, tasks_per_node),
+        "cpus_per_task": cpus_per_task,
+        'mem_per_task': mem_per_task,
+        "disk_per_task": disk_per_task,
         'dedicated': dedicated,
-        'node_resource_id': get_vm_image_id(bigdisk=bigdisk),
+        'node_resource_id': vm_image,
         'node_os_publisher': 'Canonical',
         'node_os_offer': 'UbuntuServer',
-        'node_os_sku': 'batch.node.ubuntu 16.04',
+        'node_os_sku': node_sku,
         'data_disk_sizes': None,
         'max_tasks_per_node': tasks_per_node,
         'auto_scale_formula': autoscale_formula,
         'create_vm_commands': vm_commands,
-        'start_resources': None
+        'start_resources': None,
+        'compute_start_commands': task_start_commands,
+        'compute_finish_commands': task_finish_commands
     }
 
     return {poolname: pooldata}
 
 
-def get_compute_start_commands():
+def get_compute_start_commands(imageid):
     # Azure batch starts a process on each node during startup
     # this process runs the entire time VM is up (speculation?). running sudo gasswd
     # adds our user to the docker group in node startup. but all user/group
@@ -210,49 +253,67 @@ def get_compute_start_commands():
     # to explicitly specify the user group when running docker commands. sg in
     # linux can be used to set group when executing commands
 
-    commands = (
+    commands = [
         'clean_up () {',
         '  echo "clean_up task executed"',
         '  find $AZ_BATCH_TASK_WORKING_DIR/ -xtype l -delete',
         '  exit 0',
         '}',
         'trap clean_up EXIT',
-        'mkdir -p /datadrive/$AZ_BATCH_TASK_WORKING_DIR/\n'
-        'cd /datadrive/$AZ_BATCH_TASK_WORKING_DIR/\n'
-    )
+    ]
+
+    if 'dockerproduction-smalldisk' in imageid or 'docker-production' in imageid:
+        commands.extend([
+            'mkdir -p /datadrive/$AZ_BATCH_TASK_WORKING_DIR/\n',
+            'cd /datadrive/$AZ_BATCH_TASK_WORKING_DIR/\n'
+        ])
+    else:
+        commands.extend([
+            'mkdir -p /mnt/datadrive/$AZ_BATCH_TASK_WORKING_DIR/\n',
+            'cd /mnt/datadrive/$AZ_BATCH_TASK_WORKING_DIR/\n'
+        ])
+
 
     commands = '\n'.join(commands)
 
     commands = literal_unicode(commands)
 
-    return {"compute_start_commands": commands}
+    return commands
 
 
-def get_compute_finish_commands():
-    commands = (
-        'sg docker -c "docker run -v /datadrive:/datadrive -w /datadrive/$AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype l -delete"\n'
-        'sg docker -c "docker run -v /datadrive:/datadrive -w /datadrive/$AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype f -delete"\n'
-    )
+def get_compute_finish_commands(imageid):
+
+    if 'dockerproduction-smalldisk' in imageid or 'docker-production' in imageid:
+        commands = (
+            'sg docker -c "docker run -v /datadrive:/datadrive -w /datadrive/$AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype l"\n'
+            'sg docker -c "docker run -v /datadrive:/datadrive -w /datadrive/$AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype f"\n'
+        )
+    else:
+        commands = (
+            'sg docker -c "docker run -v /mnt:/mnt -w /mnt/datadrive/$AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype l"\n'
+            'sg docker -c "docker run -v /mnt:/mnt -w /mnt/datadrive/$AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype f"\n'
+        )
 
     commands = literal_unicode(commands)
 
-    return {"compute_finish_commands": commands}
+    return commands
 
 
-def get_all_pools(pool_config, reference, bigdisk=None):
+def get_all_pools(pool_config, reference):
 
     pooldefs = {}
 
     for pooltype, poolinfo in pool_config.iteritems():
         tasks_per_node = poolinfo["tasks_per_node"]
-        numcores = poolinfo["numcores"]
-        memory = poolinfo["mem"]
+        cpus_per_task = poolinfo["cpus_per_task"]
+        mem_per_task = poolinfo["mem_per_task"]
+        disk_per_task = poolinfo["disk_per_task"]
         dedicated = poolinfo["dedicated"]
 
         pool_def = get_pool_def(
             tasks_per_node, reference, pooltype,
-            numcores, memory, dedicated,
-            bigdisk=bigdisk
+            cpus_per_task, mem_per_task, dedicated,
+            disk_per_task
         )
 
         pooldefs.update(pool_def)
@@ -272,7 +333,6 @@ def get_batch_config(defaults, override={}):
         get_all_pools(
             defaults['pools'],
             defaults['reference'],
-            bigdisk=override.get('bigdisk')
         )
     )
 
@@ -280,11 +340,11 @@ def get_batch_config(defaults, override={}):
         {"storage_container_name": defaults["storage_container_name"]}
     )
 
-    config.update(get_compute_start_commands())
-    config.update(get_compute_finish_commands())
-
     config.update({"no_delete_pool": defaults["no_delete_pool"]})
     config.update({"no_delete_job": defaults["no_delete_job"]})
+    config.update({"no_delete_job": True})
+
+    config.update({"pypeliner_storage_account": "singlecellpipelinetasks"})
 
     config = override_config(config, override)
 
