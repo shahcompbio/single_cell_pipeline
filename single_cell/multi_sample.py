@@ -69,7 +69,7 @@ def create_multi_sample_workflow(
         run_varcall = True
 
     baseimage = config['multi_sample']['docker']['single_cell_pipeline']
-    ctx = {'mem_retry_increment': 2, 'ncpus': 1, 'docker_image': baseimage}
+    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1, 'docker_image': baseimage}
 
     raw_data_dir = os.path.join(results_dir, 'raw')
 

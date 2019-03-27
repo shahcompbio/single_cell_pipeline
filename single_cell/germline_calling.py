@@ -12,7 +12,6 @@ from single_cell.utils import helpers
 import single_cell
 
 def germline_calling_workflow(args):
-    workflow = pypeliner.workflow.Workflow()
 
     config = helpers.load_config(args)
     config = config['germline_calling']
@@ -24,6 +23,10 @@ def germline_calling_workflow(args):
     samtoolsdocker = {'docker_image': config['docker']['samtools']}
     snpeffdocker = {'docker_image': config['docker']['snpeff']}
 
+    ctx = {'mem_retry_increment': 2, 'ncpus': 1, 'mem': config["memory"]['low'],
+           'disk_retry_increment': 50, 'docker_image': baseimage},
+    workflow = pypeliner.workflow.Workflow(ctx=ctx)
+
     data = helpers.load_pseudowgs_input(args['input_yaml'])
     normal_bams = data['normal_bams']
     tumour_cells = data['tumour_cells']
@@ -31,7 +34,6 @@ def germline_calling_workflow(args):
     if not isinstance(normal_bams, dict):
         workflow.transform(
             name="get_regions",
-            ctx={'mem_retry_increment': 2, 'ncpus': 1, 'mem': config["memory"]['low'], 'docker_image': baseimage},
             func="single_cell.utils.pysamutils.get_regions_from_reference",
             ret=pypeliner.managed.OutputChunks('region'),
             args=(
@@ -92,7 +94,6 @@ def germline_calling_workflow(args):
     workflow.transform(
         name='annotate_genotype',
         func="single_cell.workflows.germline.tasks.annotate_normal_genotype",
-        ctx={'mem_retry_increment': 2, 'ncpus': 1, 'mem': config["memory"]['low']},
         args=(
             mgd.InputFile(samtools_germline_vcf, extensions=['.tbi']),
             mgd.OutputFile(normal_genotype_filename),
@@ -133,7 +134,6 @@ def germline_calling_workflow(args):
     workflow.transform(
         name='build_results_file',
         func="biowrappers.components.io.hdf5.tasks.concatenate_tables",
-        ctx={'mem_retry_increment': 2, 'ncpus': 1, 'mem': config["memory"]['low'], 'docker_image': baseimage},
         args=([
                 mgd.InputFile(counts_template),
                 mgd.InputFile(mappability_filename),
@@ -157,7 +157,6 @@ def germline_calling_workflow(args):
     workflow.transform(
         name="get_files",
         func='single_cell.utils.helpers.resolve_template',
-        ctx={'mem': config['memory']['low'], 'ncpus': 1, 'docker_image': baseimage},
         ret=pypeliner.managed.TempOutputObj('normal_dataset'),
         args=(
             pypeliner.managed.TempInputObj('region'),
@@ -181,7 +180,6 @@ def germline_calling_workflow(args):
 
     workflow.transform(
         name='generate_meta_yaml',
-        ctx={'mem_retry_increment': 2, 'ncpus': 1, 'mem': config["memory"]['low'], 'docker_image': baseimage},
         func="single_cell.utils.helpers.write_to_yaml",
         args=(
             mgd.OutputFile(info_file),

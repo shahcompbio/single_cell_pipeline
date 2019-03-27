@@ -13,7 +13,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
                           raw_data_dir, out_file, config, args,
                           tumour_cells, normal_cells, cloneid):
 
-    ctx = {'mem_retry_increment': 2, 'ncpus': 1,
+    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
            'docker_image': config['docker']['single_cell_pipeline']
     }
 
@@ -22,7 +22,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
     results_files = os.path.join(raw_data_dir, 'results', 'sample.h5')
     tumour_alleles_file = os.path.join(raw_data_dir, 'results', 'het_counts.h5')
 
-    workflow = pypeliner.workflow.Workflow()
+    workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     workflow.setobj(
         obj=mgd.OutputChunks('tumour_cell_id'),
@@ -36,7 +36,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
 
     workflow.transform(
         name='merge_all_normal_seqdata',
-        ctx=dict(mem=config["memory"]['high'], **ctx),
+        ctx=dict(mem=config["memory"]['high']),
         func="single_cell.workflows.titan.tasks.merge_overlapping_seqdata",
         args=(
             mgd.TempOutputFile("seqdata_normal_all_cells_merged.h5"),
@@ -50,7 +50,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
 
     workflow.transform(
         name='prepare_normal_data',
-        ctx=dict(mem=config["memory"]['high'],  **ctx),
+        ctx=dict(mem=config["memory"]['high']),
         func="biowrappers.components.copy_number_calling.titan.tasks.prepare_normal_data",
         args=(
             mgd.TempInputFile("seqdata_normal_all_cells_merged.h5"),
@@ -63,7 +63,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
     workflow.transform(
         name='prepare_tumour_data',
         axes=('tumour_cell_id',),
-        ctx=dict(mem=config["memory"]['high'],  **ctx),
+        ctx=dict(mem=config["memory"]['high']),
         func="biowrappers.components.copy_number_calling.titan.tasks.prepare_tumour_data",
         args=(
             pypeliner.managed.InputFile(
@@ -81,7 +81,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
 
     workflow.transform(
         name='merge_tumour_alleles',
-        ctx=dict(mem=config["memory"]['high'],  **ctx),
+        ctx=dict(mem=config["memory"]['high']),
         func="single_cell.workflows.titan.tasks.merge_tumour_alleles",
         args=(
             pypeliner.managed.TempInputFile(
@@ -93,7 +93,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
 
     workflow.transform(
         name='concat_tumour_alleles',
-        ctx=dict(mem=config["memory"]['high'],  **ctx),
+        ctx=dict(mem=config["memory"]['high']),
         func="single_cell.workflows.titan.tasks.concat_tumour_alleles",
         args=(
             pypeliner.managed.TempInputFile(
@@ -106,7 +106,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
 
     workflow.transform(
         name='merge_wigs_tumour',
-        ctx=dict(mem=config["memory"]['high'],  **ctx),
+        ctx=dict(mem=config["memory"]['high']),
         func="single_cell.workflows.titan.tasks.merge_wig_files",
         args=(
             pypeliner.managed.TempInputFile('tumour.wig', 'tumour_cell_id'),
@@ -116,7 +116,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
 
     workflow.transform(
         name='create_intialization_parameters',
-        ctx=dict(mem=config["memory"]['low'],  **ctx),
+        ctx=dict(mem=config["memory"]['low']),
         func="biowrappers.components.copy_number_calling.titan.tasks.create_intialization_parameters",
         ret=pypeliner.managed.TempOutputObj('init_params', 'init_param_id'),
         args=(config["titan_params"],),
@@ -126,7 +126,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
         name='run_titan',
         axes=('init_param_id',),
         func="biowrappers.components.copy_number_calling.titan.tasks.run_titan",
-        ctx=dict(mem=config["memory"]['high'], **ctx),
+        ctx=dict(mem=config["memory"]['high'], **titan_docker),
         args=(
             pypeliner.managed.TempInputObj('init_params', 'init_param_id'),
             pypeliner.managed.TempInputFile('normal.wig'),
@@ -141,7 +141,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
 
     workflow.transform(
         name='select_solution',
-        ctx=dict(mem=config["memory"]['low'],  **ctx),
+        ctx=dict(mem=config["memory"]['low']),
         func="biowrappers.components.copy_number_calling.titan.tasks.select_solution",
         args=(
             pypeliner.managed.TempInputObj('init_params', 'init_param_id'),
@@ -183,7 +183,6 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
         name='plot_chromosome',
         axes=('chromosome',),
         ctx=dict(mem=config["memory"]['low'],
-                 ncpus=1, num_retry=3, mem_retry_increment=2,
                  **titan_docker),
         args=(
             'plot_titan_chromosome.R',
@@ -206,7 +205,7 @@ def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
     # just leaving it here in case we parallelize by samples later.
     workflow.transform(
         name='merge_results',
-        ctx=dict(mem=config["memory"]['low'],  **ctx),
+        ctx=dict(mem=config["memory"]['low']),
         func="biowrappers.components.io.hdf5.tasks.merge_hdf5",
         args=(
             {cloneid: pypeliner.managed.InputFile(

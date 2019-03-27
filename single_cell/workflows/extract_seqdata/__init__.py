@@ -16,7 +16,7 @@ def create_extract_seqdata_workflow(
      config,
 ):
 
-    ctx = {'mem_retry_increment': 2,
+    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50,
            'docker_image': config['docker']['single_cell_pipeline'],
            'mem': config["memory"]['high']}
 

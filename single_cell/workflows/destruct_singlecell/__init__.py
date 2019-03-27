@@ -8,7 +8,7 @@ def process_cells_destruct(
         tag=False
 ):
 
-    ctx = {'mem_retry_increment': 2, 'ncpus': 1,}
+    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,}
 
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
@@ -110,7 +110,7 @@ def create_destruct_workflow(
         workflow.transform(
             name='bamdisc_normal',
             func="single_cell.workflows.destruct_singlecell.tasks.destruct_bamdisc",
-            ctx={'io': 1, 'mem': 8},
+            ctx={'io': 1, 'mem': 8, 'disk': 200},
             args=(
                 mgd.TempInputObj("destruct_config"),
                 mgd.InputFile(normal_bam_files),
