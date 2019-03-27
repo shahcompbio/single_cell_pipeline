@@ -27,7 +27,8 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
         vcf_to_bam_chrom_map=None,
 ):
     ctx = {
-        'mem': memory_cfg['low'], 'num_retry': 3, 'mem_retry_increment': 2, 'ncpus': 1
+        'mem': memory_cfg['low'], 'num_retry': 3, 'mem_retry_increment': 2, 'ncpus': 1,
+        'disk_retry_increment': 50,
     }
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
@@ -58,7 +59,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
 
     workflow.transform(
         name='merge_snv_allele_counts',
-        ctx={'mem': memory_cfg['high'], 'num_retry': 3, 'mem_retry_increment': 2, 'ncpus': 1},
+        ctx={'mem': memory_cfg['high'], 'disk': 20},
         func="biowrappers.components.io.hdf5.tasks.concatenate_tables",
         args=(
             mgd.TempInputFile('counts.h5', 'cell_id'),
@@ -102,7 +103,9 @@ def variant_calling_workflow(args):
 
     baseimage = config['docker']['single_cell_pipeline']
 
-    workflow = pypeliner.workflow.Workflow()
+    ctx={'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
+         'mem': config["memory"]['low'], 'docker_image': baseimage}
+    workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     if isinstance(normal_bams, dict) and isinstance(tumour_bams, dict):
         assert normal_bams.keys() == tumour_bams.keys(), 'keys for tumour and normal bams should be the same'
@@ -115,7 +118,6 @@ def variant_calling_workflow(args):
     else:
         workflow.transform(
             name="get_regions",
-            ctx={'mem_retry_increment': 2, 'ncpus': 1, 'mem': config["memory"]['low'], 'docker_image': baseimage},
             func="single_cell.utils.pysamutils.get_regions_from_reference",
             ret=pypeliner.managed.OutputChunks('region'),
             args=(
@@ -165,6 +167,7 @@ def create_variant_calling_workflow(
 ):
     ctx = {'num_retry': 3,
            'mem_retry_increment': 2,
+           'disk_retry_increment': 50,
            'ncpus': 1,
            'docker_image': config['docker']['single_cell_pipeline']}
 

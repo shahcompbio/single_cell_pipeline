@@ -18,11 +18,12 @@ def create_samtools_germline_workflow(
 
     ctx = {'mem': config["memory"]['low'],
            'mem_retry_increment': 2,
+           'disk_retry_increment': 50,
            'ncpus': 1, 'docker_image': baseimage}
 
     regions = normal_bam_files.keys()
 
-    workflow = Workflow()
+    workflow = Workflow(ctx=ctx)
 
     workflow.setobj(
         obj=pypeliner.managed.OutputChunks('regions'),
@@ -31,7 +32,6 @@ def create_samtools_germline_workflow(
 
     workflow.transform(
         name='run_samtools_variant_calling',
-        ctx=ctx,
         axes=('regions',),
         func="single_cell.workflows.germline.tasks.run_samtools_variant_calling",
         args=(
@@ -48,7 +48,6 @@ def create_samtools_germline_workflow(
   
     workflow.transform(
         name='concatenate_variants',
-        ctx=ctx,
         func="single_cell.workflows.strelka.vcf_tasks.concatenate_vcf",
         args=(
             pypeliner.managed.TempInputFile('variants.vcf.gz', 'regions'),

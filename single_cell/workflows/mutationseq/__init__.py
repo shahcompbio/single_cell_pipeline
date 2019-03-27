@@ -16,10 +16,10 @@ def create_museq_workflow(
     museq_docker = {'docker_image': config['docker']['mutationseq']}
     vcftools_docker = {'docker_image': config['docker']['vcftools']}
 
-    ctx = {'mem_retry_increment': 2, 'ncpus': 1, 'num_retry': 3,
+    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1, 'num_retry': 3,
            'docker_image': config['docker']['single_cell_pipeline']}
 
-    workflow = pypeliner.workflow.Workflow()
+    workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     workflow.setobj(
         obj=mgd.OutputChunks('region'),
@@ -28,8 +28,7 @@ def create_museq_workflow(
 
     workflow.transform(
         name='run_museq',
-        ctx=dict(mem=config["memory"]['med'],
-                 **ctx),
+        ctx=dict(mem=config["memory"]['med'], disk=40),
         axes=('region',),
         func='single_cell.workflows.mutationseq.tasks.run_museq',
         args=(
@@ -46,7 +45,7 @@ def create_museq_workflow(
     workflow.transform(
         name='finalise_region_vcfs',
         axes=('region',),
-        ctx=dict(mem=config["memory"]['med'], **ctx),
+        ctx=dict(mem=config["memory"]['med']),
         func='biowrappers.components.io.vcf.tasks.finalise_vcf',
         args=(
             mgd.TempInputFile('museq.vcf', 'region'),
@@ -57,8 +56,7 @@ def create_museq_workflow(
 
     workflow.transform(
         name='merge_snvs',
-        ctx=dict(mem=config["memory"]['med'],
-                 **ctx),
+        ctx=dict(mem=config["memory"]['med']),
         func='biowrappers.components.io.vcf.tasks.concatenate_vcf',
         args=(
             mgd.TempInputFile('museq.vcf.gz', 'region', extensions=['.tbi', '.csi']),
@@ -73,8 +71,7 @@ def create_museq_workflow(
     workflow.transform(
         name='finalise_vcf',
         func='biowrappers.components.io.vcf.tasks.finalise_vcf',
-        ctx=dict(mem=config["memory"]['med'],
-                 **ctx),
+        ctx=dict(mem=config["memory"]['med']),
         args=(
             mgd.TempInputFile('museq.vcf.gz', extensions=['.tbi', '.csi']),
             mgd.OutputFile(snv_vcf, extensions=['.tbi', '.csi']),

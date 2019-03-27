@@ -6,7 +6,7 @@ def lumpy_preprocess_cells(
         config, bam_files, merged_discordants, merged_splitters, hist_csv, mean_stdev_obj
 ):
 
-    ctx = {'mem_retry_increment': 2, 'ncpus': 1,
+    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
            'docker_image': config['docker']['single_cell_pipeline']
            }
 
@@ -87,7 +87,7 @@ def create_lumpy_workflow(
     if sample_id and not normal_id:
         normal_id = sample_id+'N'
 
-    ctx = {'mem_retry_increment': 2, 'ncpus': 1,
+    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
            'docker_image': config['docker']['single_cell_pipeline']
            }
 
@@ -98,8 +98,6 @@ def create_lumpy_workflow(
         N=10000, skip=0, min_elements=100, mads=10, X=4, read_length=101
     )
     histogram_settings.update(lumpydocker)
-
-    print normal_bam
 
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
@@ -129,7 +127,7 @@ def create_lumpy_workflow(
     else:
         workflow.transform(
             name='process_normal',
-            ctx={'mem': 8, 'ncpus': 1},
+            ctx={'mem': 8, 'ncpus': 1, 'disk': 200},
             func='single_cell.workflows.lumpy.tasks.process_bam',
             args=(
                 mgd.InputFile(normal_bam, extensions=['.bai']),

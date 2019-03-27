@@ -17,7 +17,9 @@ def create_vardict_paired_sample_workflow(
         sample_names=None):
 
     workflow = pypeliner.workflow.Workflow(
-        default_ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'pool_id': config['pools']['standard'], 'ncpus':1 })
+        default_ctx={
+            'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'ncpus':1, 'disk_retry_increment': 50
+        })
 
     workflow.setobj(
         obj=pypeliner.managed.OutputChunks('region'),
@@ -27,7 +29,7 @@ def create_vardict_paired_sample_workflow(
     workflow.transform(
         name='run_vardict',
         axes=('region',),
-        ctx={'mem': 12, 'num_retry': 4, 'mem_retry_increment': 2},
+        ctx={'mem': 12},
         func="biowrappers.components.variant_calling.vardict.tasks.run_paired_sample_vardict",
         args=(
             pypeliner.managed.InputFile('normal.bam', 'region', fnames=normal_bam_file, extensions=['.bai']),
@@ -47,7 +49,6 @@ def create_vardict_paired_sample_workflow(
     workflow.transform(
         name='compress_tmp',
         axes=('region',),
-        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
         func="biowrappers.components.io.vcf.tasks.compress_vcf",
         args=(
             pypeliner.managed.TempInputFile('result.vcf', 'region'),
@@ -57,7 +58,6 @@ def create_vardict_paired_sample_workflow(
 
     workflow.transform(
         name='concatenate_vcf',
-        ctx={'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2},
         func="biowrappers.components.io.vcf.tasks.concatenate_vcf",
         args=(
             pypeliner.managed.TempInputFile('result.vcf.gz', 'region'),

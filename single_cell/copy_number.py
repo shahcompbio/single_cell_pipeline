@@ -12,15 +12,14 @@ from workflows import extract_seqdata
 import pypeliner
 
 def copy_number_calling_workflow(args):
-    workflow = pypeliner.workflow.Workflow()
 
     config = helpers.load_config(args)
     config = config['copy_number_calling']
 
-    ctx = {'mem_retry_increment': 2, 'ncpus': 1,
+    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
            'docker_image': config['docker']['single_cell_pipeline']
     }
-
+    workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     data = helpers.load_pseudowgs_input(args['input_yaml'])
     normal_wgs = data['normal_wgs']
@@ -43,7 +42,7 @@ def copy_number_calling_workflow(args):
 
     workflow.transform(
         name="get_regions",
-        ctx=dict(mem=config['memory']['low'], **ctx),
+        ctx=dict(mem=config['memory']['low']),
         func="single_cell.utils.pysamutils.get_regions_from_reference",
         ret=mgd.OutputChunks('region'),
         args=(
@@ -55,7 +54,6 @@ def copy_number_calling_workflow(args):
 
     workflow.transform(
         name="get_snp_positions_filename",
-        ctx=ctx,
         func="remixt.config.get_filename",
         ret=mgd.TempOutputObj('snp_positions_filename'),
         args=(
@@ -67,7 +65,6 @@ def copy_number_calling_workflow(args):
 
     workflow.transform(
         name="get_bam_max_fragment_length",
-        ctx=ctx,
         func="remixt.config.get_param",
         ret=mgd.TempOutputObj('bam_max_fragment_length'),
         args=(
@@ -78,7 +75,6 @@ def copy_number_calling_workflow(args):
 
     workflow.transform(
         name="get_bam_max_soft_clipped",
-        ctx=ctx,
         func="remixt.config.get_param",
         ret=mgd.TempOutputObj('bam_max_soft_clipped'),
         args=(
@@ -89,7 +85,6 @@ def copy_number_calling_workflow(args):
 
     workflow.transform(
         name="get_bam_check_proper_pair",
-        ctx=ctx,
         func="remixt.config.get_param",
         ret=mgd.TempOutputObj('bam_check_proper_pair'),
         args=(
@@ -120,6 +115,7 @@ def copy_number_calling_workflow(args):
     workflow.subworkflow(
         name="extract_seqdata_normal",
         axes=('region',),
+        ctx={'disk': 200},
         func=extract_seqdata.create_extract_seqdata_workflow,
         args=(
             mgd.InputFile(

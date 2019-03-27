@@ -11,12 +11,16 @@ from single_cell.utils import helpers
 import single_cell
 
 def merge_bams_workflow(args):
-    workflow = pypeliner.workflow.Workflow()
 
     config = helpers.load_config(args)
     config = config['merge_bams']
 
     baseimage = config['docker']['single_cell_pipeline']
+
+    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50,
+           'ncpus': 1, 'mem': config["memory"]['low'],
+           'docker_image': baseimage}
+    workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     data = helpers.load_pseudowgs_input(args['input_yaml'])
     tumour_wgs = data['tumour_wgs']
@@ -42,7 +46,6 @@ def merge_bams_workflow(args):
     else:
         workflow.transform(
             name="get_regions",
-            ctx={'mem_retry_increment': 2, 'ncpus': 1, 'mem': config["memory"]['low'], 'docker_image': baseimage},
             func="single_cell.utils.pysamutils.get_regions_from_reference",
             ret=pypeliner.managed.OutputChunks('region'),
             args=(
@@ -66,7 +69,7 @@ def merge_bams_workflow(args):
 
     workflow.transform(
         name="get_files",
-        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        ctx={'mem': config['memory']['med']},
         func='single_cell.utils.helpers.resolve_template',
         ret=pypeliner.managed.TempOutputObj('outputs'),
         args=(
@@ -95,7 +98,7 @@ def merge_bams_workflow(args):
 
     workflow.transform(
         name='generate_meta_yaml',
-        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        ctx={'mem': config['memory']['med']},
         func="single_cell.utils.helpers.write_to_yaml",
         args=(
             mgd.OutputFile(info_file),

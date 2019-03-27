@@ -26,7 +26,8 @@ def infer_haps(
 
     chromosomes = config['chromosomes']
 
-    workflow = pypeliner.workflow.Workflow(ctx=baseimage)
+    ctx = dict(mem_retry_increment=2, disk_retry_increment=50, ncpus=1, **baseimage)
+    workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     if isinstance(bam_file, dict):
         workflow.setobj(
@@ -54,7 +55,6 @@ def infer_haps(
         )
         workflow.transform(
             name='merge_all_seqdata',
-            ctx={'mem_retry_increment': 2, 'ncpus': 1},
             func="single_cell.workflows.titan.tasks.merge_overlapping_seqdata",
             args=(
                 mgd.OutputFile(seqdata_file),
@@ -90,7 +90,7 @@ def infer_haps(
     workflow.transform(
         name='infer_snp_genotype',
         axes=('chromosome',),
-        ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1},
+        ctx=dict(mem=16, **ctx),
         func=func,
         args=(
             mgd.TempOutputFile('snp_genotype.tsv', 'chromosome'),
@@ -103,7 +103,7 @@ def infer_haps(
     workflow.transform(
         name='infer_haps',
         axes=('chromosome',),
-        ctx={'mem': 16},
+        ctx=dict(mem=16, **ctx),
         func='remixt.analysis.haplotype.infer_haps',
         args=(
             mgd.TempOutputFile('haplotypes.tsv', 'chromosome'),
@@ -117,7 +117,7 @@ def infer_haps(
 
     workflow.transform(
         name='merge_haps',
-        ctx={'mem': 16},
+        ctx=dict(mem=16, **ctx),
         func='remixt.utils.merge_tables',
         args=(
             mgd.OutputFile(haplotypes_filename),
@@ -127,7 +127,7 @@ def infer_haps(
 
     workflow.transform(
         name='create_segments',
-        ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1},
+        ctx=dict(mem=16, **ctx),
         func='remixt.analysis.segment.create_segments',
         args=(
             mgd.TempOutputFile('segments.tsv'),
@@ -138,7 +138,7 @@ def infer_haps(
 
     workflow.transform(
         name='haplotype_allele_readcount',
-        ctx={'mem': 16, 'mem_retry_increment': 2, 'ncpus': 1},
+        ctx=dict(mem=16, **ctx),
         func='remixt.analysis.readcount.haplotype_allele_readcount',
         args=(
             mgd.OutputFile(allele_counts_filename),
@@ -233,11 +233,13 @@ def extract_allele_readcounts(
 
 
 def infer_haps_workflow(args):
-    workflow = pypeliner.workflow.Workflow()
-
     config = helpers.load_config(args)
     config = config['infer_haps']
     baseimage = config['docker']['single_cell_pipeline']
+
+    ctx = dict(mem_retry_increment=2, disk_retry_increment=50, ncpus=1, baseimage=baseimage)
+    workflow = pypeliner.workflow.Workflow(ctx=ctx)
+
 
     haps_dir = os.path.join(args["out_dir"], "infer_haps")
     seqdata_merged = os.path.join(haps_dir, "results", "seqdata.h5")
@@ -260,7 +262,7 @@ def infer_haps_workflow(args):
             obj=mgd.OutputChunks('cell_id'),
             value=bam_file.keys(),
         )
-        bam_file = mgd.InputFile('tumour.bam','cell_id',fnames=bam_file, extensions=['.bai'])
+        bam_file = mgd.InputFile('tumour.bam', 'cell_id',fnames=bam_file, extensions=['.bai'])
     else:
         bam_file = mgd.InputFile(bam_file, extensions=['.bai'])
 
@@ -268,7 +270,6 @@ def infer_haps_workflow(args):
     workflow.subworkflow(
         name='infer_haps',
         func=infer_haps,
-        ctx={'docker_image': baseimage},
         args=(
             bam_file,
             mgd.OutputFile(seqdata_merged),
