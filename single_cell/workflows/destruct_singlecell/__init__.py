@@ -110,7 +110,7 @@ def create_destruct_workflow(
         workflow.transform(
             name='bamdisc_normal',
             func="single_cell.workflows.destruct_singlecell.tasks.destruct_bamdisc",
-            ctx={'io': 1, 'mem': 8, 'disk': 8},
+            ctx={'io': 1, 'mem': 8, 'disk': 200},
             args=(
                 mgd.TempInputObj("destruct_config"),
                 mgd.InputFile(normal_bam_files),
