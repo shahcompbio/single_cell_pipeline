@@ -2,6 +2,7 @@ import gzip
 import os
 import random
 from itertools import islice
+import shutil
 
 import pandas as pd
 import pypeliner
@@ -108,11 +109,10 @@ def merge_cell_fastqs(input_fastqs_1, output_fastq_1):
     :param output_fastq_1: merged fastq file
     :type output_fastq_1: str
     """
-    with open(output_fastq_1, 'w') as outfile:
+    with open(output_fastq_1, 'wb') as outfile:
         for cell_id, filepath in input_fastqs_1.iteritems():
-            with open(filepath) as infile:
-                for line in infile:
-                    outfile.write(line)
+            with open(filepath, 'rb') as infile:
+                shutil.copyfileobj(infile, outfile, length=16*1024*1024)
 
 
 def random_subset(iterator, K):
@@ -134,6 +134,34 @@ def random_subset(iterator, K):
                 result[s] = item
 
     return result
+
+
+def read_paired_cell_fastqs(input_fastqs_1, input_fastqs_2):
+    """ Generator for fastq entries from paired fastq files.
+    Read per cell paired fastq files and for each entry in the
+    matching fastq pair, return the cell id and a list of
+    two lists of fastq lines.
+    Args:
+        input_fastqs_1 (dict): fastq filenames keyed by cell_id
+        input_fastqs_2 (dict): fastq filenames keyed by cell_id
+    Yields:
+        cell_id (str), fastq_lines (list)
+    """
+    assert set(input_fastqs_1.keys()) == set(input_fastqs_2.keys())
+    for idx, cell_id in enumerate(input_fastqs_1.keys()):
+        opener_1 = (open, gzip.open)[input_fastqs_1[cell_id].endswith('.gz')]
+        opener_2 = (open, gzip.open)[input_fastqs_2[cell_id].endswith('.gz')]
+        with opener_1(input_fastqs_1[cell_id], 'r') as file_1, opener_2(input_fastqs_2[cell_id], 'r') as file_2:
+            fastq_lines = [[], []]
+            for fastq_1_line, fastq_2_line in zip(file_1, file_2):
+                fastq_lines[0].append(fastq_1_line.rstrip())
+                fastq_lines[1].append(fastq_2_line.rstrip())
+                if len(fastq_lines[0]) == 4:
+                    yield cell_id, fastq_lines
+                    fastq_lines = [[], []]
+    assert len(fastq_lines[0]) == 0 or len(fastq_lines[0]) == 4, fastq_lines
+    if len(fastq_lines[0]) == 4:
+        yield cell_id, fastq_lines
 
 
 def resample_fastqs(input_fastqs_1, input_fastqs_2, output_fastq_1, output_fastq_2, num_reads):
