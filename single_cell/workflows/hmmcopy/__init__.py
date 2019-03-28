@@ -86,15 +86,16 @@ def create_hmmcopy_workflow(
     workflow.transform(
         name='merge_reads',
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.workflows.hmmcopy.tasks.concatenate_csv",
+        axes=('multiplier',),
+        func="single_cell.workflows.hmmcopy.tasks.concatenate_csv_single",
         args=(
             mgd.TempInputFile('reads.csv.gz', 'cell_id', 'multiplier', axes_origin=[]),
-            mgd.OutputFile("reads.csv.gz", 'multiplier', fnames=reads, axes_origin=[]),
-            mgd.OutputFile("reads.yaml", 'multiplier', fnames=reads_yaml, axes_origin=[]),
-            multipliers,
+            mgd.OutputFile("reads.csv.gz", 'multiplier', fnames=reads),
+            mgd.OutputFile("reads.yaml", 'multiplier', fnames=reads_yaml),
+            mgd.InputInstance('multiplier'),
             cell_ids
         ),
-        kwargs={'low_memory': True}
+        kwargs={'low_memory': True, 'quick': True}
     )
 
     workflow.transform(
@@ -108,7 +109,7 @@ def create_hmmcopy_workflow(
             multipliers,
             cell_ids
         ),
-        kwargs={'low_memory': True}
+        kwargs={'low_memory': True, 'quick': True}
     )
 
     workflow.transform(

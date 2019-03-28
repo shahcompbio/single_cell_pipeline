@@ -170,7 +170,7 @@ def run_hmmcopy(
 
 
 
-def concatenate_csv(inputs, output, yamloutput, multipliers, cells, low_memory=False):
+def concatenate_csv(inputs, output, yamloutput, multipliers, cells, low_memory=False, quick=False):
     for multiplier in multipliers:
         mult_inputs = [inputs[(cell, multiplier)]for cell in cells]
         if yamloutput:
@@ -178,13 +178,36 @@ def concatenate_csv(inputs, output, yamloutput, multipliers, cells, low_memory=F
         else:
             yamlfile = None
         if low_memory:
-            csvutils.concatenate_csv_lowmem(
-                mult_inputs, output[multiplier], yamlfile=yamlfile
-            )
+            if quick:
+                csvutils.concatenate_csv_lowmem_quick(
+                    mult_inputs, output[multiplier], yamlfile=yamlfile
+                )
+            else:
+                csvutils.concatenate_csv_lowmem(
+                    mult_inputs, output[multiplier], yamlfile=yamlfile
+                )
         else:
             csvutils.concatenate_csv(
                 mult_inputs, output[multiplier], yamlfile=yamlfile
             )
+
+
+def concatenate_csv_single(inputs, output, yamloutput, multiplier, cells, low_memory=False, quick=False):
+        mult_inputs = [inputs[(cell, multiplier)]for cell in cells]
+        if low_memory:
+            if quick:
+                csvutils.concatenate_csv_lowmem_quick(
+                    mult_inputs, output, yamlfile=yamloutput
+                )
+            else:
+                csvutils.concatenate_csv_lowmem(
+                    mult_inputs, output, yamlfile=yamloutput
+                )
+        else:
+            csvutils.concatenate_csv(
+                mult_inputs, output, yamlfile=yamloutput
+            )
+
 
 
 def annotate_metrics(

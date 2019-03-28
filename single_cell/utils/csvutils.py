@@ -11,7 +11,7 @@ import logging
 import pandas as pd
 from single_cell.utils import helpers
 import time
-
+import shutil
 
 def generate_dtype_yaml(csv_file, yaml_filename):
     pandas_to_std_types = {
@@ -22,12 +22,14 @@ def generate_dtype_yaml(csv_file, yaml_filename):
     }
 
     if isinstance(csv_file, str):
-        print csv_file
-        print helpers.get_compression_type_pandas(csv_file)
-        print os.stat(csv_file)
+        # dont need to read entire file to generate
+        # this yaml. read the first chunk only
+        chunksize = 10 ** 6
         data = pd.read_csv(
-            csv_file, compression=helpers.get_compression_type_pandas(csv_file)
+            csv_file, compression=helpers.get_compression_type_pandas(csv_file),
+            chunksize=chunksize
         )
+        data= next(data)
     elif isinstance(csv_file, pd.DataFrame):
         data = csv_file
     else:
@@ -213,3 +215,38 @@ def concatenate_csv_lowmem(in_filenames, out_filename, yamlfile=None):
     if yamlfile:
         generate_dtype_yaml(out_filename, yamlfile)
 
+
+
+def concatenate_csv_lowmem_quick(in_filenames, out_filename, yamlfile=None):
+    """merge csv files, fast implementation, will break if column order
+    is inconsistent
+    :param in_filenames: input file dict
+    :param out_filename: output file
+    """
+    compression = helpers.get_file_format(out_filename)
+    if compression == "gzip":
+        out_writer = gzip.open(out_filename, 'w')
+    else:
+        out_writer = open(out_filename, 'w')
+
+    out_header = None
+
+    for infile in in_filenames:
+        if helpers.is_gzip(infile):
+            inp = gzip.open(infile)
+        else:
+            inp = open(infile)
+
+        header = inp.readline()
+        if not out_header:
+            out_header = header
+            out_writer.write(header)
+        else:
+            assert header == out_header
+
+        shutil.copyfileobj(inp, out_writer, length=16*1024*1024)
+
+    out_writer.close()
+
+    if yamlfile:
+        generate_dtype_yaml(out_filename, yamlfile)
