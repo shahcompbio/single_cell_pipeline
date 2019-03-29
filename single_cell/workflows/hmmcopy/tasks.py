@@ -471,11 +471,9 @@ def get_hierarchical_clustering_order(
     data = []
     chunksize = 10 ** 5
     for chunk in pd.read_csv(
-            reads_filename, chunksize=chunksize, compression='gzip'):
+            reads_filename, chunksize=chunksize, compression='gzip', dtype={'chr': str}):
 
         chunk["bin"] = list(zip(chunk.chr, chunk.start, chunk.end))
-
-        print len(set(zip(chunk.cell_id.tolist(), chunk.bin.tolist())))
 
         chunk = chunk.pivot(index='cell_id', columns='bin', values='state')
 
