@@ -226,10 +226,9 @@ def annotate_metrics(
         cellinfo = sample_info[cellid]
         value.update(cellinfo)
 
-        for cellid in cells:
-            cell_info = order[cellid]
-            for colname, value in cell_info.iteritems():
-                metrics.loc[metrics["cell_id"] == cellid, colname] = value
+        cell_info = order[cellid]
+        for colname, value in cell_info.iteritems():
+            metrics.loc[metrics["cell_id"] == cellid, colname] = value
 
     metrics.to_csv(output, na_rep='NA', index=False, compression='gzip')
 
