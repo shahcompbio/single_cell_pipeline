@@ -7,11 +7,11 @@ import shutil
 import pandas as pd
 import pypeliner
 
+from single_cell.utils import helpers
 
 def destruct_bamdisc(
         destruct_config, normal_bam_file, stats,
-        reads_1, reads_2, sample_1, sample_2, tempdir, cell_id,
-        tag=False
+        reads_1, reads_2, sample_1, sample_2, tempdir
 ):
     """
     :param destruct_config: dict object with destruct params
@@ -36,23 +36,14 @@ def destruct_bamdisc(
     :type tag: bool
     """
 
-    pypeliner.helpers.makedirs(tempdir)
-
-    if tag:
-        disc_reads_1 = os.path.join(tempdir, "pre_tagged_r1.fastq.gz")
-        disc_reads_2 = os.path.join(tempdir, "pre_tagged_r2.fastq.gz")
-    else:
-        disc_reads_1 = reads_1
-        disc_reads_2 = reads_2
-
     cmd = ['destruct_bamdiscordantfastq',
            '-r',
            '-c', destruct_config['bam_max_soft_clipped'],
            '-f', destruct_config['bam_max_fragment_length'],
            '-b', normal_bam_file,
            '-s', stats,
-           '--fastq1', disc_reads_1,
-           '--fastq2', disc_reads_2,
+           '--fastq1', reads_1,
+           '--fastq2', reads_2,
            '-t', tempdir,
            '-n', destruct_config['num_read_samples'],
            '--sample1', sample_1,
@@ -60,44 +51,66 @@ def destruct_bamdisc(
            ]
     pypeliner.commandline.execute(*cmd)
 
-    if tag:
-        tag_reads(disc_reads_1, reads_1, cell_id)
-        tag_reads(disc_reads_2, reads_2, cell_id)
+    numreads_r1 = get_read_count(reads_1)
+    numreads_r2 = get_read_count(reads_2)
+
+    return max(numreads_r1, numreads_r2)
 
 
-def tag_reads(input_fastq, output_fastq, tag):
-    """
-    tag the reads in the fastq file with the provided tag
-    :param input_fastq: path to fastq file
-    :type input_fastq: str
-    :param output_fastq: path to output tagged fastq
-    :type output_fastq: str
-    :param tag: value to tag reads with
-    :type tag: str
-    """
-    opener = (open, gzip.open)[input_fastq.endswith('.gz')]
-    with opener(input_fastq, 'r') as infile, opener(output_fastq, 'w') as outfile:
+def get_max_read_count(readcounts):
+    return max(readcounts.values())
 
+
+def re_index_reads(input_fastq, output_fastq, cell_id, cells, offset, tag=False):
+
+    index = cells.index(cell_id)
+
+    start_count = index * offset
+
+    with helpers.getFileHandle(input_fastq) as infile:
+        with helpers.getFileHandle(output_fastq, 'w') as outfile:
+
+            while True:
+                fastq_read = list(islice(infile, 4))
+
+                if not fastq_read:
+                    break
+
+                assert len(fastq_read) == 4, 'fastq file format error'
+
+                if not fastq_read[0].startswith('@'):
+                    raise ValueError('Expected @ as first character of read name')
+
+                if not fastq_read[2].startswith('+'):
+                    raise ValueError('Expected = as first character of read comment')
+
+                fastq_read[0] = '@' + str(start_count) + '/' + fastq_read[0].split('/')[1]
+
+                start_count += 1
+
+                if tag:
+                    fastq_read[2] = '+' + cell_id + "\n"
+
+                for fastq_line in fastq_read:
+                    outfile.write(fastq_line)
+
+
+def get_read_count(input_fastq):
+    def blocks(files, size=65536):
         while True:
-            fastq_read = list(islice(infile, 4))
-
-            if not fastq_read:
+            b = files.read(size)
+            if not b:
                 break
+            yield b
 
-            assert len(fastq_read) == 4, 'fastq file format error'
+    with helpers.getFileHandle(input_fastq) as indata:
+        linecount = sum(bl.count("\n") for bl in blocks(indata))
 
-            if not fastq_read[0].startswith('@'):
-                raise ValueError('Expected @ as first character of read name')
+    assert linecount % 4 == 0
 
-            if not fastq_read[2].startswith('+'):
-                raise ValueError('Expected @ as first character of read name')
+    readcount = linecount / 4
 
-            if tag:
-                fastq_read[2] = '+' + tag + "\n"
-
-            for fastq_line in fastq_read:
-                outfile.write(fastq_line)
-
+    return readcount
 
 def merge_cell_fastqs(input_fastqs_1, output_fastq_1):
     """

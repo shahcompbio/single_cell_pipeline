@@ -10,11 +10,13 @@ def process_cells_destruct(
 
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,}
 
+    cells = cell_bam_files.keys()
+
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
-        value=cell_bam_files.keys(),
+        value=cells,
     )
 
     workflow.transform(
@@ -22,6 +24,7 @@ def process_cells_destruct(
         func="single_cell.workflows.destruct_singlecell.tasks.destruct_bamdisc",
         axes=('cell_id',),
         ctx={'io': 1, 'mem': 8},
+        ret=mgd.TempOutputObj("numreads", "cell_id"),
         args=(
             destruct_config,
             mgd.InputFile('bam', 'cell_id', fnames=cell_bam_files),
@@ -31,7 +34,45 @@ def process_cells_destruct(
             mgd.TempOutputFile('cell_sample_1.fastq.gz', 'cell_id'),
             mgd.TempOutputFile('cell_sample_2.fastq.gz', 'cell_id'),
             mgd.TempSpace('bamdisc_cell_tempspace', 'cell_id'),
+        ),
+    )
+
+    workflow.transform(
+        name='get_max_read_count',
+        ret=mgd.TempOutputObj("maxreads"),
+        func="single_cell.workflows.destruct_singlecell.tasks.get_max_read_count",
+        ctx={'io': 1, 'mem': 8},
+        args=(
+            mgd.TempInputObj('numreads', 'cell_id'),
+        )
+    )
+
+    workflow.transform(
+        name='reindex_reads_r1',
+        func="single_cell.workflows.destruct_singlecell.tasks.re_index_reads",
+        ctx={'io': 1, 'mem': 8},
+        axes=('cell_id',),
+        args=(
+            mgd.TempInputFile('cell_reads_1.fastq.gz', 'cell_id'),
+            mgd.TempOutputFile('cell_reads_1_reindex.fastq.gz', 'cell_id'),
             mgd.InputInstance('cell_id'),
+            cells,
+            mgd.TempInputObj("maxreads")
+        ),
+        kwargs={'tag': tag}
+    )
+
+    workflow.transform(
+        name='reindex_reads_r2',
+        func="single_cell.workflows.destruct_singlecell.tasks.re_index_reads",
+        ctx={'io': 1, 'mem': 8},
+        axes=('cell_id',),
+        args=(
+            mgd.TempInputFile('cell_reads_2.fastq.gz', 'cell_id'),
+            mgd.TempOutputFile('cell_reads_2_reindex.fastq.gz', 'cell_id'),
+            mgd.InputInstance('cell_id'),
+            cells,
+            mgd.TempInputObj("maxreads")
         ),
         kwargs={'tag': tag}
     )
@@ -41,7 +82,7 @@ def process_cells_destruct(
         ctx={'io': 1, 'mem': 8},
         func="single_cell.workflows.destruct_singlecell.tasks.merge_cell_fastqs",
         args=(
-            mgd.TempInputFile('cell_reads_1.fastq.gz', 'cell_id'),
+            mgd.TempInputFile('cell_reads_1_reindex.fastq.gz', 'cell_id'),
             mgd.OutputFile(reads_1),
         ),
     )
@@ -51,7 +92,7 @@ def process_cells_destruct(
         ctx={'io': 1, 'mem': 8},
         func="single_cell.workflows.destruct_singlecell.tasks.merge_cell_fastqs",
         args=(
-            mgd.TempInputFile('cell_reads_2.fastq.gz', 'cell_id'),
+            mgd.TempInputFile('cell_reads_2_reindex.fastq.gz', 'cell_id'),
             mgd.OutputFile(reads_2),
         ),
     )
@@ -120,7 +161,6 @@ def create_destruct_workflow(
                 mgd.TempOutputFile('normal_sample_1.fastq.gz'),
                 mgd.TempOutputFile('normal_sample_2.fastq.gz'),
                 mgd.TempSpace('bamdisc_normal_tempspace'),
-                None
             )
         )
     else:
