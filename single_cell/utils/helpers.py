@@ -17,6 +17,44 @@ import multiprocessing
 
 from multiprocessing.pool import ThreadPool
 import pypeliner
+import gzip
+import pandas as pd
+
+
+class getFileHandle(object):
+    def __init__(self, filename, mode='r'):
+        self.filename = filename
+        self.mode = mode
+
+    def __enter__(self):
+        if self.get_file_format(self.filename) in ["csv", 'plain-text']:
+            self.handle = open(self.filename, self.mode)
+        elif self.get_file_format(self.filename) == "gzip":
+            self.handle = gzip.open(self.filename, self.mode)
+        elif self.get_file_format(self.filename) == "h5":
+            self.handle = pd.HDFStore(self.filename, self.mode)
+        return self.handle
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.handle.close()
+
+    def get_file_format(self, filepath):
+        if filepath.endswith('.tmp'):
+            filepath = filepath[:-4]
+
+        _, ext = os.path.splitext(filepath)
+
+        if ext == ".csv":
+            return "csv"
+        elif ext == ".gz":
+            return "gzip"
+        elif ext == ".h5" or ext == ".hdf5":
+            return "h5"
+        else:
+            logging.getLogger("single_cell.plot_metrics").warn(
+                "Couldn't detect output format. extension {}".format(ext)
+            )
+            return "plain-text"
 
 
 def get_compression_type_pandas(filepath):

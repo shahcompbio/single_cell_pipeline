@@ -12,9 +12,10 @@ import argparse
 import logging
 import gzip
 from single_cell.utils import helpers
+from single_cell.utils import csvutils
 
 import pandas as pd
-
+import yaml
 
 class ConvertCSVToSEG(object):
 
@@ -87,7 +88,7 @@ class ConvertCSVToSEG(object):
                         zip(data.index, data["quality"])
                     }
         else:
-            metrics = pd.read_csv(self.metrics, compression='gzip')
+            metrics = csvutils.read_csv_and_yaml(self.metrics)
             if not self.multiplier == 0:
                 metrics = metrics[metrics["multiplier"] == self.multiplier]
 
@@ -149,21 +150,20 @@ class ConvertCSVToSEG(object):
         """parses hmmcopy segments data
         :param segs: path to hmmcopy segs file
         """
+        header_flag, dtypes, columns = csvutils.get_metadata(segs)
+
+        header = {v: i for i, v in enumerate(columns)}
 
         segs_data = {}
 
+        with helpers.getFileHandle(segs) as segfile:
 
-        with gzip.open(segs, 'r') as segfile:
-            segs = csv.reader(segfile)
+            if header_flag:
+                assert segfile.readline().strip().split(',') == columns
 
-            lines = enumerate(segs)
+            for row in segfile:
+                row = row.strip().split(',')
 
-            # read the header, build a dictionary with indices of headers
-            _, header = next(lines)
-            header = {v: i for i, v in enumerate(header)}
-
-            # Read the segs file and write to the output file
-            for _, row in lines:
                 if not row[header["multiplier"]] == self.multiplier:
                     continue
 

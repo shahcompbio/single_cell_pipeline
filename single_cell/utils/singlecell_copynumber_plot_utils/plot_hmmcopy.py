@@ -18,8 +18,11 @@ import matplotlib.gridspec as gridspec
 from matplotlib.colors import rgb2hex
 
 from single_cell.utils import helpers
+from single_cell.utils import csvutils
 
 import numpy as np
+import os
+import yaml
 
 lowess = sm.nonparametric.lowess
 
@@ -128,9 +131,7 @@ class GenHmmPlots(object):
         return {mult: infile for mult, infile in zip(self.multipliers, infiles)}
 
     def read_csv(self, infile):
-        return pd.read_csv(
-            infile, compression=helpers.get_compression_type_pandas(infile)
-        )
+        return csvutils.read_csv_and_yaml(infile)
 
     def read_metrics(self, cell_id, multiplier):
         """

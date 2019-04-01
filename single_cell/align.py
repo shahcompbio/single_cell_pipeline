@@ -79,9 +79,7 @@ def align_workflow(args):
         args=(
             mgd.InputFile('bam_markdups', 'cell_id', fnames = bam_files, axes_origin=[], extensions=['.bai']),
             mgd.OutputFile(alignment_metrics_csv),
-            mgd.OutputFile(alignment_metrics_yaml),
             mgd.OutputFile(gc_metrics_csv),
-            mgd.OutputFile(gc_metrics_yaml),
             mgd.OutputFile(plot_metrics_output),
             config['ref_genome'],
             config,

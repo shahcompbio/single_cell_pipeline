@@ -12,9 +12,7 @@ from single_cell.utils import helpers
 def create_alignment_metrics_workflow(
         bam_filename,
         alignment_metrics,
-        alignment_metrics_yaml,
         gc_metrics,
-        gc_metrics_yaml,
         plot_metrics,
         ref_genome,
         config,
@@ -146,10 +144,9 @@ def create_alignment_metrics_workflow(
         ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         args=(
             mgd.InputFile(gc_metrics_filename, 'cell_id', axes_origin=[]),
-            mgd.OutputFile(gc_metrics),
+            mgd.TempOutputFile('gc_metrics.csv.gz', extensions=['.yaml']),
             mgd.TempSpace("temp_gc")
         ),
-        kwargs={'yamlfile': mgd.OutputFile(gc_metrics_yaml)}
     )
 
     workflow.transform(
@@ -162,7 +159,7 @@ def create_alignment_metrics_workflow(
             mgd.InputFile(insert_metrics_filename, 'cell_id', axes_origin=[]),
             mgd.InputFile(wgs_metrics_filename, 'cell_id', axes_origin=[]),
             mgd.TempSpace("tempdir_collect_metrics"),
-            mgd.TempOutputFile("alignment_metrics.csv.gz"),
+            mgd.TempOutputFile("alignment_metrics.csv.gz", extensions=['.yaml']),
         ),
     )
 
@@ -171,11 +168,10 @@ def create_alignment_metrics_workflow(
         ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.workflows.alignment_metrics.tasks.annotate_metrics",
         args=(
-            mgd.TempInputFile("alignment_metrics.csv.gz"),
+            mgd.TempInputFile("alignment_metrics.csv.gz", extensions=['.yaml']),
             sample_info,
-            mgd.OutputFile(alignment_metrics),
+            mgd.TempOutputFile('alignment_metrics_annotated.csv.gz', extensions=['.yaml']),
         ),
-        kwargs={'yamlfile': mgd.OutputFile(alignment_metrics_yaml)}
     )
 
     workflow.transform(
@@ -183,12 +179,36 @@ def create_alignment_metrics_workflow(
         ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.workflows.alignment_metrics.tasks.plot_metrics",
         args=(
-            mgd.InputFile(alignment_metrics),
+            mgd.TempInputFile('alignment_metrics_annotated.csv.gz', extensions=['.yaml']),
             mgd.OutputFile(plot_metrics),
             'QC pipeline metrics',
-            mgd.InputFile(gc_metrics),
+            mgd.TempInputFile('gc_metrics.csv.gz', extensions=['.yaml']),
             config['gc_windows'],
         )
     )
+
+    workflow.transform(
+        name='finalize_metrics',
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        axes=('multiplier',),
+        func="single_cell.utils.csvutils.finalize_csv",
+        args=(
+            mgd.TempInputFile('alignment_metrics_annotated.csv.gz', extensions=['.yaml']),
+            mgd.OutputFile(alignment_metrics, extensions=['.yaml']),
+        ),
+    )
+
+
+    workflow.transform(
+        name='finalize_gc_metrics',
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        axes=('multiplier',),
+        func="single_cell.utils.csvutils.finalize_csv",
+        args=(
+            mgd.TempInputFile('gc_metrics.csv.gz', extensions=['.yaml']),
+            mgd.OutputFile(gc_metrics, extensions=['.yaml']),
+        ),
+    )
+
 
     return workflow

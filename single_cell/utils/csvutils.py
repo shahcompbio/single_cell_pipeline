@@ -13,7 +13,114 @@ from single_cell.utils import helpers
 import time
 import shutil
 
-def generate_dtype_yaml(csv_file, yaml_filename):
+
+def read_csv_and_yaml_by_chunks(infile, dtypes, columns, chunksize, header):
+    dfs = pd.read_csv(
+        infile, compression=helpers.get_compression_type_pandas(infile),
+        dtype=dtypes, header=header, chunksize=chunksize
+    )
+    for data in dfs:
+        if header is None:
+            data.columns = columns
+        else:
+            assert list(data.columns.values) == columns
+        yield data
+
+
+def read_csv_and_yaml(infile, chunksize=None):
+
+    with open(infile) as f:
+        first_line = f.readline()
+        if len(first_line) == 0:
+            return
+
+    header, dtypes, columns = get_metadata(infile)
+
+    # if header exists then use first line (0) as header
+    header = 0 if header else None
+
+    if chunksize:
+        return read_csv_and_yaml_by_chunks(infile, dtypes, columns, chunksize, header)
+    else:
+        data = pd.read_csv(
+            infile, compression=helpers.get_compression_type_pandas(infile),
+            dtype=dtypes, header=header
+        )
+        if header is None:
+            data.columns = columns
+        else:
+            assert list(data.columns.values) == columns
+        return data
+
+
+def get_metadata(filepath):
+    if not os.path.exists(filepath + '.yaml'):
+        with helpers.getFileHandle(filepath) as inputfile:
+            columns = inputfile.readline().strip().split(',')
+            header=True
+            dtypes=None
+            return header,dtypes,columns
+
+    with open(filepath+'.yaml') as yamlfile:
+        yamldata = yaml.load(yamlfile)
+
+    header = yamldata['header']
+
+    dtypes = {}
+    columns = []
+    for coldata in yamldata['columns']:
+
+        assert len(coldata.keys()) == 1
+
+        colname = coldata.keys()[0]
+
+        dtypes[colname] = coldata[colname]['type']
+
+        columns.append(colname)
+
+    return header, dtypes, columns
+
+
+def load_csv_metadata(csvfile):
+    yamlfile = csvfile + '.yaml'
+
+    if not os.path.exists(yamlfile):
+        return None
+
+    with open(yamlfile) as yamlinput:
+        return yaml.load(yamlinput)
+
+
+def write_dataframe_to_csv_and_yaml(df, outfile):
+    compression = helpers.get_compression_type_pandas(outfile)
+
+    if compression == 'h5':
+        df.to_hdf5(outfile)
+    else:
+        df.to_csv(outfile, compression=compression,header=False, na_rep='NA', index=False)
+        generate_csv_yaml(df, outfile+'.yaml')
+
+
+def generate_csv_yaml(filepath, outputyaml, header=False):
+    if isinstance(filepath, pd.DataFrame):
+        types = generate_dtype_yaml(filepath)
+        columns = list(filepath.columns.values)
+    else:
+        with helpers.getFileHandle(filepath) as infile:
+            columns = infile.readline().strip().split(',')
+            types = generate_dtype_yaml(filepath)
+
+    yamldata = {'header': header, 'columns': []}
+
+    for column in columns:
+        data = {column: {'type': types[column]}}
+        yamldata['columns'].append(data)
+
+    with open(outputyaml, 'w') as f:
+        yaml.dump(yamldata, f, default_flow_style=False)
+
+
+def generate_dtype_yaml(csv_file, yaml_filename=None):
     pandas_to_std_types = {
         "bool": "bool",
         "int64": "int",
@@ -44,12 +151,15 @@ def generate_dtype_yaml(csv_file, yaml_filename):
     for column, dtype in data.dtypes.iteritems():
         typeinfo[column] = pandas_to_std_types[str(dtype)]
 
-    with open(yaml_filename, 'w') as f:
-        yaml.dump(typeinfo, f, default_flow_style=False)
+    if yaml_filename:
+        with open(yaml_filename, 'w') as f:
+            yaml.dump(typeinfo, f, default_flow_style=False)
+    else:
+        return typeinfo
 
 
 def annotate_metrics(infile, sample_info, outfile, yamlfile=None):
-    metrics_df = pd.read_csv(infile)
+    metrics_df = read_csv_and_yaml(infile)
 
     cells = metrics_df["cell_id"]
 
@@ -59,16 +169,10 @@ def annotate_metrics(infile, sample_info, outfile, yamlfile=None):
         for column, value in coldata.iteritems():
             metrics_df.loc[metrics_df["cell_id"] == cell, column] = value
 
-    write_to_file(
-        metrics_df, outfile, index=False,
-        compression=helpers.get_compression_type_pandas(outfile)
-    )
-
-    if yamlfile:
-        generate_dtype_yaml(metrics_df, yamlfile)
+    write_dataframe_to_csv_and_yaml(metrics_df, outfile)
 
 
-def concatenate_csv(in_filenames, out_filename, nan_val='NA', key_column=None, sep=',', yamlfile=None):
+def concatenate_csv(in_filenames, out_filename, nan_val='NA', key_column=None):
     data = []
 
     if not isinstance(in_filenames, dict):
@@ -79,49 +183,50 @@ def concatenate_csv(in_filenames, out_filename, nan_val='NA', key_column=None, s
             first_line = f.readline()
             if len(first_line) == 0:
                 continue
-        df = pd.read_csv(in_filename, dtype=str, sep=sep)
+        df = read_csv_and_yaml(in_filename)
         if key_column is not None:
             df[key_column] = str(key)
         data.append(df)
     data = pd.concat(data, ignore_index=True)
     data = data.fillna(nan_val)
 
-    write_to_file(data, out_filename, index=False, compression=helpers.get_compression_type_pandas(out_filename))
+    write_dataframe_to_csv_and_yaml(data, out_filename)
 
-    if yamlfile:
-        generate_dtype_yaml(data, yamlfile)
+def concatenate_csv_files_quick_lowmem(inputfiles, output):
+    if isinstance(inputfiles, dict):
+        inputfiles = inputfiles.values()
+
+    merged_metadata = None
+
+    with helpers.getFileHandle(output, 'w') as outfile:
+        for infile in inputfiles:
+            if not merged_metadata:
+                merged_metadata = load_csv_metadata(infile)
+            else:
+                assert merged_metadata == load_csv_metadata(infile)
+            with helpers.getFileHandle(infile) as inputdata:
+                shutil.copyfileobj(inputdata, outfile, length=16*1024*1024)
+
+    yamlfile = output + '.yaml'
+    with open(yamlfile, 'w') as yamloutput:
+        yaml.dump(merged_metadata, yamloutput, default_flow_style=False)
 
 
-
-def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', sep=',', suffixes=None, yamlfile=None):
+def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', suffixes=None):
     data = []
 
     if isinstance(in_filenames, dict):
         in_filenames = in_filenames.values()
 
     for in_filename in in_filenames:
-        print 'merging', in_filename
-        with open(in_filename) as f:
-            first_line = f.readline()
-            if len(first_line) == 0:
-                continue
-        data.append(pd.read_csv(in_filename, sep=sep, dtype=str))
+        indata = read_csv_and_yaml(in_filename)
+        if indata:
+            data.append(indata)
 
     data = merge_frames(data, how, on, suffixes = suffixes)
     data = data.fillna(nan_val)
 
-    write_to_file(data, out_filename, index=False, compression=helpers.get_compression_type_pandas(out_filename))
-
-    if yamlfile:
-        generate_dtype_yaml(data, yamlfile)
-
-
-
-def write_to_file(df, out_filename, index=True, compression=None, sep=','):
-    if compression == "hdf5":
-        df.to_hdf5(out_filename, index=index)
-    else:
-        df.to_csv(out_filename, na_rep='NA', index=index, compression=helpers.get_compression_type_pandas(out_filename), sep=sep)
+    write_dataframe_to_csv_and_yaml(data, out_filename)
 
 
 def merge_frames(frames, how, on, suffixes=None):
@@ -159,94 +264,17 @@ def merge_frames(frames, how, on, suffixes=None):
         return merged_frame
 
 
-def concatenate_csv_lowmem(in_filenames, out_filename, yamlfile=None):
-    """merge csv files, uses csv module to handle inconsistencies in column
-    indexes, pandas uses a lot of memory
-    :param in_filenames: input file dict
-    :param out_filename: output file
-    """
-    if isinstance(in_filenames, dict):
-        in_filenames = in_filenames.values()
+def finalize_csv(infile, outfile):
 
-    compression = helpers.get_file_format(out_filename)
-    if compression == "gzip":
-        out_writer = gzip.open(out_filename, 'w')
-    else:
-        out_writer = open(out_filename, 'w')
+    header, dtypes, columns = get_metadata(infile)
 
-    writer = None
+    assert header==False, 'file already contains a header'
 
+    header = ','.join(columns) + '\n'
 
-    for infile in in_filenames:
-        if helpers.is_gzip(infile):
-            inp = gzip.open(infile)
-        else:
-            inp = open(infile)
+    with helpers.getFileHandle(outfile, 'w') as output:
+        output.write(header)
+        with helpers.getFileHandle(infile) as indata:
+            shutil.copyfileobj(indata, output, length=16*0124*1024)
 
-        reader = csv.DictReader(inp)
-
-        for row in reader:
-            if not writer:
-                if compression == "gzip":
-                    writer = csv.DictWriter(out_writer,
-                                            fieldnames=reader._fieldnames)
-                else:
-                    writer = csv.DictWriter(out_writer,
-                                            fieldnames=reader._fieldnames)
-                writer.writeheader()
-
-            print row
-            writer.writerow(row)
-        inp.close()
-
-    if not writer:
-        logging.getLogger("single_cell.helpers.csvutils").warn(
-            "no data to merge, generating an empty file"
-        )
-
-        #if inputs have headers write header to output
-        if reader._fieldnames:
-            writer = csv.DictWriter(out_writer,
-                                    fieldnames=reader._fieldnames)
-            writer.writeheader()
-
-    out_writer.close()
-
-    if yamlfile:
-        generate_dtype_yaml(out_filename, yamlfile)
-
-
-
-def concatenate_csv_lowmem_quick(in_filenames, out_filename, yamlfile=None):
-    """merge csv files, fast implementation, will break if column order
-    is inconsistent
-    :param in_filenames: input file dict
-    :param out_filename: output file
-    """
-    compression = helpers.get_file_format(out_filename)
-    if compression == "gzip":
-        out_writer = gzip.open(out_filename, 'w')
-    else:
-        out_writer = open(out_filename, 'w')
-
-    out_header = None
-
-    for infile in in_filenames:
-        if helpers.is_gzip(infile):
-            inp = gzip.open(infile)
-        else:
-            inp = open(infile)
-
-        header = inp.readline()
-        if not out_header:
-            out_header = header
-            out_writer.write(header)
-        else:
-            assert header == out_header
-
-        shutil.copyfileobj(inp, out_writer, length=16*1024*1024)
-
-    out_writer.close()
-
-    if yamlfile:
-        generate_dtype_yaml(out_filename, yamlfile)
+    generate_csv_yaml(outfile, outfile+'.yaml', header=True)
