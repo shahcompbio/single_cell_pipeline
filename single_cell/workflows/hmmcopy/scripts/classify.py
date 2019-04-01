@@ -11,6 +11,8 @@ import shutil
 
 from sklearn.ensemble import RandomForestClassifier
 
+from single_cell.utils import csvutils
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -48,10 +50,10 @@ def read_from_h5(filename, tablename):
     return data
 
 
-def read_from_csv(filename, gzipped=False):
-    compression = 'gzip' if gzipped else None
-    data = pd.read_csv(filename, compression=compression)
-    return data
+# def read_from_csv(filename, gzipped=False):
+#     compression = 'gzip' if gzipped else None
+#     data = pd.read_csv(filename, compression=compression)
+#     return data
 
 
 def read_data(filename, tablename, gzipped=True):
@@ -60,9 +62,9 @@ def read_data(filename, tablename, gzipped=True):
     if fileformat == 'h5':
         data = read_from_h5(filename, tablename)
     elif fileformat == 'csv':
-        data = read_from_csv(filename)
+        data = csvutils.read_csv_and_yaml(filename)
     elif fileformat == 'gzip':
-        data = read_from_csv(filename, gzipped=True)
+        data = csvutils.read_csv_and_yaml(filename)
     else:
         raise Exception("unknown file format")
 

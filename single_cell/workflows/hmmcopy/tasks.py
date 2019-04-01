@@ -26,6 +26,9 @@ from single_cell.utils.singlecell_copynumber_plot_utils import PlotMetrics
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotPcolor
 from single_cell.utils.singlecell_copynumber_plot_utils import GenHmmPlots
 
+import gzip
+import yaml
+
 
 scripts_directory = os.path.join(
     os.path.realpath(
@@ -99,6 +102,17 @@ def gzip_file(inputfile, gzipped_csv):
             gzipped_out.write(line)
 
 
+def prep_csv_files(filepath, outputfile, outputyaml):
+    with helpers.getFileHandle(outputfile, 'w') as out_writer:
+        csvutils.generate_csv_yaml(filepath, outputyaml)
+
+        with helpers.getFileHandle(filepath) as infile:
+            # skip header
+            infile.readline()
+            shutil.copyfileobj(infile, out_writer, length=16*1024*1024)
+
+
+
 def run_hmmcopy(
         bam_file,
         corrected_reads_filename,
@@ -145,11 +159,16 @@ def run_hmmcopy(
         hmmcopy_segs_files = os.path.join(hmmcopy_outdir, "segs.csv")
         hmmcopy_metrics_files = os.path.join(hmmcopy_outdir, "metrics.csv")
 
-        gzip_file(hmmcopy_reads_file, corrected_reads_filename[multiplier])
-        gzip_file(hmmcopy_params_files, parameters_filename[multiplier])
-        gzip_file(hmmcopy_segs_files, segments_filename[multiplier])
-        gzip_file(hmmcopy_metrics_files, metrics_filename[multiplier])
-
+        prep_csv_files(
+            hmmcopy_reads_file, corrected_reads_filename[multiplier],
+            corrected_reads_filename[multiplier]+'.yaml'
+        )
+        prep_csv_files(hmmcopy_params_files, parameters_filename[multiplier],
+                       parameters_filename[multiplier]+'.yaml')
+        prep_csv_files(hmmcopy_segs_files, segments_filename[multiplier],
+                       segments_filename[multiplier]+'.yaml')
+        prep_csv_files(hmmcopy_metrics_files, metrics_filename[multiplier],
+                       metrics_filename[multiplier]+'.yaml')
 
     corrected_reads_all = [corrected_reads_filename[mult] for mult in multipliers]
     segments_all = [segments_filename[mult] for mult in multipliers]
@@ -170,53 +189,27 @@ def run_hmmcopy(
 
 
 
-def concatenate_csv(inputs, output, yamloutput, multipliers, cells, low_memory=False, quick=False):
+def concatenate_csv(inputs, output, multipliers, cells, low_memory=False):
     for multiplier in multipliers:
         mult_inputs = [inputs[(cell, multiplier)]for cell in cells]
-        if yamloutput:
-            yamlfile = yamloutput[multiplier]
-        else:
-            yamlfile = None
+
         if low_memory:
-            if quick:
-                csvutils.concatenate_csv_lowmem_quick(
-                    mult_inputs, output[multiplier], yamlfile=yamlfile
-                )
-            else:
-                csvutils.concatenate_csv_lowmem(
-                    mult_inputs, output[multiplier], yamlfile=yamlfile
-                )
+            csvutils.concatenate_csv_files_quick_lowmem(
+                mult_inputs, output[multiplier]
+            )
         else:
             csvutils.concatenate_csv(
-                mult_inputs, output[multiplier], yamlfile=yamlfile
+                mult_inputs, output[multiplier]
             )
-
-
-def concatenate_csv_single(inputs, output, yamloutput, multiplier, cells, low_memory=False, quick=False):
-        mult_inputs = [inputs[(cell, multiplier)]for cell in cells]
-        if low_memory:
-            if quick:
-                csvutils.concatenate_csv_lowmem_quick(
-                    mult_inputs, output, yamlfile=yamloutput
-                )
-            else:
-                csvutils.concatenate_csv_lowmem(
-                    mult_inputs, output, yamlfile=yamloutput
-                )
-        else:
-            csvutils.concatenate_csv(
-                mult_inputs, output, yamlfile=yamloutput
-            )
-
 
 
 def annotate_metrics(
-        reads, metrics, output, sample_info, cells, chromosomes=None, yamlfile=None):
+        reads, metrics, output, sample_info, cells, chromosomes=None):
     """
     adds sample information to metrics in place
     """
 
-    metrics = pd.read_csv(metrics, compression='gzip')
+    metrics = csvutils.read_csv_and_yaml(metrics)
 
     order = get_hierarchical_clustering_order(
         reads, chromosomes=chromosomes
@@ -230,10 +223,7 @@ def annotate_metrics(
         for colname, value in cell_info.iteritems():
             metrics.loc[metrics["cell_id"] == cellid, colname] = value
 
-    metrics.to_csv(output, na_rep='NA', index=False, compression='gzip')
-
-    if yamlfile:
-        csvutils.generate_dtype_yaml(metrics, yamlfile)
+    csvutils.write_dataframe_to_csv_and_yaml(metrics, output)
 
 
 def merge_hdf_files_on_disk(
@@ -356,10 +346,6 @@ def merge_pdf(in_filenames, outfilenames, metrics, cell_filters, tempdir, labels
         metrics, cell_filters
     )
 
-    grouped_data = group_cells_by_row(
-        good_cells, metrics, sort_by_col=True
-    )
-
     for infiles, outfiles, label in zip(in_filenames, outfilenames, labels):
 
         extension = os.path.splitext(infiles[good_cells[0]])[-1]
@@ -405,7 +391,7 @@ def extract_cell_by_col(df, colname, colvalue, rowname):
 
 def get_good_cells(metrics, cell_filters):
 
-    metrics_data = pd.read_csv(metrics, compression='gzip')
+    metrics_data = csvutils.read_csv_and_yaml(metrics)
 
     cells = metrics_data.cell_id
 
@@ -469,8 +455,8 @@ def get_hierarchical_clustering_order(
 
     data = []
     chunksize = 10 ** 5
-    for chunk in pd.read_csv(
-            reads_filename, chunksize=chunksize, compression='gzip', dtype={'chr': str}):
+    for chunk in csvutils.read_csv_and_yaml(
+            reads_filename, chunksize=chunksize):
 
         chunk["bin"] = list(zip(chunk.chr, chunk.start, chunk.end))
 

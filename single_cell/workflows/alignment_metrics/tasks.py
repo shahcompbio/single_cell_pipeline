@@ -104,9 +104,6 @@ def collect_gc(infiles, outfile, tempdir, yamlfile=None):
 
     csvutils.concatenate_csv(tempouts, outfile)
 
-    if yamlfile:
-        csvutils.generate_dtype_yaml(outfile, yamlfile)
-
 
 def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
                     wgs_metrics, tempdir, merged_metrics):

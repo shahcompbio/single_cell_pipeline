@@ -19,6 +19,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 matplotlib.rcParams['pdf.fonttype'] = 42
 
 from single_cell.utils import helpers
+from single_cell.utils import csvutils
 
 
 def parse_args():
@@ -767,8 +768,9 @@ class PlotMetrics(object):
     def read_input_data(self, infile, tablename):
         fileformat = helpers.get_file_format(infile)
 
+
         if fileformat == "csv" or fileformat == 'gzip':
-            metrics = pd.read_csv(infile, compression=helpers.get_compression_type_pandas(infile))
+            metrics = csvutils.read_csv_and_yaml(infile)
         else:
             with pd.HDFStore(infile, 'r') as metrics_store:
                 metrics = metrics_store[tablename]

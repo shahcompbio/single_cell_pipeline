@@ -16,6 +16,7 @@ import numpy as np
 import statsmodels.nonparametric.api as smnp
 import math
 
+from single_cell.utils import csvutils
 
 class PlotKernelDensity(object):
     '''
@@ -68,11 +69,9 @@ class PlotKernelDensity(object):
             data = data.reset_index()
 
         else:
+            data = csvutils.read_csv_and_yaml(fname)
 
-            data = pandas.read_csv(fname,
-                                   sep=self.sep,
-                                   dtype={'chromosome': str, 'start': int}
-                                   )
+            # data['chromosome'] = data['chromosome'].astype(str)
 
         return data
 

@@ -18,6 +18,7 @@ from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import logging
 from single_cell.utils import helpers
+from single_cell.utils import csvutils
 from heatmap import ClusterMap
 
 sys.setrecursionlimit(2000)
@@ -176,54 +177,54 @@ class PlotPcolor(object):
 
         bins = {}
 
-        if helpers.get_file_format(self.input) == 'gzip':
-            freader = gzip.open(self.input)
-        else:
-            freader = open(self.input)
+        header, dtypes, columns = csvutils.get_metadata(self.input)
 
-        header = freader.readline()
-        idxs = self.build_label_indices(header)
+        with helpers.getFileHandle(self.input) as freader:
+            idxs = self.build_label_indices(columns)
 
-        for line in freader:
-            line = line.strip().split(self.sep)
+            if header:
+                assert freader.readline().strip().split(',') == columns
 
-            sample_id = line[idxs['cell_id']]
+            for line in freader:
+                line = line.strip().split(self.sep)
 
-            val = line[idxs[self.column_name]]
+                sample_id = line[idxs['cell_id']]
 
-            val = float('nan') if val == "NA" else float(val)
+                val = line[idxs[self.column_name]]
 
-            if self.multiplier:
-                if not int(line[idxs['multiplier']]) == self.multiplier:
-                    continue
+                val = float('nan') if val == "NA" else float(val)
 
-            chrom = line[idxs['chr']]
-            start = int(line[idxs['start']])
-            end = int(line[idxs['end']])
+                if self.multiplier:
+                    if not int(line[idxs['multiplier']]) == self.multiplier:
+                        continue
 
-            seg = (chrom, start, end)
+                chrom = line[idxs['chr']]
+                start = int(line[idxs['start']])
+                end = int(line[idxs['end']])
 
-            if float(line[idxs["map"]]) <= self.mappability_threshold:
-                val = float("nan")
+                seg = (chrom, start, end)
 
-            if chrom not in bins:
-                bins[chrom] = set()
-            bins[chrom].add((start, end))
+                if float(line[idxs["map"]]) <= self.mappability_threshold:
+                    val = float("nan")
 
-            # just a sanity check, not required
-            if sample_id in data and seg in data[sample_id]:
-                raise Exception("repeated val")
+                if chrom not in bins:
+                    bins[chrom] = set()
+                bins[chrom].add((start, end))
 
-            if sample_id not in data:
-                data[sample_id] = {}
+                # just a sanity check, not required
+                if sample_id in data and seg in data[sample_id]:
+                    raise Exception("repeated val")
 
-            data[sample_id][seg] = val
+                if sample_id not in data:
+                    data[sample_id] = {}
 
-        samples = sorted(data.keys())
-        bins = self.sort_bins_csv(bins)
+                data[sample_id][seg] = val
 
-        data = self.conv_to_matrix(data, bins, samples)
-        data = self.get_pandas_dataframe(data, bins)
+            samples = sorted(data.keys())
+            bins = self.sort_bins_csv(bins)
+
+            data = self.conv_to_matrix(data, bins, samples)
+            data = self.get_pandas_dataframe(data, bins)
 
         return data
 
@@ -259,55 +260,55 @@ class PlotPcolor(object):
         sepdata = defaultdict(list)
         colordata = {}
 
-        if helpers.get_file_format(self.metrics) == 'gzip':
-            freader = gzip.open(self.metrics)
-        else:
-            freader = open(self.metrics)
-
-        header = freader.readline()
-        idxs = self.build_label_indices(header)
+        header, dtypes, columns = csvutils.get_metadata(self.metrics)
+        idxs = self.build_label_indices(columns)
 
         color_col = self.color_by_col
         sep_col = self.plot_by_col
 
-        for line in freader:
-            line = line.strip().split(self.sep)
+        with helpers.getFileHandle(self.metrics) as freader:
 
-            sample_id = line[idxs['cell_id']]
+            if header:
+                assert freader.readline().strip().split(',') == columns
 
-            # skip samples that are just na or inf
-            if sample_id not in samples:
-                continue
+            for line in freader:
+                line = line.strip().split(self.sep)
 
-            if self.multiplier:
-                multiplier = int(line[idxs["multiplier"]])
-                if not multiplier == self.multiplier:
+                sample_id = line[idxs['cell_id']]
+
+                # skip samples that are just na or inf
+                if sample_id not in samples:
                     continue
 
-            val = line[idxs["mad_neutral_state"]]
+                if self.multiplier:
+                    multiplier = int(line[idxs["multiplier"]])
+                    if not multiplier == self.multiplier:
+                        continue
 
-            val = float('nan') if val == "NA" else float(val)
+                val = line[idxs["mad_neutral_state"]]
 
-            ec = 'all' if sep_col == 'all' else line[idxs[sep_col]]
+                val = float('nan') if val == "NA" else float(val)
 
-            cc = line[idxs[color_col]]
+                ec = 'all' if sep_col == 'all' else line[idxs[sep_col]]
 
-            numreads = int(line[idxs['total_mapped_reads_hmmcopy']])
+                cc = line[idxs[color_col]]
 
-            reads_per_bin = line[idxs['median_hmmcopy_reads_per_bin']]
+                numreads = int(line[idxs['total_mapped_reads_hmmcopy']])
 
-            reads_per_bin = 0 if reads_per_bin == "NA" else float(
-                reads_per_bin)
+                reads_per_bin = line[idxs['median_hmmcopy_reads_per_bin']]
 
-            if self.cellcalls and cc not in self.cellcalls:
-                continue
+                reads_per_bin = 0 if reads_per_bin == "NA" else float(
+                    reads_per_bin)
 
-            numread_data[sample_id] = numreads
-            data[sample_id] = val
-            reads_per_bin_data[sample_id] = reads_per_bin
+                if self.cellcalls and cc not in self.cellcalls:
+                    continue
 
-            colordata[sample_id] = cc
-            sepdata[ec].append(sample_id)
+                numread_data[sample_id] = numreads
+                data[sample_id] = val
+                reads_per_bin_data[sample_id] = reads_per_bin
+
+                colordata[sample_id] = cc
+                sepdata[ec].append(sample_id)
 
         return data, sepdata, colordata, numread_data, reads_per_bin_data
 
