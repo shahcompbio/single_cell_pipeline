@@ -16,7 +16,6 @@ from scripts import ReadCounter
 from scripts import CorrectReadCount
 from scripts import classify
 
-from single_cell.utils import pdfutils
 from single_cell.utils import helpers
 from single_cell.utils import hdfutils
 from single_cell.utils import csvutils
@@ -25,9 +24,6 @@ from single_cell.utils.singlecell_copynumber_plot_utils import PlotKernelDensity
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotMetrics
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotPcolor
 from single_cell.utils.singlecell_copynumber_plot_utils import GenHmmPlots
-
-import gzip
-import yaml
 
 
 scripts_directory = os.path.join(
@@ -104,7 +100,7 @@ def gzip_file(inputfile, gzipped_csv):
 
 def prep_csv_files(filepath, outputfile, outputyaml):
     with helpers.getFileHandle(outputfile, 'w') as out_writer:
-        csvutils.generate_csv_yaml(filepath, outputyaml)
+        csvutils.generate_yaml_for_csv(filepath, outputyaml)
 
         with helpers.getFileHandle(filepath) as infile:
             # skip header
@@ -499,13 +495,11 @@ def plot_metrics(metrics, output, plot_title, multiplier):
 
     mult_plot_title = '{}({})'.format(plot_title, multiplier)
 
-    tablename = '/hmmcopy/metrics/{}'.format(multiplier)
-
     plot = PlotMetrics(
         metrics,
         output,
         mult_plot_title,
-        tablename=tablename)
+    )
     plot.plot_hmmcopy_metrics()
 
 
@@ -533,19 +527,16 @@ def plot_pcolor(infile, metrics, output, multiplier, plot_title=None,
 
     mult_plot_title = '{}({})'.format(plot_title, multiplier)
 
-    reads_tablename = '/hmmcopy/reads/{}'.format(multiplier)
-    metrics_tablename = '/hmmcopy/metrics/{}'.format(multiplier)
-
-    plot = PlotPcolor(infile, metrics, output, plot_title=mult_plot_title,
-                      column_name=column_name, plot_by_col=plot_by_col,
-                      chromosomes=chromosomes,
-                      max_cn=max_cn, multiplier=multiplier,
-                      scale_by_cells=scale_by_cells,
-                      segs_tablename=reads_tablename,
-                      metrics_tablename=metrics_tablename,
-                      color_by_col=color_by_col,
-                      cells=cells,
-                      mappability_threshold=mappability_threshold)
+    plot = PlotPcolor(
+        infile, metrics, output, plot_title=mult_plot_title,
+        column_name=column_name, plot_by_col=plot_by_col,
+        chromosomes=chromosomes,
+        max_cn=max_cn, multiplier=multiplier,
+        scale_by_cells=scale_by_cells,
+        color_by_col=color_by_col,
+        cells=cells,
+        mappability_threshold=mappability_threshold
+    )
     plot.main()
 
 
@@ -574,5 +565,3 @@ def add_quality(hmmcopy_metrics, alignment_metrics, multipliers, output, trainin
             hmmcopy_table,
             output,
             predictions)
-
-

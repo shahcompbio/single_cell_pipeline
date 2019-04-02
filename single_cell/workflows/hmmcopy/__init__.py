@@ -25,20 +25,12 @@ def create_hmmcopy_workflow(
                              for mult in multipliers])
     reads = dict([(mult, reads[mult])
                   for mult in multipliers])
-    reads_yaml = dict([(mult, reads_yaml[mult])
-                       for mult in multipliers])
     segs = dict([(mult, segs[mult])
                  for mult in multipliers])
-    segs_yaml = dict([(mult, segs_yaml[mult])
-                      for mult in multipliers])
     metrics = dict([(mult, metrics[mult])
                     for mult in multipliers])
-    metrics_yaml = dict([(mult, metrics_yaml[mult])
-                         for mult in multipliers])
     params = dict([(mult, params[mult])
                    for mult in multipliers])
-    params_yaml = dict([(mult, params_yaml[mult])
-                        for mult in multipliers])
 
     baseimage = hmmparams['docker']['single_cell_pipeline']
     hmmcopy_docker = hmmparams['docker']['hmmcopy']
