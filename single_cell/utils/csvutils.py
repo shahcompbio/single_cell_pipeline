@@ -70,11 +70,9 @@ def get_metadata(filepath):
     columns = []
     for coldata in yamldata['columns']:
 
-        assert len(coldata.keys()) == 1
+        colname = coldata['name']
 
-        colname = coldata.keys()[0]
-
-        dtypes[colname] = coldata[colname]['type']
+        dtypes[colname] = coldata['dtype']
 
         columns.append(colname)
 
@@ -113,7 +111,7 @@ def generate_yaml_for_csv(filepath, outputyaml, header=False):
     yamldata = {'header': header, 'columns': []}
 
     for column in columns:
-        data = {column: {'type': types[column]}}
+        data = {'name': column, 'dtype': types[column]}
         yamldata['columns'].append(data)
 
     with open(outputyaml, 'w') as f:
