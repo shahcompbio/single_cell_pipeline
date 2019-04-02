@@ -149,7 +149,10 @@ def generate_dtype_yaml(csv_file, yaml_filename=None):
 
     typeinfo = {}
     for column, dtype in data.dtypes.iteritems():
-        typeinfo[column] = pandas_to_std_types[str(dtype)]
+        if column in ['chr','chrom', 'chromosome']:
+            typeinfo[column] = 'str'
+        else:
+            typeinfo[column] = pandas_to_std_types[str(dtype)]
 
     if yaml_filename:
         with open(yaml_filename, 'w') as f:
