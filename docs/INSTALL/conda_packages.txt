@@ -6,7 +6,7 @@ fastqc
 picard
 cutadapt
 trim-galore
-pypeliner
+pypeliner>0.5.3
 bioconductor-hmmcopy
 r-plyr
 r-getopt
