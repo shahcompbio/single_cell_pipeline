@@ -9,8 +9,11 @@ def generate_pipeline_config_in_temp(args):
     if args['which'] in ['clean_sentinels', 'generate_config']:
         return args
 
+    params_override = {}
     if args.get("config_file", None):
-        return args
+        params_override = helpers.load_yaml(args["config_file"])
+    if args.get("config_override"):
+        params_override.update(args["config_override"])
 
     config_yaml = "config.yaml"
     tmpdir = args.get("tmpdir", None)
@@ -28,8 +31,6 @@ def generate_pipeline_config_in_temp(args):
         config_yaml = os.path.join(os.getcwd(), config_yaml)
 
     config_yaml = helpers.get_incrementing_filename(config_yaml)
-
-    params_override = args["config_override"]
 
     helpers.makedirs(config_yaml, isfile=True)
 
