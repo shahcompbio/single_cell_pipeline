@@ -98,10 +98,10 @@ def write_dataframe_to_csv_and_yaml(df, outfile):
         df.to_hdf5(outfile)
     else:
         df.to_csv(outfile, compression=compression,header=False, na_rep='NA', index=False)
-        generate_csv_yaml(df, outfile+'.yaml')
+        generate_yaml_for_csv(df, outfile+'.yaml')
 
 
-def generate_csv_yaml(filepath, outputyaml, header=False):
+def generate_yaml_for_csv(filepath, outputyaml, header=False):
     if isinstance(filepath, pd.DataFrame):
         types = generate_dtype_yaml(filepath)
         columns = list(filepath.columns.values)
@@ -192,6 +192,7 @@ def concatenate_csv(in_filenames, out_filename, nan_val='NA', key_column=None):
 
     write_dataframe_to_csv_and_yaml(data, out_filename)
 
+
 def concatenate_csv_files_quick_lowmem(inputfiles, output):
     if isinstance(inputfiles, dict):
         inputfiles = inputfiles.values()
@@ -277,4 +278,4 @@ def finalize_csv(infile, outfile):
         with helpers.getFileHandle(infile) as indata:
             shutil.copyfileobj(indata, output, length=16*0124*1024)
 
-    generate_csv_yaml(outfile, outfile+'.yaml', header=True)
+    generate_yaml_for_csv(outfile, outfile+'.yaml', header=True)
