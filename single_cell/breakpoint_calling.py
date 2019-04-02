@@ -7,6 +7,13 @@ import single_cell
 
 def breakpoint_calling_workflow(args):
 
+    run_destruct = args['destruct']
+    run_lumpy = args['lumpy']
+    if not any((run_destruct, run_lumpy)):
+        run_destruct = True
+        run_lumpy = True
+
+
     config = helpers.load_config(args)
     config = config['breakpoint_calling']
 
@@ -44,7 +51,7 @@ def breakpoint_calling_workflow(args):
     else:
         normal_bam = mgd.InputFile(normal_bams, extensions=['.bai'])
 
-    if args['destruct']:
+    if run_destruct:
         workflow.subworkflow(
             name='destruct',
             ctx={'docker_image': config['docker']['destruct']},
@@ -61,7 +68,7 @@ def breakpoint_calling_workflow(args):
             ),
         )
 
-    if args['lumpy']:
+    if run_lumpy:
         varcalls_dir = os.path.join(
             args['out_dir'], 'results', 'breakpoint_calling')
         breakpoints_bed = os.path.join(varcalls_dir, 'lumpy_breakpoints.bed')
