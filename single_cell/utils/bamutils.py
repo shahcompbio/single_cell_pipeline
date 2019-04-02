@@ -100,17 +100,17 @@ def bwa_aln_paired_end(fastq1, fastq2, output, tempdir,
         read_2_sai,
         **kwargs)
 
-    pypeliner.commandline.execute(
-        'bwa', 'sampe',
-        '-r', readgroup,
-        reference,
-        read_1_sai,
-        read_2_sai,
-        fastq1,
-        fastq2,
-        '>',
-        output,
-        **kwargs)
+    try:
+        readgroup_literal = '"' + readgroup + '"'
+        pypeliner.commandline.execute(
+            'bwa', 'sampe', '-r', readgroup_literal,  reference,  read_1_sai,
+            read_2_sai, fastq1, fastq2, '>', output,
+            **kwargs)
+    except pypeliner.commandline.CommandLineException:
+        pypeliner.commandline.execute(
+            'bwa', 'sampe', '-r', readgroup,  reference,  read_1_sai,
+            read_2_sai, fastq1, fastq2, '>', output,
+            **kwargs)
 
 
 def bam_index(infile, outfile, **kwargs):
