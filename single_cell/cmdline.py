@@ -64,14 +64,18 @@ def add_global_args(parser, dont_add_input_yaml=False):
                         required=True,
                         help='''Path to output directory.''')
 
-    parser.add_argument("--config_file",
-                        help='''Path to output directory.''')
+    config_args = parser.add_mutually_exclusive_group()
 
-    parser.add_argument("--config_override",
-                        type=json.loads,
-                        help='''json string to override the defaults in config''')
+    config_args.add_argument(
+        "--config_file",
+        help='''Path to output directory.''')
 
-    parser.add_argument('--run_with_docker')
+    config_args.add_argument(
+        "--config_override",
+        type=json.loads,
+        help='''json string to override the defaults in config''')
+
+    parser.add_argument('--run_with_docker', help='launches pipeline in a docker container')
 
     return parser
 
