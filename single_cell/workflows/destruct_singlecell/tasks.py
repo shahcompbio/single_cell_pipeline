@@ -1,15 +1,14 @@
 import gzip
-import os
 import random
-from itertools import islice
 import shutil
+from itertools import islice
 
 import pandas as pd
 import pypeliner
-
 from single_cell.utils import helpers
 
-def destruct_bamdisc(
+
+def destruct_bamdisc_and_numreads(
         destruct_config, normal_bam_file, stats,
         reads_1, reads_2, sample_1, sample_2, tempdir
 ):
@@ -61,8 +60,15 @@ def get_max_read_count(readcounts):
     return max(readcounts.values())
 
 
-def re_index_reads(input_fastq, output_fastq, cell_id, cells, offset, tag=False):
+def re_index_reads_both(
+        input_r1, reindex_r1, input_r2, reindex_r2,
+        cell_id, cells, offset, tag=False
+):
+    re_index_reads(input_r1, reindex_r1, cell_id, cells, offset, tag=tag)
+    re_index_reads(input_r2, reindex_r2, cell_id, cells, offset, tag=tag)
 
+
+def re_index_reads(input_fastq, output_fastq, cell_id, cells, offset, tag=False):
     index = cells.index(cell_id)
 
     start_count = index * offset
@@ -112,6 +118,7 @@ def get_read_count(input_fastq):
 
     return readcount
 
+
 def merge_cell_fastqs(input_fastqs_1, output_fastq_1):
     """
     concatenates all fastq files
@@ -125,7 +132,7 @@ def merge_cell_fastqs(input_fastqs_1, output_fastq_1):
     with open(output_fastq_1, 'wb') as outfile:
         for cell_id, filepath in input_fastqs_1.iteritems():
             with open(filepath, 'rb') as infile:
-                shutil.copyfileobj(infile, outfile, length=16*1024*1024)
+                shutil.copyfileobj(infile, outfile, length=16 * 1024 * 1024)
 
 
 def random_subset(iterator, K):

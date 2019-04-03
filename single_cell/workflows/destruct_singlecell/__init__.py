@@ -20,8 +20,8 @@ def process_cells_destruct(
     )
 
     workflow.transform(
-        name='bamdisc_cell',
-        func="single_cell.workflows.destruct_singlecell.tasks.destruct_bamdisc",
+        name='bamdisc_and_numreads_cell',
+        func="single_cell.workflows.destruct_singlecell.tasks.destruct_bamdisc_and_numreads",
         axes=('cell_id',),
         ctx={'io': 1, 'mem': 8},
         ret=mgd.TempOutputObj("numreads", "cell_id"),
@@ -48,26 +48,13 @@ def process_cells_destruct(
     )
 
     workflow.transform(
-        name='reindex_reads_r1',
-        func="single_cell.workflows.destruct_singlecell.tasks.re_index_reads",
+        name='reindex_reads',
+        func="single_cell.workflows.destruct_singlecell.tasks.re_index_reads_both",
         ctx={'io': 1, 'mem': 8},
         axes=('cell_id',),
         args=(
             mgd.TempInputFile('cell_reads_1.fastq.gz', 'cell_id'),
             mgd.TempOutputFile('cell_reads_1_reindex.fastq.gz', 'cell_id'),
-            mgd.InputInstance('cell_id'),
-            cells,
-            mgd.TempInputObj("maxreads")
-        ),
-        kwargs={'tag': tag}
-    )
-
-    workflow.transform(
-        name='reindex_reads_r2',
-        func="single_cell.workflows.destruct_singlecell.tasks.re_index_reads",
-        ctx={'io': 1, 'mem': 8},
-        axes=('cell_id',),
-        args=(
             mgd.TempInputFile('cell_reads_2.fastq.gz', 'cell_id'),
             mgd.TempOutputFile('cell_reads_2_reindex.fastq.gz', 'cell_id'),
             mgd.InputInstance('cell_id'),
@@ -145,7 +132,7 @@ def destruct_normal_preprocess_workflow(
     if isinstance(normal_bam_files, str):
         workflow.transform(
             name='bamdisc_normal',
-            func="single_cell.workflows.destruct_singlecell.tasks.destruct_bamdisc",
+            func="single_cell.workflows.destruct_singlecell.tasks.destruct_bamdisc_and_numreads",
             ctx={'io': 1, 'mem': 8, 'disk': 200},
             args=(
                 mgd.TempInputObj("destruct_config"),
