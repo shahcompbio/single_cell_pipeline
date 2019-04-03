@@ -123,18 +123,13 @@ def process_cells_destruct(
     return workflow
 
 
-def create_destruct_workflow(
-    normal_bam_files,
-    tumour_bam_files,
-    destruct_config,
-    ref_data_directory,
-    breakpoints_filename,
-    breakpoints_library_filename,
-    cell_counts_filename,
-    raw_data_directory,
-    normal_sample_id='normal',
-    tumour_sample_id='tumour',
+def destruct_normal_preprocess_workflow(
+        normal_bam_files, normal_stats,
+        normal_reads_1, normal_reads_2,
+        normal_sample_1, normal_sample_2,
+        ref_data_directory, destruct_config
 ):
+
     workflow = pypeliner.workflow.Workflow()
 
     workflow.transform(
@@ -155,11 +150,11 @@ def create_destruct_workflow(
             args=(
                 mgd.TempInputObj("destruct_config"),
                 mgd.InputFile(normal_bam_files),
-                mgd.TempOutputFile('normal_stats'),
-                mgd.TempOutputFile('normal_reads_1.fastq.gz'),
-                mgd.TempOutputFile('normal_reads_2.fastq.gz'),
-                mgd.TempOutputFile('normal_sample_1.fastq.gz'),
-                mgd.TempOutputFile('normal_sample_2.fastq.gz'),
+                mgd.OutputFile(normal_stats),
+                mgd.OutputFile(normal_reads_1),
+                mgd.OutputFile(normal_reads_2),
+                mgd.OutputFile(normal_sample_1),
+                mgd.OutputFile(normal_sample_2),
                 mgd.TempSpace('bamdisc_normal_tempspace'),
             )
         )
@@ -175,14 +170,45 @@ def create_destruct_workflow(
             args=(
                 mgd.TempInputObj("destruct_config"),
                 mgd.InputFile('bam', 'normal_cell_id', fnames=normal_bam_files),
-                mgd.TempOutputFile('normal_reads_1.fastq.gz'),
-                mgd.TempOutputFile('normal_reads_2.fastq.gz'),
-                mgd.TempOutputFile('normal_sample_1.fastq.gz'),
-                mgd.TempOutputFile('normal_sample_2.fastq.gz'),
-                mgd.TempOutputFile('normal_stats'),
+                mgd.OutputFile(normal_reads_1),
+                mgd.OutputFile(normal_reads_2),
+                mgd.OutputFile(normal_sample_1),
+                mgd.OutputFile(normal_sample_2),
+                mgd.OutputFile(normal_stats),
             ),
             kwargs={'tag': False}
         )
+
+    return workflow
+
+
+def create_destruct_workflow(
+    tumour_bam_files,
+    normal_stats,
+    normal_reads_1,
+    normal_reads_2,
+    normal_sample_1,
+    normal_sample_2,
+    destruct_config,
+    ref_data_directory,
+    breakpoints_filename,
+    breakpoints_library_filename,
+    cell_counts_filename,
+    raw_data_directory,
+    normal_sample_id='normal',
+    tumour_sample_id='tumour',
+):
+    workflow = pypeliner.workflow.Workflow()
+
+    workflow.transform(
+        name="get_destruct_config",
+        func="destruct.defaultconfig.get_config",
+        ret=mgd.TempOutputObj("destruct_config"),
+        args=(
+            ref_data_directory,
+            destruct_config
+        )
+    )
 
     workflow.setobj(
         obj=mgd.OutputChunks('tumour_cell_id'),
@@ -209,23 +235,23 @@ def create_destruct_workflow(
         func="destruct.workflow.create_destruct_fastq_workflow",
         args=(
             {
-                normal_sample_id: mgd.TempInputFile('normal_reads_1.fastq.gz'),
+                normal_sample_id: mgd.InputFile(normal_reads_1),
                 tumour_sample_id: mgd.TempInputFile('tumour_reads_1.fastq.gz'),
             },
             {
-                normal_sample_id: mgd.TempInputFile('normal_reads_2.fastq.gz'),
+                normal_sample_id: mgd.InputFile(normal_reads_2),
                 tumour_sample_id: mgd.TempInputFile('tumour_reads_2.fastq.gz'),
             },
             {
-                normal_sample_id: mgd.TempInputFile('normal_sample_1.fastq.gz'),
+                normal_sample_id: mgd.InputFile(normal_sample_1),
                 tumour_sample_id: mgd.TempInputFile('tumour_sample_1.fastq.gz'),
             },
             {
-                normal_sample_id: mgd.TempInputFile('normal_sample_2.fastq.gz'),
+                normal_sample_id: mgd.InputFile(normal_sample_2),
                 tumour_sample_id: mgd.TempInputFile('tumour_sample_2.fastq.gz'),
             },
             {
-                normal_sample_id: mgd.TempInputFile('normal_stats'),
+                normal_sample_id: mgd.InputFile(normal_stats),
                 tumour_sample_id: mgd.TempInputFile('tumour_stats'),
             },
             mgd.TempOutputFile('breakpoint_table'),

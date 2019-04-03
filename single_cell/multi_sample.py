@@ -277,14 +277,35 @@ def create_multi_sample_workflow(
         config = config['breakpoint_calling']
         destruct_config = config.get('destruct_config', {})
         destruct_ref_data_dir = config['ref_data_directory']
+
+        workflow.subworkflow(
+            name='normal_preprocess_destruct',
+            func='single_cell.workflows.destruct_singlecell.destruct_normal_preprocess_workflow',
+            ctx={'docker_image': config['docker']['destruct']},
+            args=(
+                normal_bam,
+                mgd.TempOutputFile('normal_stats'),
+                mgd.TempOutputFile('normal_reads_1.fastq.gz'),
+                mgd.TempOutputFile('normal_reads_2.fastq.gz'),
+                mgd.TempOutputFile('normal_sample_1.fastq.gz'),
+                mgd.TempOutputFile('normal_sample_2.fastq.gz'),
+                destruct_ref_data_dir,
+                destruct_config,
+            ),
+        )
+
         workflow.subworkflow(
             name='destruct',
             func='single_cell.workflows.destruct_singlecell.create_destruct_workflow',
             axes=('sample_id',),
             ctx={'docker_image': config['docker']['destruct']},
             args=(
-                normal_bam,
                 mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
+                mgd.TempInputFile('normal_stats'),
+                mgd.TempInputFile('normal_reads_1.fastq.gz'),
+                mgd.TempInputFile('normal_reads_2.fastq.gz'),
+                mgd.TempInputFile('normal_sample_1.fastq.gz'),
+                mgd.TempInputFile('normal_sample_2.fastq.gz'),
                 destruct_config,
                 destruct_ref_data_dir,
                 mgd.OutputFile('breakpoints.h5', 'sample_id'),
