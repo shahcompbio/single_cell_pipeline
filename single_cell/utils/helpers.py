@@ -51,7 +51,7 @@ class getFileHandle(object):
         elif ext == ".h5" or ext == ".hdf5":
             return "h5"
         else:
-            logging.getLogger("single_cell.plot_metrics").warn(
+            logging.getLogger("single_cell.helpers").warn(
                 "Couldn't detect output format. extension {}".format(ext)
             )
             return "plain-text"
