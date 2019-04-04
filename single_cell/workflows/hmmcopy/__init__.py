@@ -140,6 +140,7 @@ def create_hmmcopy_workflow(
                 multipliers,
                 mgd.TempOutputFile("hmmcopy_quality_metrics.csv.gz", "multiplier", extensions=['.yaml']),
                 hmmparams['classifier_training_data'],
+                mgd.TempSpace("hmmcopy_classify_tempdir", 'multiplier')
             ),
         )
 

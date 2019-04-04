@@ -5,26 +5,24 @@ Created on Jul 24, 2017
 '''
 import os
 import shutil
-import pypeliner
-import pandas as pd
+
 import numpy as np
-import scipy.spatial as sp
+import pandas as pd
+import pypeliner
 import scipy.cluster.hierarchy as hc
-
-from scripts import ConvertCSVToSEG
-from scripts import ReadCounter
-from scripts import CorrectReadCount
-from scripts import classify
-
-from single_cell.utils import helpers
-from single_cell.utils import hdfutils
+import scipy.spatial as sp
 from single_cell.utils import csvutils
-
+from single_cell.utils import hdfutils
+from single_cell.utils import helpers
+from single_cell.utils.singlecell_copynumber_plot_utils import GenHmmPlots
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotKernelDensity
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotMetrics
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotPcolor
-from single_cell.utils.singlecell_copynumber_plot_utils import GenHmmPlots
 
+from scripts import ConvertCSVToSEG
+from scripts import CorrectReadCount
+from scripts import ReadCounter
+from scripts import classify
 
 scripts_directory = os.path.join(
     os.path.realpath(
@@ -35,7 +33,6 @@ run_hmmcopy_rscript = os.path.join(scripts_directory, 'hmmcopy.R')
 
 def run_correction_hmmcopy(
         bam_file, correct_reads_out, readcount_wig, hmmparams, docker_image):
-
     run_readcount_rscript = os.path.join(
         scripts_directory,
         'correct_read_count.R')
@@ -105,8 +102,7 @@ def prep_csv_files(filepath, outputfile, outputyaml):
         with helpers.getFileHandle(filepath) as infile:
             # skip header
             infile.readline()
-            shutil.copyfileobj(infile, out_writer, length=16*1024*1024)
-
+            shutil.copyfileobj(infile, out_writer, length=16 * 1024 * 1024)
 
 
 def run_hmmcopy(
@@ -125,7 +121,6 @@ def run_hmmcopy(
         sample_info,
         docker_image
 ):
-
     # generate wig file for hmmcopy
     helpers.makedirs(tempdir)
     readcount_wig = os.path.join(tempdir, 'readcounter.wig')
@@ -157,14 +152,14 @@ def run_hmmcopy(
 
         prep_csv_files(
             hmmcopy_reads_file, corrected_reads_filename[multiplier],
-            corrected_reads_filename[multiplier]+'.yaml'
+            corrected_reads_filename[multiplier] + '.yaml'
         )
         prep_csv_files(hmmcopy_params_files, parameters_filename[multiplier],
-                       parameters_filename[multiplier]+'.yaml')
+                       parameters_filename[multiplier] + '.yaml')
         prep_csv_files(hmmcopy_segs_files, segments_filename[multiplier],
-                       segments_filename[multiplier]+'.yaml')
+                       segments_filename[multiplier] + '.yaml')
         prep_csv_files(hmmcopy_metrics_files, metrics_filename[multiplier],
-                       metrics_filename[multiplier]+'.yaml')
+                       metrics_filename[multiplier] + '.yaml')
 
     corrected_reads_all = [corrected_reads_filename[mult] for mult in multipliers]
     segments_all = [segments_filename[mult] for mult in multipliers]
@@ -184,10 +179,9 @@ def run_hmmcopy(
         sample_info=sample_info)
 
 
-
 def concatenate_csv(inputs, output, multipliers, cells, low_memory=False):
     for multiplier in multipliers:
-        mult_inputs = [inputs[(cell, multiplier)]for cell in cells]
+        mult_inputs = [inputs[(cell, multiplier)] for cell in cells]
 
         if low_memory:
             csvutils.concatenate_csv_files_quick_lowmem(
@@ -224,12 +218,11 @@ def annotate_metrics(
 
 def merge_hdf_files_on_disk(
         reads, merged_reads, multipliers, tableprefix, dtypes={}):
-
     output_store = pd.HDFStore(merged_reads, 'w', complevel=9, complib='blosc')
 
     cells = reads.keys()
 
-    min_itemsize = {'cell_id': max(map(len, cells))+2}
+    min_itemsize = {'cell_id': max(map(len, cells)) + 2}
 
     for cellid, infile in reads.iteritems():
         with pd.HDFStore(infile, 'r') as infilestore:
@@ -256,19 +249,18 @@ def merge_hdf_files_on_disk(
                     output_store.put(
                         out_tablename,
                         data,
-                        format='table',)
+                        format='table', )
                 else:
                     output_store.append(
                         out_tablename,
                         data,
-                        format='table',)
+                        format='table', )
 
     output_store.close()
 
 
 def merge_hdf_files_in_memory(
         reads, merged_reads, multipliers, tableprefix, dtypes={}):
-
     output_store = pd.HDFStore(merged_reads, 'w', complevel=9, complib='blosc')
 
     cells = reads.keys()
@@ -305,7 +297,6 @@ def merge_hdf_files_in_memory(
 
 
 def group_cells_by_row(cells, metrics, sort_by_col=False):
-
     metricsdata = pd.read_csv(metrics, compression='gzip')
     metricsdata = metricsdata.set_index('cell_id')
 
@@ -333,7 +324,6 @@ def group_cells_by_row(cells, metrics, sort_by_col=False):
 
 
 def merge_pdf(in_filenames, outfilenames, metrics, cell_filters, tempdir, labels):
-
     helpers.makedirs(tempdir)
 
     metrics = metrics[0]
@@ -360,7 +350,6 @@ def merge_pdf(in_filenames, outfilenames, metrics, cell_filters, tempdir, labels
 
 def create_igv_seg(merged_segs, merged_hmm_metrics,
                    igv_segs, config, multiplier):
-
     converter = ConvertCSVToSEG(
         merged_segs,
         config['bin_size'],
@@ -373,7 +362,6 @@ def create_igv_seg(merged_segs, merged_hmm_metrics,
 def plot_hmmcopy(reads, segments, params, metrics, ref_genome, segs_out,
                  bias_out, cell_id, multiplier, num_states=7,
                  annotation_cols=None, sample_info=None):
-
     with GenHmmPlots(reads, segments, params, metrics, ref_genome, segs_out,
                      bias_out, cell_id, multiplier, num_states=num_states,
                      annotation_cols=annotation_cols,
@@ -386,7 +374,6 @@ def extract_cell_by_col(df, colname, colvalue, rowname):
 
 
 def get_good_cells(metrics, cell_filters):
-
     metrics_data = csvutils.read_csv_and_yaml(metrics)
 
     cells = metrics_data.cell_id
@@ -398,28 +385,26 @@ def get_good_cells(metrics, cell_filters):
     for metric_col, operation, threshold in cell_filters:
         cells = [cell for cell in cells
                  if helpers.eval_expr(
-                     extract_cell_by_col(
-                         metrics_data,
-                         'cell_id',
-                         cell,
-                         metric_col),
-                     operation,
-                     threshold)]
+                extract_cell_by_col(
+                    metrics_data,
+                    'cell_id',
+                    cell,
+                    metric_col),
+                operation,
+                threshold)]
 
     return cells
 
 
 def sort_cells(metrics, good_cells, tableid):
-
     with pd.HDFStore(metrics, 'r') as metrics:
-
         data = metrics[tableid]
 
     cells_order = {
         order: cell for cell,
-        order in zip(
-            data.cell_id,
-            data.order)}
+                        order in zip(
+        data.cell_id,
+        data.order)}
 
     ordervals = sorted(cells_order.keys())
 
@@ -431,7 +416,6 @@ def sort_cells(metrics, good_cells, tableid):
 
 
 def sort_bins(bins, chromosomes):
-
     bins = bins.drop_duplicates()
 
     if not chromosomes:
@@ -448,12 +432,10 @@ def sort_bins(bins, chromosomes):
 
 def get_hierarchical_clustering_order(
         reads_filename, chromosomes=None):
-
     data = []
     chunksize = 10 ** 5
     for chunk in csvutils.read_csv_and_yaml(
             reads_filename, chunksize=chunksize):
-
         chunk["bin"] = list(zip(chunk.chr, chunk.start, chunk.end))
 
         chunk = chunk.pivot(index='cell_id', columns='bin', values='state')
@@ -492,7 +474,6 @@ def get_hierarchical_clustering_order(
 
 
 def plot_metrics(metrics, output, plot_title, multiplier):
-
     mult_plot_title = '{}({})'.format(plot_title, multiplier)
 
     plot = PlotMetrics(
@@ -505,7 +486,6 @@ def plot_metrics(metrics, output, plot_title, multiplier):
 
 def plot_kernel_density(
         infile, output, sep, colname, plot_title, multiplier):
-
     mult_plot_title = '{}({})'.format(plot_title, multiplier)
 
     plot = PlotKernelDensity(
@@ -522,7 +502,6 @@ def plot_pcolor(infile, metrics, output, multiplier, plot_title=None,
                 chromosomes=None, max_cn=None,
                 scale_by_cells=None, color_by_col=None,
                 cell_filters=None, mappability_threshold=None):
-
     cells = get_good_cells(metrics, cell_filters)
 
     mult_plot_title = '{}({})'.format(plot_title, multiplier)
@@ -545,7 +524,8 @@ def merge_tables(reads, segments, metrics, params, output, cells):
     hdfutils.concat_hdf_tables([reads, segments, metrics, params], output, categories)
 
 
-def add_quality(hmmcopy_metrics, alignment_metrics, multipliers, output, training_data):
+def add_quality(hmmcopy_metrics, alignment_metrics, multipliers, output, training_data, tempdir):
+    helpers.makedirs(tempdir)
 
     hmmcopy_tables = ['/hmmcopy/metrics/{}'.format(mult) for mult in multipliers]
 
@@ -557,11 +537,17 @@ def add_quality(hmmcopy_metrics, alignment_metrics, multipliers, output, trainin
                               hmmcopy_tables, '/alignment/metrics',
                               feature_names)
 
-    for hmmcopy_table, tabledata in data:
+    for i, (hmmcopy_table, tabledata) in enumerate(data):
+        intermediate_output = os.path.join(
+            tempdir, '{}_metrics_with_quality.csv.gz'.format(i)
+        )
+
         predictions = classify.classify(model, tabledata)
 
         classify.write_to_output(
             hmmcopy_metrics,
             hmmcopy_table,
-            output,
+            intermediate_output,
             predictions)
+
+        prep_csv_files(intermediate_output, output, output + '.yaml')
