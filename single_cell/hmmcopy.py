@@ -41,24 +41,23 @@ def hmmcopy_workflow(args):
         info_file = os.path.join(results_dir, "info.yaml")
 
         reads_csvs = os.path.join(
-            results_dir, 'multiplier_{multiplier}', '{}_reads.csv.gz'.format(lib))
+            results_dir, '{0}_multiplier{1}_reads.csv.gz'.format(lib, '{multiplier}'))
         reads_yaml = os.path.join(
-            results_dir, 'multiplier_{multiplier}', '{}_reads.csv.gz.yaml'.format(lib))
+            results_dir, '{0}_multiplier{1}_reads.csv.gz.yaml'.format(lib, '{multiplier}'))
         segs_csvs = os.path.join(
-            results_dir, 'multiplier_{multiplier}', '{}_segments.csv.gz'.format(lib))
+            results_dir, '{0}_multiplier{1}_segments.csv.gz'.format(lib, '{multiplier}'))
         segs_yaml = os.path.join(
-            results_dir, 'multiplier_{multiplier}', '{}_segments.csv.gz.yaml'.format(lib))
+            results_dir, '{0}_multiplier{1}_segments.csv.gz.yaml'.format(lib, '{multiplier}'))
         params_csvs = os.path.join(
-            results_dir, 'multiplier_{multiplier}', '{}_params.csv.gz'.format(lib))
+            results_dir, '{0}_multiplier{1}_params.csv.gz'.format(lib, '{multiplier}'))
         params_yaml = os.path.join(
-            results_dir, 'multiplier_{multiplier}', '{}_params.csv.gz.yaml'.format(lib))
+            results_dir, '{0}_multiplier{1}_params.csv.gz.yaml'.format(lib, '{multiplier}'))
         metrics_csvs = os.path.join(
-            results_dir, 'multiplier_{multiplier}', '{}_metrics.csv.gz'.format(lib))
+            results_dir, '{0}_multiplier{1}_metrics.csv.gz'.format(lib, '{multiplier}'))
         metrics_yaml = os.path.join(
-            results_dir, 'multiplier_{multiplier}', '{}_metrics.csv.gz.yaml'.format(lib))
+            results_dir, '{0}_multiplier{1}_metrics.csv.gz.yaml'.format(lib, '{multiplier}'))
         igv_csvs = os.path.join(
-            results_dir, 'multiplier_{multiplier}', '{}_igv_segments.seg'.format(lib))
-
+            results_dir, '{0}_multiplier{1}_igv_segments.seg'.format(lib, '{multiplier}'))
 
         plots_dir = os.path.join(results_dir, "plots")
         segs_pdf = os.path.join(
