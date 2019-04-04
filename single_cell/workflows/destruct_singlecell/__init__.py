@@ -66,7 +66,7 @@ def process_cells_destruct(
 
     workflow.transform(
         name='merge_reads_r1',
-        ctx={'io': 1, 'mem': 8},
+        ctx={'io': 1, 'mem': 8, 'disk': 100},
         func="single_cell.workflows.destruct_singlecell.tasks.merge_cell_fastqs",
         args=(
             mgd.TempInputFile('cell_reads_1_reindex.fastq.gz', 'cell_id'),
@@ -76,7 +76,7 @@ def process_cells_destruct(
 
     workflow.transform(
         name='merge_reads_r2',
-        ctx={'io': 1, 'mem': 8},
+        ctx={'io': 1, 'mem': 8, 'disk': 100},
         func="single_cell.workflows.destruct_singlecell.tasks.merge_cell_fastqs",
         args=(
             mgd.TempInputFile('cell_reads_2_reindex.fastq.gz', 'cell_id'),
@@ -86,7 +86,7 @@ def process_cells_destruct(
 
     workflow.transform(
         name='merge_sample',
-        ctx={'io': 1, 'mem': 8},
+        ctx={'io': 1, 'mem': 8, 'disk': 100},
         func="single_cell.workflows.destruct_singlecell.tasks.resample_fastqs",
         args=(
             mgd.TempInputFile('cell_sample_1.fastq.gz', 'cell_id'),
