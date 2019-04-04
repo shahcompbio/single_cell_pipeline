@@ -4,14 +4,11 @@ Created on Feb 19, 2018
 @author: dgrewal
 '''
 import os
-import csv
-import gzip
-import yaml
-import logging
-import pandas as pd
-from single_cell.utils import helpers
-import time
 import shutil
+
+import pandas as pd
+import yaml
+from single_cell.utils import helpers
 
 
 def read_csv_and_yaml_by_chunks(infile, dtypes, columns, chunksize, header):
@@ -28,7 +25,6 @@ def read_csv_and_yaml_by_chunks(infile, dtypes, columns, chunksize, header):
 
 
 def read_csv_and_yaml(infile, chunksize=None):
-
     with open(infile) as f:
         first_line = f.readline()
         if len(first_line) == 0:
@@ -57,11 +53,11 @@ def get_metadata(filepath):
     if not os.path.exists(filepath + '.yaml'):
         with helpers.getFileHandle(filepath) as inputfile:
             columns = inputfile.readline().strip().split(',')
-            header=True
-            dtypes=None
-            return header,dtypes,columns
+            header = True
+            dtypes = None
+            return header, dtypes, columns
 
-    with open(filepath+'.yaml') as yamlfile:
+    with open(filepath + '.yaml') as yamlfile:
         yamldata = yaml.load(yamlfile)
 
     header = yamldata['header']
@@ -69,7 +65,6 @@ def get_metadata(filepath):
     dtypes = {}
     columns = []
     for coldata in yamldata['columns']:
-
         colname = coldata['name']
 
         dtypes[colname] = coldata['dtype']
@@ -95,8 +90,8 @@ def write_dataframe_to_csv_and_yaml(df, outfile):
     if compression == 'h5':
         df.to_hdf5(outfile)
     else:
-        df.to_csv(outfile, compression=compression,header=False, na_rep='NA', index=False)
-        generate_yaml_for_csv(df, outfile+'.yaml')
+        df.to_csv(outfile, compression=compression, header=False, na_rep='NA', index=False)
+        generate_yaml_for_csv(df, outfile + '.yaml')
 
 
 def generate_yaml_for_csv(filepath, outputyaml, header=False):
@@ -134,7 +129,7 @@ def generate_dtype_yaml(csv_file, yaml_filename=None):
             csv_file, compression=helpers.get_compression_type_pandas(csv_file),
             chunksize=chunksize
         )
-        data= next(data)
+        data = next(data)
     elif isinstance(csv_file, pd.DataFrame):
         data = csv_file
     else:
@@ -147,7 +142,7 @@ def generate_dtype_yaml(csv_file, yaml_filename=None):
 
     typeinfo = {}
     for column, dtype in data.dtypes.iteritems():
-        if column in ['chr','chrom', 'chromosome']:
+        if column in ['chr', 'chrom', 'chromosome']:
             typeinfo[column] = 'str'
         else:
             typeinfo[column] = pandas_to_std_types[str(dtype)]
@@ -207,7 +202,7 @@ def concatenate_csv_files_quick_lowmem(inputfiles, output):
             else:
                 assert merged_metadata == load_csv_metadata(infile)
             with helpers.getFileHandle(infile) as inputdata:
-                shutil.copyfileobj(inputdata, outfile, length=16*1024*1024)
+                shutil.copyfileobj(inputdata, outfile, length=16 * 1024 * 1024)
 
     yamlfile = output + '.yaml'
     with open(yamlfile, 'w') as yamloutput:
@@ -225,7 +220,7 @@ def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', suffixes=None):
         if indata:
             data.append(indata)
 
-    data = merge_frames(data, how, on, suffixes = suffixes)
+    data = merge_frames(data, how, on, suffixes=suffixes)
     data = data.fillna(nan_val)
 
     write_dataframe_to_csv_and_yaml(data, out_filename)
@@ -236,7 +231,7 @@ def merge_frames(frames, how, on, suffixes=None):
     annotates input_df using ref_df
     '''
 
-    suff = ['','']
+    suff = ['', '']
 
     if ',' in on:
         on = on.split(',')
@@ -248,16 +243,16 @@ def merge_frames(frames, how, on, suffixes=None):
         right = frames[1]
 
         if suffixes:
-            suff = (suffixes[0],suffixes[1])
+            suff = (suffixes[0], suffixes[1])
 
         merged_frame = pd.merge(left, right,
                                 how=how,
                                 on=on,
                                 suffixes=suff)
-        for i,frame in enumerate(frames[2:]):
+        for i, frame in enumerate(frames[2:]):
 
             if suffixes:
-                suff = (suffixes[i+2],suffixes[i+2])
+                suff = (suffixes[i + 2], suffixes[i + 2])
 
             merged_frame = pd.merge(merged_frame, frame,
                                     how=how,
@@ -267,16 +262,15 @@ def merge_frames(frames, how, on, suffixes=None):
 
 
 def finalize_csv(infile, outfile):
-
     header, dtypes, columns = get_metadata(infile)
 
-    assert header==False, 'file already contains a header'
+    assert header == False, 'file already contains a header'
 
     header = ','.join(columns) + '\n'
 
     with helpers.getFileHandle(outfile, 'w') as output:
         output.write(header)
         with helpers.getFileHandle(infile) as indata:
-            shutil.copyfileobj(indata, output, length=16*0124*1024)
+            shutil.copyfileobj(indata, output, length=16 * 0124 * 1024)
 
-    generate_yaml_for_csv(outfile, outfile+'.yaml', header=True)
+    generate_yaml_for_csv(outfile, outfile + '.yaml', header=True)
