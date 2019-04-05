@@ -327,6 +327,7 @@ def create_multi_sample_workflow(
             ctx={'docker_image': config['docker']['single_cell_pipeline']},
             args=(
                 normal_bam,
+                config,
                 mgd.TempOutputFile('normal.discordants.sorted.bam'),
                 mgd.TempOutputFile('normal.splitters.sorted.bam'),
                 mgd.TempOutputFile('hist_normal_formatted.csv'),
