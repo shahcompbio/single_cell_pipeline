@@ -30,6 +30,7 @@ def containers():
 
 def reference_data_shahlab(reference):
     if reference == 'grch37':
+        classifier_training_data = '/shahlab/pipelines/reference/classifier_training_data.h5'
         gc_wig_file = {
             500000: '/shahlab/pipelines/reference/GRCh37-lite.gc.ws_500000.wig',
             1000: '/shahlab/pipelines/reference/GRCh37-lite.gc.ws_1000.wig',
@@ -49,9 +50,16 @@ def reference_data_shahlab(reference):
         databases = {
             'mappability': {
                 'local_path': '/shahlab/pipelines/reference/wgEncodeCrgMapabilityAlign50mer.bigWig',
+            },
+            'cosmic': {
+                'local_path': '/shahlab/pipelines/reference/cosmic_v75.vcf.gz',
+            },
+            'dbsnp': {
+                'local_path': '/shahlab/pipelines/reference/dbsnp_b146_GRCh37p13.vcf.gz',
             }
         }
     else:
+        classifier_training_data = '/shahlab/pipelines/reference/classifier_training_data.h5'
         gc_wig_file = {
             500000: '//shahlab/pipelines/reference/mm10_build38_mouse.gc.ws_500000.wig',
             1000: '/data/not/available',
@@ -70,6 +78,12 @@ def reference_data_shahlab(reference):
         copynumber_ref_data = '/shahlab/pipelines/remixt_ref_data_dir'
         databases = {
             'mappability': {
+                'local_path': None,
+            },
+            'cosmic': {
+                'local_path': None,
+            },
+            'dbsnp': {
                 'local_path': None,
             }
         }
@@ -108,6 +122,7 @@ def reference_data_azure(reference):
         }
 
     else:
+        classifier_training_data = '/refdata/classifier_training_data.h5'
         gc_wig_file = {
             500000: '/refdata/mm10_build38_mouse.gc.ws_500000.wig',
             1000: '/data/not/available',
@@ -128,6 +143,9 @@ def reference_data_azure(reference):
                 'local_path': None,
             },
             'cosmic': {
+                'local_path': None,
+            },
+            'dbsnp': {
                 'local_path': None,
             }
         }
