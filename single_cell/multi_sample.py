@@ -319,6 +319,22 @@ def create_multi_sample_workflow(
         )
 
     if run_lumpy:
+        config = config['breakpoint_calling']
+
+        workflow.subworkflow(
+            name='normal_preprocess_lumpy',
+            func='single_cell.workflows.lumpy.lumpy_normal_preprocess_workflow',
+            ctx={'docker_image': config['docker']['single_cell_pipeline']},
+            args=(
+                normal_bam,
+                mgd.TempOutputFile('normal.discordants.sorted.bam'),
+                mgd.TempOutputFile('normal.splitters.sorted.bam'),
+                mgd.TempOutputFile('hist_normal_formatted.csv'),
+                mgd.TempOutputFile('normal_mean_stdev.yaml')
+            ),
+        )
+
+
         workflow.subworkflow(
             name='lumpy',
             ctx={'docker_image': config['docker']['single_cell_pipeline']},
@@ -327,7 +343,10 @@ def create_multi_sample_workflow(
             args=(
                 config,
                 mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
-                normal_bam,
+                mgd.TempInputFile('normal.discordants.sorted.bam'),
+                mgd.TempInputFile('normal.splitters.sorted.bam'),
+                mgd.TempInputFile('hist_normal_formatted.csv'),
+                mgd.TempInputFile('normal_mean_stdev.yaml'),
                 mgd.OutputFile('lumpy_breakpoints.bed', 'sample_id'),
                 mgd.OutputFile('lumpy_breakpoints.h5', 'sample_id'),
             ),
