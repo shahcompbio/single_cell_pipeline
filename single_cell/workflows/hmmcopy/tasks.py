@@ -453,6 +453,8 @@ def get_hierarchical_clustering_order(
             'start',
             'end'])
 
+    bins['chr'] = bins['chr'].astype(str)
+
     bins = sort_bins(bins, chromosomes)
 
     table = table.sort_values(bins, axis=0)
