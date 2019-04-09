@@ -56,8 +56,8 @@ def destruct_bamdisc_and_numreads(
     return max(numreads_r1, numreads_r2)
 
 
-def get_max_read_count(readcounts):
-    return max(readcounts.values())
+def merge_read_counts(readcounts):
+    return readcounts
 
 
 def re_index_reads_both(
@@ -68,10 +68,16 @@ def re_index_reads_both(
     re_index_reads(input_r2, reindex_r2, cell_id, cells, offset, tag=tag)
 
 
-def re_index_reads(input_fastq, output_fastq, cell_id, cells, offset, tag=False):
+def get_start_count(cells, readcounts, cell_id):
     index = cells.index(cell_id)
 
-    start_count = index * offset
+    reads_before = [readcounts[cell] for cell in cells[:index]]
+
+    return sum(reads_before)
+
+
+def re_index_reads(input_fastq, output_fastq, cell_id, cells, cell_read_counts, tag=False):
+    start_count = get_start_count(cells, cell_read_counts, cell_id)
 
     with helpers.getFileHandle(input_fastq) as infile:
         with helpers.getFileHandle(output_fastq, 'w') as outfile:
