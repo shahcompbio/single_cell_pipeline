@@ -26,7 +26,7 @@ def create_merge_bams_workflow(
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
-        value=input_bams.keys(),
+        value=list(input_bams.keys()),
     )
 
     workflow.setobj(
@@ -79,7 +79,7 @@ def create_cell_region_merge_workflow(
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
-        value=cell_bams.keys(),
+        value=list(cell_bams.keys()),
     )
 
     workflow.setobj(

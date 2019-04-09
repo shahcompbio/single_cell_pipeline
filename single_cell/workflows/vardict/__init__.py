@@ -23,7 +23,7 @@ def create_vardict_paired_sample_workflow(
 
     workflow.setobj(
         obj=pypeliner.managed.OutputChunks('region'),
-        value=normal_bam_file.keys(),
+        value=list(normal_bam_file.keys()),
     )
 
     workflow.transform(

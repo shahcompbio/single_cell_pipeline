@@ -34,7 +34,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
-        value=bam_files.keys(),
+        value=list(bam_files.keys()),
     )
 
     workflow.transform(
@@ -108,10 +108,10 @@ def variant_calling_workflow(args):
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     if isinstance(normal_bams, dict) and isinstance(tumour_bams, dict):
-        assert normal_bams.keys() == tumour_bams.keys(), 'keys for tumour and normal bams should be the same'
+        assert list(normal_bams.keys()) == list(tumour_bams.keys()), 'keys for tumour and normal bams should be the same'
         workflow.setobj(
             obj=mgd.OutputChunks('region'),
-            value=normal_bams.keys(),
+            value=list(normal_bams.keys()),
         )
         workflow.set_filenames('normal_split.bam', 'normal_split', fnames=normal_bams)
         workflow.set_filenames('tumour_split.bam', 'normal_split', fnames=tumour_bams)
@@ -194,7 +194,7 @@ def create_variant_calling_workflow(
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
-        value=tumour_cell_bams.keys(),
+        value=list(tumour_cell_bams.keys()),
     )
 
     workflow.subworkflow(
@@ -382,7 +382,7 @@ def create_variant_counting_workflow(
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
-        value=tumour_cell_bams.keys(),
+        value=list(tumour_cell_bams.keys()),
     )
 
     workflow.transform(

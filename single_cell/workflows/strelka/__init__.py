@@ -22,7 +22,7 @@ def create_strelka_workflow(
     strelka_docker = {'docker_image': config['docker']['strelka']}
     vcftools_docker = {'docker_image': config['docker']['vcftools']}
 
-    regions = normal_bam_file.keys()
+    regions = list(normal_bam_file.keys())
     assert set(tumour_bam_file.keys()) == set(regions)
 
     workflow = Workflow(ctx=ctx)

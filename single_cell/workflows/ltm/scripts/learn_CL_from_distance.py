@@ -2,7 +2,7 @@ import networkx as nx
 
 
 def learn_CL(cell_data):
-    node_ids=cell_data.keys()
+    node_ids = cell_data.keys()
     G = nx.Graph()
 
     for i in range(len(node_ids)):

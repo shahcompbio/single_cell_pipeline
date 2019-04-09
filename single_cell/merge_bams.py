@@ -34,13 +34,13 @@ def merge_bams_workflow(args):
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
-        value=bam_files.keys(),
+        value=list(bam_files.keys()),
     )
 
     if isinstance(wgs_bams, dict):
         workflow.setobj(
             obj=mgd.OutputChunks('regions'),
-            value=wgs_bams.keys(),
+            value=list(wgs_bams.keys()),
         )
         workflow.set_filenames("merged.bam", "region", fnames=wgs_bams)
     else:

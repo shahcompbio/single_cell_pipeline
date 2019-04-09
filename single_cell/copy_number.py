@@ -37,7 +37,7 @@ def copy_number_calling_workflow(args):
 
     workflow.setobj(
         obj=mgd.OutputChunks('tumour_cell_id'),
-        value=tumour_cells.keys(),
+        value=list(tumour_cells.keys()),
     )
 
     workflow.transform(

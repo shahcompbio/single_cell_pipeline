@@ -46,7 +46,7 @@ def align_workflow(args):
 
         workflow.setobj(
             obj=mgd.OutputChunks('cell_id', 'lane'),
-            value=fastq1_files.keys(),
+            value=list(fastq1_files.keys()),
         )
 
         workflow.subworkflow(

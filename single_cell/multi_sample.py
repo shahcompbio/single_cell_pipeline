@@ -126,7 +126,7 @@ def create_multi_sample_workflow(
     if isinstance(normal_wgs_bam, dict):
         workflow.setobj(
             obj=mgd.OutputChunks('normal_cell_id'),
-            value=normal_wgs_bam.keys(),
+            value=list(normal_wgs_bam.keys()),
         )
         workflow.set_filenames('normal_cells.bam', 'normal_cell_id', fnames=normal_wgs_bam)
         normal_bam = mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai'])
@@ -140,7 +140,7 @@ def create_multi_sample_workflow(
 
     workflow.setobj(
         obj=mgd.OutputChunks('sample_id', 'library_id', 'cell_id'),
-        value=tumour_cell_bams.keys(),
+        value=list(tumour_cell_bams.keys()),
     )
 
     workflow.setobj(

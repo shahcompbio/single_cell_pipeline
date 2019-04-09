@@ -21,7 +21,7 @@ def create_samtools_germline_workflow(
            'disk_retry_increment': 50,
            'ncpus': 1, 'docker_image': baseimage}
 
-    regions = normal_bam_files.keys()
+    regions = list(normal_bam_files.keys())
 
     workflow = Workflow(ctx=ctx)
 

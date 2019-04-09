@@ -23,7 +23,7 @@ def create_museq_workflow(
 
     workflow.setobj(
         obj=mgd.OutputChunks('region'),
-        value=normal_bam.keys(),
+        value=list(normal_bam.keys()),
     )
 
     workflow.transform(

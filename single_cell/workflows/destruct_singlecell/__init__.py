@@ -10,7 +10,7 @@ def process_cells_destruct(
 
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,}
 
-    cells = cell_bam_files.keys()
+    cells = list(cell_bam_files.keys())
 
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
@@ -201,7 +201,7 @@ def create_destruct_workflow(
 
     workflow.setobj(
         obj=mgd.OutputChunks('tumour_cell_id'),
-        value=tumour_bam_files.keys(),
+        value=list(tumour_bam_files.keys()),
     )
 
     workflow.subworkflow(

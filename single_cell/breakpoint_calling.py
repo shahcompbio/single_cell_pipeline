@@ -38,13 +38,13 @@ def breakpoint_calling_workflow(args):
 
     workflow.setobj(
         obj=mgd.OutputChunks('tumour_cell_id'),
-        value=tumour_cells.keys(),
+        value=list(tumour_cells.keys()),
     )
 
     if isinstance(normal_bams, dict):
         workflow.setobj(
             obj=mgd.OutputChunks('normal_cell_id'),
-            value=normal_bams.keys(),
+            value=list(normal_bams.keys()),
         )
         workflow.set_filenames('normal_cells.bam', 'normal_cell_id', fnames=normal_bams)
         normal_bam = mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai'])
