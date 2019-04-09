@@ -32,7 +32,7 @@ def infer_haps(
     if isinstance(bam_file, dict):
         workflow.setobj(
             obj=mgd.OutputChunks('cell_id'),
-            value=bam_file.keys(),
+            value=list(bam_file.keys()),
         )
 
         # dont parallelize over chromosomes for per cell bams
@@ -173,7 +173,7 @@ def extract_allele_readcounts(
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
-        value=cell_bams.keys(),
+        value=list(cell_bams.keys()),
     )
 
     workflow.subworkflow(
@@ -260,7 +260,7 @@ def infer_haps_workflow(args):
     if isinstance(bam_file, dict):
         workflow.setobj(
             obj=mgd.OutputChunks('cell_id'),
-            value=bam_file.keys(),
+            value=list(bam_file.keys()),
         )
         bam_file = mgd.InputFile('tumour.bam', 'cell_id',fnames=bam_file, extensions=['.bai'])
     else:

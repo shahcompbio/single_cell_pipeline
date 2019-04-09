@@ -27,7 +27,7 @@ def create_ltm_workflow(hmmcopy,
 
     workflow.setobj(
         obj=mgd.OutputChunks('timepoint'),
-        value=hmmcopy.keys(),
+        value=list(hmmcopy.keys()),
     )
 
     workflow.transform(

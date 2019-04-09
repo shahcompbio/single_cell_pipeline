@@ -85,7 +85,7 @@ def lumpy_preprocess_cells(
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
-        value=bam_files.keys(),
+        value=list(bam_files.keys()),
     )
 
     workflow.transform(
@@ -167,7 +167,7 @@ def create_lumpy_workflow(
 
     workflow.setobj(
         obj=mgd.OutputChunks('tumour_cell_id'),
-        value=bam_files.keys(),
+        value=list(bam_files.keys()),
     )
 
     workflow.subworkflow(

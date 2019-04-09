@@ -47,7 +47,7 @@ def germline_calling_workflow(args):
     else:
         workflow.setobj(
             obj=mgd.OutputChunks('region'),
-            value=normal_bams.keys(),
+            value=list(normal_bams.keys()),
         )
         workflow.set_filenames('normal_split.bam', 'normal_split', fnames=normal_bams)
 
@@ -63,7 +63,7 @@ def germline_calling_workflow(args):
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
-        value=tumour_cells.keys(),
+        value=list(tumour_cells.keys()),
     )
 
     workflow.subworkflow(
