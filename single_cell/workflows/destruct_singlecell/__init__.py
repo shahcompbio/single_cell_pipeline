@@ -38,8 +38,8 @@ def process_cells_destruct(
     )
 
     workflow.transform(
-        name='get_max_read_count',
-        ret=mgd.TempOutputObj("maxreads"),
+        name='merge_read_counts',
+        ret=mgd.TempOutputObj("readcounts"),
         func="single_cell.workflows.destruct_singlecell.tasks.get_max_read_count",
         ctx={'io': 1, 'mem': 8},
         args=(
@@ -59,7 +59,7 @@ def process_cells_destruct(
             mgd.TempOutputFile('cell_reads_2_reindex.fastq.gz', 'cell_id'),
             mgd.InputInstance('cell_id'),
             cells,
-            mgd.TempInputObj("maxreads")
+            mgd.TempInputObj('readcounts'),
         ),
         kwargs={'tag': tag}
     )
@@ -184,7 +184,9 @@ def create_destruct_workflow(
     raw_data_directory,
     normal_sample_id='normal',
     tumour_sample_id='tumour',
+    tumour_library_id='tumour',
 ):
+    tumour_sample_id = '_'.join([tumour_sample_id, tumour_library_id])
     workflow = pypeliner.workflow.Workflow()
 
     workflow.transform(
