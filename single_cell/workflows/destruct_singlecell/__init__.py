@@ -40,7 +40,7 @@ def process_cells_destruct(
     workflow.transform(
         name='merge_read_counts',
         ret=mgd.TempOutputObj("readcounts"),
-        func="single_cell.workflows.destruct_singlecell.tasks.get_max_read_count",
+        func="single_cell.workflows.destruct_singlecell.tasks.merge_read_counts",
         ctx={'io': 1, 'mem': 8},
         args=(
             mgd.TempInputObj('numreads', 'cell_id'),
