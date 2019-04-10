@@ -38,10 +38,13 @@ def read_csv_and_yaml(infile, chunksize=None):
     if chunksize:
         return read_csv_and_yaml_by_chunks(infile, dtypes, columns, chunksize, header)
     else:
-        data = pd.read_csv(
-            infile, compression=helpers.get_compression_type_pandas(infile),
-            dtype=dtypes, header=header
-        )
+        try:
+            data = pd.read_csv(
+                infile, compression=helpers.get_compression_type_pandas(infile),
+                dtype=dtypes, header=header
+            )
+        except pd.errors.EmptyDataError:
+            data = pd.DataFrame(columns=columns)
         if header is None:
             data.columns = columns
         else:
