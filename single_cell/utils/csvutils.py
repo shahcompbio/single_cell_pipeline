@@ -97,14 +97,15 @@ def write_dataframe_to_csv_and_yaml(df, outfile):
         generate_yaml_for_csv(df, outfile + '.yaml')
 
 
-def generate_yaml_for_csv(filepath, outputyaml, header=False):
+def generate_yaml_for_csv(filepath, outputyaml, header=False, columns=None):
     if isinstance(filepath, pd.DataFrame):
         types = generate_dtype_yaml(filepath)
         columns = list(filepath.columns.values)
     else:
         with helpers.getFileHandle(filepath) as infile:
-            columns = infile.readline().strip().split(',')
-            types = generate_dtype_yaml(filepath)
+            if not columns:
+                columns = infile.readline().strip().split(',')
+            types = generate_dtype_yaml(filepath, columns=columns)
 
     yamldata = {'header': header, 'columns': []}
 
@@ -116,7 +117,7 @@ def generate_yaml_for_csv(filepath, outputyaml, header=False):
         yaml.dump(yamldata, f, default_flow_style=False)
 
 
-def generate_dtype_yaml(csv_file, yaml_filename=None):
+def generate_dtype_yaml(csv_file, yaml_filename=None, columns=None):
     pandas_to_std_types = {
         "bool": "bool",
         "int64": "int",
@@ -133,6 +134,8 @@ def generate_dtype_yaml(csv_file, yaml_filename=None):
             chunksize=chunksize
         )
         data = next(data)
+        if columns:
+            data.columns = columns
     elif isinstance(csv_file, pd.DataFrame):
         data = csv_file
     else:
@@ -196,20 +199,13 @@ def concatenate_csv_files_quick_lowmem(inputfiles, output):
     if isinstance(inputfiles, dict):
         inputfiles = inputfiles.values()
 
-    merged_metadata = None
-
     with helpers.getFileHandle(output, 'w') as outfile:
         for infile in inputfiles:
-            if not merged_metadata:
-                merged_metadata = load_csv_metadata(infile)
-            else:
-                assert merged_metadata == load_csv_metadata(infile)
             with helpers.getFileHandle(infile) as inputdata:
                 shutil.copyfileobj(inputdata, outfile, length=16 * 1024 * 1024)
 
-    yamlfile = output + '.yaml'
-    with open(yamlfile, 'w') as yamloutput:
-        yaml.dump(merged_metadata, yamloutput, default_flow_style=False)
+    _, _, columns = get_metadata(inputfiles[0])
+    generate_yaml_for_csv(output, output+'.yaml', columns=columns)
 
 
 def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', suffixes=None):

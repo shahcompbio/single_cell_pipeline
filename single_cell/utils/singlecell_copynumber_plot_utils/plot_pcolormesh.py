@@ -293,7 +293,7 @@ class PlotPcolor(object):
 
                 cc = line[idxs[color_col]]
 
-                numreads = int(line[idxs['total_mapped_reads_hmmcopy']])
+                numreads = float(line[idxs['total_mapped_reads_hmmcopy']])
 
                 reads_per_bin = line[idxs['median_hmmcopy_reads_per_bin']]
 
