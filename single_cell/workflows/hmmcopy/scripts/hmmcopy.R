@@ -83,6 +83,7 @@ error_exit_clean <- function(samp.uncorrected, chromosomes, sample_id, out_reads
         samp.uncorrected$state <- NA
         samp.uncorrected$copy <- NA
         samp.uncorrected$multiplier <- NA
+
         write.table(samp.uncorrected, file=out_reads, quote=F, sep=",", col.names=T, row.names=F)
 
         #write colnames to the seg file
