@@ -144,11 +144,11 @@ def lumpy_preprocess_cells(
 def create_lumpy_workflow(
         config, bam_files, normal_disc_reads, normal_split_reads,
         normal_histogram, normal_mean_stdev, lumpy_bed, lumpy_h5,
-        tumour_id=None, normal_id=None, sample_id=None
+        tumour_id=None, normal_id=None, sample_id=None, library_id=None
 ):
 
     if sample_id and not tumour_id:
-        tumour_id = sample_id
+        tumour_id = sample_id + '_' + library_id
     if sample_id and not normal_id:
         normal_id = sample_id+'N'
 

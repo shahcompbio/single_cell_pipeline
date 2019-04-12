@@ -342,19 +342,22 @@ def create_multi_sample_workflow(
         workflow.subworkflow(
             name='lumpy',
             ctx={'docker_image': config['docker']['single_cell_pipeline']},
-            axes=('sample_id',),
+            axes=('sample_id', 'library_id'),
             func="single_cell.workflows.lumpy.create_lumpy_workflow",
             args=(
                 config,
-                mgd.InputFile('tumour_cells.bam', 'sample_id', 'cell_id', extensions=['.bai']),
+                mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai']),
                 mgd.TempInputFile('normal.discordants.sorted.bam'),
                 mgd.TempInputFile('normal.splitters.sorted.bam'),
                 mgd.TempInputFile('hist_normal_formatted.csv'),
                 mgd.TempInputFile('normal_mean_stdev.yaml'),
-                mgd.OutputFile('lumpy_breakpoints.bed', 'sample_id'),
-                mgd.OutputFile('lumpy_breakpoints.h5', 'sample_id'),
+                mgd.OutputFile('lumpy_breakpoints.bed', 'sample_id', 'library_id'),
+                mgd.OutputFile('lumpy_breakpoints.h5', 'sample_id', 'library_id'),
             ),
-            kwargs={'sample_id': mgd.InputInstance('sample_id')}
+            kwargs={
+                'sample_id': mgd.InputInstance('sample_id'),
+                'library_id': mgd.InputInstance('library_id')
+            }
         )
 
     return workflow
