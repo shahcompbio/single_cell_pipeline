@@ -24,16 +24,16 @@ def main():
 
     args = parse_args()
 
-    if args["run_with_docker"]:
-        run_with_docker(args, sys.argv)
-        return
-
     if args["which"] == "generate_config":
         generate_config(args)
         return
 
     if args["which"] == "clean_sentinels":
         clean_sentinels(args)
+        return
+
+    if args["run_with_docker"]:
+        run_with_docker(args, sys.argv)
         return
 
     pyp = pypeliner.app.Pypeline(config=args)
