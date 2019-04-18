@@ -245,11 +245,9 @@ def get_variant_calling_params(cluster, reference):
         'max_cores': 8,
         'docker': {
             'single_cell_pipeline': docker_containers['single_cell_pipeline'],
-            # 'samtools': docker_containers['samtools'],
             'vcftools': docker_containers['vcftools'],
             'strelka': docker_containers['strelka'],
             'mutationseq': docker_containers['mutationseq'],
-            # 'snpeff': docker_containers['snpeff'],
         },
         'ref_genome': referencedata['ref_genome'],
         'chromosomes': referencedata['chromosomes'],
@@ -286,6 +284,19 @@ def get_variant_calling_params(cluster, reference):
             },
             'snpeff': {"db": 'GRCh37.75'},
         },
+        'museq_params': {
+            'threshold': 0.5,
+            'verbose': True,
+            'purity': 70,
+            'coverage': 4,
+            'buffer_size': '2G',
+            'mapq_threshold': 10,
+            'indl_threshold': 0.05,
+            'normal_variant': 25,
+            'tumour_variant': 2,
+            'baseq_threshold': 10,
+        }
+
     }
 
     return {'variant_calling': params}
