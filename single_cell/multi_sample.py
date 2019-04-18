@@ -94,7 +94,8 @@ def create_multi_sample_workflow(
     breakpoints_library_template = os.path.join(results_dir, '{sample_id}_{library_id}_destruct_library.h5')
     cell_counts_template = os.path.join(results_dir, '{sample_id}_{library_id}_cell_counts_destruct.h5')
     lumpy_breakpoints_bed = os.path.join(results_dir, '{sample_id}_{library_id}_lumpy_breakpoints.bed')
-    lumpy_breakpoints_h5 = os.path.join(results_dir, '{sample_id}_{library_id}_lumpy_breakpoints.h5')
+    lumpy_breakpoints_csv = os.path.join(results_dir, '{sample_id}_{library_id}_lumpy_breakpoints.csv.gz')
+    lumpy_breakpoints_evidence = os.path.join(results_dir, '{sample_id}_{library_id}_lumpy_breakpoints_evidence.csv.gz')
 
     snv_calling_info_template = os.path.join(results_dir, '{sample_id}_{library_id}_snv_calling_info.yaml')
     snv_counting_info_template = os.path.join(results_dir, '{sample_id}_{library_id}_snv_counting_info.yaml')
@@ -117,7 +118,8 @@ def create_multi_sample_workflow(
     workflow.set_filenames('breakpoints.h5', 'sample_id', 'library_id', template=breakpoints_template)
     workflow.set_filenames('breakpoints_library.h5', 'sample_id', 'library_id', template=breakpoints_library_template)
     workflow.set_filenames('cell_counts.h5', 'sample_id', 'library_id', template=cell_counts_template)
-    workflow.set_filenames('lumpy_breakpoints.h5', 'sample_id', 'library_id', template=lumpy_breakpoints_h5)
+    workflow.set_filenames('lumpy_breakpoints.csv.gz', 'sample_id', 'library_id', template=lumpy_breakpoints_csv)
+    workflow.set_filenames('lumpy_breakpoints_evidence.csv.gz', 'sample_id', 'library_id', template=lumpy_breakpoints_evidence)
     workflow.set_filenames('lumpy_breakpoints.bed', 'sample_id', 'library_id', template=lumpy_breakpoints_bed)
 
     workflow.set_filenames('snv_calling_info.yaml', 'sample_id', 'library_id', template=snv_calling_info_template)
@@ -352,7 +354,8 @@ def create_multi_sample_workflow(
                 mgd.TempInputFile('hist_normal_formatted.csv'),
                 mgd.TempInputFile('normal_mean_stdev.yaml'),
                 mgd.OutputFile('lumpy_breakpoints.bed', 'sample_id', 'library_id'),
-                mgd.OutputFile('lumpy_breakpoints.h5', 'sample_id', 'library_id'),
+                mgd.OutputFile('lumpy_breakpoints.csv.gz', 'sample_id', 'library_id'),
+                mgd.OutputFile('lumpy_breakpoints_evidence.csv.gz', 'sample_id', 'library_id'),
             ),
             kwargs={
                 'sample_id': mgd.InputInstance('sample_id'),

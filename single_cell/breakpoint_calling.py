@@ -72,7 +72,8 @@ def breakpoint_calling_workflow(args):
         varcalls_dir = os.path.join(
             args['out_dir'], 'results', 'breakpoint_calling')
         breakpoints_bed = os.path.join(varcalls_dir, 'lumpy_breakpoints.bed')
-        breakpoints_h5 = os.path.join(varcalls_dir, 'lumpy_breakpoints.h5')
+        breakpoints_csv = os.path.join(varcalls_dir, 'lumpy_breakpoints.csv.gz')
+        breakpoints_evidence_csv = os.path.join(varcalls_dir, 'lumpy_breakpoints_evidence.csv.gz')
 
         workflow.subworkflow(
             name='lumpy',
@@ -82,7 +83,8 @@ def breakpoint_calling_workflow(args):
                 mgd.InputFile('tumour.bam', 'tumour_cell_id', fnames=tumour_cells, extensions=['.bai']),
                 normal_bam,
                 mgd.OutputFile(breakpoints_bed),
-                mgd.OutputFile(breakpoints_h5),
+                mgd.OutputFile(breakpoints_csv),
+                mgd.OutputFile(breakpoints_evidence_csv),
             ),
             kwargs={'tumour_id': tumour_cells_id,'normal_id': normal_id}
         )

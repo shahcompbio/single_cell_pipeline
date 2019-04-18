@@ -43,7 +43,7 @@ def tag_reads(infile, outfile, sample_id):
     infile = pysam.AlignmentFile(infile, 'rb')
     taggedreads = pysam.AlignmentFile(outfile, "wb", template=infile)
     for read in infile.fetch():
-        read.query_name = "{}_{}".format(sample_id, read.query_name)
+        read.query_name = "{}:{}".format(sample_id, read.query_name)
         taggedreads.write(read)
     infile.close()
     taggedreads.close()

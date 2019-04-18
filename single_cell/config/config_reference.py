@@ -20,7 +20,7 @@ def containers():
         'vcftools': 'scp/vcftools:v0.0.1', 'snpeff': 'scp/vcftools:v0.0.1',
         'titan': 'scp/titan:v0.0.1', 'remixt': 'scp/remixt:v{}'.format(version),
         'destruct': 'scp/destruct:v{}'.format(version), 'trimgalore': 'scp/trimgalore:v0.0.1',
-        'lumpy': 'scp/lumpy:v0.0.1'
+        'lumpy': 'scp/lumpy:v0.0.2'
     }
 
     singularity = {}
