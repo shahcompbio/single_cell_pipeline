@@ -30,6 +30,19 @@ def run_museq(tumour, normal, out, log, region, config, docker_kwargs={}):
            'reference:' + reference, '--out', out,
            '--log', log, '--interval', region]
 
+
+    museq_params = config.get('museq_params',{})
+    for key, val in museq_params.iteritems():
+        if isinstance(val, bool):
+            if val:
+                cmd.append('--{}'.format(key))
+        else:
+            cmd.append('--{}'.format(key))
+            if isinstance(val, list):
+                cmd.extend(val)
+            else:
+                cmd.append(val)
+
     pypeliner.commandline.execute(*cmd, **docker_kwargs)
 
 
