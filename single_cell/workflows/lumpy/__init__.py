@@ -143,8 +143,9 @@ def lumpy_preprocess_cells(
 
 def create_lumpy_workflow(
         config, bam_files, normal_disc_reads, normal_split_reads,
-        normal_histogram, normal_mean_stdev, lumpy_bed, lumpy_h5,
-        tumour_id=None, normal_id=None, sample_id=None, library_id=None
+        normal_histogram, normal_mean_stdev, lumpy_bed, lumpy_calls,
+        lumpy_evidence, tumour_id=None, normal_id=None,
+        sample_id=None, library_id=None
 ):
 
     if sample_id and not tumour_id:
@@ -207,10 +208,11 @@ def create_lumpy_workflow(
     workflow.transform(
         name='parse_lumpy',
         ctx={'mem': 8, 'ncpus': 1},
-        func='single_cell.workflows.lumpy.parse_lumpy_to_h5.parse_lumpy',
+        func='single_cell.workflows.lumpy.parse_lumpy_to_csv.parse_lumpy',
         args=(
             mgd.InputFile(lumpy_bed),
-            mgd.OutputFile(lumpy_h5),
+            mgd.OutputFile(lumpy_calls),
+            mgd.OutputFile(lumpy_evidence),
         ),
     )
 
