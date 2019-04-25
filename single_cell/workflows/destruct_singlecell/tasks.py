@@ -1,3 +1,4 @@
+import os
 import gzip
 import random
 import shutil
@@ -252,9 +253,31 @@ def extract_cell_counts(breakpoint_reads_filename, cell_counts_filename):
         # Comment is cell id prefixed with +
         assert breakpoint_reads['comment'].str.startswith('+').all()
         breakpoint_reads['cell_id'] = breakpoint_reads['comment'].str.lstrip('+')
-
         count_data = breakpoint_reads.groupby(['cluster_id', 'cell_id']).size().rename('read_count').reset_index()
         cell_counts.append(count_data)
 
     cell_counts = pd.concat(cell_counts, ignore_index=True)
     cell_counts.to_csv(cell_counts_filename, index=False)
+
+
+def filter_reads_file(
+        breakpoint_reads_filename, destruct_table,
+        filtered_breakpoint_reads_filename
+):
+    # writing to file in append mode, so make sure that it doesnt
+    # exist before we start appending
+    if os.path.exists(filtered_breakpoint_reads_filename):
+        os.remove(filtered_breakpoint_reads_filename)
+
+    destruct = pd.read_csv(destruct_table, sep='\t')
+    passed_brks = set(destruct['prediction_id'])
+
+    column_names = ['cluster_id', 'lib_id', 'read_id', 'read_end', 'sequence', 'quality', 'comment']
+    breakpoint_reads_iter = pd.read_csv(
+        breakpoint_reads_filename, sep='\t',
+        names=column_names, header=None,
+        iterator=True, chunksize=100000)
+
+    for i,breakpoint_reads in enumerate(breakpoint_reads_iter):
+        passed_reads =breakpoint_reads[breakpoint_reads['cluster_id'].isin(passed_brks)]
+        passed_reads.to_csv(filtered_breakpoint_reads_filename, header=False, index=False, mode='a')

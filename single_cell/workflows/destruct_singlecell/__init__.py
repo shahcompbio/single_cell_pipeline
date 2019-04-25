@@ -255,16 +255,6 @@ def create_destruct_workflow(
     )
 
     workflow.transform(
-        name='extract_cell_counts',
-        ctx={'mem': 8},
-        func="single_cell.workflows.destruct_singlecell.tasks.extract_cell_counts",
-        args=(
-            mgd.TempInputFile('breakpoint_read_table'),
-            mgd.OutputFile(cell_counts_filename),
-        ),
-    )
-
-    workflow.transform(
         name='filter_annotate_breakpoints',
         ctx={'mem': 8},
         func="biowrappers.components.breakpoint_calling.destruct.tasks.filter_annotate_breakpoints",
@@ -274,6 +264,27 @@ def create_destruct_workflow(
             [normal_sample_id],
             pypeliner.managed.OutputFile(breakpoints_filename),
             pypeliner.managed.OutputFile(breakpoints_library_filename),
+        ),
+    )
+
+    workflow.transform(
+        name='filter_breakpoint_reads',
+        ctx={'mem': 8},
+        func="single_cell.workflows.destruct_singlecell.tasks.filter_reads_file",
+        args=(
+            mgd.TempInputFile('breakpoint_read_table'),
+            pypeliner.managed.InputFile(breakpoints_filename),
+            mgd.TempOutputFile('breakpoint_read_table_filtered'),
+        ),
+    )
+
+    workflow.transform(
+        name='extract_cell_counts',
+        ctx={'mem': 8},
+        func="single_cell.workflows.destruct_singlecell.tasks.extract_cell_counts",
+        args=(
+            mgd.TempInputFile('breakpoint_read_table_filtered'),
+            mgd.OutputFile(cell_counts_filename),
         ),
     )
 
