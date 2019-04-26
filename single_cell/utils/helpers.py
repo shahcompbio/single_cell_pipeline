@@ -21,6 +21,9 @@ import gzip
 import pandas as pd
 
 
+def copyfile(source, dest):
+    shutil.copyfile(source, dest)
+
 class getFileHandle(object):
     def __init__(self, filename, mode='r'):
         self.filename = filename

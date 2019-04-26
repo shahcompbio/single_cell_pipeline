@@ -107,6 +107,10 @@ def generate_yaml_for_csv(filepath, outputyaml, header=False, columns=None):
                 columns = infile.readline().strip().split(',')
             types = generate_dtype_yaml(filepath, columns=columns)
 
+    write_to_yaml(header, types, columns, outputyaml)
+
+
+def write_to_yaml(header, types, columns, outputyaml):
     yamldata = {'header': header, 'columns': []}
 
     for column in columns:
@@ -195,6 +199,35 @@ def concatenate_csv(in_filenames, out_filename, nan_val='NA', key_column=None):
     write_dataframe_to_csv_and_yaml(data, out_filename)
 
 
+def extrapolate_types_from_yaml_files(csv_files, outputyaml):
+    precedence = ['str', 'float', 'int', 'bool']
+
+    yamldata = [get_metadata(csvfile) for csvfile in csv_files]
+
+    header = set([val[0] for val in yamldata])
+    assert len(header) == 1, 'mimatched yaml files'
+    header = list(header)[0]
+
+    cols = set([tuple(val[2]) for val in yamldata])
+    assert len(cols) == 1, 'mimatched yaml files'
+    cols = list(cols)[0]
+
+    dtypes = [val[1] for val in yamldata]
+
+    merged_dtypes = {}
+    for dtype_val in dtypes:
+        for col, dtype in dtype_val.items():
+            if col not in merged_dtypes:
+                merged_dtypes[col] = dtype
+            else:
+                og_index = precedence.index(merged_dtypes[col])
+                new_index = precedence.index(dtype)
+                if new_index < og_index:
+                    merged_dtypes[col] = dtype
+
+    write_to_yaml(header, merged_dtypes, cols, outputyaml)
+
+
 def concatenate_csv_files_quick_lowmem(inputfiles, output):
     if isinstance(inputfiles, dict):
         inputfiles = inputfiles.values()
@@ -204,8 +237,7 @@ def concatenate_csv_files_quick_lowmem(inputfiles, output):
             with helpers.getFileHandle(infile) as inputdata:
                 shutil.copyfileobj(inputdata, outfile, length=16 * 1024 * 1024)
 
-    _, _, columns = get_metadata(inputfiles[0])
-    generate_yaml_for_csv(output, output+'.yaml', columns=columns)
+    extrapolate_types_from_yaml_files(inputfiles, output+'.yaml')
 
 
 def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', suffixes=None):
@@ -263,7 +295,7 @@ def merge_frames(frames, how, on, suffixes=None):
 def finalize_csv(infile, outfile):
     header, dtypes, columns = get_metadata(infile)
 
-    assert header == False, 'file already contains a header'
+    assert header==False, 'file already contains a header'
 
     header = ','.join(columns) + '\n'
 
@@ -272,4 +304,4 @@ def finalize_csv(infile, outfile):
         with helpers.getFileHandle(infile) as indata:
             shutil.copyfileobj(indata, output, length=16 * 0124 * 1024)
 
-    generate_yaml_for_csv(outfile, outfile + '.yaml', header=True)
+    write_to_yaml(True, dtypes, columns, outfile+'.yaml')
