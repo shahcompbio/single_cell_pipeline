@@ -7,8 +7,7 @@ def process_cells_destruct(
         reads_1, reads_2, sample_1, sample_2, stats,
         tag=False
 ):
-
-    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,}
+    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1, }
 
     cells = list(cell_bam_files.keys())
 
@@ -110,13 +109,12 @@ def process_cells_destruct(
     return workflow
 
 
-def destruct_normal_preprocess_workflow(
+def destruct_preprocess_workflow(
         normal_bam_files, normal_stats,
         normal_reads_1, normal_reads_2,
         normal_sample_1, normal_sample_2,
         ref_data_directory, destruct_config
 ):
-
     workflow = pypeliner.workflow.Workflow()
 
     workflow.transform(
@@ -170,21 +168,12 @@ def destruct_normal_preprocess_workflow(
 
 
 def create_destruct_workflow(
-    tumour_bam_files,
-    normal_stats,
-    normal_reads_1,
-    normal_reads_2,
-    normal_sample_1,
-    normal_sample_2,
-    destruct_config,
-    ref_data_directory,
-    breakpoints_filename,
-    breakpoints_library_filename,
-    cell_counts_filename,
-    raw_data_directory,
-    normal_sample_id='normal',
-    tumour_sample_id='tumour',
-    tumour_library_id='tumour',
+        normal_stats, normal_reads_1, normal_reads_2, normal_sample_1, normal_sample_2,
+        tumour_stats, tumour_reads_1, tumour_reads_2, tumour_sample_1, tumour_sample_2,
+        destruct_config, ref_data_directory, breakpoints_filename,
+        breakpoints_library_filename, cell_counts_filename, raw_data_directory,
+        normal_sample_id='normal', tumour_sample_id='tumour',
+        tumour_library_id='tumour',
 ):
     tumour_sample_id = '_'.join([tumour_sample_id, tumour_library_id])
     workflow = pypeliner.workflow.Workflow()
@@ -199,49 +188,29 @@ def create_destruct_workflow(
         )
     )
 
-    workflow.setobj(
-        obj=mgd.OutputChunks('tumour_cell_id'),
-        value=list(tumour_bam_files.keys()),
-    )
-
-    workflow.subworkflow(
-        name='process_tumour_cells',
-        func=process_cells_destruct,
-        args=(
-            mgd.TempInputObj("destruct_config"),
-            mgd.InputFile('bam', 'tumour_cell_id', fnames=tumour_bam_files),
-            mgd.TempOutputFile('tumour_reads_1.fastq.gz'),
-            mgd.TempOutputFile('tumour_reads_2.fastq.gz'),
-            mgd.TempOutputFile('tumour_sample_1.fastq.gz'),
-            mgd.TempOutputFile('tumour_sample_2.fastq.gz'),
-            mgd.TempOutputFile('tumour_stats'),
-        ),
-        kwargs={'tag': True}
-    )
-
     workflow.subworkflow(
         name='destruct',
         func="destruct.workflow.create_destruct_fastq_workflow",
         args=(
             {
                 normal_sample_id: mgd.InputFile(normal_reads_1),
-                tumour_sample_id: mgd.TempInputFile('tumour_reads_1.fastq.gz'),
+                tumour_sample_id: mgd.InputFile(tumour_reads_1),
             },
             {
                 normal_sample_id: mgd.InputFile(normal_reads_2),
-                tumour_sample_id: mgd.TempInputFile('tumour_reads_2.fastq.gz'),
+                tumour_sample_id: mgd.InputFile(tumour_reads_2),
             },
             {
                 normal_sample_id: mgd.InputFile(normal_sample_1),
-                tumour_sample_id: mgd.TempInputFile('tumour_sample_1.fastq.gz'),
+                tumour_sample_id: mgd.InputFile(tumour_sample_1),
             },
             {
                 normal_sample_id: mgd.InputFile(normal_sample_2),
-                tumour_sample_id: mgd.TempInputFile('tumour_sample_2.fastq.gz'),
+                tumour_sample_id: mgd.InputFile(tumour_sample_2),
             },
             {
                 normal_sample_id: mgd.InputFile(normal_stats),
-                tumour_sample_id: mgd.TempInputFile('tumour_stats'),
+                tumour_sample_id: mgd.InputFile(tumour_stats),
             },
             mgd.TempOutputFile('breakpoint_table'),
             mgd.TempOutputFile('breakpoint_library_table'),
@@ -290,3 +259,93 @@ def create_destruct_workflow(
 
     return workflow
 
+
+def destruct_multi_sample_workflow(
+        normal_bam, tumour_bam_files, destruct_config, config,
+        destruct_ref_data_dir, breakpoints_csv, breakpoints_library_csv,
+        cell_counts_csv, raw_data_dir, normal_sample_id='normal',
+):
+    ctx = {'docker_image': config['docker']['destruct']}
+    workflow = pypeliner.workflow.Workflow(ctx=ctx)
+
+    workflow.setobj(
+        obj=mgd.OutputChunks('sample_id', 'library_id', 'cell_id'),
+        value=list(tumour_bam_files.keys()),
+    )
+
+    keys = [(sample_id, library_id) for (sample_id, library_id, _) in list(tumour_bam_files.keys())]
+    keys = sorted(set(keys))
+
+    breakpoints_csv = dict([(key, breakpoints_csv(*key))
+                            for key in keys])
+    breakpoints_library_csv = dict([(key, breakpoints_library_csv(*key))
+                                    for key in keys])
+    cell_counts_csv = dict([(key, cell_counts_csv(*key))
+                            for key in keys])
+
+    workflow.set_filenames('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', fnames=tumour_bam_files)
+    workflow.set_filenames('breakpoints.csv', 'sample_id', 'library_id', fnames=breakpoints_csv)
+    workflow.set_filenames('breakpoints_library.csv', 'sample_id', 'library_id', fnames=breakpoints_library_csv)
+    workflow.set_filenames('cell_counts.csv', 'sample_id', 'library_id', fnames=cell_counts_csv)
+
+    workflow.subworkflow(
+        name='normal_preprocess_destruct',
+        func='single_cell.workflows.destruct_singlecell.destruct_preprocess_workflow',
+        args=(
+            normal_bam,
+            mgd.TempOutputFile('normal_stats'),
+            mgd.TempOutputFile('normal_reads_1.fastq.gz'),
+            mgd.TempOutputFile('normal_reads_2.fastq.gz'),
+            mgd.TempOutputFile('normal_sample_1.fastq.gz'),
+            mgd.TempOutputFile('normal_sample_2.fastq.gz'),
+            destruct_ref_data_dir,
+            destruct_config,
+        ),
+    )
+
+    workflow.subworkflow(
+        name='tumour_preprocess_destruct',
+        func='single_cell.workflows.destruct_singlecell.destruct_preprocess_workflow',
+        axes=('sample_id', 'library_id'),
+        args=(
+            mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai']),
+            mgd.TempOutputFile('tumour_stats', 'sample_id', 'library_id'),
+            mgd.TempOutputFile('tumour_reads_1.fastq.gz', 'sample_id', 'library_id'),
+            mgd.TempOutputFile('tumour_reads_2.fastq.gz', 'sample_id', 'library_id'),
+            mgd.TempOutputFile('tumour_sample_1.fastq.gz', 'sample_id', 'library_id'),
+            mgd.TempOutputFile('tumour_sample_2.fastq.gz', 'sample_id', 'library_id'),
+            destruct_ref_data_dir,
+            destruct_config,
+        ),
+    )
+
+    workflow.subworkflow(
+        name='run_destruct',
+        func='single_cell.workflows.destruct_singlecell.create_destruct_workflow',
+        axes=('sample_id', 'library_id'),
+        args=(
+            mgd.TempInputFile('normal_stats'),
+            mgd.TempInputFile('normal_reads_1.fastq.gz'),
+            mgd.TempInputFile('normal_reads_2.fastq.gz'),
+            mgd.TempInputFile('normal_sample_1.fastq.gz'),
+            mgd.TempInputFile('normal_sample_2.fastq.gz'),
+            mgd.TempInputFile('tumour_stats', 'sample_id', 'library_id'),
+            mgd.TempInputFile('tumour_reads_1.fastq.gz', 'sample_id', 'library_id'),
+            mgd.TempInputFile('tumour_reads_2.fastq.gz', 'sample_id', 'library_id'),
+            mgd.TempInputFile('tumour_sample_1.fastq.gz', 'sample_id', 'library_id'),
+            mgd.TempInputFile('tumour_sample_2.fastq.gz', 'sample_id', 'library_id'),
+            destruct_config,
+            destruct_ref_data_dir,
+            mgd.OutputFile('breakpoints.csv', 'sample_id', 'library_id'),
+            mgd.OutputFile('breakpoints_library.csv', 'sample_id', 'library_id'),
+            mgd.OutputFile('cell_counts.csv', 'sample_id', 'library_id'),
+            mgd.Template(raw_data_dir, 'sample_id', 'library_id'),
+        ),
+        kwargs={
+            'tumour_sample_id': mgd.Instance('sample_id'),
+            'tumour_library_id': mgd.Instance('library_id'),
+            'normal_sample_id': normal_sample_id,
+        },
+    )
+
+    return workflow

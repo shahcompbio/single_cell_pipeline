@@ -2,11 +2,10 @@ import pypeliner
 import pypeliner.managed as mgd
 
 
-def lumpy_normal_preprocess_workflow(
-        normal_bam, config, discordants, split_reads,
+def lumpy_preprocess_workflow(
+        bam_files, config, discordants, split_reads,
         histogram, mean_stdev
 ):
-
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
            'docker_image': config['docker']['single_cell_pipeline']
            }
@@ -20,18 +19,18 @@ def lumpy_normal_preprocess_workflow(
 
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
-    if isinstance(normal_bam, dict):
+    if isinstance(bam_files, dict):
         workflow.setobj(
-            obj=mgd.OutputChunks('normal_cell_id'),
-            value=normal_bam.keys(),
+            obj=mgd.OutputChunks('cell_id'),
+            value=bam_files.keys(),
         )
-        workflow.set_filenames('normal_cells.bam', 'normal_cell_id', fnames=normal_bam)
+        workflow.set_filenames('cells.bam', 'cell_id', fnames=bam_files)
         workflow.subworkflow(
-            name='process_normal_cells',
+            name='process_cells',
             func='single_cell.workflows.lumpy.lumpy_preprocess_cells',
             args=(
                 config,
-                mgd.InputFile('normal_bam', 'normal_cell_id', fnames=normal_bam, extensions=['.bai']),
+                mgd.InputFile('cells.bam', 'cell_id', fnames=bam_files, extensions=['.bai']),
                 mgd.OutputFile(discordants),
                 mgd.OutputFile(split_reads),
                 mgd.OutputFile(histogram),
@@ -40,11 +39,11 @@ def lumpy_normal_preprocess_workflow(
         )
     else:
         workflow.transform(
-            name='process_normal',
+            name='process_bulk',
             ctx={'mem': 8, 'ncpus': 1, 'disk': 200},
             func='single_cell.workflows.lumpy.tasks.process_bam',
             args=(
-                mgd.InputFile(normal_bam, extensions=['.bai']),
+                mgd.InputFile(bam_files, extensions=['.bai']),
                 mgd.OutputFile(discordants),
                 mgd.OutputFile(split_reads),
                 mgd.TempOutputFile('hist_normal.csv'),
@@ -53,7 +52,7 @@ def lumpy_normal_preprocess_workflow(
             kwargs=histogram_settings,
         )
         workflow.transform(
-            name='format_histo_normal',
+            name='format_histo_bulk',
             ctx={'mem': 8, 'ncpus': 1},
             func='single_cell.workflows.lumpy.merge_histograms.merge_histograms',
             args=(
@@ -69,7 +68,6 @@ def lumpy_normal_preprocess_workflow(
 def lumpy_preprocess_cells(
         config, bam_files, merged_discordants, merged_splitters, hist_csv, mean_stdev_obj
 ):
-
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
            'docker_image': config['docker']['single_cell_pipeline']
            }
@@ -142,16 +140,16 @@ def lumpy_preprocess_cells(
 
 
 def create_lumpy_workflow(
-        config, bam_files, normal_disc_reads, normal_split_reads,
-        normal_histogram, normal_mean_stdev, lumpy_bed, lumpy_calls,
-        lumpy_evidence, tumour_id=None, normal_id=None,
+        config,
+        normal_disc_reads, normal_split_reads, normal_histogram, normal_mean_stdev,
+        tumour_disc_reads, tumour_split_reads, tumour_histogram, tumour_mean_stdev,
+        lumpy_bed, lumpy_calls, lumpy_evidence, tumour_id=None, normal_id=None,
         sample_id=None, library_id=None
 ):
-
     if sample_id and not tumour_id:
         tumour_id = sample_id + '_' + library_id
     if sample_id and not normal_id:
-        normal_id = sample_id+'N'
+        normal_id = sample_id + 'N'
 
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
            'docker_image': config['docker']['single_cell_pipeline']
@@ -159,40 +157,17 @@ def create_lumpy_workflow(
 
     lumpydocker = {'docker_image': config['docker']['lumpy']}
 
-    histogram_settings = dict(
-        N=10000, skip=0, min_elements=100, mads=10, X=4, read_length=101
-    )
-    histogram_settings.update(lumpydocker)
-
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
-
-    workflow.setobj(
-        obj=mgd.OutputChunks('tumour_cell_id'),
-        value=list(bam_files.keys()),
-    )
-
-    workflow.subworkflow(
-        name='process_tumour_cells',
-        func='single_cell.workflows.lumpy.lumpy_preprocess_cells',
-        args=(
-            config,
-            mgd.InputFile('tumour_bam', 'tumour_cell_id', fnames=bam_files, extensions=['.bai']),
-            mgd.TempOutputFile("tumour.discordants.sorted.bam"),
-            mgd.TempOutputFile("tumour.splitters.sorted.bam"),
-            mgd.TempOutputFile("tumour_hist.csv"),
-            mgd.TempOutputFile('tumour_mean_stdev.yaml')
-        ),
-    )
 
     workflow.transform(
         name='run_lumpy',
         ctx={'mem': 8, 'ncpus': 1},
         func='single_cell.workflows.lumpy.tasks.run_lumpy',
         args=(
-            mgd.TempInputFile("tumour.discordants.sorted.bam"),
-            mgd.TempInputFile("tumour.splitters.sorted.bam"),
-            mgd.TempInputFile("tumour_hist.csv"),
-            mgd.TempInputFile('tumour_mean_stdev.yaml'),
+            mgd.InputFile(tumour_disc_reads),
+            mgd.InputFile(tumour_split_reads),
+            mgd.InputFile(tumour_histogram),
+            mgd.InputFile(tumour_mean_stdev),
             tumour_id,
             mgd.InputFile(normal_disc_reads),
             mgd.InputFile(normal_split_reads),
@@ -214,6 +189,92 @@ def create_lumpy_workflow(
             mgd.OutputFile(lumpy_calls),
             mgd.OutputFile(lumpy_evidence),
         ),
+    )
+
+    return workflow
+
+
+def lumpy_multi_sample_workflow(
+        config, normal_bam, tumour_cell_bams,
+        lumpy_breakpoints_csv, lumpy_breakpoints_evidence,
+        lumpy_breakpoints_bed
+):
+    ctx = {'docker_image': config['docker']['single_cell_pipeline']}
+    workflow = pypeliner.workflow.Workflow(ctx=ctx)
+
+    workflow.setobj(
+        obj=mgd.OutputChunks('sample_id', 'library_id', 'cell_id'),
+        value=list(tumour_cell_bams.keys()),
+    )
+
+    keys = [(sample_id, library_id) for (sample_id, library_id, _) in list(tumour_cell_bams.keys())]
+    keys = sorted(set(keys))
+
+    lumpy_breakpoints_csv = dict([(key, lumpy_breakpoints_csv(*key))
+                                  for key in keys])
+    lumpy_breakpoints_evidence = dict([(key, lumpy_breakpoints_evidence(*key))
+                                       for key in keys])
+    lumpy_breakpoints_bed = dict([(key, lumpy_breakpoints_bed(*key))
+                                  for key in keys])
+
+    workflow.set_filenames('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', fnames=tumour_cell_bams)
+    workflow.set_filenames('lumpy_breakpoints.csv.gz', 'sample_id', 'library_id', fnames=lumpy_breakpoints_csv)
+    workflow.set_filenames('lumpy_breakpoints_evidence.csv.gz', 'sample_id', 'library_id',
+                           fnames=lumpy_breakpoints_evidence)
+    workflow.set_filenames('lumpy_breakpoints.bed', 'sample_id', 'library_id', fnames=lumpy_breakpoints_bed)
+
+    workflow.subworkflow(
+        name='normal_preprocess_lumpy',
+        func='single_cell.workflows.lumpy.lumpy_preprocess_workflow',
+        ctx={'docker_image': config['docker']['single_cell_pipeline']},
+        args=(
+            normal_bam,
+            config,
+            mgd.TempOutputFile('normal.discordants.sorted.bam'),
+            mgd.TempOutputFile('normal.splitters.sorted.bam'),
+            mgd.TempOutputFile('hist_normal_formatted.csv'),
+            mgd.TempOutputFile('normal_mean_stdev.yaml')
+        ),
+    )
+
+    workflow.subworkflow(
+        name='tumour_preprocess_lumpy',
+        func='single_cell.workflows.lumpy.lumpy_preprocess_workflow',
+        axes=('sample_id', 'library_id'),
+        ctx={'docker_image': config['docker']['single_cell_pipeline']},
+        args=(
+            mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai']),
+            config,
+            mgd.TempOutputFile('tumour.discordants.sorted.bam', 'sample_id', 'library_id'),
+            mgd.TempOutputFile('tumour.splitters.sorted.bam', 'sample_id', 'library_id'),
+            mgd.TempOutputFile('hist_tumour_formatted.csv', 'sample_id', 'library_id'),
+            mgd.TempOutputFile('tumour_mean_stdev.yaml', 'sample_id', 'library_id')
+        ),
+    )
+
+    workflow.subworkflow(
+        name='lumpy',
+        ctx={'docker_image': config['docker']['single_cell_pipeline']},
+        axes=('sample_id', 'library_id'),
+        func="single_cell.workflows.lumpy.create_lumpy_workflow",
+        args=(
+            config,
+            mgd.TempInputFile('normal.discordants.sorted.bam'),
+            mgd.TempInputFile('normal.splitters.sorted.bam'),
+            mgd.TempInputFile('hist_normal_formatted.csv'),
+            mgd.TempInputFile('normal_mean_stdev.yaml'),
+            mgd.TempInputFile('tumour.discordants.sorted.bam', 'sample_id', 'library_id'),
+            mgd.TempInputFile('tumour.splitters.sorted.bam', 'sample_id', 'library_id'),
+            mgd.TempInputFile('hist_tumour_formatted.csv', 'sample_id', 'library_id'),
+            mgd.TempInputFile('tumour_mean_stdev.yaml', 'sample_id', 'library_id'),
+            mgd.OutputFile('lumpy_breakpoints.bed', 'sample_id', 'library_id'),
+            mgd.OutputFile('lumpy_breakpoints.csv.gz', 'sample_id', 'library_id'),
+            mgd.OutputFile('lumpy_breakpoints_evidence.csv.gz', 'sample_id', 'library_id'),
+        ),
+        kwargs={
+            'sample_id': mgd.InputInstance('sample_id'),
+            'library_id': mgd.InputInstance('library_id')
+        }
     )
 
     return workflow

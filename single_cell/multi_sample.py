@@ -24,19 +24,25 @@ def get_bams(inputs_file):
                 tumour_bams[(sample_id, library_id, cell_id)] = cell_data['bam']
 
     if 'normal_wgs' in data:
+        assert len(data['normal_wgs'].keys()) == 1
+        normal_sample_id = data['normal_wgs'].keys()[0]
         normal_bams = data['normal_wgs'].values()[0]['bam']
     else:
         normal_bams = {}
-        for cell in data['normal_cells'].keys():
+        normal_sample_id = data['normal_wgs'].keys()[0]
+        for cell in data['normal_cells'][normal_sample_id].keys():
             if 'bam' not in data['normal_cells'][cell]:
                 raise Exception('couldnt extract bam file paths from yaml input for cell: {}'.format(cell))
             normal_bams[cell] = data['normal_cells'][cell]['bam']
 
-    return tumour_bams, normal_bams
+    return tumour_bams, {normal_sample_id: normal_bams}
 
 
 def multi_sample_workflow(args):
     tumour_cell_bams, normal_bam = get_bams(args['input_yaml'])
+
+    normal_sample_id = normal_bam.keys()[0]
+    normal_bam = normal_bam[normal_sample_id]
 
     workflow = create_multi_sample_workflow(
         normal_bam,
@@ -46,7 +52,8 @@ def multi_sample_workflow(args):
         run_destruct=args['call_destruct'],
         run_lumpy=args['call_lumpy'],
         run_haps=args['call_haps'],
-        run_varcall=args["call_variants"]
+        run_varcall=args["call_variants"],
+        normal_sample_id=normal_sample_id
     )
 
     return workflow
@@ -60,7 +67,8 @@ def create_multi_sample_workflow(
         run_destruct=False,
         run_lumpy=False,
         run_haps=False,
-        run_varcall=False
+        run_varcall=False,
+        normal_sample_id='normal',
 ):
     """ Multiple sample pseudobulk workflow. """
 
@@ -282,85 +290,40 @@ def create_multi_sample_workflow(
         destruct_config = config.get('destruct_config', {})
         destruct_ref_data_dir = config['ref_data_directory']
 
+
         workflow.subworkflow(
-            name='normal_preprocess_destruct',
-            func='single_cell.workflows.destruct_singlecell.destruct_normal_preprocess_workflow',
+            name='run_destruct_multi_sample',
+            func='single_cell.workflows.destruct_singlecell.destruct_multi_sample_workflow',
             ctx={'docker_image': config['docker']['destruct']},
             args=(
                 normal_bam,
-                mgd.TempOutputFile('normal_stats'),
-                mgd.TempOutputFile('normal_reads_1.fastq.gz'),
-                mgd.TempOutputFile('normal_reads_2.fastq.gz'),
-                mgd.TempOutputFile('normal_sample_1.fastq.gz'),
-                mgd.TempOutputFile('normal_sample_2.fastq.gz'),
-                destruct_ref_data_dir,
+                mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai'], axes_origin=[]),
                 destruct_config,
-            ),
-        )
-
-        workflow.subworkflow(
-            name='destruct',
-            func='single_cell.workflows.destruct_singlecell.create_destruct_workflow',
-            axes=('sample_id', 'library_id',),
-            ctx={'docker_image': config['docker']['destruct']},
-            args=(
-                mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai']),
-                mgd.TempInputFile('normal_stats'),
-                mgd.TempInputFile('normal_reads_1.fastq.gz'),
-                mgd.TempInputFile('normal_reads_2.fastq.gz'),
-                mgd.TempInputFile('normal_sample_1.fastq.gz'),
-                mgd.TempInputFile('normal_sample_2.fastq.gz'),
-                destruct_config,
+                config,
                 destruct_ref_data_dir,
-                mgd.OutputFile('breakpoints.h5', 'sample_id', 'library_id'),
-                mgd.OutputFile('breakpoints_library.h5', 'sample_id', 'library_id'),
-                mgd.OutputFile('cell_counts.h5', 'sample_id', 'library_id'),
-                mgd.Template(destruct_raw_data_template, 'sample_id', 'library_id'),
+                mgd.OutputFile('breakpoints.h5', 'sample_id', 'library_id', axes_origin=[]),
+                mgd.OutputFile('breakpoints_library.h5', 'sample_id', 'library_id', axes_origin=[]),
+                mgd.OutputFile('cell_counts.h5', 'sample_id', 'library_id', axes_origin=[]),
+                destruct_raw_data_template,
             ),
-            kwargs={
-                'tumour_sample_id': mgd.Instance('sample_id'),
-                'tumour_library_id': mgd.Instance('library_id'),
-            },
+            kwargs={'normal_sample_id': normal_sample_id}
         )
 
     if run_lumpy:
         config = config['breakpoint_calling']
 
         workflow.subworkflow(
-            name='normal_preprocess_lumpy',
-            func='single_cell.workflows.lumpy.lumpy_normal_preprocess_workflow',
+            name='run_lumpy_multi_sample',
+            func='single_cell.workflows.lumpy.lumpy_multi_sample_workflow',
             ctx={'docker_image': config['docker']['single_cell_pipeline']},
             args=(
+                config,
                 normal_bam,
-                config,
-                mgd.TempOutputFile('normal.discordants.sorted.bam'),
-                mgd.TempOutputFile('normal.splitters.sorted.bam'),
-                mgd.TempOutputFile('hist_normal_formatted.csv'),
-                mgd.TempOutputFile('normal_mean_stdev.yaml')
-            ),
-        )
-
-
-        workflow.subworkflow(
-            name='lumpy',
-            ctx={'docker_image': config['docker']['single_cell_pipeline']},
-            axes=('sample_id', 'library_id'),
-            func="single_cell.workflows.lumpy.create_lumpy_workflow",
-            args=(
-                config,
-                mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai']),
-                mgd.TempInputFile('normal.discordants.sorted.bam'),
-                mgd.TempInputFile('normal.splitters.sorted.bam'),
-                mgd.TempInputFile('hist_normal_formatted.csv'),
-                mgd.TempInputFile('normal_mean_stdev.yaml'),
-                mgd.OutputFile('lumpy_breakpoints.bed', 'sample_id', 'library_id'),
-                mgd.OutputFile('lumpy_breakpoints.csv.gz', 'sample_id', 'library_id'),
-                mgd.OutputFile('lumpy_breakpoints_evidence.csv.gz', 'sample_id', 'library_id'),
-            ),
-            kwargs={
-                'sample_id': mgd.InputInstance('sample_id'),
-                'library_id': mgd.InputInstance('library_id')
-            }
+                mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai'], axes_origin=[]),
+                mgd.OutputFile('lumpy_breakpoints.csv.gz', 'sample_id', 'library_id', axes_origin=[]),
+                mgd.OutputFile('lumpy_breakpoints_evidence.csv.gz', 'sample_id', 'library_id', axes_origin=[]),
+                mgd.OutputFile('lumpy_breakpoints.bed', 'sample_id', 'library_id', axes_origin=[]),
+            )
         )
 
     return workflow
