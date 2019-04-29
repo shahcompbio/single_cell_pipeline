@@ -188,11 +188,11 @@ def get_vm_image_id(disk_per_task, tasks_per_node):
 
     if required_disk_size <= 80:
         # uses the temp disk on node, usually 40 GB
-        imagename = 'dockerproduction-verysmalldisk'
+        imagename = 'dockerproduction-v2-verysmalldisk-image'
     elif required_disk_size < 200:
-        imagename = 'dockerproduction-smalldisk'
+        imagename = 'docker-production-v2-smalldisk-image'
     else:
-        imagename = 'docker-production'
+        imagename = 'docker-production-v2-image'
 
     subscription = os.environ.get("SUBSCRIPTION_ID", "id-missing")
     resource_group = os.environ.get("RESOURCE_GROUP", "sccompute")
@@ -212,9 +212,7 @@ def get_pool_def(
     vm_commands = create_vm_commands()
 
     vm_image = get_vm_image_id(disk_per_task, tasks_per_node)
-    node_sku = "batch.node.ubuntu 16.04"
-    if 'dockerproduction-verysmalldisk' in vm_image:
-        node_sku = "batch.node.ubuntu 18.04"
+    node_sku = "batch.node.ubuntu 18.04"
 
     task_start_commands = get_compute_start_commands(vm_image)
     task_finish_commands = get_compute_finish_commands(vm_image)
