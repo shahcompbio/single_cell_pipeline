@@ -100,6 +100,7 @@ def get_align_params(cluster, reference, binsize, smoothing_function, aligner):
         'bwa': docker_containers['bwa'],
         'picard': docker_containers['picard'],
         'trimgalore': docker_containers['trimgalore'],
+        'biobloom': docker_containers['biobloom'],
     }
 
     params = {

@@ -12,6 +12,7 @@ from single_cell.utils import helpers
 from single_cell.utils import csvutils
 from single_cell.utils import gatkutils
 from single_cell.utils import hdfutils
+from single_cell.utils.bamutils import run_biobloom
 
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotMetrics
 
@@ -146,6 +147,7 @@ def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
              lane_id, library_id, aligner, containers, adapter,
              adapter2):
 
+    fastq1, fastq2 = run_biobloom(fastq1, fastq1, containers['biobloom'])
     readgroup = get_readgroup(
         lane_id,
         cell_id,

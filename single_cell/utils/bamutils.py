@@ -153,3 +153,17 @@ def bam_view(bam, output, region, **kwargs):
 
     pypeliner.commandline.execute(*cmd, **kwargs)
 
+
+def run_biobloom(fastq1, fastq2, output_dir, docker_image):
+    cmd = [
+        "biobloomcategorizer",
+        "-t",
+        "20",
+        "\"references/GCF_002021735.1_Okis_V1_genomic.bf references/GRCh37-lite.bf references/mm10_build38_mouse.bf\"",
+        fastq1,
+        fastq2,
+        "-p",
+        output_dir,
+        "--fq"
+    ]
+    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
