@@ -1,5 +1,5 @@
-import os
 import gzip
+import os
 import random
 import shutil
 from itertools import islice
@@ -240,7 +240,7 @@ def extract_cell_counts(breakpoint_reads_filename, cell_counts_filename):
         breakpoint_reads_filename: raw breakpoint reads table from destruct
         cell_counts_filename: csv of cluster_id, cell_id, read_count
     """
-    column_names = ['cluster_id', 'lib_id', 'read_id', 'read_end', 'sequence', 'quality', 'comment']
+    column_names = ['cluster_id', 'lib_id', 'read_id', 'read_end', 'sequence', 'quality', 'comment', 'filtered']
     breakpoint_reads_iter = pd.read_csv(
         breakpoint_reads_filename, sep='\t',
         names=column_names, header=None,
@@ -272,12 +272,13 @@ def filter_reads_file(
     destruct = pd.read_csv(destruct_table, sep='\t')
     passed_brks = set(destruct['prediction_id'])
 
-    column_names = ['cluster_id', 'lib_id', 'read_id', 'read_end', 'sequence', 'quality', 'comment']
+    column_names = ['cluster_id', 'lib_id', 'read_id', 'read_end', 'sequence', 'quality', 'comment', 'filtered']
     breakpoint_reads_iter = pd.read_csv(
         breakpoint_reads_filename, sep='\t',
         names=column_names, header=None,
         iterator=True, chunksize=100000)
 
-    for i,breakpoint_reads in enumerate(breakpoint_reads_iter):
-        passed_reads =breakpoint_reads[breakpoint_reads['cluster_id'].isin(passed_brks)]
-        passed_reads.to_csv(filtered_breakpoint_reads_filename, header=False, index=False, mode='a')
+    for i, breakpoint_reads in enumerate(breakpoint_reads_iter):
+        passed_reads = breakpoint_reads[breakpoint_reads['cluster_id'].isin(passed_brks)]
+        passed_reads = passed_reads[passed_reads['filtered']==False]
+        passed_reads.to_csv(filtered_breakpoint_reads_filename, sep='\t', header=False, index=False, mode='a')
