@@ -83,13 +83,24 @@ def create_multi_sample_workflow(
 
     raw_data_dir = os.path.join(results_dir, 'raw')
 
-    normal_region_bam_template = os.path.join(raw_data_dir, 'normal_{region}.bam')
-    tumour_region_bam_template = os.path.join(raw_data_dir, '{sample_id}_{library_id}_{region}.bam')
-    normal_seqdata_file = os.path.join(raw_data_dir, 'normal_seqdata.h5')
-    tumour_cell_seqdata_template = os.path.join(raw_data_dir, '{sample_id}_{library_id}_{cell_id}_seqdata.h5')
-
-    variant_calling_raw_data_template = os.path.join(raw_data_dir, '{sample_id}_{library_id}_variant_calling')
-    destruct_raw_data_template = os.path.join(raw_data_dir, '{sample_id}_{library_id}_destruct')
+    normal_region_bam_template = os.path.join(
+        raw_data_dir, 'normal_region_bams', 'normal_{region}.bam'
+    )
+    tumour_region_bam_template = os.path.join(
+        raw_data_dir, 'tumour_region_bams', '{sample_id}_{library_id}_{region}.bam'
+    )
+    normal_seqdata_file = os.path.join(
+        raw_data_dir, 'normal_seqdata', 'normal_seqdata.h5'
+    )
+    tumour_cell_seqdata_template = os.path.join(
+        raw_data_dir, 'tumour_seqdata', '{sample_id}_{library_id}_{cell_id}_seqdata.h5'
+    )
+    variant_calling_raw_data_template = os.path.join(
+        raw_data_dir, 'variant_calling_rawdata', '{sample_id}_{library_id}_variant_calling'
+    )
+    destruct_raw_data_template = os.path.join(
+        raw_data_dir, 'destruct_rawdata', '{sample_id}_{library_id}_destruct'
+    )
 
     museq_vcf_template = os.path.join(results_dir, '{sample_id}_{library_id}_museq.vcf.gz')
     strelka_snv_template = os.path.join(results_dir, '{sample_id}_{library_id}_strelka_snv.vcf.gz')
