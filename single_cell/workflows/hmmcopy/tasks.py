@@ -95,16 +95,6 @@ def gzip_file(inputfile, gzipped_csv):
             gzipped_out.write(line)
 
 
-def prep_csv_files(filepath, outputfile, outputyaml):
-    with helpers.getFileHandle(outputfile, 'w') as out_writer:
-        csvutils.generate_yaml_for_csv(filepath, outputyaml)
-
-        with helpers.getFileHandle(filepath) as infile:
-            # skip header
-            infile.readline()
-            shutil.copyfileobj(infile, out_writer, length=16 * 1024 * 1024)
-
-
 def run_hmmcopy(
         bam_file,
         corrected_reads_filename,
@@ -150,16 +140,13 @@ def run_hmmcopy(
         hmmcopy_segs_files = os.path.join(hmmcopy_outdir, "segs.csv")
         hmmcopy_metrics_files = os.path.join(hmmcopy_outdir, "metrics.csv")
 
-        prep_csv_files(
+        csvutils.prep_csv_files(
             hmmcopy_reads_file, corrected_reads_filename[multiplier],
             corrected_reads_filename[multiplier] + '.yaml'
         )
-        prep_csv_files(hmmcopy_params_files, parameters_filename[multiplier],
-                       parameters_filename[multiplier] + '.yaml')
-        prep_csv_files(hmmcopy_segs_files, segments_filename[multiplier],
-                       segments_filename[multiplier] + '.yaml')
-        prep_csv_files(hmmcopy_metrics_files, metrics_filename[multiplier],
-                       metrics_filename[multiplier] + '.yaml')
+        csvutils.prep_csv_files(hmmcopy_params_files, parameters_filename[multiplier])
+        csvutils.prep_csv_files(hmmcopy_segs_files, segments_filename[multiplier])
+        csvutils.prep_csv_files(hmmcopy_metrics_files, metrics_filename[multiplier])
 
     corrected_reads_all = [corrected_reads_filename[mult] for mult in multipliers]
     segments_all = [segments_filename[mult] for mult in multipliers]
@@ -552,4 +539,4 @@ def add_quality(hmmcopy_metrics, alignment_metrics, multipliers, output, trainin
             intermediate_output,
             predictions)
 
-        prep_csv_files(intermediate_output, output, output + '.yaml')
+        csvutils.prep_csv_files(intermediate_output, output)
