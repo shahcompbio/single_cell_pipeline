@@ -15,7 +15,7 @@ def containers():
         'python_base': 'scp/python_base:v0.0.1', 'picard': 'scp/picard:v0.0.1',
         'single_cell_pipeline': 'scp/single_cell_pipeline:v{}'.format(version),
         'gatk': 'scp/gatk:v0.0.1', 'fastqc': 'scp/fastqc:v0.0.1',
-        'hmmcopy': 'scp/hmmcopy:v0.0.1', 'aneufinder': 'scp/aneufinder:v0.0.1',
+        'hmmcopy': 'scp/hmmcopy:v0.0.2', 'aneufinder': 'scp/aneufinder:v0.0.1',
         'strelka': 'scp/strelka:v0.0.1', 'mutationseq': 'scp/mutationseq:v0.0.1',
         'vcftools': 'scp/vcftools:v0.0.1', 'snpeff': 'scp/vcftools:v0.0.1',
         'titan': 'scp/titan:v0.0.1', 'remixt': 'scp/remixt:v{}'.format(version),
