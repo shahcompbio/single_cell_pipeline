@@ -64,7 +64,7 @@ def run_correction_hmmcopy(
 
 
 def run_hmmcopy_script(corrected_reads, tempdir, cell_id, hmmparams, docker_image):
-    cmd = ["hmmcopy"]
+    cmd = ["hmmcopy_single_cell.R"]
 
     # run hmmcopy
     cmd += ['--corrected_data=' + corrected_reads,
