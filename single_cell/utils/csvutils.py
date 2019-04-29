@@ -305,3 +305,14 @@ def finalize_csv(infile, outfile):
             shutil.copyfileobj(indata, output, length=16 * 0124 * 1024)
 
     write_to_yaml(True, dtypes, columns, outfile+'.yaml')
+
+
+def prep_csv_files(filepath, outputfile):
+    outputyaml = outputfile + '.yaml'
+    with helpers.getFileHandle(outputfile, 'w') as out_writer:
+        generate_yaml_for_csv(filepath, outputyaml)
+
+        with helpers.getFileHandle(filepath) as infile:
+            # skip header
+            infile.readline()
+            shutil.copyfileobj(infile, out_writer, length=16 * 1024 * 1024)

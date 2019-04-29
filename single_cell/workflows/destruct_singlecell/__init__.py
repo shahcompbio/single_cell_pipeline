@@ -231,8 +231,8 @@ def create_destruct_workflow(
             pypeliner.managed.TempInputFile('breakpoint_table'),
             pypeliner.managed.TempInputFile('breakpoint_library_table'),
             [normal_sample_id],
-            pypeliner.managed.OutputFile(breakpoints_filename),
-            pypeliner.managed.OutputFile(breakpoints_library_filename),
+            pypeliner.managed.TempOutputFile('breakpoints_filename.csv'),
+            pypeliner.managed.TempOutputFile('breakpoints_library_filename.csv'),
         ),
     )
 
@@ -242,7 +242,7 @@ def create_destruct_workflow(
         func="single_cell.workflows.destruct_singlecell.tasks.filter_reads_file",
         args=(
             mgd.TempInputFile('breakpoint_read_table'),
-            pypeliner.managed.InputFile(breakpoints_filename),
+            pypeliner.managed.TempInputFile('breakpoints_filename.csv'),
             mgd.TempOutputFile('breakpoint_read_table_filtered'),
         ),
     )
@@ -253,9 +253,41 @@ def create_destruct_workflow(
         func="single_cell.workflows.destruct_singlecell.tasks.extract_cell_counts",
         args=(
             mgd.TempInputFile('breakpoint_read_table_filtered'),
-            mgd.OutputFile(cell_counts_filename),
+            mgd.TempOutputFile('cell_counts_filename.csv'),
         ),
     )
+
+    workflow.transform(
+        name='finalize_cell_counts',
+        ctx={'mem': 8, 'ncpus': 1},
+        func="single_cell.utils.csvutils.prep_csv_files",
+        args=(
+            mgd.TempInputFile('cell_counts_filename.csv'),
+            mgd.OutputFile(cell_counts_filename, extensions=['.yaml']),
+        ),
+    )
+
+    workflow.transform(
+        name='finalize_breakpoints',
+        ctx={'mem': 8, 'ncpus': 1},
+        func="single_cell.utils.csvutils.prep_csv_files",
+        args=(
+            pypeliner.managed.TempInputFile('breakpoints_filename.csv'),
+            pypeliner.managed.OutputFile(breakpoints_filename, extensions=['.yaml']),
+        ),
+    )
+
+    workflow.transform(
+        name='finalize_breakpoints_library',
+        ctx={'mem': 8, 'ncpus': 1},
+        func="single_cell.utils.csvutils.prep_csv_files",
+        args=(
+            pypeliner.managed.TempInputFile('breakpoints_library_filename.csv'),
+            pypeliner.managed.OutputFile(breakpoints_library_filename, extensions=['.yaml']),
+        ),
+    )
+
+
 
     return workflow
 
