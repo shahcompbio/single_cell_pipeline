@@ -7,11 +7,12 @@ import pandas as pd
 import os
 
 class CollectMetrics(object):
-    def __init__(self, wgs_metrics, insert_metrics, flagstat_metrics, markdups_metrics, output, sample_id):
+    def __init__(self, wgs_metrics, insert_metrics, flagstat_metrics, markdups_metrics, output, sample_id, biobloom_count_metrics):
         self.wgs_metrics = wgs_metrics
         self.flagstat_metrics = flagstat_metrics
         self.insert_metrics = insert_metrics
         self.markdups_metrics = markdups_metrics
+        self.biobloom_count_metrics = biobloom_count_metrics
         self.output = output
         self.sample_id = sample_id
     
@@ -71,7 +72,7 @@ class CollectMetrics(object):
         extract from flagstat
         """
     
-        df = pd.read_table(self.flagstat_metrics,
+        df = pd.read_csv(self.flagstat_metrics,
                            sep=r'\s\+\s0\s',
                            header=None,
                            names=['value', 'type'],
@@ -181,8 +182,11 @@ class CollectMetrics(object):
         std_dev_ins_size = 0 if std_dev_ins_size == '?' else std_dev_ins_size
 
         return median_ins_size, mean_ins_size, std_dev_ins_size
-    
-    
+
+    def merge_biobloom_metrics(self):
+        merged = pd.merge(pd.read_csv(self.output), pd.read_csv(self.biobloom_count_metrics), left_index=True, right_index=True)
+        merged.to_csv(self.output, index=False)
+
     def write_data(self, header, data):
         """
         write to the output
@@ -207,12 +211,14 @@ class CollectMetrics(object):
         flagstat_metrics = self.extract_flagstat_metrics()
         wgs_metrics = self.extract_wgs_metrics()
     
-        header = ['cell_id', 'unpaired_mapped_reads',
-                  'paired_mapped_reads', 'unpaired_duplicate_reads',
-                  'paired_duplicate_reads', 'unmapped_reads', 'percent_duplicate_reads',
-                  'estimated_library_size', 'total_reads', 'total_mapped_reads',
-                  'total_duplicate_reads', 'total_properly_paired',
-                  'coverage_breadth', 'coverage_depth']
+        header = [
+            'cell_id', 'unpaired_mapped_reads',
+            'paired_mapped_reads', 'unpaired_duplicate_reads',
+            'paired_duplicate_reads', 'unmapped_reads', 'percent_duplicate_reads',
+            'estimated_library_size', 'total_reads', 'total_mapped_reads',
+            'total_duplicate_reads', 'total_properly_paired',
+            'coverage_breadth', 'coverage_depth',
+        ]
 
         output = (self.sample_id,) + duplication_metrics + flagstat_metrics + wgs_metrics
     
@@ -222,6 +228,7 @@ class CollectMetrics(object):
             header += ['median_insert_size',
                        'mean_insert_size',
                        'standard_deviation_insert_size']
-    
+
         self.write_data(header, output)
+        self.merge_biobloom_metrics()
 

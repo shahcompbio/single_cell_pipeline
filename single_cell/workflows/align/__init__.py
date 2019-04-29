@@ -19,7 +19,9 @@ def create_alignment_workflow(
         triminfo,
         centerinfo,
         sample_info,
-        cell_ids):
+        cell_ids,
+        biobloom_count_metrics):
+
 
     baseimage = config['docker']['single_cell_pipeline']
 
@@ -30,6 +32,9 @@ def create_alignment_workflow(
     lane_metrics = os.path.join(args['out_dir'], 'metrics_per_lane', '{lane}')
 
     bam_filename = dict([(cellid, bam_filename[cellid])
+                         for cellid in cell_ids])
+
+    biobloom_count_metrics = dict([(cellid, biobloom_count_metrics[cellid])
                          for cellid in cell_ids])
 
     chromosomes = config["chromosomes"]
@@ -76,6 +81,7 @@ def create_alignment_workflow(
                 'fastq_2', 'cell_id', 'lane', fnames=fastq_2_filename),
             mgd.TempOutputFile(
                 'aligned_per_cell_per_lane.sorted.bam', 'cell_id', 'lane'),
+            mgd.TempOutputFile('biobloom_count_metrics', 'cell_id', 'lane'),
             mgd.OutputFile(fastqc_reports, 'cell_id', 'lane'),
             mgd.OutputFile(flagstat_metrics, 'cell_id', 'lane'),
             mgd.TempSpace('alignment_temp', 'cell_id', 'lane'),
@@ -90,7 +96,18 @@ def create_alignment_workflow(
             config['docker'],
             config['adapter'],
             config['adapter2'],
+            config['biobloom_filters'],
+            config['ref_type']
         )
+    )
+
+    workflow.transform(
+        name='merge_biobloom',
+        func="single_cell.workflows.align.tasks.merge_biobloom",
+        axes=('cell_id',),
+        args=( mgd.TempInputFile('biobloom_count_metrics', 'cell_id', 'lane'),
+               mgd.OutputFile('biobloom_count_metrics', 'cell_id', fnames=biobloom_count_metrics)
+               )
     )
 
     workflow.transform(
