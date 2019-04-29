@@ -297,20 +297,20 @@ def create_multi_sample_workflow(
         )
 
     if run_destruct:
-        config = config['breakpoint_calling']
-        destruct_config = config.get('destruct_config', {})
-        destruct_ref_data_dir = config['ref_data_directory']
+        destruct_pipeline_config = config['breakpoint_calling']
+        destruct_config = destruct_pipeline_config.get('destruct_config', {})
+        destruct_ref_data_dir = destruct_pipeline_config['ref_data_directory']
 
 
         workflow.subworkflow(
             name='run_destruct_multi_sample',
             func='single_cell.workflows.destruct_singlecell.destruct_multi_sample_workflow',
-            ctx={'docker_image': config['docker']['destruct']},
+            ctx={'docker_image': destruct_pipeline_config['docker']['destruct']},
             args=(
                 normal_bam,
                 mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai'], axes_origin=[]),
                 destruct_config,
-                config,
+                destruct_pipeline_config,
                 destruct_ref_data_dir,
                 mgd.OutputFile('breakpoints.h5', 'sample_id', 'library_id', axes_origin=[]),
                 mgd.OutputFile('breakpoints_library.h5', 'sample_id', 'library_id', axes_origin=[]),
@@ -321,14 +321,14 @@ def create_multi_sample_workflow(
         )
 
     if run_lumpy:
-        config = config['breakpoint_calling']
+        lumpy_pipeline_config = config['breakpoint_calling']
 
         workflow.subworkflow(
             name='run_lumpy_multi_sample',
             func='single_cell.workflows.lumpy.lumpy_multi_sample_workflow',
-            ctx={'docker_image': config['docker']['single_cell_pipeline']},
+            ctx={'docker_image': lumpy_pipeline_config['docker']['single_cell_pipeline']},
             args=(
-                config,
+                lumpy_pipeline_config,
                 normal_bam,
                 mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai'], axes_origin=[]),
                 mgd.OutputFile('lumpy_breakpoints.csv.gz', 'sample_id', 'library_id', axes_origin=[]),
