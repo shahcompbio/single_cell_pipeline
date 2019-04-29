@@ -69,6 +69,7 @@ def infer_haps(
         workflow.subworkflow(
             name='extract_seqdata',
             func='remixt.workflow.create_extract_seqdata_workflow',
+            ctx={'disk': 150},
             args=(
                 mgd.InputFile(bam_file, extensions=['.bai']),
                 mgd.OutputFile(seqdata_file),
