@@ -23,7 +23,7 @@ def create_extract_seqdata_workflow(
     workflow = pypeliner.workflow.Workflow()
 
     workflow.transform(
-        name='create_chromosome_seqdata',
+        name='create_cell_seqdata',
         ctx=ctx,
         func="single_cell.workflows.extract_seqdata.tasks.create_chromosome_seqdata",
         args=(
