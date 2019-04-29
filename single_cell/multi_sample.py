@@ -29,11 +29,11 @@ def get_bams(inputs_file):
         normal_bams = data['normal_wgs'].values()[0]['bam']
     else:
         normal_bams = {}
-        normal_sample_id = data['normal_wgs'].keys()[0]
+        normal_sample_id = data['normal_cells'].keys()[0]
         for cell in data['normal_cells'][normal_sample_id].keys():
-            if 'bam' not in data['normal_cells'][cell]:
+            if 'bam' not in data['normal_cells'][normal_sample_id][cell]:
                 raise Exception('couldnt extract bam file paths from yaml input for cell: {}'.format(cell))
-            normal_bams[cell] = data['normal_cells'][cell]['bam']
+            normal_bams[cell] = data['normal_cells'][normal_sample_id][cell]['bam']
 
     return tumour_bams, {normal_sample_id: normal_bams}
 
