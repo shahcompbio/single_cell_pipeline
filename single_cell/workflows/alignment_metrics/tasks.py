@@ -106,7 +106,7 @@ def collect_gc(infiles, outfile, tempdir, yamlfile=None):
 
 
 def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
-                    wgs_metrics, tempdir, merged_metrics):
+                    wgs_metrics, tempdir, merged_metrics, biobloom_count_metrics):
 
     helpers.makedirs(tempdir)
     sample_outputs = []
@@ -119,7 +119,7 @@ def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
         sample_outputs.append(outfile)
 
         collmet = CollectMetrics(wgs, insrt, flgstat,
-                                 mkdup, outfile, sample)
+                                 mkdup, outfile, sample, biobloom_count_metrics[sample])
         collmet.main()
 
     csvutils.concatenate_csv(sample_outputs, merged_metrics)
