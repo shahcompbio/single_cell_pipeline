@@ -140,10 +140,7 @@ def run_hmmcopy(
         hmmcopy_segs_files = os.path.join(hmmcopy_outdir, "segs.csv")
         hmmcopy_metrics_files = os.path.join(hmmcopy_outdir, "metrics.csv")
 
-        csvutils.prep_csv_files(
-            hmmcopy_reads_file, corrected_reads_filename[multiplier],
-            corrected_reads_filename[multiplier] + '.yaml'
-        )
+        csvutils.prep_csv_files(hmmcopy_reads_file, corrected_reads_filename[multiplier])
         csvutils.prep_csv_files(hmmcopy_params_files, parameters_filename[multiplier])
         csvutils.prep_csv_files(hmmcopy_segs_files, segments_filename[multiplier])
         csvutils.prep_csv_files(hmmcopy_metrics_files, metrics_filename[multiplier])
