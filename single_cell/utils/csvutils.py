@@ -11,10 +11,10 @@ import yaml
 from single_cell.utils import helpers
 
 
-def read_csv_and_yaml_by_chunks(infile, dtypes, columns, chunksize, header):
+def read_csv_and_yaml_by_chunks(infile, dtypes, columns, chunksize, header, sep=','):
     dfs = pd.read_csv(
         infile, compression=helpers.get_compression_type_pandas(infile),
-        dtype=dtypes, header=header, chunksize=chunksize
+        dtype=dtypes, header=header, chunksize=chunksize, sep=sep
     )
     for data in dfs:
         if header is None:
@@ -24,24 +24,24 @@ def read_csv_and_yaml_by_chunks(infile, dtypes, columns, chunksize, header):
         yield data
 
 
-def read_csv_and_yaml(infile, chunksize=None):
+def read_csv_and_yaml(infile, chunksize=None, sep=','):
     with open(infile) as f:
         first_line = f.readline()
         if len(first_line) == 0:
             return
 
-    header, dtypes, columns = get_metadata(infile)
+    header, dtypes, columns = get_metadata(infile, sep=sep)
 
     # if header exists then use first line (0) as header
     header = 0 if header else None
 
     if chunksize:
-        return read_csv_and_yaml_by_chunks(infile, dtypes, columns, chunksize, header)
+        return read_csv_and_yaml_by_chunks(infile, dtypes, columns, chunksize, header, sep=sep)
     else:
         try:
             data = pd.read_csv(
                 infile, compression=helpers.get_compression_type_pandas(infile),
-                dtype=dtypes, header=header
+                dtype=dtypes, header=header, sep=sep
             )
         except pd.errors.EmptyDataError:
             data = pd.DataFrame(columns=columns)
@@ -52,10 +52,10 @@ def read_csv_and_yaml(infile, chunksize=None):
         return data
 
 
-def get_metadata(filepath):
+def get_metadata(filepath, sep=','):
     if not os.path.exists(filepath + '.yaml'):
         with helpers.getFileHandle(filepath) as inputfile:
-            columns = inputfile.readline().strip().split(',')
+            columns = inputfile.readline().strip().split(sep)
             header = True
             dtypes = None
             return header, dtypes, columns
@@ -178,7 +178,7 @@ def annotate_metrics(infile, sample_info, outfile, yamlfile=None):
     write_dataframe_to_csv_and_yaml(metrics_df, outfile)
 
 
-def concatenate_csv(in_filenames, out_filename, nan_val='NA', key_column=None):
+def concatenate_csv(in_filenames, out_filename, nan_val='NA', key_column=None, sep=','):
     data = []
 
     if not isinstance(in_filenames, dict):
@@ -189,7 +189,7 @@ def concatenate_csv(in_filenames, out_filename, nan_val='NA', key_column=None):
             first_line = f.readline()
             if len(first_line) == 0:
                 continue
-        df = read_csv_and_yaml(in_filename)
+        df = read_csv_and_yaml(in_filename, sep=sep)
         if key_column is not None:
             df[key_column] = str(key)
         data.append(df)
