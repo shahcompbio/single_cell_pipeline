@@ -3,7 +3,7 @@ package:
   version: '0.2.18'
 
 source:
-  git_url: https://amcpherson@svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git
+  git_url: https://github.com/shahcompbio/single_cell_pipeline.git
   git_rev: v0.2.18
 
 build:
