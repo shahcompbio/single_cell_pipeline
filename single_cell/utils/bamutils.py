@@ -154,16 +154,27 @@ def bam_view(bam, output, region, **kwargs):
     pypeliner.commandline.execute(*cmd, **kwargs)
 
 
-def run_biobloom(fastq1, fastq2, output_dir, docker_image):
+def run_biobloom(fastq1, fastq2, docker_image):
+
+    print "\n\n\n\n\n\n\n\n\n\n\n\nBIOBLOOM\n\n\n\n\n\n\n\n\n\n\n\n"
+    print fastq1
+    print fastq2
+    biobloomcategorizer = "/home/linuxbrew/.linuxbrew/Cellar/biobloomtools/2.3.2/bin/biobloomcategorizer"
+
     cmd = [
-        "biobloomcategorizer",
-        "-t",
-        "20",
-        "\"references/GCF_002021735.1_Okis_V1_genomic.bf references/GRCh37-lite.bf references/mm10_build38_mouse.bf\"",
+        biobloomcategorizer,
+        "--fq",
+        "-e",
+        "-p",
+        "./biobloom_output/biobloom",
+        "-f",
+        "/refdata/GCF_002021735.1_Okis_V1_genomic.bf /refdata/GRCh37-lite.bf /refdata/mm10_build38_mouse.bf",
         fastq1,
         fastq2,
-        "-p",
-        output_dir,
-        "--fq"
     ]
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+
+    print cmd
+
+    pypeliner.commandline.execute(*cmd)
+    print "\n\n\n\n\nBIOBLOOM GENERATED\n\n\n\n\n"
+    return "./biobloom_output/biobloom_GRCh37-lite_1.fq", "./biobloom_output/biobloom_GRCh37-lite_2.fq"
