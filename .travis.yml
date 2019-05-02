@@ -1,0 +1,34 @@
+# Only build tags
+if: tag IS present
+language: python
+python:
+- 2.7
+env:
+  matrix:
+  - PACKAGENAME=single_cell_pipeline
+before_install:
+- echo $TEST
+- wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+- chmod +x miniconda.sh
+- "./miniconda.sh -b"
+- export PATH=$HOME/miniconda2/bin:$PATH
+- conda update --yes -q conda
+- conda config --set always_yes true
+- conda config --set anaconda_upload no
+- conda config --add channels https://conda.anaconda.org/dranew
+- conda config --add channels 'bioconda'
+install:
+- conda install -q python=$TRAVIS_PYTHON_VERSION conda-build anaconda-client setuptools
+  nose numpy cython
+- conda build conda/$PACKAGENAME
+- conda install --use-local $PACKAGENAME
+script:
+- python -c "import single_cell"
+after_success:
+- chmod +x ./deploy_anaconda.sh
+deploy:
+- provider: script
+  script: "./deploy_anaconda.sh"
+  on:
+    tags: true
+  skip_cleanup: true

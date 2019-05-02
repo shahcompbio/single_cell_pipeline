@@ -28,12 +28,7 @@
 	```
 5.  Install Dependencies + Biowrappers
 	```
-	conda install --file single_cell_pipeline/INSTALL/conda_packages.txt
-	pip install git+https://bitbucket.org/aroth85/biowrappers/src/dev/
-	```
-6. install single_cell pipeline
-	```
-	pip install git+https://github.com/shahcompbio/single_cell_pipeline.git
+	conda install -c shahcompbio single_cell_pipeline
 	```
 7. download test data
 	```
