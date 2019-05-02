@@ -17,6 +17,10 @@ before_install:
 - conda config --set anaconda_upload no
 - conda config --add channels https://conda.anaconda.org/dranew
 - conda config --add channels 'bioconda'
+- conda config --add channels 'r'
+- conda config --add channels 'conda-forge'
+- conda config --add channels https://conda.anaconda.org/aroth85
+- conda config --add channels https://conda.anaconda.org/shahcompbio
 install:
 - conda install -q python=$TRAVIS_PYTHON_VERSION conda-build anaconda-client setuptools
   nose numpy cython
