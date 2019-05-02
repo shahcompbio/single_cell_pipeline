@@ -25,7 +25,7 @@ requirements:
     - pyyaml
     - seaborn
     - statsmodels
-
+    - scikit-learn
 about:
   home: http://shahlab.ca
   summary: 'Bioinformatics pipeline for single cell analysis'
