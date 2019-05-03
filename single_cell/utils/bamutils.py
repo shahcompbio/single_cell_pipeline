@@ -162,11 +162,11 @@ def run_biobloom(fastq1, fastq2, docker_image):
     biobloomcategorizer = "/home/linuxbrew/.linuxbrew/Cellar/biobloomtools/2.3.2/bin/biobloomcategorizer"
 
     cmd = [
-        biobloomcategorizer,
+        "biobloomcategorizer",
         "--fq",
         "-e",
         "-p",
-        "./biobloom_output/biobloom",
+        "/biobloom_output/biobloom",
         "-f",
         "/refdata/GCF_002021735.1_Okis_V1_genomic.bf /refdata/GRCh37-lite.bf /refdata/mm10_build38_mouse.bf",
         fastq1,
@@ -175,6 +175,6 @@ def run_biobloom(fastq1, fastq2, docker_image):
 
     print cmd
 
-    pypeliner.commandline.execute(*cmd)
+    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
     print "\n\n\n\n\nBIOBLOOM GENERATED\n\n\n\n\n"
     return "./biobloom_output/biobloom_GRCh37-lite_1.fq", "./biobloom_output/biobloom_GRCh37-lite_2.fq"

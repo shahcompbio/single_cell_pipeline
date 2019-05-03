@@ -146,7 +146,7 @@ def align_pe(fastq1, fastq2, output, reports, metrics, tempdir,
              reference, trim, centre, sample_info, cell_id,
              lane_id, library_id, aligner, containers, adapter,
              adapter2):
-
+    print "\n\n\n\n\nALIGN PE\n\n\n\n\n"
     fastq1, fastq2 = run_biobloom(fastq1, fastq1, containers['biobloom'])
     readgroup = get_readgroup(
         lane_id,
