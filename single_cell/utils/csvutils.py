@@ -93,7 +93,7 @@ def write_dataframe_to_csv_and_yaml(df, outfile, header=False):
     if compression == 'h5':
         df.to_hdf5(outfile)
     else:
-        df.to_csv(outfile, compression=compression, header=False, na_rep='NA', index=False)
+        df.to_csv(outfile, compression=compression, header=header, na_rep='NA', index=False)
         generate_yaml_for_csv(df, outfile + '.yaml', header=header)
 
 
@@ -178,7 +178,7 @@ def annotate_metrics(infile, sample_info, outfile, yamlfile=None):
     write_dataframe_to_csv_and_yaml(metrics_df, outfile)
 
 
-def concatenate_csv(in_filenames, out_filename, nan_val='NA', key_column=None, sep=','):
+def concatenate_csv(in_filenames, out_filename, nan_val='NA', key_column=None, sep=',', header=False):
     data = []
 
     if not isinstance(in_filenames, dict):
@@ -196,7 +196,7 @@ def concatenate_csv(in_filenames, out_filename, nan_val='NA', key_column=None, s
     data = pd.concat(data, ignore_index=True)
     data = data.fillna(nan_val)
 
-    write_dataframe_to_csv_and_yaml(data, out_filename)
+    write_dataframe_to_csv_and_yaml(data, out_filename, header=header)
 
 
 def extrapolate_types_from_yaml_files(csv_files, outputyaml):
@@ -228,7 +228,7 @@ def extrapolate_types_from_yaml_files(csv_files, outputyaml):
     write_to_yaml(header, merged_dtypes, cols, outputyaml)
 
 
-def concatenate_csv_files_quick_lowmem(inputfiles, output):
+def concatenate_csv_files_quick_lowmem(inputfiles, output, header=False):
     if isinstance(inputfiles, dict):
         inputfiles = inputfiles.values()
 
