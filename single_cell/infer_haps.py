@@ -221,11 +221,12 @@ def extract_allele_readcounts(
         func='single_cell.utils.csvutils.concatenate_csv',
         args=(
             mgd.TempInputFile('allele_counts.tsv', 'cell_id'),
-            mgd.OutputFile(allele_counts_filename),
+            mgd.OutputFile(allele_counts_filename, extensions=['.yaml']),
         ),
         kwargs={
             'key_column': 'cell_id',
             'sep': '\t',
+            'header': True
         },
     )
 

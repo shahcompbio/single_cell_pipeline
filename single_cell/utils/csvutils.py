@@ -87,14 +87,14 @@ def load_csv_metadata(csvfile):
         return yaml.load(yamlinput)
 
 
-def write_dataframe_to_csv_and_yaml(df, outfile):
+def write_dataframe_to_csv_and_yaml(df, outfile, header=False):
     compression = helpers.get_compression_type_pandas(outfile)
 
     if compression == 'h5':
         df.to_hdf5(outfile)
     else:
         df.to_csv(outfile, compression=compression, header=False, na_rep='NA', index=False)
-        generate_yaml_for_csv(df, outfile + '.yaml')
+        generate_yaml_for_csv(df, outfile + '.yaml', header=header)
 
 
 def generate_yaml_for_csv(filepath, outputyaml, header=False, columns=None):
@@ -240,7 +240,7 @@ def concatenate_csv_files_quick_lowmem(inputfiles, output):
     extrapolate_types_from_yaml_files(inputfiles, output+'.yaml')
 
 
-def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', suffixes=None):
+def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', suffixes=None, header=False):
     data = []
 
     if isinstance(in_filenames, dict):
@@ -254,7 +254,7 @@ def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', suffixes=None):
     data = merge_frames(data, how, on, suffixes=suffixes)
     data = data.fillna(nan_val)
 
-    write_dataframe_to_csv_and_yaml(data, out_filename)
+    write_dataframe_to_csv_and_yaml(data, out_filename, header=header)
 
 
 def merge_frames(frames, how, on, suffixes=None):
