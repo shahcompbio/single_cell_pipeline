@@ -162,6 +162,7 @@ def run_biobloom(fastq1, fastq2, docker_image):
     biobloomcategorizer = "/home/linuxbrew/.linuxbrew/Cellar/biobloomtools/2.3.2/bin/biobloomcategorizer"
 
     cmd = [
+        "sudo",
         "biobloomcategorizer",
         "--fq",
         "-e",
