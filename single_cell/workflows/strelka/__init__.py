@@ -1,6 +1,6 @@
-from pypeliner.workflow import Workflow
 import pypeliner
-from single_cell.utils import helpers
+import pypeliner.managed as mgd
+from pypeliner.workflow import Workflow
 
 default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 
@@ -12,18 +12,15 @@ def create_strelka_workflow(
         indel_vcf_file,
         snv_vcf_file,
         config,
-        chromosomes=default_chromosomes,
-        split_size=int(1e7),
-        use_depth_thresholds=True):
-
+        chromosomes=default_chromosomes
+):
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
            'num_retry': 3, 'docker_image': config['docker']['single_cell_pipeline']}
 
-    strelka_docker = {'docker_image': config['docker']['strelka']}
-    vcftools_docker = {'docker_image': config['docker']['vcftools']}
-
     regions = list(normal_bam_file.keys())
     assert set(tumour_bam_file.keys()) == set(regions)
+
+    regions = [val for val in regions if val.startswith('1-')]
 
     workflow = Workflow(ctx=ctx)
 
@@ -33,7 +30,7 @@ def create_strelka_workflow(
     )
 
     workflow.setobj(
-        obj=pypeliner.managed.OutputChunks('region'),
+        obj=pypeliner.managed.OutputChunks('regions'),
         value=regions,
     )
 
@@ -44,8 +41,8 @@ def create_strelka_workflow(
         args=(
             ref_genome_fasta_file,
             pypeliner.managed.TempOutputFile('ref_base_counts.tsv'),
-            strelka_docker
-        )
+        ),
+        kwargs={'docker_image': config['docker']['strelka']}
     )
 
     workflow.transform(
@@ -54,127 +51,94 @@ def create_strelka_workflow(
         func="single_cell.workflows.strelka.tasks.get_known_chromosome_sizes",
         ret=pypeliner.managed.TempOutputObj('known_sizes'),
         args=(
-              pypeliner.managed.TempInputFile('ref_base_counts.tsv'),
-              chromosomes
+            pypeliner.managed.TempInputFile('ref_base_counts.tsv'),
+            chromosomes
         )
     )
 
     workflow.transform(
-        name='call_somatic_variants',
-        ctx=dict(mem=4, disk=40),
-        func="single_cell.workflows.strelka.tasks.call_somatic_variants",
-        axes=('region',),
+        name='get_chromosome_depths',
+        axes=('regions',),
+        func="single_cell.workflows.strelka.tasks.get_chromosome_depth",
         args=(
-            pypeliner.managed.InputFile("normal.split.bam", "region", fnames=normal_bam_file, extensions=['.bai']),
-            pypeliner.managed.InputFile("merged_bam", "region", fnames=tumour_bam_file, extensions=['.bai']),
-            pypeliner.managed.TempInputObj('known_sizes'),
+            mgd.InputInstance('regions'),
+            pypeliner.managed.InputFile("normal.split.bam", "regions", fnames=normal_bam_file, extensions=['.bai']),
             ref_genome_fasta_file,
-            pypeliner.managed.TempOutputFile('somatic.indels.unfiltered.vcf', 'region'),
-            pypeliner.managed.TempOutputFile('somatic.indels.unfiltered.vcf.window', 'region'),
-            pypeliner.managed.TempOutputFile('somatic.snvs.unfiltered.vcf', 'region'),
-            pypeliner.managed.TempOutputFile('strelka.stats', 'region'),
-            pypeliner.managed.InputInstance("region"),
-            strelka_docker
+            mgd.TempOutputFile('chrom_depth.txt', 'regions'),
         ),
+        kwargs={'docker_image': config['docker']['strelka']},
     )
 
     workflow.transform(
-        name='add_indel_filters',
-        axes=('chrom',),
-        ctx=dict(mem=4),
-        func="single_cell.workflows.strelka.tasks.filter_indel_file_list",
+        name='merge_chromosome_depths',
+        func="single_cell.workflows.strelka.tasks.merge_chromosome_depths",
         args=(
-            pypeliner.managed.TempInputFile('somatic.indels.unfiltered.vcf', 'region'),
-            pypeliner.managed.TempInputFile('strelka.stats', 'region'),
-            pypeliner.managed.TempInputFile('somatic.indels.unfiltered.vcf.window', 'region'),
-            pypeliner.managed.TempOutputFile('somatic.indels.filtered.vcf', 'chrom'),
-            pypeliner.managed.InputInstance("chrom"),
-            pypeliner.managed.TempInputObj('known_sizes'),
-            regions
-        ),
-        kwargs={'use_depth_filter': use_depth_thresholds}
+            mgd.TempInputFile('chrom_depth.txt', 'regions'),
+            mgd.TempOutputFile('merged_chrom_depth.txt')
+        )
     )
 
     workflow.transform(
-        name='add_snv_filters',
-        axes=('chrom',),
-        ctx=dict(mem=4),
-        func="single_cell.workflows.strelka.tasks.filter_snv_file_list",
+        name='call_genome_segment',
+        axes=('regions',),
+        func="single_cell.workflows.strelka.tasks.call_genome_segment",
         args=(
-            pypeliner.managed.TempInputFile('somatic.snvs.unfiltered.vcf', 'region'),
-            pypeliner.managed.TempInputFile('strelka.stats', 'region'),
-            pypeliner.managed.TempOutputFile('somatic.snvs.filtered.vcf', 'chrom'),
-            pypeliner.managed.InputInstance("chrom"),
-            pypeliner.managed.TempInputObj('known_sizes'),
-            regions,
+            mgd.TempInputFile('merged_chrom_depth.txt'),
+            pypeliner.managed.InputFile("normal.split.bam", "regions", fnames=normal_bam_file, extensions=['.bai']),
+            pypeliner.managed.InputFile("merged_bam", "regions", fnames=tumour_bam_file, extensions=['.bai']),
+            ref_genome_fasta_file,
+            mgd.TempOutputFile('indels.vcf', 'regions'),
+            mgd.TempOutputFile('snvs.vcf', 'regions'),
+            mgd.TempSpace('call_genome_segment_tmp', 'regions'),
+            mgd.InputInstance('regions'),
+            mgd.TempInputObj('known_sizes'),
         ),
-        kwargs={'use_depth_filter': use_depth_thresholds}
+        kwargs={
+            'is_exome': False,
+            'docker_image': config['docker']['strelka']
+        }
     )
 
     workflow.transform(
         name='merge_indels',
-        ctx=dict(mem=4),
-        func="single_cell.workflows.strelka.vcf_tasks.concatenate_vcf",
+        func='single_cell.utils.vcfutils.concatenate_vcf',
         args=(
-            pypeliner.managed.TempInputFile('somatic.indels.filtered.vcf', 'chrom'),
-            pypeliner.managed.TempOutputFile('somatic.indels.filtered.vcf.gz'),
-            pypeliner.managed.TempSpace("merge_indels_temp"),
-            vcftools_docker
-        )
+            mgd.TempInputFile('indels.vcf', 'regions'),
+            mgd.TempOutputFile('indels.vcf.gz', extensions=['.tbi', '.csi']),
+            mgd.TempSpace("indels_merge")
+        ),
+        kwargs={'docker_image': config['docker']['vcftools']}
     )
 
     workflow.transform(
         name='merge_snvs',
-        ctx=dict(mem=4),
-        func="single_cell.workflows.strelka.vcf_tasks.concatenate_vcf",
+        func='single_cell.utils.vcfutils.concatenate_vcf',
         args=(
-            pypeliner.managed.TempInputFile('somatic.snvs.filtered.vcf', 'chrom'),
-            pypeliner.managed.TempOutputFile('somatic.snvs.filtered.vcf.gz'),
-            pypeliner.managed.TempSpace("merge_snvs_temp"),
-            vcftools_docker
-        )
+            mgd.TempInputFile('snvs.vcf', 'regions'),
+            mgd.TempOutputFile('snvs.vcf.gz', extensions=['.tbi', '.csi']),
+            mgd.TempSpace("snvs_merge")
+        ),
+        kwargs={'docker_image': config['docker']['vcftools']}
     )
 
     workflow.transform(
-        name='filter_indels',
-        ctx=dict(mem=4),
-        func="single_cell.workflows.strelka.vcf_tasks.filter_vcf",
+        name='filter_vcf_indel',
+        func='single_cell.utils.vcfutils.filter_vcf',
         args=(
-            pypeliner.managed.TempInputFile('somatic.indels.filtered.vcf.gz'),
-            pypeliner.managed.TempOutputFile('somatic.indels.passed.vcf')
-        )
+            mgd.TempInputFile('indels.vcf.gz', extensions=['.tbi', '.csi']),
+            mgd.OutputFile(indel_vcf_file, extensions=['.tbi', '.csi']),
+        ),
+        kwargs={'docker_image': config['docker']['vcftools']}
     )
 
     workflow.transform(
-        name='filter_snvs',
-        ctx=dict(mem=4),
-        func="single_cell.workflows.strelka.vcf_tasks.filter_vcf",
+        name='filter_vcf_snv',
+        func='single_cell.utils.vcfutils.filter_vcf',
         args=(
-            pypeliner.managed.TempInputFile('somatic.snvs.filtered.vcf.gz'),
-            pypeliner.managed.TempOutputFile('somatic.snvs.passed.vcf')
-        )
-    )
-
-    workflow.transform(
-        name='finalise_indels',
-        ctx=dict(mem=4),
-        func="single_cell.workflows.strelka.vcf_tasks.finalise_vcf",
-        args=(
-            pypeliner.managed.TempInputFile('somatic.indels.passed.vcf'),
-            pypeliner.managed.OutputFile(indel_vcf_file, extensions=['.tbi', '.csi']),
-            vcftools_docker
-        )
-    )
-
-    workflow.transform(
-        name='finalise_snvs',
-        ctx=dict(mem=2),
-        func="single_cell.workflows.strelka.vcf_tasks.finalise_vcf",
-        args=(
-            pypeliner.managed.TempInputFile('somatic.snvs.passed.vcf'),
-            pypeliner.managed.OutputFile(snv_vcf_file, extensions=['.tbi', '.csi']),
-            vcftools_docker
-        )
+            mgd.TempInputFile('snvs.vcf.gz', extensions=['.tbi', '.csi']),
+            mgd.OutputFile(snv_vcf_file, extensions=['.tbi', '.csi']),
+        ),
+        kwargs={'docker_image': config['docker']['vcftools']}
     )
 
     return workflow
