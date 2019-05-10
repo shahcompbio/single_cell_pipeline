@@ -1,7 +1,6 @@
 import pypeliner
 from cmdline import parse_args
-from align import align_workflow
-from hmmcopy import hmmcopy_workflow
+from qc import qc_workflow
 from aneufinder import aneufinder_workflow
 from merge_bams import merge_bams_workflow
 from variant_calling import variant_calling_workflow
@@ -40,11 +39,8 @@ def main():
 
     workflow = None
 
-    if args["which"] == "align":
-        workflow = align_workflow(args)
-
-    if args["which"] == "hmmcopy":
-        workflow = hmmcopy_workflow(args)
+    if args["which"] == "qc":
+        workflow = qc_workflow(args)
 
 #     if args["which"] == "copyclone":
 #         pyp = pypeliner.app.Pypeline(config=args)
