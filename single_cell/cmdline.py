@@ -92,35 +92,37 @@ def parse_args():
     #===========
     # align
     #===========
-    align = add_global_args(subparsers.add_parser("align"))
-    align.set_defaults(which='align')
+    qc = add_global_args(subparsers.add_parser("qc"))
+    qc.set_defaults(which='qc')
 
-    align.add_argument('--realign',
+    qc.add_argument('--realign',
                        action='store_true',
                        help='''will run local realignment on all cells in batch mode''')
 
-    align.add_argument("--library_id",
+    qc.add_argument("--library_id",
                        required=True,
                        help='''Library id.''')
 
-    align.add_argument("--metrics_only",
+    qc.add_argument("--alignment",
+                       default=False,
+                       action="store_true",
+                       help='''run alignment workflow''')
+
+    qc.add_argument("--alignment_metrics_only",
                        default=False,
                        action="store_true",
                        help='''only run alignment metrics extraction, assumes that bams are available''')
 
+    qc.add_argument("--hmmcopy",
+                       default=False,
+                       action="store_true",
+                       help='''run hmmcopy''')
 
-    #===========
-    # hmmcopy
-    #===========
-    hmmcopy = add_global_args(subparsers.add_parser("hmmcopy"))
-    hmmcopy.set_defaults(which='hmmcopy')
+    qc.add_argument("--annotation",
+                       default=False,
+                       action="store_true",
+                       help='''run annotation workflow''')
 
-    hmmcopy.add_argument("--library_id",
-                         required=True,
-                         help='''Library id.''')
-
-    hmmcopy.add_argument("--alignment_metrics",
-                         help='''alignment metrics h5 file''')
 
     #===========
     # copyclone
