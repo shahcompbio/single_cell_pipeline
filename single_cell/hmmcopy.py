@@ -42,20 +42,12 @@ def hmmcopy_workflow(args):
 
         reads_csvs = os.path.join(
             results_dir, '{0}_multiplier{1}_reads.csv.gz'.format(lib, '{multiplier}'))
-        reads_yaml = os.path.join(
-            results_dir, '{0}_multiplier{1}_reads.csv.gz.yaml'.format(lib, '{multiplier}'))
         segs_csvs = os.path.join(
             results_dir, '{0}_multiplier{1}_segments.csv.gz'.format(lib, '{multiplier}'))
-        segs_yaml = os.path.join(
-            results_dir, '{0}_multiplier{1}_segments.csv.gz.yaml'.format(lib, '{multiplier}'))
         params_csvs = os.path.join(
             results_dir, '{0}_multiplier{1}_params.csv.gz'.format(lib, '{multiplier}'))
-        params_yaml = os.path.join(
-            results_dir, '{0}_multiplier{1}_params.csv.gz.yaml'.format(lib, '{multiplier}'))
         metrics_csvs = os.path.join(
             results_dir, '{0}_multiplier{1}_metrics.csv.gz'.format(lib, '{multiplier}'))
-        metrics_yaml = os.path.join(
-            results_dir, '{0}_multiplier{1}_metrics.csv.gz.yaml'.format(lib, '{multiplier}'))
         igv_csvs = os.path.join(
             results_dir, '{0}_multiplier{1}_igv_segments.seg'.format(lib, '{multiplier}'))
 
@@ -75,8 +67,6 @@ def hmmcopy_workflow(args):
 
         baseimage = params['docker']['single_cell_pipeline']
 
-        sample_info = helpers.get_sample_info(args["input_yaml"])
-
         workflow.subworkflow(
             name='hmmcopy_workflow_' + params_tag,
             func=hmmcopy.create_hmmcopy_workflow,
@@ -84,13 +74,9 @@ def hmmcopy_workflow(args):
             args=(
                 mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files, extensions=['.bai']),
                 mgd.OutputFile("reads.csv.gz", 'multiplier', template=reads_csvs, axes_origin=[]),
-                mgd.OutputFile("reads.yaml", 'multiplier', template=reads_yaml, axes_origin=[]),
                 mgd.OutputFile("segs.csv.gz", 'multiplier', template=segs_csvs, axes_origin=[]),
-                mgd.OutputFile("segs.yaml", 'multiplier', template=segs_yaml, axes_origin=[]),
                 mgd.OutputFile("metrics.csv.gz", 'multiplier', template=metrics_csvs, axes_origin=[]),
-                mgd.OutputFile("metrics.yaml", 'multiplier', template=metrics_yaml, axes_origin=[]),
                 mgd.OutputFile("params.csv.gz", 'multiplier', template=params_csvs, axes_origin=[]),
-                mgd.OutputFile("params.yaml", 'multiplier', template=params_yaml, axes_origin=[]),
                 mgd.OutputFile("igv.seg", 'multiplier', template=igv_csvs, axes_origin=[]),
                 mgd.OutputFile(segs_pdf),
                 mgd.OutputFile(bias_pdf),
@@ -100,9 +86,7 @@ def hmmcopy_workflow(args):
                 mgd.OutputFile(kernel_density_pdf),
                 cellids,
                 params,
-                sample_info
             ),
-            kwargs={'alignment_metrics': args['alignment_metrics']}
         )
 
         results = {
@@ -141,6 +125,5 @@ def hmmcopy_workflow(args):
                 metadata
             )
         )
-
 
     return workflow
