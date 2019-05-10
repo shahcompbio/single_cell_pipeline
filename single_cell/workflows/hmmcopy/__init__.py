@@ -10,11 +10,10 @@ from single_cell.utils import helpers
 
 
 def create_hmmcopy_workflow(
-        bam_file, reads, reads_yaml, segs, segs_yaml, metrics, metrics_yaml,
-        params, params_yaml, igv_seg_filename, segs_pdf, bias_pdf,
-        plot_heatmap_ec_output, plot_heatmap_ec_filt_output,
-        plot_metrics_output, plot_kernel_density_output, cell_ids,
-        hmmparams, sample_info, alignment_metrics=None
+        bam_file, reads, segs, metrics, params, igv_seg_filename,
+        segs_pdf, bias_pdf, plot_heatmap_ec_output,
+        plot_heatmap_ec_filt_output, plot_metrics_output,
+        plot_kernel_density_output, cell_ids, hmmparams
 ):
     chromosomes = hmmparams["chromosomes"]
 
@@ -47,10 +46,6 @@ def create_hmmcopy_workflow(
         obj=mgd.OutputChunks('cell_id', 'multiplier'),
         value=allfiles,
     )
-
-    workflow.setobj(
-        obj=mgd.TempOutputObj('sampleinfo', 'cell_id', axes_origin=[]),
-        value=sample_info)
 
     workflow.transform(
         name='run_hmmcopy',
@@ -126,35 +121,15 @@ def create_hmmcopy_workflow(
         ),
     )
 
-    annotation_input = mgd.TempInputFile("hmm_metrics.csv.gz", "multiplier", extensions=['.yaml'])
-    if alignment_metrics:
-        annotation_input = mgd.TempInputFile("hmmcopy_quality_metrics.csv.gz", "multiplier", extensions=['.yaml'])
-        workflow.transform(
-            name="add_quality",
-            ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-            axes=('multiplier',),
-            func="single_cell.workflows.hmmcopy.tasks.add_quality",
-            args=(
-                mgd.TempInputFile("hmm_metrics.csv.gz", 'multiplier', extensions=['.yaml']),
-                mgd.InputFile(alignment_metrics, extensions=['.yaml']),
-                multipliers,
-                mgd.TempOutputFile("hmmcopy_quality_metrics.csv.gz", "multiplier", extensions=['.yaml']),
-                hmmparams['classifier_training_data'],
-                mgd.TempSpace("hmmcopy_classify_tempdir", 'multiplier')
-            ),
-        )
-
     workflow.transform(
         name='annotate_metrics_with_info_and_clustering',
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         axes=('multiplier',),
-        func="single_cell.workflows.hmmcopy.tasks.annotate_metrics",
+        func="single_cell.workflows.hmmcopy.tasks.add_clustering_order",
         args=(
             mgd.TempInputFile("reads.csv.gz", 'multiplier', extensions=['.yaml']),
-            annotation_input,
+            mgd.TempInputFile("hmm_metrics.csv.gz", "multiplier", extensions=['.yaml']),
             mgd.TempOutputFile("annotated_metrics.csv.gz", 'multiplier', extensions=['.yaml']),
-            sample_info,
-            cell_ids,
         ),
         kwargs={
             'chromosomes': hmmparams["chromosomes"],

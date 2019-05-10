@@ -177,8 +177,8 @@ def concatenate_csv(inputs, output, multipliers, cells, low_memory=False):
             )
 
 
-def annotate_metrics(
-        reads, metrics, output, sample_info, cells, chromosomes=None):
+def add_clustering_order(
+        reads, metrics, output, chromosomes=None):
     """
     adds sample information to metrics in place
     """
@@ -190,12 +190,9 @@ def annotate_metrics(
     )
 
     for cellid, value in order.iteritems():
-        cellinfo = sample_info[cellid]
-        value.update(cellinfo)
 
-        cell_info = order[cellid]
-        for colname, value in cell_info.iteritems():
-            metrics.loc[metrics["cell_id"] == cellid, colname] = value
+        cell_order = order[cellid]
+        metrics.loc[metrics['cell_id'] == cellid, 'order'] = cell_order
 
     csvutils.write_dataframe_to_csv_and_yaml(metrics, output)
 
