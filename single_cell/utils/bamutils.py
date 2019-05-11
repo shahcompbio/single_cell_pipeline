@@ -177,4 +177,4 @@ def run_biobloom(fastq1, fastq2, docker_image):
 
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
     print "\n\n\n\n\nBIOBLOOM GENERATED\n\n\n\n\n"
-    return "./biobloom_output/biobloom_GRCh37-lite_1.fq", "./biobloom_output/biobloom_GRCh37-lite_2.fq"
+    return "/biobloom_output/biobloom_GRCh37-lite_1.fq", "/biobloom_output/biobloom_GRCh37-lite_2.fq"
