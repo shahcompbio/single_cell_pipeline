@@ -320,6 +320,10 @@ def destruct_multi_sample_workflow(
     workflow.set_filenames('breakpoints_library.csv', 'sample_id', 'library_id', fnames=breakpoints_library_csv)
     workflow.set_filenames('cell_counts.csv', 'sample_id', 'library_id', fnames=cell_counts_csv)
 
+    if isinstance(normal_bam, dict):
+        workflow.set_filenames('normal_cells.bam', 'sample_id', 'cell_id', fnames=normal_bam)
+        normal_bam = mgd.InputFile('normal_cells.bam', 'sample_id', 'cell_id', extensions=['.bai'])
+
     workflow.subworkflow(
         name='normal_preprocess_destruct',
         func='single_cell.workflows.destruct_singlecell.destruct_preprocess_workflow',
