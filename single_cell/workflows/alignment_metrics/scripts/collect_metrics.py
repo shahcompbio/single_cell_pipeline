@@ -181,7 +181,15 @@ class CollectMetrics(object):
         std_dev_ins_size = 0 if std_dev_ins_size == '?' else std_dev_ins_size
 
         return median_ins_size, mean_ins_size, std_dev_ins_size
-    
+
+    def extract_biobloom_read_count(self):
+        filters = [
+            "/refdata/GCF_002021735.1_Okis_V1_genomic.bf",
+            "/refdata/GRCh37-lite.bf",
+            "/refdata/mm10_build38_mouse.bf"
+        ]
+
+        return sum(1 for l in open(filters[0]))/4, sum(1 for l in open(filters[1]))/4, sum(1 for l in open(filters[2]))/4
     
     def write_data(self, header, data):
         """
@@ -206,15 +214,18 @@ class CollectMetrics(object):
         duplication_metrics = self.extract_duplication_metrics()
         flagstat_metrics = self.extract_flagstat_metrics()
         wgs_metrics = self.extract_wgs_metrics()
+        biobloom_count_metrics = self.extract_biobloom_read_count()
     
         header = ['cell_id', 'unpaired_mapped_reads',
                   'paired_mapped_reads', 'unpaired_duplicate_reads',
                   'paired_duplicate_reads', 'unmapped_reads', 'percent_duplicate_reads',
                   'estimated_library_size', 'total_reads', 'total_mapped_reads',
                   'total_duplicate_reads', 'total_properly_paired',
-                  'coverage_breadth', 'coverage_depth']
+                  'coverage_breadth', 'coverage_depth',
+                  'GCF_002021735.1_Okis_V1_genomic_count', 'GRCh37-lite_count', 'mm10_build38_mouse_count'
+                  ]
 
-        output = (self.sample_id,) + duplication_metrics + flagstat_metrics + wgs_metrics
+        output = (self.sample_id,) + duplication_metrics + flagstat_metrics + wgs_metrics + biobloom_count_metrics
     
         if self.insert_metrics:
             insert_metrics = self.extract_insert_metrics()
