@@ -199,7 +199,7 @@ class CollectMetrics(object):
                sum(1 for l in open(files[2])), sum(1 for l in open(files[3])),\
                sum(1 for l in open(files[4])), sum(1 for l in open(files[5])),\
                sum(1 for l in open(files[6])), sum(1 for l in open(files[7]))
-    []
+
     def write_data(self, header, data):
         """
         write to the output
