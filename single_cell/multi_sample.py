@@ -31,7 +31,9 @@ def load_normal_data(yamldata):
     if 'normal_wgs' in yamldata:
         assert len(yamldata['normal_wgs'].keys()) == 1
         sample_id = yamldata['normal_wgs'].keys()[0]
-        cell_bams = yamldata['normal_wgs'].values()[0]['bam']
+        assert len(yamldata['normal_wgs'][sample_id].keys()) == 1
+        library_id = yamldata['normal_wgs'][sample_id].keys()[0]
+        cell_bams = yamldata['normal_wgs'][sample_id][library_id]['bam']
     else:
         cell_bams = {}
 
