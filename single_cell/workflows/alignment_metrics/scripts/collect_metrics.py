@@ -182,23 +182,9 @@ class CollectMetrics(object):
 
         return median_ins_size, mean_ins_size, std_dev_ins_size
 
-    def extract_biobloom_read_count(self):
-        files = [
-            "/biobloom_output/biobloom_GCF_002021735.1_Okis_V1_genomic_1.fq",
-            "/biobloom_output/biobloom_GCF_002021735.1_Okis_V1_genomic_2.fq",
-            "/biobloom_output/biobloom_mm10_build38_mouse_1.fq",
-            "/biobloom_output/biobloom_mm10_build38_mouse_2.fq",
-            "/biobloom_output/biobloom_multiMatch_1.fq",
-            "/biobloom_output/biobloom_multiMatch_2.fq",
-            "/biobloom_output/biobloom_noMatch_1.fq",
-            "/biobloom_output/biobloom_noMatch_2.fq",
-        ]
-
-
-        return sum(1 for l in open(files[0])), sum(1 for l in open(files[1])),\
-               sum(1 for l in open(files[2])), sum(1 for l in open(files[3])),\
-               sum(1 for l in open(files[4])), sum(1 for l in open(files[5])),\
-               sum(1 for l in open(files[6])), sum(1 for l in open(files[7]))
+    def merge_biobloom_metrics(self):
+        merged = pd.read_csv(self.output).merge(pd.read_csv("/biobloom_output/biobloom_count_metrics.csv"))
+        merged.to_csv(self.output, index=False)
 
     def write_data(self, header, data):
         """
@@ -256,6 +242,7 @@ class CollectMetrics(object):
             header += ['median_insert_size',
                        'mean_insert_size',
                        'standard_deviation_insert_size']
-    
+
         self.write_data(header, output)
+        self.merge_biobloom_metrics()
 
