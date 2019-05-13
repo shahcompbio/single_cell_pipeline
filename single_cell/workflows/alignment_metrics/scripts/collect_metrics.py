@@ -222,15 +222,6 @@ class CollectMetrics(object):
             'total_duplicate_reads', 'total_properly_paired',
             'coverage_breadth', 'coverage_depth',
         ]
-        #biobloom headers
-        header += [
-            'biobloom_salmon_1_count', 'biobloom_salmon_2_count',
-            'biobloom_mouse_1_count', 'biobloom_mouse_2_count',
-            'biobloom_multiMatch_1_count', 'biobloom_multiMatch_2_count',
-            'biobloom_noMatch_1_count', 'biobloom_salmonMatch_2_count',
-        ]
-
-        print "BIOBLOOM"
 
         output = (self.sample_id,) + duplication_metrics + flagstat_metrics + wgs_metrics
     
