@@ -188,10 +188,10 @@ class CollectMetrics(object):
             "/biobloom_output/biobloom_GCF_002021735.1_Okis_V1_genomic_2.fq",
             "/biobloom_output/biobloom_mm10_build38_mouse_1.fq",
             "/biobloom_output/biobloom_mm10_build38_mouse_2.fq",
-            "/biobloom_output/biobloom_multiMatch_1",
-            "/biobloom_output/biobloom_multiMatch_2",
-            "/biobloom_output/biobloom_noMatch_1",
-            "/biobloom_output/biobloom_noMatch_2",
+            "/biobloom_output/biobloom_multiMatch_1.fq",
+            "/biobloom_output/biobloom_multiMatch_2.fq",
+            "/biobloom_output/biobloom_noMatch_1.fq",
+            "/biobloom_output/biobloom_noMatch_2.fq",
         ]
 
 
