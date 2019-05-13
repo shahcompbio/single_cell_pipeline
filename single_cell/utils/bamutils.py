@@ -170,7 +170,7 @@ def biobloom_categorizer(fastq1, fastq2, docker_image):
     delete_biobloom_output("/biobloom_output")
 
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
-    return "/biobloom_output/biobloom_GRCh37-lite_1.fq", "/biobloom_output/biobloom_GRCh37-lite_2.fq", counts_metric
+    return "/biobloom_output/biobloom_GRCh37-lite_1.fq", "/biobloom_output/biobloom_GRCh37-lite_2.fq"
 
 def file_count(file1, file2):
     count_1 = sum(1 for l in open(file1))
