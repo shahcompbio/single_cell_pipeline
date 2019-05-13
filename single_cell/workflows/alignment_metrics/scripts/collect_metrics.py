@@ -195,10 +195,10 @@ class CollectMetrics(object):
         ]
 
 
-        return sum(1 for l in open(files[0])) or 0, sum(1 for l in open(files[1])) or 0,\
-               sum(1 for l in open(files[2])) or 0, sum(1 for l in open(files[3])) or 0,\
-               sum(1 for l in open(files[4])) or 0, sum(1 for l in open(files[5])) or 0,\
-               sum(1 for l in open(files[6])) or 0, sum(1 for l in open(files[7])) or 0
+        return sum(1 for l in open(files[0])), sum(1 for l in open(files[1])),\
+               sum(1 for l in open(files[2])), sum(1 for l in open(files[3])),\
+               sum(1 for l in open(files[4])), sum(1 for l in open(files[5])),\
+               sum(1 for l in open(files[6])), sum(1 for l in open(files[7]))
 
     def write_data(self, header, data):
         """
@@ -252,7 +252,6 @@ class CollectMetrics(object):
     
         if self.insert_metrics:
             insert_metrics = self.extract_insert_metrics()
-            output += insert_metrics
             output += insert_metrics
             header += ['median_insert_size',
                        'mean_insert_size',
