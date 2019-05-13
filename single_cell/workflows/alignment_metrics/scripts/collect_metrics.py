@@ -213,7 +213,6 @@ class CollectMetrics(object):
         duplication_metrics = self.extract_duplication_metrics()
         flagstat_metrics = self.extract_flagstat_metrics()
         wgs_metrics = self.extract_wgs_metrics()
-        biobloom_metrics = self.extract_biobloom_read_count()
     
         header = [
             'cell_id', 'unpaired_mapped_reads',
@@ -232,9 +231,8 @@ class CollectMetrics(object):
         ]
 
         print "BIOBLOOM"
-        print biobloom_metrics
 
-        output = (self.sample_id,) + duplication_metrics + flagstat_metrics + wgs_metrics + biobloom_metrics
+        output = (self.sample_id,) + duplication_metrics + flagstat_metrics + wgs_metrics
     
         if self.insert_metrics:
             insert_metrics = self.extract_insert_metrics()
