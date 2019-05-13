@@ -195,10 +195,10 @@ class CollectMetrics(object):
         ]
 
 
-        return sum(1 for l in open(files[0])), sum(1 for l in open(files[1])),\
-               sum(1 for l in open(files[2])), sum(1 for l in open(files[3])),\
-               sum(1 for l in open(files[4])), sum(1 for l in open(files[5])),\
-               sum(1 for l in open(files[6])), sum(1 for l in open(files[7]))
+        return sum(1 for l in open(files[0])) or 0, sum(1 for l in open(files[1])) or 0,\
+               sum(1 for l in open(files[2])) or 0, sum(1 for l in open(files[3])) or 0,\
+               sum(1 for l in open(files[4])) or 0, sum(1 for l in open(files[5])) or 0,\
+               sum(1 for l in open(files[6])) or 0, sum(1 for l in open(files[7])) or 0
 
     def write_data(self, header, data):
         """
