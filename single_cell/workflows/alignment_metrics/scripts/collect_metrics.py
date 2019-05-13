@@ -204,6 +204,10 @@ class CollectMetrics(object):
         """
         write to the output
         """
+
+        print header
+        print data
+
         assert len(header) == len(data)
         #replace empty vals with NA
         data = [v if v != '' else 'NA' for v in data]
@@ -240,6 +244,9 @@ class CollectMetrics(object):
             'biobloom_multiMatch_1_count', 'biobloom_multiMatch_2_count',
             'biobloom_noMatch_1_count', 'biobloom_salmonMatch_2_count',
         ]
+
+        print "BIOBLOOM"
+        print biobloom_metrics
 
         output = (self.sample_id,) + duplication_metrics + flagstat_metrics + wgs_metrics + biobloom_metrics
     
