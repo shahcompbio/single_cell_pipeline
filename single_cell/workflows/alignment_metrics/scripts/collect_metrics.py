@@ -71,7 +71,7 @@ class CollectMetrics(object):
         extract from flagstat
         """
     
-        df = pd.read_table(self.flagstat_metrics,
+        df = pd.read_csv(self.flagstat_metrics,
                            sep=r'\s\+\s0\s',
                            header=None,
                            names=['value', 'type'],
