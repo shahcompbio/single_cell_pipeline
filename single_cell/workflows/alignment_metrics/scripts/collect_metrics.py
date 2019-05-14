@@ -190,10 +190,6 @@ class CollectMetrics(object):
         """
         write to the output
         """
-
-        print header
-        print data
-
         assert len(header) == len(data)
         #replace empty vals with NA
         data = [v if v != '' else 'NA' for v in data]
