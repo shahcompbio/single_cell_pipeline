@@ -166,10 +166,8 @@ def biobloom_categorizer(fastq1, fastq2, docker_image):
         fastq1,
         fastq2,
     ]
-
-    delete_biobloom_output("/biobloom_output")
-
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    delete_biobloom_output("/biobloom_output")
     return "/biobloom_output/biobloom_GRCh37-lite_1.fq", "/biobloom_output/biobloom_GRCh37-lite_2.fq"
 
 def file_count(file1, file2):
@@ -196,10 +194,9 @@ def delete_biobloom_output(path):
         "biobloom_noMatch_count": file_count(files[6],files[7]),
     }
 
-    for output in os.listdir(path):
-        output_path = os.path.join(path, output)
-        if os.path.isfile(output_path):
-            os.unlink(output_path)
+    for file in files:
+        if os.path.isfile(file):
+            os.unlink(file)
 
     writer = open(path + '/biobloom_count_metrics.csv', 'w')
     writer.write(','.join(counts_metric.keys()) + '\n')
