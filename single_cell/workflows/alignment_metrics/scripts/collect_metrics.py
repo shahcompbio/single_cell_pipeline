@@ -183,7 +183,7 @@ class CollectMetrics(object):
         return median_ins_size, mean_ins_size, std_dev_ins_size
 
     def merge_biobloom_metrics(self):
-        merged = pd.read_csv(self.output).merge(pd.read_csv("/biobloom_output/biobloom_count_metrics.csv"))
+        merged = pd.read_csv(self.output).merge(pd.read_csv("/biobloom_output/biobloom_count_metrics.csv"), left_index=True, right_index=True)
         merged.to_csv(self.output, index=False)
 
     def write_data(self, header, data):
