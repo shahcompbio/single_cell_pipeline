@@ -11,6 +11,7 @@ from single_cell.utils import helpers
 
 def create_alignment_metrics_workflow(
         bam_filename,
+        biobloom_count_metrics,
         alignment_metrics,
         gc_metrics,
         plot_metrics,
@@ -160,6 +161,7 @@ def create_alignment_metrics_workflow(
             mgd.InputFile(wgs_metrics_filename, 'cell_id', axes_origin=[]),
             mgd.TempSpace("tempdir_collect_metrics"),
             mgd.TempOutputFile("alignment_metrics.csv.gz", extensions=['.yaml']),
+            mgd.TempInputFile('biobloom_count_metrics', 'cell_id', fname=biobloom_count_metrics),
         ),
     )
 

@@ -7,11 +7,12 @@ import pandas as pd
 import os
 
 class CollectMetrics(object):
-    def __init__(self, wgs_metrics, insert_metrics, flagstat_metrics, markdups_metrics, output, sample_id):
+    def __init__(self, wgs_metrics, insert_metrics, flagstat_metrics, markdups_metrics, output, sample_id, biobloom_count_metrics):
         self.wgs_metrics = wgs_metrics
         self.flagstat_metrics = flagstat_metrics
         self.insert_metrics = insert_metrics
         self.markdups_metrics = markdups_metrics
+        self.biobloom_count_metrics = biobloom_count_metrics
         self.output = output
         self.sample_id = sample_id
     
@@ -183,7 +184,7 @@ class CollectMetrics(object):
         return median_ins_size, mean_ins_size, std_dev_ins_size
 
     def merge_biobloom_metrics(self):
-        merged = pd.merge(pd.read_csv(self.output), pd.read_csv("/biobloom_output/biobloom_count_metrics.csv"), left_index=True, right_index=True)
+        merged = pd.merge(pd.read_csv(self.output), pd.read_csv(self.biobloom_count_metrics), left_index=True, right_index=True)
         merged.to_csv(self.output, index=False)
 
     def write_data(self, header, data):

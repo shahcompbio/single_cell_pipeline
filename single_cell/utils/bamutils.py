@@ -154,37 +154,37 @@ def bam_view(bam, output, region, **kwargs):
     pypeliner.commandline.execute(*cmd, **kwargs)
 
 
-def biobloom_categorizer(fastq1, fastq2, docker_image):
+def biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, docker_image):
     cmd = [
         "biobloomcategorizer",
         "--fq",
         "-e",
         "-p",
-        "/biobloom_output/biobloom",
+        tempdir + "/biobloom",
         "-f",
         "/refdata/GCF_002021735.1_Okis_V1_genomic.bf /refdata/GRCh37-lite.bf /refdata/mm10_build38_mouse.bf",
         fastq1,
         fastq2,
     ]
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
-    delete_biobloom_output("/biobloom_output")
-    return "/biobloom_output/biobloom_GRCh37-lite_1.fq", "/biobloom_output/biobloom_GRCh37-lite_2.fq"
+    extract_biobloom_metrics(tempdir, biobloom_count_metrics)
+    return tempdir + "/biobloom_GRCh37-lite_1.fq", tempdir + "/biobloom_output/biobloom_GRCh37-lite_2.fq"
 
 def file_count(file1, file2):
     count_1 = sum(1 for l in open(file1))
     count_2 = sum(1 for l in open(file2))
     return count_1 if count_1 == count_2 else ValueError('Two biobloom FastQ counts are not matching')
 
-def delete_biobloom_output(path):
+def extract_biobloom_metrics(tempdir, path):
     files = [
-        "/biobloom_output/biobloom_GCF_002021735.1_Okis_V1_genomic_1.fq",
-        "/biobloom_output/biobloom_GCF_002021735.1_Okis_V1_genomic_2.fq",
-        "/biobloom_output/biobloom_mm10_build38_mouse_1.fq",
-        "/biobloom_output/biobloom_mm10_build38_mouse_2.fq",
-        "/biobloom_output/biobloom_multiMatch_1.fq",
-        "/biobloom_output/biobloom_multiMatch_2.fq",
-        "/biobloom_output/biobloom_noMatch_1.fq",
-        "/biobloom_output/biobloom_noMatch_2.fq",
+        tempdir + "/biobloom_GCF_002021735.1_Okis_V1_genomic_1.fq",
+        tempdir + "/biobloom_GCF_002021735.1_Okis_V1_genomic_2.fq",
+        tempdir + "/biobloom_mm10_build38_mouse_1.fq",
+        tempdir + "/biobloom_mm10_build38_mouse_2.fq",
+        tempdir + "/biobloom_multiMatch_1.fq",
+        tempdir + "/biobloom_multiMatch_2.fq",
+        tempdir + "/biobloom_noMatch_1.fq",
+        tempdir + "/biobloom_noMatch_2.fq",
     ]
 
     counts_metric = {
@@ -194,11 +194,8 @@ def delete_biobloom_output(path):
         "biobloom_noMatch_count": file_count(files[6],files[7]),
     }
 
-    for file in files:
-        if os.path.isfile(file):
-            os.unlink(file)
 
-    writer = open(path + '/biobloom_count_metrics.csv', 'w')
+    writer = open(path, 'w')
     writer.write(','.join(counts_metric.keys()) + '\n')
     writer.write(','.join(str(v) for v in counts_metric.values()))
     writer.close()
