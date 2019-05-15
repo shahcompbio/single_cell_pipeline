@@ -13,7 +13,7 @@ def containers():
     docker_images = {
         'bwa': 'scp/bwa:v0.0.1', 'samtools': 'scp/samtools:v0.0.2',
         'python_base': 'scp/python_base:v0.0.1', 'picard': 'scp/picard:v0.0.1',
-        'single_cell_pipeline': 'scp/single_cell_pipeline:v{}'.format(version),
+        'single_cell_pipeline': 'scp/single_cell_pipeline:v0.0.2',
         'gatk': 'scp/gatk:v0.0.1', 'fastqc': 'scp/fastqc:v0.0.1',
         'hmmcopy': 'scp/hmmcopy:v0.0.2', 'aneufinder': 'scp/aneufinder:v0.0.1',
         'strelka': 'scp/strelka:v0.0.1', 'mutationseq': 'scp/mutationseq:v0.0.2',
