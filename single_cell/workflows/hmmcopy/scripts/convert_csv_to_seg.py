@@ -20,13 +20,12 @@ import yaml
 class ConvertCSVToSEG(object):
 
     def __init__(
-            self, segs, bin_size, metrics, output_seg, quality_threshold, multiplier):
+            self, segs, bin_size, metrics, output_seg, quality_threshold):
         self.segs = segs
         self.output_seg = output_seg
         self.bin_size = bin_size
         self.metrics = metrics
         self.quality_threshold = quality_threshold
-        self.multiplier = multiplier
 
     def check_empty_file(self, path):
         """checks if file is empty
@@ -60,93 +59,26 @@ class ConvertCSVToSEG(object):
         """
         read metrics and get cell to mad mapping
         """
-        qual_cell_map = {}
-        cell_order = []
+        metrics = csvutils.read_csv_and_yaml(self.metrics)
 
-        fileformat = helpers.get_file_format(self.metrics)
+        metrics = metrics.set_index("cell_id")
+        cell_order = metrics.order.sort_values().index
 
-        if fileformat == "h5":
-            with pd.HDFStore(self.metrics, 'r') as metrics:
-                for tableid in metrics.keys():
-                    multiplier = tableid.split('/')[-1]
+        # assume all cells are good, dont filter
+        if 'quality' not in metrics.columns.values:
+            logging.getLogger("single_cell.hmmcopy.igv_seg").warn(
+                "quality column missing in data"
+            )
+            metrics['quality'] = 1
 
-                    if not self.multiplier == '0':
-                        if not multiplier == str(self.multiplier):
-                            continue
-
-                    data = metrics[tableid]
-                    data = data.set_index("cell_id")
-                    cell_order = data.order.sort_values().index
-                    #assume all cells are good, dont filter
-                    if 'quality' not in data.columns.values:
-                        logging.getLogger("single_cell.hmmcopy.igv_seg").warn(
-                            "quality column missing in data"
-                        )
-                        data['quality'] = 1
-                    qual_cell_map = {
-                        cell: mad for cell, mad in
-                        zip(data.index, data["quality"])
-                    }
-        else:
-            metrics = csvutils.read_csv_and_yaml(self.metrics)
-            if not self.multiplier == 0:
-                metrics = metrics[metrics["multiplier"] == self.multiplier]
-
-            metrics = metrics.set_index("cell_id")
-            cell_order = metrics.order.sort_values().index
-
-            # assume all cells are good, dont filter
-            if 'quality' not in metrics.columns.values:
-                logging.getLogger("single_cell.hmmcopy.igv_seg").warn(
-                    "quality column missing in data"
-                )
-                metrics['quality'] = 1
-
-            qual_cell_map = {
-                cell: mad for cell,
-                mad in zip(
-                    metrics.index,
-                    metrics["quality"])}
+        qual_cell_map = {
+            cell: mad for cell,
+            mad in zip(
+                metrics.index,
+                metrics["quality"])}
         return qual_cell_map, cell_order
 
     def parse_segs(self, segs, metrics):
-
-        fileformat = helpers.get_file_format(segs)
-
-        if fileformat == "h5":
-            data = self.parse_segs_h5(segs, metrics)
-        else:
-            data = self.parse_segs_csv(segs, metrics)
-        return data
-
-    def parse_segs_h5(self, segs, metrics):
-
-        segs_data = {}
-
-        with pd.HDFStore(segs, 'r') as segs_store:
-            for tableid in segs_store.keys():
-
-                multiplier = tableid.split('/')[-1]
-
-                if not multiplier == str(self.multiplier):
-                    continue
-
-                data = segs_store[tableid]
-                for _, row in data.iterrows():
-                    chrom = row["chr"]
-                    start = row["start"]
-                    end = row["end"]
-                    cell_id = row["cell_id"]
-                    state = row["state"]
-                    segment_length = int(end) - int(start) + 1
-
-                    if metrics[cell_id] > self.quality_threshold:
-                        continue
-                    segs_data[cell_id] = [cell_id, chrom, start, end, segment_length, state]
-
-        return segs_data
-
-    def parse_segs_csv(self, segs, metrics):
         """parses hmmcopy segments data
         :param segs: path to hmmcopy segs file
         """
@@ -164,15 +96,13 @@ class ConvertCSVToSEG(object):
             for row in segfile:
                 row = row.strip().split(',')
 
-                if not row[header["multiplier"]] == self.multiplier:
-                    continue
-
                 chrom = row[header["chr"]]
                 start = row[header["start"]]
                 end = row[header["end"]]
                 cell_id = row[header["cell_id"]]
                 state = row[header["state"]]
-                segment_length = int(end) - int(start) + 1
+                # float to handle scientific notation
+                segment_length = int(float(end)) - int(float(start)) + 1
 
                 if metrics[cell_id] > self.quality_threshold:
                     continue
