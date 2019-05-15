@@ -248,7 +248,7 @@ def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', suffixes=None, 
 
     for in_filename in in_filenames:
         indata = read_csv_and_yaml(in_filename)
-        if indata:
+        if not indata.empty:
             data.append(indata)
 
     data = merge_frames(data, how, on, suffixes=suffixes)
@@ -273,10 +273,14 @@ def merge_frames(frames, how, on, suffixes=None):
         left = frames[0]
         right = frames[1]
 
+        cols_to_use = list(right.columns.difference(left.columns))
+        cols_to_use += on
+        cols_to_use = list(set(cols_to_use))
+
         if suffixes:
             suff = (suffixes[0], suffixes[1])
 
-        merged_frame = pd.merge(left, right,
+        merged_frame = pd.merge(left, right[cols_to_use],
                                 how=how,
                                 on=on,
                                 suffixes=suff)

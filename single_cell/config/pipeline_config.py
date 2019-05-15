@@ -74,7 +74,6 @@ def get_hmmcopy_params(cluster, reference, binsize, smoothing_function):
         'exclude_list': referencedata['exclude_list'],
         'gc_wig_file': referencedata['gc_wig_file'][binsize],
         'map_wig_file': referencedata['map_wig_file'][binsize],
-        'classifier_training_data': referencedata['classifier_training_data'],
         'chromosomes': referencedata['chromosomes'],
         'ref_genome': referencedata['ref_genome'],
         'docker': docker_containers,
@@ -83,7 +82,7 @@ def get_hmmcopy_params(cluster, reference, binsize, smoothing_function):
         'good_cells': [['median_hmmcopy_reads_per_bin', 'ge', 50]]
     }
 
-    return {"hmmcopy": {"autoploidy": params}}
+    return {"hmmcopy": params}
 
 
 def get_align_params(cluster, reference, binsize, smoothing_function, aligner):
@@ -122,6 +121,26 @@ def get_align_params(cluster, reference, binsize, smoothing_function, aligner):
     }
 
     return {"alignment": params}
+
+
+def get_annotation_params(cluster, reference):
+    if cluster == "azure":
+        referencedata = config_reference.reference_data_azure(reference)
+    else:
+        referencedata = config_reference.reference_data_shahlab(reference)
+
+    docker_containers = config_reference.containers()['docker']
+    docker_containers = {
+        'single_cell_pipeline': docker_containers['single_cell_pipeline'],
+    }
+
+    params = {
+        'docker': docker_containers,
+        'memory': {'med': 6},
+        'classifier_training_data': referencedata['classifier_training_data'],
+    }
+
+    return {"annotation": params}
 
 
 def get_aneufinder_params(cluster, reference):
@@ -422,6 +441,8 @@ def get_singlecell_pipeline_config(config_params, override=None):
 
         )
     )
+
+    params.update(get_annotation_params(cluster, reference))
 
     params.update(get_aneufinder_params(cluster, reference))
 

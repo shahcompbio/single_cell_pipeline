@@ -35,37 +35,31 @@ def qc_workflow(args):
 
     if args['alignment']:
 
-        if not args["metrics_only"]:
-            fastq1_files, fastq2_files = helpers.get_fastqs(args['input_yaml'])
-            triminfo = helpers.get_trim_info(args['input_yaml'])
-            centerinfo = helpers.get_center_info(args['input_yaml'])
+        fastq1_files, fastq2_files = helpers.get_fastqs(args['input_yaml'])
+        triminfo = helpers.get_trim_info(args['input_yaml'])
+        centerinfo = helpers.get_center_info(args['input_yaml'])
 
-            workflow.setobj(
-                obj=mgd.OutputChunks('cell_id', 'lane'),
-                value=list(fastq1_files.keys()),
-            )
+        workflow.setobj(
+            obj=mgd.OutputChunks('cell_id', 'lane'),
+            value=list(fastq1_files.keys()),
+        )
 
-            workflow.subworkflow(
-                name='alignment_workflow',
-                func=align.create_alignment_workflow,
-                args=(
-                    mgd.InputFile('fastq_1', 'cell_id', 'lane', fnames=fastq1_files, axes_origin=[]),
-                    mgd.InputFile('fastq_2', 'cell_id', 'lane', fnames=fastq2_files, axes_origin=[]),
-                    mgd.OutputFile('bam_markdups', 'cell_id', fnames=bam_files, axes_origin=[], extensions=['.bai']),
-                    align_config['ref_genome'],
-                    align_config,
-                    args,
-                    triminfo,
-                    centerinfo,
-                    sampleinfo,
-                    cellids,
-                ),
-            )
-        else:
-            workflow.setobj(
-                obj=mgd.OutputChunks('cell_id'),
-                value=cellids,
-            )
+        workflow.subworkflow(
+            name='alignment_workflow',
+            func=align.create_alignment_workflow,
+            args=(
+                mgd.InputFile('fastq_1', 'cell_id', 'lane', fnames=fastq1_files, axes_origin=[]),
+                mgd.InputFile('fastq_2', 'cell_id', 'lane', fnames=fastq2_files, axes_origin=[]),
+                mgd.OutputFile('bam_markdups', 'cell_id', fnames=bam_files, axes_origin=[], extensions=['.bai']),
+                align_config['ref_genome'],
+                align_config,
+                args,
+                triminfo,
+                centerinfo,
+                sampleinfo,
+                cellids,
+            ),
+        )
 
         workflow.subworkflow(
             name='metrics_workflow',
@@ -84,71 +78,73 @@ def qc_workflow(args):
         )
 
     if args['hmmcopy']:
-        for params_tag, params in config['hmmcopy'].iteritems():
-            params_tag = "hmmcopy_" + params_tag
 
-            multipliers = copy.deepcopy(params["multipliers"])
-            multipliers = [0] + multipliers
+        if not args['alignment']:
             workflow.setobj(
-                obj=mgd.OutputChunks('multiplier'),
-                value=multipliers,
+                obj=mgd.OutputChunks('cell_id'),
+                value=list(bam_files.keys()),
             )
 
-            results_dir = os.path.join(args['out_dir'], 'results', params_tag)
+        hmmcopy_config = config['hmmcopy']
 
-            reads_csvs = os.path.join(
-                results_dir, '{0}_multiplier{1}_reads.csv.gz'.format(lib, '{multiplier}'))
-            segs_csvs = os.path.join(
-                results_dir, '{0}_multiplier{1}_segments.csv.gz'.format(lib, '{multiplier}'))
-            params_csvs = os.path.join(
-                results_dir, '{0}_multiplier{1}_params.csv.gz'.format(lib, '{multiplier}'))
-            metrics_csvs = os.path.join(
-                results_dir, '{0}_multiplier{1}_metrics.csv.gz'.format(lib, '{multiplier}'))
-            igv_csvs = os.path.join(
-                results_dir, '{0}_multiplier{1}_igv_segments.seg'.format(lib, '{multiplier}'))
+        results_dir = os.path.join(args['out_dir'], 'results', 'hmmcopy_autoploidy')
 
-            plots_dir = os.path.join(results_dir, "plots")
-            segs_pdf = os.path.join(
-                plots_dir, "segments", '{}_segs.tar.gz'.format(lib))
-            bias_pdf = os.path.join(plots_dir, "bias", '{}_bias.tar.gz'.format(lib))
+        reads_csvs = os.path.join(results_dir, '{0}_reads.csv.gz'.format(lib))
+        segs_csvs = os.path.join(results_dir, '{0}_segments.csv.gz'.format(lib))
+        params_csvs = os.path.join(results_dir, '{0}_params.csv.gz'.format(lib))
+        metrics_csvs = os.path.join(results_dir, '{0}_metrics.csv.gz'.format(lib))
+        igv_csvs = os.path.join(results_dir, '{0}_igv_segments.seg'.format(lib))
 
-            heatmap_filt_pdf = os.path.join(
-                plots_dir, '{}_heatmap_by_ec_filtered.pdf'.format(lib))
-            heatmap_pdf = os.path.join(
-                plots_dir, '{}_heatmap_by_ec.pdf'.format(lib))
-            metrics_pdf = os.path.join(
-                plots_dir, '{}_metrics.pdf'.format(lib))
-            kernel_density_pdf = os.path.join(
-                plots_dir, '{}_kernel_density.pdf'.format(lib))
+        plots_dir = os.path.join(results_dir, "plots")
+        segs_pdf = os.path.join(
+            plots_dir, "segments", '{}_segs.tar.gz'.format(lib))
+        bias_pdf = os.path.join(plots_dir, "bias", '{}_bias.tar.gz'.format(lib))
 
-            workflow.subworkflow(
-                name='hmmcopy_workflow_' + params_tag,
-                func=hmmcopy.create_hmmcopy_workflow,
-                args=(
-                    mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files, extensions=['.bai']),
-                    mgd.OutputFile("reads.csv.gz", 'multiplier', template=reads_csvs, axes_origin=[]),
-                    mgd.OutputFile("segs.csv.gz", 'multiplier', template=segs_csvs, axes_origin=[]),
-                    mgd.OutputFile("metrics.csv.gz", 'multiplier', template=metrics_csvs, axes_origin=[]),
-                    mgd.OutputFile("params.csv.gz", 'multiplier', template=params_csvs, axes_origin=[]),
-                    mgd.OutputFile("igv.seg", 'multiplier', template=igv_csvs, axes_origin=[]),
-                    mgd.OutputFile(segs_pdf),
-                    mgd.OutputFile(bias_pdf),
-                    mgd.OutputFile(heatmap_pdf),
-                    mgd.OutputFile(heatmap_filt_pdf),
-                    mgd.OutputFile(metrics_pdf),
-                    mgd.OutputFile(kernel_density_pdf),
-                    cellids,
-                    params,
-                ),
-            )
+        heatmap_filt_pdf = os.path.join(
+            plots_dir, '{}_heatmap_by_ec_filtered.pdf'.format(lib))
+        heatmap_pdf = os.path.join(
+            plots_dir, '{}_heatmap_by_ec.pdf'.format(lib))
+        metrics_pdf = os.path.join(
+            plots_dir, '{}_metrics.pdf'.format(lib))
+        kernel_density_pdf = os.path.join(
+            plots_dir, '{}_kernel_density.pdf'.format(lib))
+
+        workflow.subworkflow(
+            name='hmmcopy_workflow',
+            func=hmmcopy.create_hmmcopy_workflow,
+            args=(
+                mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files, extensions=['.bai']),
+                mgd.OutputFile(reads_csvs),
+                mgd.OutputFile(segs_csvs),
+                mgd.OutputFile(metrics_csvs),
+                mgd.OutputFile(params_csvs),
+                mgd.OutputFile(igv_csvs),
+                mgd.OutputFile(segs_pdf),
+                mgd.OutputFile(bias_pdf),
+                mgd.OutputFile(heatmap_pdf),
+                mgd.OutputFile(heatmap_filt_pdf),
+                mgd.OutputFile(metrics_pdf),
+                mgd.OutputFile(kernel_density_pdf),
+                cellids,
+                hmmcopy_config,
+                sampleinfo
+            ),
+        )
 
     if args['annotation']:
+        results_dir = os.path.join(args['out_dir'], 'results')
+        metrics_csvs = os.path.join(results_dir, 'hmmcopy_autoploidy', '{0}_metrics.csv.gz'.format(lib))
+        merged_metrics_csvs = os.path.join(results_dir, '{0}_metrics.csv.gz'.format(lib))
+
         workflow.subworkflow(
             name='annotation_workflow',
             func=qc_annotation.create_qc_annotation_workflow,
             args=(
+                mgd.InputFile(metrics_csvs),
+                mgd.OutputFile(alignment_metrics_csv),
+                mgd.OutputFile(merged_metrics_csvs),
+                config['annotation'],
             ),
         )
-
 
     return workflow
