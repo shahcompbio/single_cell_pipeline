@@ -22,7 +22,6 @@ def create_alignment_workflow(
         cell_ids,
         biobloom_count_metrics):
 
-    raise Exception(biobloom_count_metrics)
 
     baseimage = config['docker']['single_cell_pipeline']
 
@@ -33,6 +32,9 @@ def create_alignment_workflow(
     lane_metrics = os.path.join(args['out_dir'], 'metrics_per_lane', '{lane}')
 
     bam_filename = dict([(cellid, bam_filename[cellid])
+                         for cellid in cell_ids])
+
+    biobloom_count_metrics = dict([(cellid, biobloom_count_metrics[cellid])
                          for cellid in cell_ids])
 
     chromosomes = config["chromosomes"]

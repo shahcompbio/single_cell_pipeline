@@ -29,7 +29,8 @@ def create_alignment_metrics_workflow(
     bam_filename = dict([(cellid, bam_filename[cellid])
                          for cellid in cell_ids])
 
-    raise Exception(biobloom_count_metrics)
+    biobloom_count_metrics = dict([(cellid, biobloom_count_metrics[cellid])
+                         for cellid in cell_ids])
 
     chromosomes = config["chromosomes"]
 
