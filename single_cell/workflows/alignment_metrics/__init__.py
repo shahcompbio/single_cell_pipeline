@@ -11,7 +11,7 @@ from single_cell.utils import helpers
 
 def create_alignment_metrics_workflow(
         bam_filename,
-        biobloom_count_metrics,
+        biobloom_countmetrics,
         alignment_metrics,
         gc_metrics,
         plot_metrics,
@@ -28,6 +28,8 @@ def create_alignment_metrics_workflow(
 
     bam_filename = dict([(cellid, bam_filename[cellid])
                          for cellid in cell_ids])
+
+    raise Exception(biobloom_countmetrics)
 
     chromosomes = config["chromosomes"]
 
