@@ -7,6 +7,7 @@ import pypeliner
 import shutil
 import os
 from helpers import makedirs
+from single_cell.config.biobloom_const import BIOBLOOM_FILTERS, BIOBLOOM_FILES
 from single_cell.utils import helpers
 
 
@@ -167,7 +168,7 @@ def biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, docker
         "-p",
         tempdir + "/biobloom",
         "-f",
-        "/refdata/GCF_002021735.1_Okis_V1_genomic.bf /refdata/GRCh37-lite.bf /refdata/mm10_build38_mouse.bf",
+        ", ".join(BIOBLOOM_FILTERS),
         fastq1,
         fastq2,
     ]
@@ -181,22 +182,12 @@ def file_count(file1, file2):
     return count_1 if count_1 == count_2 else ValueError('Two biobloom FastQ counts are not matching')
 
 def extract_biobloom_metrics(tempdir, path):
-    files = [
-        tempdir + "/biobloom_GCF_002021735.1_Okis_V1_genomic_1.fq",
-        tempdir + "/biobloom_GCF_002021735.1_Okis_V1_genomic_2.fq",
-        tempdir + "/biobloom_mm10_build38_mouse_1.fq",
-        tempdir + "/biobloom_mm10_build38_mouse_2.fq",
-        tempdir + "/biobloom_multiMatch_1.fq",
-        tempdir + "/biobloom_multiMatch_2.fq",
-        tempdir + "/biobloom_noMatch_1.fq",
-        tempdir + "/biobloom_noMatch_2.fq",
-    ]
 
     counts_metric = {
-        "biobloom_salmon_count" : file_count(files[0],files[1]),
-        "biobloom_mouse_count" : file_count(files[2],files[3]),
-        "biobloom_multiMatch_count": file_count(files[4],files[5]),
-        "biobloom_noMatch_count": file_count(files[6],files[7]),
+        "biobloom_salmon_count" : file_count(tempdir + BIOBLOOM_FILES[0],tempdir + BIOBLOOM_FILES[1]),
+        "biobloom_mouse_count" : file_count(tempdir + BIOBLOOM_FILES[2],tempdir + BIOBLOOM_FILES[3]),
+        "biobloom_multiMatch_count": file_count(tempdir + BIOBLOOM_FILES[4],tempdir + BIOBLOOM_FILES[5]),
+        "biobloom_noMatch_count": file_count(tempdir + BIOBLOOM_FILES[6],tempdir + BIOBLOOM_FILES[7]),
     }
 
 
