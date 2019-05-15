@@ -168,7 +168,7 @@ def biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, docker
         "-p",
         tempdir + "/biobloom",
         "-f",
-        ", ".join(BIOBLOOM_FILTERS),
+        " ".join(BIOBLOOM_FILTERS),
         fastq1,
         fastq2,
     ]
