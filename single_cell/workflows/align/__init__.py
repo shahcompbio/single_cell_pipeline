@@ -22,6 +22,8 @@ def create_alignment_workflow(
         cell_ids,
         biobloom_count_metrics):
 
+    raise Exception(biobloom_count_metrics)
+
     baseimage = config['docker']['single_cell_pipeline']
 
     out_dir = args['out_dir']

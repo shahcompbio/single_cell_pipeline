@@ -74,6 +74,7 @@ def align_workflow(args):
         )
 
     workflow.subworkflow(
+
         name='metrics_workflow',
         func=alignment_metrics.create_alignment_metrics_workflow,
         ctx={'docker_image': baseimage},
