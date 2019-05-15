@@ -89,34 +89,33 @@ def train_classifier(filename):
 
 
 def load_data(hmmcopy_filename, alignment_filename,
-              hmmcopy_tables, alignment_table, colnames):
-    for hmmcopy_table in hmmcopy_tables:
-        hmmcopy_data = read_data(hmmcopy_filename, hmmcopy_table)
-        alignment_data = read_data(alignment_filename, alignment_table)
+              colnames):
 
-        hmmcopy_data = hmmcopy_data.set_index('cell_id')
-        alignment_data = alignment_data.set_index('cell_id')
+    hmmcopy_data = csvutils.read_csv_and_yaml(hmmcopy_filename)
+    alignment_data = csvutils.read_csv_and_yaml(alignment_filename)
 
-        data = []
-        for colname in colnames:
-            if colname in hmmcopy_data:
-                coldata = hmmcopy_data[colname]
-            else:
-                coldata = alignment_data[colname]
+    hmmcopy_data = hmmcopy_data.set_index('cell_id')
+    alignment_data = alignment_data.set_index('cell_id')
 
-            if colname == 'scaled_halfiness':
-                # haploid poison adds inf, replace with big number since 0 is considered good
-                # and we want to score to decrease
-                coldata = coldata.replace(np.inf, 1e10)
-            data.append(coldata)
+    data = []
+    for colname in colnames:
+        if colname in hmmcopy_data:
+            coldata = hmmcopy_data[colname]
+        else:
+            coldata = alignment_data[colname]
 
-        data = pd.concat(data, axis=1)
+        if colname == 'scaled_halfiness':
+            # haploid poison adds inf, replace with big number since 0 is considered good
+            # and we want to score to decrease
+            coldata = coldata.replace(np.inf, 1e10)
+        data.append(coldata)
 
-        data = data.replace(-np.inf, np.nan)
-        data = data.fillna(0)
+    data = pd.concat(data, axis=1)
 
-        yield (hmmcopy_table, data)
+    data = data.replace(-np.inf, np.nan)
+    data = data.fillna(0)
 
+    return data
 
 def classify(model, data):
     ##TODO: remove this with v0.2.3, also handled in collect_metrics
@@ -147,17 +146,15 @@ def write_to_csv(output, data, gzipped=False):
     data.to_csv(output, index=False, compression=compression)
 
 
-def write_to_output(hmmcopy_filename, hmmcopy_tablename, output, predictions):
-    data = read_data(hmmcopy_filename, hmmcopy_tablename)
+def write_to_output(hmmcopy_filename, output, predictions):
+    data = csvutils.read_csv_and_yaml(hmmcopy_filename)
 
     data['quality'] = data['cell_id'].map(predictions)
     data.quality = data.quality.astype(float)
 
     fileformat = single_cell.utils.helpers.get_file_format(output)
 
-    if fileformat == 'h5':
-        write_to_hdf(output, hmmcopy_tablename, data)
-    elif fileformat == 'csv':
+    if fileformat == 'csv':
         write_to_csv(output, data)
     elif fileformat == "gzip":
         write_to_csv(output, data, gzipped=True)
@@ -175,14 +172,11 @@ if __name__ == "__main__":
     feature_names = model.feature_names_
 
     data = load_data(args.hmmcopy_metrics, args.alignment_metrics,
-                     args.hmmcopy_tables, args.alignment_table,
                      feature_names)
 
-    for hmmcopy_table, tabledata in data:
-        predictions = classify(model, tabledata)
+    predictions = classify(model, data)
 
-        write_to_output(
-            args.hmmcopy_metrics,
-            hmmcopy_table,
-            args.output,
-            predictions)
+    write_to_output(
+        args.hmmcopy_metrics,
+        args.output,
+        predictions)

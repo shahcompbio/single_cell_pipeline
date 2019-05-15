@@ -195,7 +195,6 @@ def create_alignment_metrics_workflow(
     workflow.transform(
         name='finalize_metrics',
         ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        axes=('multiplier',),
         func="single_cell.utils.csvutils.finalize_csv",
         args=(
             mgd.TempInputFile('alignment_metrics_annotated.csv.gz', extensions=['.yaml']),
@@ -207,7 +206,6 @@ def create_alignment_metrics_workflow(
     workflow.transform(
         name='finalize_gc_metrics',
         ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        axes=('multiplier',),
         func="single_cell.utils.csvutils.finalize_csv",
         args=(
             mgd.TempInputFile('gc_metrics.csv.gz', extensions=['.yaml']),

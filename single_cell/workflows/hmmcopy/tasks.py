@@ -106,7 +106,6 @@ def run_hmmcopy(
         cell_id,
         reference,
         hmmparams,
-        multipliers,
         tempdir,
         sample_info,
         docker_image
@@ -132,53 +131,47 @@ def run_hmmcopy(
         docker_image
     )
 
-    for multiplier in multipliers:
-        hmmcopy_outdir = os.path.join(tempdir, str(multiplier))
-
-        hmmcopy_reads_file = os.path.join(hmmcopy_outdir, "reads.csv")
-        hmmcopy_params_files = os.path.join(hmmcopy_outdir, "params.csv")
-        hmmcopy_segs_files = os.path.join(hmmcopy_outdir, "segs.csv")
-        hmmcopy_metrics_files = os.path.join(hmmcopy_outdir, "metrics.csv")
-
-        csvutils.prep_csv_files(hmmcopy_reads_file, corrected_reads_filename[multiplier])
-        csvutils.prep_csv_files(hmmcopy_params_files, parameters_filename[multiplier])
-        csvutils.prep_csv_files(hmmcopy_segs_files, segments_filename[multiplier])
-        csvutils.prep_csv_files(hmmcopy_metrics_files, metrics_filename[multiplier])
-
-    corrected_reads_all = [corrected_reads_filename[mult] for mult in multipliers]
-    segments_all = [segments_filename[mult] for mult in multipliers]
-    params_all = [parameters_filename[mult] for mult in multipliers]
-    metrics_all = [metrics_filename[mult] for mult in multipliers]
+    hmmcopy_outdir = os.path.join(tempdir, str(0))
+    csvutils.prep_csv_files(
+        os.path.join(hmmcopy_outdir, "reads.csv"), corrected_reads_filename
+    )
+    csvutils.prep_csv_files(
+        os.path.join(hmmcopy_outdir, "params.csv"), parameters_filename
+    )
+    csvutils.prep_csv_files(
+        os.path.join(hmmcopy_outdir, "segs.csv"), segments_filename
+    )
+    csvutils.prep_csv_files(
+        os.path.join(hmmcopy_outdir, "metrics.csv"), metrics_filename
+    )
 
     annotation_cols = ['cell_call', 'experimental_condition', 'sample_type',
                        'mad_neutral_state', 'MSRSI_non_integerness',
                        'total_mapped_reads_hmmcopy']
 
     plot_hmmcopy(
-        corrected_reads_all, segments_all, params_all,
-        metrics_all, reference, segs_pdf_filename,
-        bias_pdf_filename, cell_id, multipliers,
+        corrected_reads_filename, segments_filename, parameters_filename,
+        metrics_filename, reference, segs_pdf_filename,
+        bias_pdf_filename, cell_id,
         num_states=hmmparams['num_states'],
         annotation_cols=annotation_cols,
         sample_info=sample_info)
 
 
-def concatenate_csv(inputs, output, multipliers, cells, low_memory=False):
-    for multiplier in multipliers:
-        mult_inputs = [inputs[(cell, multiplier)] for cell in cells]
+def concatenate_csv(inputs, output, low_memory=False):
 
-        if low_memory:
-            csvutils.concatenate_csv_files_quick_lowmem(
-                mult_inputs, output[multiplier]
-            )
-        else:
-            csvutils.concatenate_csv(
-                mult_inputs, output[multiplier]
-            )
+    if low_memory:
+        csvutils.concatenate_csv_files_quick_lowmem(
+            inputs, output
+        )
+    else:
+        csvutils.concatenate_csv(
+            inputs, output
+        )
 
 
 def add_clustering_order(
-        reads, metrics, output, chromosomes=None):
+        reads, metrics, output, chromosomes=None, sample_info=None):
     """
     adds sample information to metrics in place
     """
@@ -191,8 +184,13 @@ def add_clustering_order(
 
     for cellid, value in order.iteritems():
 
-        cell_order = order[cellid]
+        cell_order = order[cellid]['order']
         metrics.loc[metrics['cell_id'] == cellid, 'order'] = cell_order
+
+        if sample_info:
+            sample_info_percell = sample_info[cellid]
+            for colname, value in sample_info_percell.iteritems():
+                metrics.loc[metrics["cell_id"] == cellid, colname] = value
 
     csvutils.write_dataframe_to_csv_and_yaml(metrics, output)
 
@@ -307,8 +305,6 @@ def group_cells_by_row(cells, metrics, sort_by_col=False):
 def merge_pdf(in_filenames, outfilenames, metrics, cell_filters, tempdir, labels):
     helpers.makedirs(tempdir)
 
-    metrics = metrics[0]
-
     good_cells = get_good_cells(
         metrics, cell_filters
     )
@@ -330,21 +326,21 @@ def merge_pdf(in_filenames, outfilenames, metrics, cell_filters, tempdir, labels
 
 
 def create_igv_seg(merged_segs, merged_hmm_metrics,
-                   igv_segs, config, multiplier):
+                   igv_segs, config):
     converter = ConvertCSVToSEG(
         merged_segs,
         config['bin_size'],
         merged_hmm_metrics,
         igv_segs,
-        config['igv_segs_quality_threshold'], multiplier)
+        config['igv_segs_quality_threshold'])
     converter.main()
 
 
 def plot_hmmcopy(reads, segments, params, metrics, ref_genome, segs_out,
-                 bias_out, cell_id, multiplier, num_states=7,
+                 bias_out, cell_id, num_states=7,
                  annotation_cols=None, sample_info=None):
     with GenHmmPlots(reads, segments, params, metrics, ref_genome, segs_out,
-                     bias_out, cell_id, multiplier, num_states=num_states,
+                     bias_out, cell_id, num_states=num_states,
                      annotation_cols=annotation_cols,
                      sample_info=sample_info) as plot:
         plot.main()
@@ -456,44 +452,40 @@ def get_hierarchical_clustering_order(
     return order
 
 
-def plot_metrics(metrics, output, plot_title, multiplier):
-    mult_plot_title = '{}({})'.format(plot_title, multiplier)
+def plot_metrics(metrics, output, plot_title):
 
     plot = PlotMetrics(
         metrics,
         output,
-        mult_plot_title,
+        plot_title,
     )
     plot.plot_hmmcopy_metrics()
 
 
 def plot_kernel_density(
-        infile, output, sep, colname, plot_title, multiplier):
-    mult_plot_title = '{}({})'.format(plot_title, multiplier)
+        infile, output, sep, colname, plot_title):
 
     plot = PlotKernelDensity(
         infile,
         output,
         sep,
         colname,
-        mult_plot_title)
+        plot_title)
     plot.main()
 
 
-def plot_pcolor(infile, metrics, output, multiplier, plot_title=None,
+def plot_pcolor(infile, metrics, output, plot_title=None,
                 column_name=None, plot_by_col=None,
                 chromosomes=None, max_cn=None,
                 scale_by_cells=None, color_by_col=None,
                 cell_filters=None, mappability_threshold=None):
     cells = get_good_cells(metrics, cell_filters)
 
-    mult_plot_title = '{}({})'.format(plot_title, multiplier)
-
     plot = PlotPcolor(
-        infile, metrics, output, plot_title=mult_plot_title,
+        infile, metrics, output, plot_title=plot_title,
         column_name=column_name, plot_by_col=plot_by_col,
         chromosomes=chromosomes,
-        max_cn=max_cn, multiplier=multiplier,
+        max_cn=max_cn,
         scale_by_cells=scale_by_cells,
         color_by_col=color_by_col,
         cells=cells,
