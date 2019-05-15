@@ -7,6 +7,7 @@ import pypeliner
 import shutil
 import os
 from helpers import makedirs
+from single_cell.utils import helpers
 
 
 def produce_fastqc_report(fastq_filename, output_html, output_plots, temp_dir,
@@ -155,6 +156,10 @@ def bam_view(bam, output, region, **kwargs):
 
 
 def biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, docker_image):
+    tempdir = os.path.join(tempdir, 'bio_bloom')
+    if not os.path.exists(tempdir):
+        helpers.makedirs(tempdir)
+
     cmd = [
         "biobloomcategorizer",
         "--fq",
