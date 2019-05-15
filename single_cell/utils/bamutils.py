@@ -191,7 +191,7 @@ def extract_biobloom_metrics(tempdir, path):
     }
 
 
-    writer = open(path + '.csv', 'w')
+    writer = open(path, 'w')
     writer.write(','.join(counts_metric.keys()) + '\n')
     writer.write(','.join(str(v) for v in counts_metric.values()))
     writer.close()
