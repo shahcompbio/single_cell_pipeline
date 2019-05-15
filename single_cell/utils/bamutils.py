@@ -157,7 +157,7 @@ def bam_view(bam, output, region, **kwargs):
 
 
 def biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, docker_image):
-    tempdir = os.path.join(tempdir, 'bio_bloom')
+    tempdir = os.path.join(tempdir, 'biobloom')
     if not os.path.exists(tempdir):
         helpers.makedirs(tempdir)
 
@@ -174,7 +174,7 @@ def biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, docker
     ]
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
     extract_biobloom_metrics(tempdir, biobloom_count_metrics)
-    return tempdir + "/biobloom_GRCh37-lite_1.fq", tempdir + "/biobloom_output/biobloom_GRCh37-lite_2.fq"
+    return tempdir + "/biobloom_GRCh37-lite_1.fq", tempdir + "/biobloom_GRCh37-lite_2.fq"
 
 def file_count(file1, file2):
     count_1 = sum(1 for l in open(file1))
