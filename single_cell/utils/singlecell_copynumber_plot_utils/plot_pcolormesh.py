@@ -80,8 +80,6 @@ class PlotPcolor(object):
         self.segs_tablename = kwargs.get('segs_tablename')
         self.metrics_tablename = kwargs.get('metrics_tablename')
 
-        self.multiplier = kwargs.get('multiplier')
-
         self.cells = kwargs.get("cells")
 
     def build_label_indices(self, header):
@@ -194,10 +192,6 @@ class PlotPcolor(object):
 
                 val = float('nan') if val == "NA" else float(val)
 
-                if self.multiplier:
-                    if not int(line[idxs['multiplier']]) == self.multiplier:
-                        continue
-
                 chrom = line[idxs['chr']]
                 start = int(line[idxs['start']])
                 end = int(line[idxs['end']])
@@ -279,11 +273,6 @@ class PlotPcolor(object):
                 # skip samples that are just na or inf
                 if sample_id not in samples:
                     continue
-
-                if self.multiplier:
-                    multiplier = int(line[idxs["multiplier"]])
-                    if not multiplier == self.multiplier:
-                        continue
 
                 val = line[idxs["mad_neutral_state"]]
 

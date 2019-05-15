@@ -95,13 +95,12 @@ class GenHmmPlots(object):
 
     def __init__(self, reads, segments, params, metrics,
                  ref_genome, segs_out, bias_out,
-                 sample_id, multipliers, **kwargs):
+                 sample_id, **kwargs):
 
-        self.multipliers = multipliers
-        self.reads = self.index_by_multiplier(reads)
-        self.segments = self.index_by_multiplier(segments)
-        self.params = self.index_by_multiplier(params)
-        self.metrics = self.index_by_multiplier(metrics)
+        self.reads = reads
+        self.segments = segments
+        self.params = params
+        self.metrics = metrics
         self.ref_genome = ref_genome
         self.sample_id = sample_id
 
@@ -127,32 +126,29 @@ class GenHmmPlots(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def index_by_multiplier(self, infiles):
-        return {mult: infile for mult, infile in zip(self.multipliers, infiles)}
-
     def read_csv(self, infile):
         return csvutils.read_csv_and_yaml(infile)
 
-    def read_metrics(self, cell_id, multiplier):
+    def read_metrics(self):
         """
 
         """
-        metrics_file = self.metrics[multiplier]
+        metrics_file = self.metrics
         return self.read_csv(metrics_file)
 
 
-    def read_params(self, cell_id, multiplier):
+    def read_params(self):
         """
 
         """
-        params_file = self.params[multiplier]
+        params_file = self.params
         return self.read_csv(params_file)
 
-    def read_corrected_reads(self, cell_id, multiplier):
+    def read_corrected_reads(self):
         """
 
         """
-        reads_file = self.reads[multiplier]
+        reads_file = self.reads
         df = self.read_csv(reads_file)
 
         df = utl.normalize_reads(df)
@@ -160,15 +156,14 @@ class GenHmmPlots(object):
 
         # clip the copy column to 40 to avoid crashes due to super high outliers in data
         df["copy"] = np.clip(df["copy"], 0, 40)
-
         return df
 
-    def read_segments(self, cell_id, multiplier):
+    def read_segments(self):
         """
 
         """
 
-        segs_file = self.segments[multiplier]
+        segs_file = self.segments
         df = self.read_csv(segs_file)
 
         df = df.dropna(axis=0, how='all')
@@ -223,9 +218,9 @@ class GenHmmPlots(object):
                     'legend.fontsize': 12,
                     'font.size': 12})
 
-        df = self.read_corrected_reads(self.sample_id, 0)
+        df = self.read_corrected_reads()
 
-        metrics = self.read_metrics(self.sample_id, 0)
+        metrics = self.read_metrics()
         annotations = self.get_annotations(metrics)
 
         df_ideal = df[df['ideal'] == True]
@@ -315,27 +310,23 @@ class GenHmmPlots(object):
 
     def plot_segments(self, pdfout, remove_y=False):
 
-        num_plots = len(self.multipliers)
-
         sns.set(context='talk',
                 style='ticks',
                 font='Helvetica',
-                rc={'axes.titlesize': 3 * num_plots,
-                    'axes.labelsize': 3 * num_plots,
-                    'xtick.labelsize': 3 * num_plots,
-                    'ytick.labelsize': 3 * num_plots,
-                    'legend.fontsize': 3 * num_plots,
-                    'font.size': 3 * num_plots})
+                rc={'axes.titlesize': 10,
+                    'axes.labelsize': 10,
+                    'xtick.labelsize': 10,
+                    'ytick.labelsize': 10,
+                    'legend.fontsize': 10,
+                    'font.size': 10})
 
-        linewidth = 0.25 * num_plots
-        scatter_size = 3 * num_plots
+        linewidth = 1
+        scatter_size = 3
 
-        height_plot = 10 * num_plots
-        width_plot = 5 * num_plots
+        height_plot = 8
+        width_plot = 15
 
-        # standard: 15,4
-        # SA501X3F xenograft heatmap: 20.4, 4
-        fig = plt.figure(figsize=(height_plot, width_plot))
+        fig = plt.figure(figsize=(width_plot, height_plot))
 
         cmap = self.get_colors(self.num_states)
 
@@ -346,104 +337,98 @@ class GenHmmPlots(object):
             type='rectangle',
             location='upper center')
 
-        gs = gridspec.GridSpec(num_plots, 2, width_ratios=[20, 3], wspace=0)
+        gs = gridspec.GridSpec(1, 2, width_ratios=[20, 3], wspace=0)
 
-        # add annotations to plot
-        metrics = self.read_metrics(self.sample_id, 0)
+        reads = self.read_corrected_reads()
+        segments = self.read_segments()
+        params = self.read_params()
+        metrics = self.read_metrics()
+
         annotations = self.get_annotations(metrics)
         self.add_annotations(fig, annotations)
 
-        for i, multiplier in enumerate(self.multipliers):
+        if reads is not None and remove_y:
+            reads = reads[reads['chr'] != 'Y']
 
-            reads = self.read_corrected_reads(self.sample_id, multiplier)
-            segments = self.read_segments(self.sample_id, multiplier)
-            params = self.read_params(self.sample_id, multiplier)
-            metrics = self.read_metrics(self.sample_id, multiplier)
+        ax = plt.subplot(gs[0, 0])
+        ax = utl.create_chromosome_plot_axes(ax, self.ref_genome)
 
-            if not isinstance(reads, pd.DataFrame) and not reads:
-                continue
-            if not isinstance(segments, pd.DataFrame) and not segments:
-                continue
+        # we pass None if we don't have data
+        cols = reads["state"].replace(cmap)
+        cols = cols[~reads['copy'].isnull()]
 
-            if reads is not None and remove_y:
-                reads = reads[reads['chr'] != 'Y']
+        df = reads[np.isfinite(reads['copy'])]
 
-            ax = plt.subplot(gs[i, 0])
-            ax = utl.create_chromosome_plot_axes(ax, self.ref_genome)
+        if not df.empty:
+            plt.scatter(
+                df['plot_coord'],
+                df['copy'],
+                facecolors=cols,
+                edgecolors='none',
+                s=scatter_size,
+                rasterized=True)
 
-            ax.set_title("multiplier: {}".format(multiplier))
+        x, y = utl.get_segment_start_end(segments, remove_y)
+        plt.plot(x, y, color='black', linewidth=linewidth)
 
-            # we pass None if we don't have data
-            cols = reads["state"].replace(cmap)
-            cols = cols[~reads['copy'].isnull()]
+        print np.nanmax(reads['copy'])
 
-            df = reads[np.isfinite(reads['copy'])]
+        ylim = np.nanpercentile(reads['copy'], 99)
+        if not np.isfinite(ylim):
+            ylim = ax.get_ylim()[1]
+        ylim = int(ylim) + 1
+        ylim = max(3, ylim)
 
-            if not df.empty:
-                plt.scatter(
-                    df['plot_coord'],
-                    df['copy'],
-                    facecolors=cols,
-                    edgecolors='none',
-                    s=scatter_size,
-                    rasterized=True)
+        if ylim <= 10:
+            tick_step = 1
+        elif ylim > 10 and ylim <= 30:
+            tick_step = 2
+        else:
+            tick_step = 5
 
-            x, y = utl.get_segment_start_end(segments, remove_y)
-            plt.plot(x, y, color='black', linewidth=linewidth)
+        # make ylim a multiple of tick_step
+        ylim = int((ylim + tick_step) / tick_step) * tick_step
 
-            ylim = np.nanpercentile(reads['copy'], 99)
-            if not np.isfinite(ylim):
-                ylim = ax.get_ylim()[1]
-            ylim = int(ylim) + 1
-            ylim = max(3, ylim)
+        ax.set_ylim((0, ylim))
 
-            if ylim <= 10:
-                tick_step = 1
-            elif ylim > 10 and ylim <= 30:
-                tick_step = 2
-            else:
-                tick_step = 5
+        ax.set_yticks(np.arange(0, ylim, tick_step))
 
-            # make ylim a multiple of tick_step
-            ylim = int((ylim + tick_step) / tick_step) * tick_step
+        sns.despine(offset=10, trim=True)
+        ax.tick_params(axis='x', which='minor', pad=9.1)
 
-            ax.set_ylim((0, ylim))
+        ax1 = plt.subplot(gs[0, 1], sharey=ax)
+        ax1.set_ylim((0, ylim))
 
-            ax.set_yticks(np.arange(0, ylim, tick_step))
+        sns.despine(offset=10)
 
-            sns.despine(offset=10, trim=True)
-            ax.tick_params(axis='x', which='minor', pad=9.1)
+        ax1.yaxis.set_visible(False)
+        ax1.spines['left'].set_visible(False)
 
-            ax1 = plt.subplot(gs[i, 1], sharey=ax)
-            ax1.set_ylim((0, ylim))
+        if not df.empty:
+            self.plot_dist(
+                ax1,
+                df,
+                params,
+                cmap,
+                self.num_states,
+                vertical=True)
 
-            sns.despine(offset=10)
+        ax1.set_xlim((0, 2.5))
 
-            ax1.yaxis.set_visible(False)
-            ax1.spines['left'].set_visible(False)
+        ax.set_ylabel('Copy number')
 
-            if not df.empty:
-                self.plot_dist(
-                    ax1,
-                    df,
-                    params,
-                    cmap,
-                    self.num_states,
-                    vertical=True)
+        ax.set_xlabel('Chromosome')
+        ax1.set_xlabel("density")
 
-            ax1.set_xlim((0, 2.5))
+        # clip the copy column to 40 to avoid crashes due to super high outliers in data
+        # df["copy"] = np.clip(df["copy"], 0, 40)
 
-            ax.set_ylabel('Copy number')
 
-            if i + 1 == len(self.multipliers):
-                ax.set_xlabel('Chromosome')
-                ax1.set_xlabel("density")
-
-            ax = utl.add_open_grid_lines(ax)
+        utl.add_open_grid_lines(ax)
 
         fig.suptitle(self.sample_id, x=0.5, y=0.97)
         plt.tight_layout(rect=(0, 0.05, 1, 0.95))
-        fig.text(0.85,0.02,"maximum copy number is 40, higher values are set to 40")
+        # fig.text(0.85,0.02,"maximum copy number is 40, higher values are set to 40")
 
         plt.savefig(pdfout, format='png')
         plt.close()
