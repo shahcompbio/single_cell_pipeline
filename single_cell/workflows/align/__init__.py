@@ -100,7 +100,7 @@ def create_alignment_workflow(
     )
 
     workflow.transform(
-        name='biobloom_merge',
+        name='merge_biobloom',
         func="single_cell.workflows.align.tasks.merge_biobloom",
         axes=('cell_id',),
         args=( mgd.TempInputFile('biobloom_count_metrics', 'cell_id', 'lane'),
