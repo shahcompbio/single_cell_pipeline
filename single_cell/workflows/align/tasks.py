@@ -24,6 +24,7 @@ def merge_bams(inputs, output, output_index, containers):
 
 def merge_biobloom(inputs, output):
     counts_metric = {
+        "biobloom_human_count": 0,
         "biobloom_salmon_count": 0,
         "biobloom_mouse_count":  0,
         "biobloom_multiMatch_count": 0,
