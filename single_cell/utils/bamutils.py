@@ -159,7 +159,6 @@ def biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, docker
     tempdir = os.path.join(tempdir, 'biobloom')
     if not os.path.exists(tempdir):
         helpers.makedirs(tempdir)
-    biobloomcategorizer = "/home/linuxbrew/.linuxbrew/Cellar/biobloomtools/2.3.2/bin/biobloomcategorizer"
     cmd = [
         biobloomcategorizer,
         "--fq",
