@@ -31,8 +31,7 @@ def merge_biobloom(inputs, output):
     }
 
     for filename in inputs.iteritems():
-        raise Exception(filename)
-        with open(filename) as f:
+        with open(filename[1]) as f:
             dict = {k: int(v) for k, v in next(csv.DictReader(f)).items()}
             for key, value in dict.items():
                 counts_metric[key] += value
