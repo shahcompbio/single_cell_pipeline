@@ -30,7 +30,8 @@ def merge_biobloom(inputs, output):
         "biobloom_noMatch_count": 0,
     }
 
-    for (_, cell_id), filename in inputs.iteritems():
+    for filename in inputs.iteritems():
+        raise Exception(filename)
         with open(filename) as f:
             dict = {k: int(v) for k, v in next(csv.DictReader(f)).items()}
             for key, value in dict.items():
