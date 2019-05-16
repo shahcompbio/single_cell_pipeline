@@ -190,7 +190,6 @@ def extract_biobloom_metrics(tempdir, path):
         "biobloom_noMatch_count": file_count(tempdir + BIOBLOOM_FILES[6],tempdir + BIOBLOOM_FILES[7]),
     }
 
-
     writer = open(path, 'w')
     writer.write(','.join(counts_metric.keys()) + '\n')
     writer.write(','.join(str(v) for v in counts_metric.values()))

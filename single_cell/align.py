@@ -64,7 +64,7 @@ def align_workflow(args):
                 centerinfo,
                 sampleinfo,
                 cellids,
-                mgd.TempOutputFile('biobloom_count_metrics', 'cell_id', fnames='biobloom_count_metrics', axes_origin=[]),
+                mgd.TempOutputFile('biobloom_count_metrics', 'cell_id', axes_origin=[]),
             ),
         )
     else:
@@ -80,7 +80,7 @@ def align_workflow(args):
         ctx={'docker_image': baseimage},
         args=(
             mgd.InputFile('bam_markdups', 'cell_id', fnames = bam_files, axes_origin=[], extensions=['.bai']),
-            mgd.TempInputFile('biobloom_count_metrics', 'cell_id', fnames='biobloom_count_metrics', axes_origin=[]),
+            mgd.TempInputFile('biobloom_count_metrics', 'cell_id', axes_origin=[]),
             mgd.OutputFile(alignment_metrics_csv),
             mgd.OutputFile(gc_metrics_csv),
             mgd.OutputFile(plot_metrics_output),

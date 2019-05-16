@@ -1,3 +1,4 @@
+import csv
 import os
 import shutil
 import logging
@@ -21,6 +22,24 @@ def merge_bams(inputs, output, output_index, containers):
     picardutils.merge_bams(inputs, output, docker_image=containers['picard'])
     bamutils.bam_index(output, output_index, docker_image=containers['samtools'])
 
+def merge_bams(inputs, output):
+    counts_metric = {
+        "biobloom_salmon_count": 0,
+        "biobloom_mouse_count":  0,
+        "biobloom_multiMatch_count": 0,
+        "biobloom_noMatch_count": 0,
+    }
+
+    for filename in inputs.iteritems():
+        with open(filename) as f:
+            dict = {k: int(v) for k, v in next(csv.DictReader(f)).items()}
+            for key, value in dict.items():
+                counts_metric[key] += value
+
+    writer = open(output, 'w')
+    writer.write(','.join(counts_metric.keys()) + '\n')
+    writer.write(','.join(str(v) for v in counts_metric.values()))
+    writer.close()
 
 def merge_realignment(input_filenames, output_filename,
                       config, input_cell_id):
