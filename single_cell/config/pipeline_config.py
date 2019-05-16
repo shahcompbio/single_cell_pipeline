@@ -117,7 +117,8 @@ def get_align_params(cluster, reference, binsize, smoothing_function, aligner):
         },
         'chromosomes': referencedata['chromosomes'],
         'gc_windows': referencedata['gc_windows'],
-        'biobloom_filters': referencedata['biobloom_filters']
+        'biobloom_filters': referencedata['biobloom_filters'],
+        'ref_type' : referencedata['ref_type'],
     }
 
     return {"alignment": params}
