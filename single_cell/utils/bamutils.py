@@ -160,7 +160,7 @@ def biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, docker
     if not os.path.exists(tempdir):
         helpers.makedirs(tempdir)
     cmd = [
-        biobloomcategorizer,
+        "biobloomcategorizer",
         "--fq",
         "-e",
         "-p",
