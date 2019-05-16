@@ -164,7 +164,7 @@ def create_alignment_metrics_workflow(
             mgd.InputFile(wgs_metrics_filename, 'cell_id', axes_origin=[]),
             mgd.TempSpace("tempdir_collect_metrics"),
             mgd.TempOutputFile("alignment_metrics.csv.gz", extensions=['.yaml']),
-            mgd.TempInputFile('biobloom_count_metrics', 'cell_id', fname=biobloom_count_metrics),
+            mgd.TempInputFile('biobloom_count_metrics', 'cell_id', fnames=biobloom_count_metrics),
         ),
     )
 
