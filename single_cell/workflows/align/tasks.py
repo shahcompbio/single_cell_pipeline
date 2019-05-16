@@ -164,8 +164,8 @@ def bwa_aln_paired_end(fastq1, fastq2, output, tempdir,
 def align_pe(fastq1, fastq2, output, biobloom_count_metrics, reports, metrics, tempdir,
              reference, trim, centre, sample_info, cell_id,
              lane_id, library_id, aligner, containers, adapter,
-             adapter2):
-    fastq1, fastq2 = biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, containers['biobloom'])
+             adapter2, biobloom_filters, ref_type):
+    fastq1, fastq2 = biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, containers['biobloom'],biobloom_filters, ref_type)
     readgroup = get_readgroup(
         lane_id,
         cell_id,

@@ -43,6 +43,7 @@ def reference_data_shahlab(reference):
         exclude_list = '/shahlab/pipelines/reference/repeats.satellite.regions'
         ref_genome = '/shahlab/pipelines/reference/GRCh37-lite.fa'
         ref_genome_index = '/shahlab/pipelines/reference/GRCh37-lite.fa.fai'
+        ref_type = reference
         gc_windows = '/shahlab/pipelines/reference/gc_windows.txt'
         copynumber_ref_data = '/shahlab/pipelines/remixt_ref_data_dir'
         chrom_info_filename = '/shahlab/pipelines/remixt_ref_data_dir/chromInfo.txt.gz'
@@ -59,6 +60,11 @@ def reference_data_shahlab(reference):
                 'local_path': '/shahlab/pipelines/reference/dbsnp_b146_GRCh37p13.vcf.gz',
             }
         }
+        biobloom_filters = [
+            "/shahlab/pipelines/reference/GCF_002021735.1_Okis_V1_genomic.bf",
+            "/shahlab/pipelines/reference/GRCh37-lite.bf",
+            "/shahlab/pipelines/reference/mm10_build38_mouse.bf"
+        ]
     else:
         classifier_training_data = '/shahlab/pipelines/reference/classifier_training_data.h5'
         gc_wig_file = {
@@ -72,6 +78,7 @@ def reference_data_shahlab(reference):
         exclude_list = None
         ref_genome = '/shahlab/pipelines/reference/mm10_build38_mouse.fasta'
         ref_genome_index = '/shahlab/pipelines/reference/mm10_build38_mouse.fasta.fai'
+        ref_type = reference
         gc_windows = None
         copynumber_ref_data = '/shahlab/pipelines/remixt_ref_data_dir'
         chrom_info_filename = '/data/not/available'
@@ -88,6 +95,11 @@ def reference_data_shahlab(reference):
                 'local_path': None,
             }
         }
+        biobloom_filters = [
+             "/shahlab/pipelines/reference/GCF_002021735.1_Okis_V1_genomic.bf",
+             "/shahlab/pipelines/reference/GRCh37-lite.bf",
+             "/shahlab/pipelines/reference/mm10_build38_mouse.bf"
+        ]
 
     return locals()
 
@@ -105,6 +117,7 @@ def reference_data_azure(reference):
         }
         exclude_list = '/refdata/repeats.satellite.regions'
         ref_genome = '/refdata/GRCh37-lite.fa'
+        ref_type = reference
         gc_windows = '/refdata/gc_windows.txt'
         copynumber_ref_data = '/refdata/'
         chrom_info_filename = '/refdata/chromInfo.txt.gz'
@@ -121,6 +134,11 @@ def reference_data_azure(reference):
                 'local_path': '/refdata/dbsnp_b146_GRCh37p13.vcf.gz',
             }
         }
+        biobloom_filters = [
+            "/refdata/GCF_002021735.1_Okis_V1_genomic.bf",
+            "/refdata/GRCh37-lite.bf",
+            "/refdata/mm10_build38_mouse.bf"
+        ]
 
     else:
         classifier_training_data = '/refdata/classifier_training_data.h5'
@@ -134,6 +152,7 @@ def reference_data_azure(reference):
         }
         exclude_list = None
         ref_genome = '/refdata/mm10_build38_mouse.fasta'
+        ref_type = reference
         gc_windows = None
         copynumber_ref_data = '/refdata/'
         chrom_info_filename = '/data/not/available'
@@ -150,6 +169,11 @@ def reference_data_azure(reference):
                 'local_path': None,
             }
         }
+        biobloom_filters = [
+            "/refdata/GCF_002021735.1_Okis_V1_genomic.bf",
+            "/refdata/GRCh37-lite.bf",
+            "/refdata/mm10_build38_mouse.bf"
+        ]
 
     return locals()
 

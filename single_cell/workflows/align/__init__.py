@@ -96,6 +96,8 @@ def create_alignment_workflow(
             config['docker'],
             config['adapter'],
             config['adapter2'],
+            config['biobloom_filters'],
+            config['ref_type']
         )
     )
 

@@ -116,7 +116,8 @@ def get_align_params(cluster, reference, binsize, smoothing_function, aligner):
             "count_unpaired": False,
         },
         'chromosomes': referencedata['chromosomes'],
-        'gc_windows': referencedata['gc_windows']
+        'gc_windows': referencedata['gc_windows'],
+        'biobloom_filters': referencedata['biobloom_filters']
     }
 
     return {"alignment": params}
