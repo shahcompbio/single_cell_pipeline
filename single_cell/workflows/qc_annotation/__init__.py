@@ -8,7 +8,7 @@ import pypeliner.managed as mgd
 
 
 def create_qc_annotation_workflow(
-        hmmcopy_metrics, alignment_metrics, merged_metrics,
+        hmmcopy_metrics, alignment_metrics, gc_metrics, merged_metrics, qc_report,
         config
 ):
     ctx = {'docker_image': config['docker']['single_cell_pipeline']}
@@ -36,6 +36,18 @@ def create_qc_annotation_workflow(
             mgd.TempInputFile("hmmcopy_quality_metrics.csv.gz", extensions=['.yaml']),
             mgd.InputFile(alignment_metrics, extenstions=['.yaml']),
             mgd.OutputFile(merged_metrics, extensions=['.yaml'])
+        )
+    )
+
+    workflow.transform(
+        name='generate_qc_report',
+        func="single_cell.workflows.qc_annotation.tasks.generate_qc_report",
+        args=(
+            mgd.TempSpace("QC_report_singlecellpipeline"),
+            config['reference_gc'],
+            mgd.InputFile(merged_metrics, extensions=['.yaml']),
+            mgd.InputFile(gc_metrics, extensions=['.yaml']),
+            mgd.OutputFile(qc_report)
         )
     )
 
