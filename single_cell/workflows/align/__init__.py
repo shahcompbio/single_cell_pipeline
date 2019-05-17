@@ -208,7 +208,7 @@ def create_alignment_workflow(
             mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename, extensions=['.bai']),
             mgd.TempSpace('tempdir_metrics', 'cell_id'),
             config['docker'],
-            mgd.OutputFile(markdups_metrics, 'cell_id'),
+            # mgd.OutputFile(markdups_metrics, 'cell_id'),
             mgd.OutputFile(flagstat_metrics, 'cell_id'),
         ),
     )

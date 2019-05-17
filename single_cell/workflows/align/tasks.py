@@ -275,7 +275,7 @@ def trim_fastqs(fastq1, fastq2, cell_id, tempdir, adapter, adapter2, trimgalore_
 
 
 def get_postprocess_metrics(infile, tempdir,
-                    containers, markdups_metrics, flagstat_metrics):
+                    containers, flagstat_metrics):
 
     if not os.path.exists(tempdir):
         helpers.makedirs(tempdir)
@@ -283,8 +283,8 @@ def get_postprocess_metrics(infile, tempdir,
     outfile = os.path.join(tempdir, 'markdps.bam')
     outfile_index = outfile + '.bai'
 
-    picardutils.bam_markdups(infile, outfile, markdups_metrics, tempdir,
-                             docker_image=containers['picard'])
+    # picardutils.bam_markdups(infile, outfile, markdups_metrics, tempdir,
+    #                          docker_image=containers['picard'])
 
     bamutils.bam_index(outfile, outfile_index, docker_image=containers['samtools'])
     bamutils.bam_flagstat(outfile, flagstat_metrics, docker_image=containers['samtools'])
