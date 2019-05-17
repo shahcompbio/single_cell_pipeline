@@ -176,7 +176,9 @@ def biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, disabl
     if not disable_biobloom:
         pypeliner.commandline.execute(*cmd, docker_image=docker_image)
     extract_biobloom_metrics(tempdir, biobloom_count_metrics, disable_biobloom)
-    if ref_type == "grch37": return tempdir + "/biobloom_GRCh37-lite_1.fq", tempdir + "/biobloom_GRCh37-lite_2.fq"
+
+    if disable_biobloom: return fastq1, fastq2
+    elif ref_type == "grch37": return tempdir + "/biobloom_GRCh37-lite_1.fq", tempdir + "/biobloom_GRCh37-lite_2.fq"
     else: return tempdir + "/biobloom_mm10_build38_mouse_1.fq", tempdir + "/biobloom_mm10_build38_mouse_2.fq"
 
 def file_count(file1, file2):
