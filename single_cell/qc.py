@@ -43,7 +43,7 @@ def qc_workflow(args):
     plots_dir = os.path.join(outdir,  'plots')
     plot_metrics_output = os.path.join(plots_dir, '{}_plot_metrics.pdf'.format(lib))
 
-    baseimage = config['docker']['single_cell_pipeline']
+    baseimage = align_config['docker']['single_cell_pipeline']
 
     if run_alignment:
 
@@ -68,8 +68,8 @@ def qc_workflow(args):
                 mgd.OutputFile(alignment_metrics_csv),
                 mgd.OutputFile(gc_metrics_csv),
                 mgd.OutputFile(plot_metrics_output),
-                config['ref_genome'],
-                config,
+                align_config['ref_genome'],
+                align_config,
                 args,
                 triminfo,
                 centerinfo,
