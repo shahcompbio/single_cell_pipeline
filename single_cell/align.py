@@ -39,57 +39,38 @@ def align_workflow(args):
 
     workflow = pypeliner.workflow.Workflow()
 
-    if not args["metrics_only"]:
-        fastq1_files, fastq2_files = helpers.get_fastqs(args['input_yaml'])
-        triminfo = helpers.get_trim_info(args['input_yaml'])
-        centerinfo = helpers.get_center_info(args['input_yaml'])
 
-        workflow.setobj(
-            obj=mgd.OutputChunks('cell_id', 'lane'),
-            value=list(fastq1_files.keys()),
-        )
+    fastq1_files, fastq2_files = helpers.get_fastqs(args['input_yaml'])
+    triminfo = helpers.get_trim_info(args['input_yaml'])
+    centerinfo = helpers.get_center_info(args['input_yaml'])
 
-        workflow.subworkflow(
-            name='alignment_workflow',
-            ctx={'docker_image': baseimage},
-            func=align.create_alignment_workflow,
-            args=(
-                mgd.InputFile('fastq_1', 'cell_id', 'lane', fnames=fastq1_files, axes_origin=[]),
-                mgd.InputFile('fastq_2', 'cell_id', 'lane', fnames=fastq2_files, axes_origin=[]),
-                mgd.OutputFile('bam_markdups', 'cell_id', fnames=bam_files, axes_origin=[], extensions=['.bai']),
-                config['ref_genome'],
-                config,
-                args,
-                triminfo,
-                centerinfo,
-                sampleinfo,
-                cellids,
-                mgd.TempOutputFile('biobloom_count_metrics', 'cell_id', axes_origin=[]),
-            ),
-        )
-    else:
-        workflow.setobj(
-            obj=mgd.OutputChunks('cell_id'),
-            value=cellids,
-        )
+    workflow.setobj(
+        obj=mgd.OutputChunks('cell_id', 'lane'),
+        value=list(fastq1_files.keys()),
+    )
 
     workflow.subworkflow(
-        name='metrics_workflow',
-        func=alignment_metrics.create_alignment_metrics_workflow,
+        name='alignment_workflow',
         ctx={'docker_image': baseimage},
+        func=align.create_alignment_workflow,
         args=(
-            mgd.InputFile('bam_markdups', 'cell_id', fnames = bam_files, axes_origin=[], extensions=['.bai']),
-            mgd.TempInputFile('biobloom_count_metrics', 'cell_id', axes_origin=[]),
+            mgd.InputFile('fastq_1', 'cell_id', 'lane', fnames=fastq1_files, axes_origin=[]),
+            mgd.InputFile('fastq_2', 'cell_id', 'lane', fnames=fastq2_files, axes_origin=[]),
+            mgd.OutputFile('bam_markdups', 'cell_id', fnames=bam_files, axes_origin=[], extensions=['.bai']),
+            mgd.TempOutputFile('biobloom_count_metrics', 'cell_id', axes_origin=[]),
             mgd.OutputFile(alignment_metrics_csv),
             mgd.OutputFile(gc_metrics_csv),
             mgd.OutputFile(plot_metrics_output),
             config['ref_genome'],
             config,
             args,
+            triminfo,
+            centerinfo,
             sampleinfo,
             cellids,
         ),
     )
+
 
     inputs = helpers.get_fastq_files(args["input_yaml"])
     outputs = {k: helpers.format_file_yaml(v) for k,v in bam_files.iteritems()}
