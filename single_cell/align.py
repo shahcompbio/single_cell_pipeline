@@ -7,7 +7,7 @@ import os
 import single_cell
 import pypeliner
 import pypeliner.managed as mgd
-from workflows import align,alignment_metrics
+from workflows import align
 from single_cell.utils import helpers
 
 

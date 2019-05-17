@@ -6,7 +6,7 @@ Created on Feb 19, 2018
 import os
 import pypeliner
 import pypeliner.managed as mgd
-from workflows import align,alignment_metrics, hmmcopy, qc_annotation
+from workflows import align, hmmcopy, qc_annotation
 from single_cell.utils import helpers
 import copy
 
@@ -43,6 +43,7 @@ def qc_workflow(args):
     plots_dir = os.path.join(outdir,  'plots')
     plot_metrics_output = os.path.join(plots_dir, '{}_plot_metrics.pdf'.format(lib))
 
+    baseimage = config['docker']['single_cell_pipeline']
 
     if run_alignment:
 
@@ -57,32 +58,21 @@ def qc_workflow(args):
 
         workflow.subworkflow(
             name='alignment_workflow',
+            ctx={'docker_image': baseimage},
             func=align.create_alignment_workflow,
             args=(
                 mgd.InputFile('fastq_1', 'cell_id', 'lane', fnames=fastq1_files, axes_origin=[]),
                 mgd.InputFile('fastq_2', 'cell_id', 'lane', fnames=fastq2_files, axes_origin=[]),
                 mgd.OutputFile('bam_markdups', 'cell_id', fnames=bam_files, axes_origin=[], extensions=['.bai']),
-                align_config['ref_genome'],
-                align_config,
-                args,
-                triminfo,
-                centerinfo,
-                sampleinfo,
-                cellids,
-            ),
-        )
-
-        workflow.subworkflow(
-            name='metrics_workflow',
-            func=alignment_metrics.create_alignment_metrics_workflow,
-            args=(
-                mgd.InputFile('bam_markdups', 'cell_id', fnames = bam_files, axes_origin=[], extensions=['.bai']),
+                mgd.TempOutputFile('biobloom_count_metrics', 'cell_id', axes_origin=[]),
                 mgd.OutputFile(alignment_metrics_csv),
                 mgd.OutputFile(gc_metrics_csv),
                 mgd.OutputFile(plot_metrics_output),
-                align_config['ref_genome'],
-                align_config,
+                config['ref_genome'],
+                config,
                 args,
+                triminfo,
+                centerinfo,
                 sampleinfo,
                 cellids,
             ),
