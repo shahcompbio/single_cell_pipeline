@@ -58,7 +58,7 @@ def create_alignment_workflow(
         obj=mgd.TempOutputObj('sampleinfo', 'cell_id', axes_origin=[]),
         value=sample_info)
 
-    if args['alignment_metrics_only']:
+    if not args['alignment_metrics_only']:
         workflow.setobj(
             obj=mgd.OutputChunks('cell_id', 'lane'),
             value=fastq_1_filename.keys(),
