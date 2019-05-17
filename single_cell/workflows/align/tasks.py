@@ -22,20 +22,20 @@ def merge_bams(inputs, output, output_index, containers):
     picardutils.merge_bams(inputs, output, docker_image=containers['picard'])
     bamutils.bam_index(output, output_index, docker_image=containers['samtools'])
 
-def merge_biobloom(inputs, output):
+def merge_biobloom(inputs, output, disable_biobloom,):
     counts_metric = {
-        "biobloom_human_count": 0,
-        "biobloom_salmon_count": 0,
-        "biobloom_mouse_count":  0,
-        "biobloom_multiMatch_count": 0,
-        "biobloom_noMatch_count": 0,
+        "biobloom_human_count": 0 if not disable_biobloom else "NA",
+        "biobloom_salmon_count": 0 if not disable_biobloom else "NA",
+        "biobloom_mouse_count":  0 if not disable_biobloom else "NA",
+        "biobloom_multiMatch_count": 0 if not disable_biobloom else "NA",
+        "biobloom_noMatch_count": 0 if not disable_biobloom else "NA",
     }
-
-    for filename in inputs.iteritems():
-        with open(filename[1]) as f:
-            dict = {k: int(v) for k, v in next(csv.DictReader(f)).items()}
-            for key, value in dict.items():
-                counts_metric[key] += value
+    if not disable_biobloom:
+        for filename in inputs.iteritems():
+            with open(filename[1]) as f:
+                dict = {k: int(v) for k, v in next(csv.DictReader(f)).items()}
+                for key, value in dict.items():
+                    counts_metric[key] += value
 
     writer = open(output, 'w')
     writer.write(','.join(counts_metric.keys()) + '\n')
@@ -162,11 +162,11 @@ def bwa_aln_paired_end(fastq1, fastq2, output, tempdir,
     bamutils.samtools_sam_to_bam(samfile, output, docker_image=containers['samtools'])
 
 
-def align_pe(fastq1, fastq2, output, biobloom_count_metrics, reports, metrics, tempdir,
+def align_pe(fastq1, fastq2, output, biobloom_count_metrics, disable_biobloom, reports, metrics, tempdir,
              reference, trim, centre, sample_info, cell_id,
              lane_id, library_id, aligner, containers, adapter,
              adapter2, biobloom_filters, ref_type):
-    fastq1, fastq2 = biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, containers['biobloom'],biobloom_filters, ref_type)
+    fastq1, fastq2 = biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, disable_biobloom, containers['biobloom'],biobloom_filters, ref_type)
     readgroup = get_readgroup(
         lane_id,
         cell_id,

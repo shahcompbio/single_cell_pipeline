@@ -108,10 +108,10 @@ def parse_args():
                        action="store_true",
                        help='''run alignment workflow''')
 
-    qc.add_argument("--alignment_metrics_only",
+    qc.add_argument("--disable_biobloom",
                        default=False,
                        action="store_true",
-                       help='''only run alignment metrics extraction, assumes that bams are available''')
+                       help='''disable biobloom categorizer''')
 
     qc.add_argument("--hmmcopy",
                        default=False,

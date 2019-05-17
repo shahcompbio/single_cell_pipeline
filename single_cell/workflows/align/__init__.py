@@ -25,6 +25,7 @@ def create_alignment_workflow(
         cell_ids,
 ):
 
+    disable_biobloom = args['disable_biobloom']
 
     baseimage = config['docker']['single_cell_pipeline']
 
@@ -82,6 +83,7 @@ def create_alignment_workflow(
             mgd.TempOutputFile(
                 'aligned_per_cell_per_lane.sorted.bam', 'cell_id', 'lane'),
             mgd.TempOutputFile('biobloom_count_metrics', 'cell_id', 'lane'),
+            disable_biobloom,
             mgd.OutputFile(fastqc_reports, 'cell_id', 'lane'),
             mgd.OutputFile(flagstat_metrics, 'cell_id', 'lane'),
             mgd.TempSpace('alignment_temp', 'cell_id', 'lane'),
@@ -106,7 +108,8 @@ def create_alignment_workflow(
         func="single_cell.workflows.align.tasks.merge_biobloom",
         axes=('cell_id',),
         args=( mgd.TempInputFile('biobloom_count_metrics', 'cell_id', 'lane'),
-               mgd.TempOutputFile('biobloom_count_metrics_merged', 'cell_id')
+               mgd.TempOutputFile('biobloom_count_metrics_merged', 'cell_id'),
+               disable_biobloom,
                )
     )
 
