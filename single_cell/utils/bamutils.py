@@ -155,10 +155,11 @@ def bam_view(bam, output, region, **kwargs):
     pypeliner.commandline.execute(*cmd, **kwargs)
 
 
-def biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, docker_image, biobloom_filters, ref_type):
+def biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, disable_biobloom, docker_image, biobloom_filters, ref_type):
     tempdir = os.path.join(tempdir, 'biobloom')
     if not os.path.exists(tempdir):
         helpers.makedirs(tempdir)
+
     cmd = [
         "biobloomcategorizer",
         "--fq",
@@ -170,9 +171,12 @@ def biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, docker
         fastq1,
         fastq2,
     ]
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
-    extract_biobloom_metrics(tempdir, biobloom_count_metrics)
-    if ref_type == "grch37": return tempdir + "/biobloom_GRCh37-lite_1.fq", tempdir + "/biobloom_GRCh37-lite_2.fq"
+    if not disable_biobloom:
+        pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    extract_biobloom_metrics(tempdir, biobloom_count_metrics, disable_biobloom)
+
+    if disable_biobloom: return fastq1, fastq2
+    elif ref_type == "grch37": return tempdir + "/biobloom_GRCh37-lite_1.fq", tempdir + "/biobloom_GRCh37-lite_2.fq"
     else: return tempdir + "/biobloom_mm10_build38_mouse_1.fq", tempdir + "/biobloom_mm10_build38_mouse_2.fq"
 
 def file_count(file1, file2):
@@ -180,7 +184,7 @@ def file_count(file1, file2):
     count_2 = sum(1 for l in open(file2))
     return count_1 if count_1 == count_2 else ValueError('Two biobloom FastQ counts are not matching')
 
-def extract_biobloom_metrics(tempdir, path):
+def extract_biobloom_metrics(tempdir, path, disable_biobloom):
     biobloom_files = [
         "/biobloom_GRCh37-lite_1.fq",
         "/biobloom_GRCh37-lite_2.fq",
@@ -195,11 +199,11 @@ def extract_biobloom_metrics(tempdir, path):
     ]
 
     counts_metric = {
-        "biobloom_human_count": file_count(tempdir + biobloom_files[0], tempdir + biobloom_files[0]),
-        "biobloom_salmon_count" : file_count(tempdir + biobloom_files[2],tempdir + biobloom_files[3]),
-        "biobloom_mouse_count" : file_count(tempdir + biobloom_files[4],tempdir + biobloom_files[5]),
-        "biobloom_multiMatch_count": file_count(tempdir + biobloom_files[6],tempdir + biobloom_files[7]),
-        "biobloom_noMatch_count": file_count(tempdir + biobloom_files[8],tempdir + biobloom_files[9]),
+        "biobloom_human_count": file_count(tempdir + biobloom_files[0], tempdir + biobloom_files[0]) if not disable_biobloom else "NA",
+        "biobloom_salmon_count" : file_count(tempdir + biobloom_files[2],tempdir + biobloom_files[3]) if not disable_biobloom else "NA",
+        "biobloom_mouse_count" : file_count(tempdir + biobloom_files[4],tempdir + biobloom_files[5]) if not disable_biobloom else "NA",
+        "biobloom_multiMatch_count": file_count(tempdir + biobloom_files[6],tempdir + biobloom_files[7]) if not disable_biobloom else "NA",
+        "biobloom_noMatch_count": file_count(tempdir + biobloom_files[8],tempdir + biobloom_files[9]) if not disable_biobloom else "NA",
     }
 
     writer = open(path, 'w')
