@@ -13,6 +13,15 @@ import copy
 
 def qc_workflow(args):
 
+    run_alignment = args['alignment']
+    run_hmmcopy = args['hmmcopy']
+    run_annotation = args['annotation']
+
+    if not any((run_alignment, run_hmmcopy, run_annotation)):
+        run_alignment = True
+        run_hmmcopy = True
+        run_annotation = True
+
     config = helpers.load_config(args)
 
     align_config = config['alignment']
@@ -23,17 +32,19 @@ def qc_workflow(args):
 
     lib = args["library_id"]
 
-    outdir = os.path.join(args["out_dir"], "results", "alignment")
+    ctx = {'docker_image': align_config['docker']['single_cell_pipeline']}
+    workflow = pypeliner.workflow.Workflow(ctx=ctx)
+
+
+    outdir = os.path.join(args["out_dir"], "results", "QC")
 
     alignment_metrics_csv = os.path.join(outdir, '{}_alignment_metrics.csv.gz'.format(lib))
     gc_metrics_csv = os.path.join(outdir, '{}_gc_metrics.csv.gz'.format(lib))
     plots_dir = os.path.join(outdir,  'plots')
     plot_metrics_output = os.path.join(plots_dir, '{}_plot_metrics.pdf'.format(lib))
 
-    ctx={'docker_image': align_config['docker']['single_cell_pipeline']}
-    workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
-    if args['alignment']:
+    if run_alignment:
 
         fastq1_files, fastq2_files = helpers.get_fastqs(args['input_yaml'])
         triminfo = helpers.get_trim_info(args['input_yaml'])
@@ -77,7 +88,7 @@ def qc_workflow(args):
             ),
         )
 
-    if args['hmmcopy']:
+    if run_hmmcopy:
 
         if not args['alignment']:
             workflow.setobj(
@@ -131,10 +142,11 @@ def qc_workflow(args):
             ),
         )
 
-    if args['annotation']:
-        results_dir = os.path.join(args['out_dir'], 'results')
+    if run_annotation:
+        results_dir = os.path.join(args['out_dir'], 'results', 'QC')
         metrics_csvs = os.path.join(results_dir, 'hmmcopy_autoploidy', '{0}_metrics.csv.gz'.format(lib))
         merged_metrics_csvs = os.path.join(results_dir, '{0}_metrics.csv.gz'.format(lib))
+        qc_report = os.path.join(results_dir, '{0}_QC_report.html'.format(lib))
 
         workflow.subworkflow(
             name='annotation_workflow',
@@ -142,7 +154,9 @@ def qc_workflow(args):
             args=(
                 mgd.InputFile(metrics_csvs),
                 mgd.OutputFile(alignment_metrics_csv),
+                mgd.OutputFile(gc_metrics_csv),
                 mgd.OutputFile(merged_metrics_csvs),
+                mgd.OutputFile(qc_report),
                 config['annotation'],
             ),
         )
