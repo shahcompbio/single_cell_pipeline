@@ -13,7 +13,6 @@ def create_alignment_workflow(
         fastq_1_filename,
         fastq_2_filename,
         bam_filename,
-        biobloom_count_metrics,
         alignment_metrics,
         gc_metrics,
         plot_metrics,
@@ -38,8 +37,8 @@ def create_alignment_workflow(
     bam_filename = dict([(cellid, bam_filename[cellid])
                          for cellid in cell_ids])
 
-    biobloom_count_metrics = dict([(cellid, biobloom_count_metrics[cellid])
-                         for cellid in cell_ids])
+    # biobloom_count_metrics = dict([(cellid, biobloom_count_metrics[cellid])
+    #                      for cellid in cell_ids])
 
     chromosomes = config["chromosomes"]
 
@@ -115,7 +114,7 @@ def create_alignment_workflow(
             func="single_cell.workflows.align.tasks.merge_biobloom",
             axes=('cell_id',),
             args=( mgd.TempInputFile('biobloom_count_metrics', 'cell_id', 'lane'),
-                   mgd.OutputFile('biobloom_count_metrics', 'cell_id', fnames=biobloom_count_metrics)
+                   mgd.TempOutputFile('biobloom_count_metrics', 'cell_id')
                    )
         )
 
@@ -305,7 +304,7 @@ def create_alignment_workflow(
             mgd.InputFile(wgs_metrics_filename, 'cell_id', axes_origin=[]),
             mgd.TempSpace("tempdir_collect_metrics"),
             mgd.TempOutputFile("alignment_metrics.csv.gz", extensions=['.yaml']),
-            mgd.InputFile('biobloom_count_metrics', 'cell_id', fnames=biobloom_count_metrics)
+            mgd.TempInputFile('biobloom_count_metrics', 'cell_id')
         ),
     )
 

@@ -64,7 +64,6 @@ def qc_workflow(args):
                 mgd.InputFile('fastq_1', 'cell_id', 'lane', fnames=fastq1_files, axes_origin=[]),
                 mgd.InputFile('fastq_2', 'cell_id', 'lane', fnames=fastq2_files, axes_origin=[]),
                 mgd.OutputFile('bam_markdups', 'cell_id', fnames=bam_files, axes_origin=[], extensions=['.bai']),
-                mgd.TempOutputFile('biobloom_count_metrics', 'cell_id', axes_origin=[]),
                 mgd.OutputFile(alignment_metrics_csv),
                 mgd.OutputFile(gc_metrics_csv),
                 mgd.OutputFile(plot_metrics_output),
