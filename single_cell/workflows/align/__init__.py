@@ -206,7 +206,7 @@ def create_alignment_workflow(
         func="single_cell.workflows.align.tasks.get_postprocess_metrics",
         args=(
             mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename, extensions=['.bai']),
-            mgd.TempSpace('tempdir', 'cell_id'),
+            mgd.TempSpace('tempdir_metrics', 'cell_id'),
             config['docker'],
             mgd.OutputFile(markdups_metrics, 'cell_id'),
             mgd.OutputFile(flagstat_metrics, 'cell_id'),
