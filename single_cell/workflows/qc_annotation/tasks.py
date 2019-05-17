@@ -8,6 +8,7 @@ from single_cell.utils import csvutils
 from single_cell.utils import helpers
 
 from scripts import classify
+from scripts import generate_qc
 
 def annotate_metrics(
         metrics, output, sample_info, cells):
@@ -59,3 +60,10 @@ def merge_metrics(hmmcopy_metrics, alignment_metrics, merged_output):
         ['cell_id'],
         header=True
     )
+
+
+def generate_qc_report(tempdir, reference_gc, metrics_df, gc_metrics_df, qc_report):
+
+    helpers.makedirs(tempdir)
+
+    generate_qc.generate_html_report(tempdir, qc_report, reference_gc, metrics_df, gc_metrics_df)

@@ -138,6 +138,7 @@ def get_annotation_params(cluster, reference):
         'docker': docker_containers,
         'memory': {'med': 6},
         'classifier_training_data': referencedata['classifier_training_data'],
+        'reference_gc': referencedata['reference_gc_qc']
     }
 
     return {"annotation": params}
