@@ -49,6 +49,7 @@ def reference_data_shahlab(reference):
         chrom_info_filename = '/shahlab/pipelines/remixt_ref_data_dir/chromInfo.txt.gz'
         chromosomes = get_chromosomes('grch37')
         copynumber_ref_data = '/shahlab/pipelines/remixt_ref_data_dir'
+        reference_gc_qc = '/shahlab/pipelines/reference/reference_gc_grch37.csv'
         databases = {
             'mappability': {
                 'local_path': '/shahlab/pipelines/reference/wgEncodeCrgMapabilityAlign50mer.bigWig',
@@ -84,6 +85,7 @@ def reference_data_shahlab(reference):
         chrom_info_filename = '/data/not/available'
         chromosomes = get_chromosomes('mm10')
         copynumber_ref_data = '/shahlab/pipelines/remixt_ref_data_dir'
+        reference_gc_qc = None
         databases = {
             'mappability': {
                 'local_path': None,
@@ -123,6 +125,7 @@ def reference_data_azure(reference):
         chrom_info_filename = '/refdata/chromInfo.txt.gz'
         chromosomes = get_chromosomes('grch37')
         copynumber_ref_data = '/refdata/'
+        reference_gc_qc = '/refdata/reference_gc_grch37.csv'
         databases = {
             'mappability': {
                 'local_path': '/refdata/wgEncodeCrgMapabilityAlign50mer.bigWig',
@@ -158,6 +161,7 @@ def reference_data_azure(reference):
         chrom_info_filename = '/data/not/available'
         chromosomes = get_chromosomes('mm10')
         copynumber_ref_data = '/refdata/remixt_ref_data_dir'
+        reference_gc_qc = None
         databases = {
             'mappability': {
                 'local_path': None,
