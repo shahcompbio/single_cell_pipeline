@@ -277,7 +277,7 @@ def create_alignment_workflow(
             mgd.InputFile(flagstat_metrics, 'cell_id'),
             mgd.OutputFile(insert_metrics_filename, 'cell_id'),
             mgd.OutputFile(insert_histogram_filename, 'cell_id'),
-            mgd.TempSpace('insert_tempdir', 'cell_id'),
+            mgd.TempSpace('insefefert_tempdir', 'cell_id'),
             config['docker'],
         ),
     )
@@ -304,7 +304,7 @@ def create_alignment_workflow(
             mgd.InputFile(wgs_metrics_filename, 'cell_id', axes_origin=[]),
             mgd.TempSpace("tempdir_collect_metrics"),
             mgd.TempOutputFile("alignment_metrics.csv.gz", extensions=['.yaml']),
-            mgd.TempInputFile('biobloom_count_metrics_merged', 'cell_id')
+            mgd.TempInputFile('biobloom_count_metrics_merged', 'cell_id', axes_origin=[])
         ),
     )
 
