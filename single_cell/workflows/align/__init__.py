@@ -49,10 +49,10 @@ def create_alignment_workflow(
         value=chromosomes,
     )
 
-    workflow.setobj(
-        obj=mgd.OutputChunks('cell_id'),
-        value=cell_ids,
-    )
+    # workflow.setobj(
+    #     obj=mgd.OutputChunks('cell_id'),
+    #     value=cell_ids,
+    # )
 
     workflow.setobj(
         obj=mgd.TempOutputObj('sampleinfo', 'cell_id', axes_origin=[]),
@@ -113,7 +113,7 @@ def create_alignment_workflow(
             name='merge_biobloom',
             func="single_cell.workflows.align.tasks.merge_biobloom",
             axes=('cell_id',),
-            args=( mgd.TempInputFile('biobloom_count_metrics', 'cell_id', 'lane', axes_origin=[]),
+            args=( mgd.TempInputFile('biobloom_count_metrics', 'cell_id', 'lane'),
                    mgd.TempOutputFile('biobloom_count_metrics_merged', 'cell_id')
                    )
         )
