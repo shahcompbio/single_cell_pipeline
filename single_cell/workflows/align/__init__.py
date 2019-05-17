@@ -111,6 +111,15 @@ def create_alignment_workflow(
         )
 
         workflow.transform(
+            name='merge_biobloom',
+            func="single_cell.workflows.align.tasks.merge_biobloom",
+            axes=('cell_id',),
+            args=( mgd.TempInputFile('biobloom_count_metrics', 'cell_id', 'lane'),
+                   mgd.OutputFile('biobloom_count_metrics', 'cell_id', fnames=biobloom_count_metrics)
+                   )
+        )
+
+        workflow.transform(
             name='merge_bams',
             ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
             func="single_cell.workflows.align.tasks.merge_bams",
@@ -181,15 +190,6 @@ def create_alignment_workflow(
                 mgd.OutputFile(flagstat_metrics, 'cell_id'),
             ),
         )
-
-    workflow.transform(
-        name='merge_biobloom',
-        func="single_cell.workflows.align.tasks.merge_biobloom",
-        axes=('cell_id',),
-        args=(mgd.TempInputFile('biobloom_count_metrics', 'cell_id', 'lane'),
-              mgd.OutputFile('biobloom_count_metrics', 'cell_id', fnames=biobloom_count_metrics)
-              )
-    )
 
     # alignment_metrics
     markdups_metrics = os.path.join(
@@ -288,7 +288,7 @@ def create_alignment_workflow(
         func="single_cell.workflows.align.tasks.collect_gc",
         ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         args=(
-            mgd.OutputFile('biobloom_count_metrics', 'cell_id', fnames=biobloom_count_metrics),
+            mgd.InputFile(gc_metrics_filename, 'cell_id', axes_origin=[]),
             mgd.TempOutputFile('gc_metrics.csv.gz', extensions=['.yaml']),
             mgd.TempSpace("temp_gc")
         ),
@@ -305,7 +305,7 @@ def create_alignment_workflow(
             mgd.InputFile(wgs_metrics_filename, 'cell_id', axes_origin=[]),
             mgd.TempSpace("tempdir_collect_metrics"),
             mgd.TempOutputFile("alignment_metrics.csv.gz", extensions=['.yaml']),
-            mgd.InputFile('biobloom_count_metrics', 'cell_id', fnames=biobloom_count_metrics),
+            mgd.InputFile('biobloom_count_metrics', 'cell_id', fnames=biobloom_count_metrics)
         ),
     )
 
