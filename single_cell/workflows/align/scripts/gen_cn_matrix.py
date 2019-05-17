@@ -41,6 +41,7 @@ class GenerateCNMatrix(object):
             input_df["cell_id"] = input_df.index
 
         input_df.to_csv(self.output,
+                        na_rep='NA',
                         sep=self.sep,
                         index=False)
 

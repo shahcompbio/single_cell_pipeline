@@ -11,8 +11,6 @@ import argparse
 import shutil
 from shutil import copyfile
 import signal
-import pypeliner
-
 
 class RunTrimGalore(object):
     """
@@ -21,7 +19,7 @@ class RunTrimGalore(object):
 
     def __init__(self, seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt, tempdir,
                 adapter, adapter2, report_r1, report_r2, qc_report_r1,
-                qc_report_r2, qc_zip_r1, qc_zip_r2, docker_image):
+                qc_report_r2, qc_zip_r1, qc_zip_r2):
         self.seq1 = seq1
         self.seq2 = seq2
         self.trimgalore_path = trimgalore
@@ -39,18 +37,23 @@ class RunTrimGalore(object):
         self.report_r2 = report_r2
         self.empty = False
 
-        self.docker_image = docker_image
-
         self.check_inputs()
 
         if not os.path.exists(self.tempdir):
             os.makedirs(self.tempdir)
 
-    def run_cmd(self, cmd):
+
+    @classmethod
+    def run_cmd(cls, cmd):
         """
         run a command with subprocess and return outputs
         """
-        pypeliner.commandline.execute(*cmd, docker_image=self.docker_image)
+        import sys
+
+        proc = Popen(cmd, stdout=sys.stdout, stderr=sys.stderr,
+                     preexec_fn=lambda:signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+
+        proc.communicate()
 
     def check_file(self, path):
         """
@@ -129,10 +132,10 @@ class RunTrimGalore(object):
         move files from from temp dir to the expected path
         """
         dir = os.path.dirname(outpath)
-        
+
         if not os.path.exists(dir):
             os.makedirs(dir)
-        
+
         path = os.path.join(self.tempdir, fname)
         shutil.move(path, outpath)
         assert os.path.isfile(outpath)
@@ -174,8 +177,7 @@ class RunTrimGalore(object):
                 if ext == '.fq.gz':
                     raise Exception("Couldn't move %s files" % ext)
                 else:
-                    logging.getLogger("single_cell.align.trim").warn(
-                        "Couldn't move %s files" % ext)
+                    logging.getLogger("single_cell.align.trim").warn("Couldn't move %s files" % ext)
 
     def gather_outputs(self):
         """
