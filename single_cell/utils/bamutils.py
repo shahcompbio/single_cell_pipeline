@@ -181,7 +181,7 @@ def file_count(file1, file2):
     return count_1 if count_1 == count_2 else ValueError('Two biobloom FastQ counts are not matching')
 
 def extract_biobloom_metrics(tempdir, path):
-    BIOBLOOM_FILES = [
+    biobloom_files = [
         "/biobloom_GRCh37-lite_1.fq",
         "/biobloom_GRCh37-lite_2.fq",
         "/biobloom_GCF_002021735.1_Okis_V1_genomic_1.fq",
@@ -195,11 +195,11 @@ def extract_biobloom_metrics(tempdir, path):
     ]
 
     counts_metric = {
-        "biobloom_human_count": file_count(tempdir + BIOBLOOM_FILES[0], tempdir + BIOBLOOM_FILES[0]),
-        "biobloom_salmon_count" : file_count(tempdir + BIOBLOOM_FILES[2],tempdir + BIOBLOOM_FILES[3]),
-        "biobloom_mouse_count" : file_count(tempdir + BIOBLOOM_FILES[4],tempdir + BIOBLOOM_FILES[5]),
-        "biobloom_multiMatch_count": file_count(tempdir + BIOBLOOM_FILES[6],tempdir + BIOBLOOM_FILES[7]),
-        "biobloom_noMatch_count": file_count(tempdir + BIOBLOOM_FILES[8],tempdir + BIOBLOOM_FILES[9]),
+        "biobloom_human_count": file_count(tempdir + biobloom_files[0], tempdir + biobloom_files[0]),
+        "biobloom_salmon_count" : file_count(tempdir + biobloom_files[2],tempdir + biobloom_files[3]),
+        "biobloom_mouse_count" : file_count(tempdir + biobloom_files[4],tempdir + biobloom_files[5]),
+        "biobloom_multiMatch_count": file_count(tempdir + biobloom_files[6],tempdir + biobloom_files[7]),
+        "biobloom_noMatch_count": file_count(tempdir + biobloom_files[8],tempdir + biobloom_files[9]),
     }
 
     writer = open(path, 'w')
