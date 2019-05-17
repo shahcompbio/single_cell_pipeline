@@ -191,27 +191,27 @@ def create_alignment_workflow(
         )
 
     # alignment_metrics
-    markdups_metrics = os.path.join(
-        merge_metrics,
-        'markdups_metrics',
-        '{cell_id}.markdups_metrics.txt')
-    flagstat_metrics = os.path.join(
-        merge_metrics,
-        'flagstat_metrics',
-        '{cell_id}.flagstat_metrics.txt')
-    workflow.transform(
-        name='postprocess_bam_metrics',
-        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        axes=('cell_id',),
-        func="single_cell.workflows.align.tasks.get_postprocess_metrics",
-        args=(
-            mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename, extensions=['.bai']),
-            mgd.TempSpace('tempdir_metrics', 'cell_id'),
-            config['docker'],
-            # mgd.OutputFile(markdups_metrics, 'cell_id'),
-            mgd.OutputFile(flagstat_metrics, 'cell_id'),
-        ),
-    )
+    # markdups_metrics = os.path.join(
+    #     merge_metrics,
+    #     'markdups_metrics',
+    #     '{cell_id}.markdups_metrics.txt')
+    # flagstat_metrics = os.path.join(
+    #     merge_metrics,
+    #     'flagstat_metrics',
+    #     '{cell_id}.flagstat_metrics.txt')
+    # workflow.transform(
+    #     name='postprocess_bam_metrics',
+    #     ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+    #     axes=('cell_id',),
+    #     func="single_cell.workflows.align.tasks.get_postprocess_metrics",
+    #     args=(
+    #         mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename, extensions=['.bai']),
+    #         mgd.TempSpace('tempdir_metrics', 'cell_id'),
+    #         config['docker'],
+    #         # mgd.OutputFile(markdups_metrics, 'cell_id'),
+    #         # mgd.OutputFile(flagstat_metrics, 'cell_id'),
+    #     ),
+    # )
 
 
     wgs_metrics_filename = os.path.join(
