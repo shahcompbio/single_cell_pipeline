@@ -155,7 +155,10 @@ def generate_dtype_yaml(csv_file, yaml_filename=None, columns=None):
         if column in ['chr', 'chrom', 'chromosome']:
             typeinfo[column] = 'str'
         else:
-            typeinfo[column] = pandas_to_std_types[str(dtype)]
+            if data.empty:
+                typeinfo[column] = 'NA'
+            else:
+                typeinfo[column] = pandas_to_std_types[str(dtype)]
 
     if yaml_filename:
         with open(yaml_filename, 'w') as f:
@@ -200,7 +203,7 @@ def concatenate_csv(in_filenames, out_filename, nan_val='NA', key_column=None, s
 
 
 def extrapolate_types_from_yaml_files(csv_files, outputyaml):
-    precedence = ['str', 'float', 'int', 'bool']
+    precedence = ['str', 'float', 'int', 'bool', 'NA']
 
     yamldata = [get_metadata(csvfile) for csvfile in csv_files]
 
