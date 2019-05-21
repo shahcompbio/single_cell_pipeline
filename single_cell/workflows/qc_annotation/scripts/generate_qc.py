@@ -1,3 +1,4 @@
+from __future__ import division
 import matplotlib
 import numpy as np
 import pandas as pd
@@ -12,7 +13,7 @@ import os
 import base64
 
 sns.set(context='talk',
-        style='ticks',
+        style='darkgrid',
         # font='Helvetica',
         rc={'axes.titlesize': 12,
             'axes.labelsize': 12,
@@ -27,9 +28,15 @@ def encode_as_base64(filepath):
         encoded_string = base64.b64encode(image_file.read())
     return encoded_string
 
-def load_data(infile, squeeze=False):
-    return pd.read_csv(infile, squeeze=squeeze)
+def load_data(infile, squeeze=False, gc=False):
+    df = pd.read_csv(infile, squeeze=squeeze)
 
+    if gc:
+        df.index = df.cell_id
+        del df['cell_id']
+        df.columns = map(int, df.columns.values)
+
+    return df
 
 def flag_outliers(df, upper_limit, lower_limit):
     if df["quality"] < upper_limit and df["quality"] > lower_limit:
@@ -209,7 +216,7 @@ def generate_library_metrics(df, gc_data, reference_gc):
 
     # Find the error
     gc_curve = get_gc_curve(gc_data)
-    error_curve = reference_gc.subtract(gc_curve).abs()
+    error_curve = reference_gc.sub(gc_curve).abs()
     sum_of_diffs = float(error_curve.sum())
 
     df = pd.DataFrame.from_dict(
@@ -227,6 +234,7 @@ def get_gc_curve(df):
     """
     """
     df_average = df.mean().to_frame(name="average")
+
     q75, q25 = np.percentile(df_average["average"], [75, 25])
     iqr = q75 - q25
 
@@ -251,13 +259,17 @@ def plot_gc_curve(gc_data, reference_gc, output):
     """
 
     gc_curve = get_gc_curve(gc_data)
+
+    reference_gc.index = list(reference_gc.index)
+    gc_curve.index = list(gc_curve.index)
+
     # Compare with reference gc curve
     reference_gc.index = list(reference_gc.index)
     gc_curve.index = list(gc_curve.index.astype(int))
 
     plt.grid(b=True, which='both', axis='both')
-    plt.plot(reference_gc, color='r', label='reference curve')
-    plt.plot(gc_curve, 'o', mfc='none', label='Normalized Coverage')
+    plt.plot(reference_gc, color='b', label='reference curve')
+    plt.plot(gc_curve, 'o', mfc='none', mec='r', mew=1, label='Normalized Coverage')
     plt.title("GC Bias Plot")
     plt.xlabel("GC% of 100 base windows")
     plt.ylabel("Fraction of normalized coverage")
@@ -339,11 +351,11 @@ def generate_html_report(tempdir, html, reference_gc, metrics, gc_metrics):
     heatmap = os.path.join(tempdir, 'heatmap.png')
 
     reference_gc = load_data(reference_gc, squeeze=True)
+
     data = load_data(metrics)
-    gc_data = load_data(gc_metrics)
+    gc_data = load_data(gc_metrics, gc=True)
 
     quality_df = generate_quality_qc_table(data)
-
     contamination_df = generate_contamination_qc_table(data)
     library_df = generate_library_metrics(data, gc_data, reference_gc)
 
@@ -362,4 +374,3 @@ def generate_html_report(tempdir, html, reference_gc, metrics, gc_metrics):
         ],
         html
     )
-
