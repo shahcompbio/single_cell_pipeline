@@ -113,7 +113,8 @@ def destruct_preprocess_workflow(
         normal_bam_files, normal_stats,
         normal_reads_1, normal_reads_2,
         normal_sample_1, normal_sample_2,
-        ref_data_directory, destruct_config
+        ref_data_directory, destruct_config,
+        tag=False
 ):
     workflow = pypeliner.workflow.Workflow()
 
@@ -161,7 +162,7 @@ def destruct_preprocess_workflow(
                 mgd.OutputFile(normal_sample_2),
                 mgd.OutputFile(normal_stats),
             ),
-            kwargs={'tag': False}
+            kwargs={'tag': tag}
         )
 
     return workflow
@@ -173,7 +174,7 @@ def create_destruct_workflow(
         destruct_config, ref_data_directory, breakpoints_filename,
         breakpoints_library_filename, cell_counts_filename, raw_data_directory,
         normal_sample_id='normal', tumour_sample_id='tumour',
-        tumour_library_id='tumour',
+        tumour_library_id='tumour'
 ):
     tumour_sample_id = '_'.join([tumour_sample_id, tumour_library_id])
     workflow = pypeliner.workflow.Workflow()
@@ -349,6 +350,7 @@ def destruct_multi_sample_workflow(
             destruct_ref_data_dir,
             destruct_config,
         ),
+        kwargs={'tag': True}
     )
 
     workflow.subworkflow(
