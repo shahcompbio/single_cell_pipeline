@@ -13,8 +13,8 @@ def read_chromosome_lengths(genome_fasta_index, chromosomes=default_chromosomes)
     return fai.to_dict()
 
 
-def get_split_regions(split_size, genome_version='grch37', chromosomes=default_chromosomes):
-    genome_fasta_index = pkg_resources.resource_filename('single_cell', 'data/GRCh37-lite.fa.fai')
+def get_split_regions(split_size, refgenome, chromosomes=default_chromosomes):
+    genome_fasta_index = refgenome + '.fai'
 
     chromosome_lengths = read_chromosome_lengths(genome_fasta_index, chromosomes=chromosomes)
 
