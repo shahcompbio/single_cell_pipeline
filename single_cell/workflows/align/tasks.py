@@ -162,7 +162,7 @@ def bwa_aln_paired_end(fastq1, fastq2, output, tempdir,
     bamutils.samtools_sam_to_bam(samfile, output, docker_image=containers['samtools'])
 
 
-def align_pe(fastq1, fastq2, biobloom_count_metrics, disable_biobloom, tempdir,
+def align_pe(fastq1, fastq2, biobloom_count_metrics, tempdir,
              containers,
              biobloom_filters, ref_type):
     fastq1, fastq2 = biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, disable_biobloom, containers['biobloom'],biobloom_filters, ref_type)

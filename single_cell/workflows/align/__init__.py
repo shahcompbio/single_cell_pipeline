@@ -48,8 +48,9 @@ def create_alignment_workflow(
                 'fastq_2', 'cell_id', 'lane', fnames=fastq_2_filename),
             mgd.TempOutputFile('biobloom_count_metrics', 'cell_id', 'lane'),
             mgd.TempSpace('alignment_temp', 'cell_id', 'lane'),
-            ref_genome,
+            config['docker'],
             config['biobloom_filters'],
+            config['ref_type']
         )
     )
 
