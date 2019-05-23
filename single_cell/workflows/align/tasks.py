@@ -165,7 +165,7 @@ def bwa_aln_paired_end(fastq1, fastq2, output, tempdir,
 def align_pe(fastq1, fastq2, biobloom_count_metrics, tempdir,
              containers,
              biobloom_filters, ref_type):
-    fastq1, fastq2 = biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, disable_biobloom, containers['biobloom'],biobloom_filters, ref_type)
+    fastq1, fastq2 = biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, False, containers['biobloom'],biobloom_filters, ref_type)
 
 
 def postprocess_bam(infile, outfile, tempdir,
