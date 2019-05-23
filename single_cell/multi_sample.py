@@ -129,7 +129,7 @@ def create_multi_sample_workflow(
     snv_calling_info_template = os.path.join(results_dir, '{sample_id}_{library_id}_snv_calling_info.yaml')
     snv_counting_info_template = os.path.join(results_dir, '{sample_id}_{library_id}_snv_counting_info.yaml')
 
-    regions = refgenome.get_split_regions(config["split_bam"]["split_size"])
+    regions = refgenome.get_split_regions(config["split_bam"]["split_size"], config["split_bam"]["ref_genome"])
 
     workflow = pypeliner.workflow.Workflow(default_ctx=ctx)
 
