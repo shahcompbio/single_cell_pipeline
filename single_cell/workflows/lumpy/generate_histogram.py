@@ -125,8 +125,15 @@ def calculate_histogram(readgroups, data, counts, min_elements, mads, read_lengt
         means.append(mean * reads_per_rg[readgroup])
         stdevs.append(stdev * reads_per_rg[readgroup])
 
-    mean = sum(means)/sum(reads_per_rg.values())
-    stdev = sum(stdevs)/sum(reads_per_rg.values())
+    if means:
+        mean = sum(means)/sum(reads_per_rg.values())
+    else:
+        mean = 0
+
+    if stdevs:
+        stdev = sum(stdevs)/sum(reads_per_rg.values())
+    else:
+        stdev = 0
 
     return finaldata, mean, stdev
 
