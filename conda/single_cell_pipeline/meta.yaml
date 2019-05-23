@@ -1,10 +1,10 @@
 package:
   name: single_cell_pipeline
-  version: '0.2.22'
+  version: '0.2.23'
 
 source:
   git_url: https://github.com/shahcompbio/single_cell_pipeline.git
-  git_rev: v0.2.22
+  git_rev: v0.2.23
 
 build:
   number: 4
