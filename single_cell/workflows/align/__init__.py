@@ -12,31 +12,15 @@ from single_cell.utils import helpers
 def create_alignment_workflow(
         fastq_1_filename,
         fastq_2_filename,
-        bam_filename,
-        alignment_metrics,
-        gc_metrics,
-        plot_metrics,
+        biobloom_metrics,
         ref_genome,
         config,
         args,
-        triminfo,
-        centerinfo,
-        sample_info,
-        cell_ids,
 ):
 
     disable_biobloom = args['disable_biobloom']
 
     baseimage = config['docker']['single_cell_pipeline']
-
-    out_dir = args['out_dir']
-
-    merge_metrics = os.path.join(out_dir, 'metrics')
-
-    lane_metrics = os.path.join(args['out_dir'], 'metrics_per_lane', '{lane}')
-
-    bam_filename = dict([(cellid, bam_filename[cellid])
-                         for cellid in cell_ids])
 
     chromosomes = config["chromosomes"]
 
@@ -48,28 +32,10 @@ def create_alignment_workflow(
     )
 
     workflow.setobj(
-        obj=mgd.TempOutputObj('sampleinfo', 'cell_id', axes_origin=[]),
-        value=sample_info)
-
-
-    workflow.setobj(
         obj=mgd.OutputChunks('cell_id', 'lane'),
         value=fastq_1_filename.keys(),
     )
 
-    workflow.setobj(
-        obj=mgd.TempOutputObj('trim', 'cell_id', 'lane', axes_origin=[]),
-        value=triminfo)
-
-    workflow.setobj(
-        obj=mgd.TempOutputObj('center', 'cell_id', 'lane', axes_origin=[]),
-        value=centerinfo)
-
-    fastqc_reports = os.path.join(
-        lane_metrics,
-        "fastqc",
-        "{cell_id}_reports.tar.gz")
-    flagstat_metrics = os.path.join(lane_metrics, 'flagstat', '{cell_id}.txt')
     workflow.transform(
         name='align_reads',
         ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
@@ -97,5 +63,13 @@ def create_alignment_workflow(
                )
     )
 
+
+    workflow.transform(
+        name='merge_biobloom',
+        func="single_cell.utils.csvutils.tasks.concatenate_csv",
+        args=(mgd.TempInputFile('biobloom_count_metrics', 'cell_id'),
+              mgd.OutputFile(biobloom_metrics),
+              )
+    )
 
     return workflow

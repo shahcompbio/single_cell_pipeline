@@ -26,30 +26,20 @@ def qc_workflow(args):
 
     align_config = config['alignment']
 
-    sampleinfo = helpers.get_sample_info(args['input_yaml'])
-    cellids = helpers.get_samples(args['input_yaml'])
-    bam_files, _ = helpers.get_bams(args['input_yaml'])
-
     lib = args["library_id"]
 
     ctx = {'docker_image': align_config['docker']['single_cell_pipeline']}
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
-
     outdir = os.path.join(args["out_dir"], "results", "QC")
 
-    alignment_metrics_csv = os.path.join(outdir, '{}_alignment_metrics.csv.gz'.format(lib))
-    gc_metrics_csv = os.path.join(outdir, '{}_gc_metrics.csv.gz'.format(lib))
-    plots_dir = os.path.join(outdir,  'plots')
-    plot_metrics_output = os.path.join(plots_dir, '{}_plot_metrics.pdf'.format(lib))
+    bbloom_metrics_csv = os.path.join(outdir, '{}_biobloom_metrics.csv.gz'.format(lib))
 
     baseimage = align_config['docker']['single_cell_pipeline']
 
     if run_alignment:
 
         fastq1_files, fastq2_files = helpers.get_fastqs(args['input_yaml'])
-        triminfo = helpers.get_trim_info(args['input_yaml'])
-        centerinfo = helpers.get_center_info(args['input_yaml'])
 
         workflow.setobj(
             obj=mgd.OutputChunks('cell_id', 'lane'),
@@ -63,17 +53,10 @@ def qc_workflow(args):
             args=(
                 mgd.InputFile('fastq_1', 'cell_id', 'lane', fnames=fastq1_files, axes_origin=[]),
                 mgd.InputFile('fastq_2', 'cell_id', 'lane', fnames=fastq2_files, axes_origin=[]),
-                mgd.OutputFile('bam_markdups', 'cell_id', fnames=bam_files, axes_origin=[], extensions=['.bai']),
-                mgd.OutputFile(alignment_metrics_csv),
-                mgd.OutputFile(gc_metrics_csv),
-                mgd.OutputFile(plot_metrics_output),
+                mgd.OutputFile(bbloom_metrics_csv),
                 align_config['ref_genome'],
                 align_config,
                 args,
-                triminfo,
-                centerinfo,
-                sampleinfo,
-                cellids,
             ),
         )
 
