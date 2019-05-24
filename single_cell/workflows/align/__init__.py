@@ -67,7 +67,7 @@ def create_alignment_workflow(
 
     workflow.transform(
         name='merge_all_biobloom',
-        func="single_cell.utils.csvutils.tasks.concatenate_csv",
+        func="single_cell.utils.csvutils.concatenate_csv",
         args=(mgd.TempInputFile('biobloom_count_metrics_merged', 'cell_id'),
               mgd.OutputFile(biobloom_metrics),
               )
