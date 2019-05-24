@@ -28,7 +28,7 @@ def create_museq_workflow(
 
     workflow.transform(
         name='run_museq',
-        ctx=dict(mem=config["memory"]['med'], disk=40),
+        ctx=dict(mem=config["memory"]['med']),
         axes=('region',),
         func='single_cell.workflows.mutationseq.tasks.run_museq',
         args=(
