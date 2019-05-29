@@ -4,10 +4,10 @@ Created on Jul 6, 2017
 @author: dgrewal
 '''
 import os
+
 import pypeliner
 import pypeliner.managed as mgd
-import single_cell
-from single_cell.utils import helpers
+
 
 def create_alignment_workflow(
         fastq_1_filename,
@@ -18,22 +18,19 @@ def create_alignment_workflow(
         plot_metrics,
         ref_genome,
         config,
-        args,
         triminfo,
         centerinfo,
         sample_info,
         cell_ids,
+        metrics_dir,
+        library_id,
+        realign=False
 ):
-
     disable_biobloom = config['disable_biobloom']
 
     baseimage = config['docker']['single_cell_pipeline']
 
-    out_dir = args['out_dir']
-
-    merge_metrics = os.path.join(out_dir, 'metrics')
-
-    lane_metrics = os.path.join(args['out_dir'], 'metrics_per_lane', '{lane}')
+    lane_metrics = os.path.join(metrics_dir, 'lanes', '{lane}')
 
     bam_filename = dict([(cellid, bam_filename[cellid])
                          for cellid in cell_ids])
@@ -50,7 +47,6 @@ def create_alignment_workflow(
     workflow.setobj(
         obj=mgd.TempOutputObj('sampleinfo', 'cell_id', axes_origin=[]),
         value=sample_info)
-
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id', 'lane'),
@@ -93,7 +89,7 @@ def create_alignment_workflow(
             mgd.TempInputObj('sampleinfo', 'cell_id'),
             mgd.InputInstance('cell_id'),
             mgd.InputInstance('lane'),
-            args['library_id'],
+            library_id,
             config['aligner'],
             config['docker'],
             config['adapter'],
@@ -107,10 +103,10 @@ def create_alignment_workflow(
         name='merge_biobloom',
         func="single_cell.workflows.align.tasks.merge_biobloom",
         axes=('cell_id',),
-        args=( mgd.TempInputFile('biobloom_count_metrics', 'cell_id', 'lane'),
-               mgd.TempOutputFile('biobloom_count_metrics_merged', 'cell_id'),
-               disable_biobloom,
-               )
+        args=(mgd.TempInputFile('biobloom_count_metrics', 'cell_id', 'lane'),
+              mgd.TempOutputFile('biobloom_count_metrics_merged', 'cell_id'),
+              disable_biobloom,
+              )
     )
 
     workflow.transform(
@@ -129,7 +125,7 @@ def create_alignment_workflow(
         )
     )
 
-    if args['realign']:
+    if realign:
         workflow.transform(
             name='realignment',
             axes=('chrom',),
@@ -159,15 +155,15 @@ def create_alignment_workflow(
         )
 
     final_bam = mgd.TempInputFile('merged_lanes.bam', 'cell_id')
-    if args["realign"]:
+    if realign:
         final_bam = mgd.TempInputFile('merged_realign.bam', 'cell_id')
 
     markdups_metrics = os.path.join(
-        merge_metrics,
+        metrics_dir,
         'markdups_metrics',
         '{cell_id}.markdups_metrics.txt')
     flagstat_metrics = os.path.join(
-        merge_metrics,
+        metrics_dir,
         'flagstat_metrics',
         '{cell_id}.flagstat_metrics.txt')
     workflow.transform(
@@ -186,7 +182,7 @@ def create_alignment_workflow(
     )
 
     wgs_metrics_filename = os.path.join(
-        merge_metrics, 'wgs_metrics', '{cell_id}.wgs_metrics.txt')
+        metrics_dir, 'wgs_metrics', '{cell_id}.wgs_metrics.txt')
     workflow.transform(
         name='bam_collect_wgs_metrics',
         ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
@@ -203,15 +199,15 @@ def create_alignment_workflow(
     )
 
     gc_metrics_filename = os.path.join(
-        merge_metrics,
+        metrics_dir,
         'gc_metrics',
         '{cell_id}.gc_metrics.txt')
     gc_summary_filename = os.path.join(
-        merge_metrics,
+        metrics_dir,
         'gc_metrics',
         '{cell_id}.gc_metrics.summ.txt')
     gc_chart_filename = os.path.join(
-        merge_metrics,
+        metrics_dir,
         'gc_metrics',
         '{cell_id}.gc_metrics.pdf')
     workflow.transform(
@@ -231,11 +227,11 @@ def create_alignment_workflow(
     )
 
     insert_metrics_filename = os.path.join(
-        merge_metrics,
+        metrics_dir,
         'insert_metrics',
         '{cell_id}.insert_metrics.txt')
     insert_histogram_filename = os.path.join(
-        merge_metrics,
+        metrics_dir,
         'insert_metrics',
         '{cell_id}.insert_metrics.pdf')
     workflow.transform(
@@ -312,7 +308,6 @@ def create_alignment_workflow(
             mgd.OutputFile(alignment_metrics, extensions=['.yaml']),
         ),
     )
-
 
     workflow.transform(
         name='finalize_gc_metrics',

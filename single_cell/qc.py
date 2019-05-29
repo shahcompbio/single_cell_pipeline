@@ -38,6 +38,8 @@ def qc_workflow(args):
 
     outdir = os.path.join(args["out_dir"], "results", "QC")
 
+    metrics_dir = os.path.join(outdir, 'metrics')
+
     alignment_metrics_csv = os.path.join(outdir, '{}_alignment_metrics.csv.gz'.format(lib))
     gc_metrics_csv = os.path.join(outdir, '{}_gc_metrics.csv.gz'.format(lib))
     plots_dir = os.path.join(outdir,  'plots')
@@ -69,12 +71,14 @@ def qc_workflow(args):
                 mgd.OutputFile(plot_metrics_output),
                 align_config['ref_genome'],
                 align_config,
-                args,
                 triminfo,
                 centerinfo,
                 sampleinfo,
                 cellids,
+                metrics_dir,
+                lib,
             ),
+            kwargs={'realign': args['realign']}
         )
 
     if run_hmmcopy:

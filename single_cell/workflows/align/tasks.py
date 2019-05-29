@@ -1,32 +1,32 @@
 import csv
+import logging
 import os
 import shutil
-import logging
+
+from single_cell.utils import bamutils
+from single_cell.utils import csvutils
+from single_cell.utils import gatkutils
+from single_cell.utils import helpers
+from single_cell.utils import picardutils
+from single_cell.utils.bamutils import biobloom_categorizer
+from single_cell.utils.singlecell_copynumber_plot_utils import PlotMetrics
+
 from scripts import CollectMetrics
 from scripts import GenerateCNMatrix
 from scripts import RunTrimGalore
 from scripts import SummaryMetrics
-
-from single_cell.utils import picardutils
-from single_cell.utils import bamutils
-from single_cell.utils import helpers
-from single_cell.utils import csvutils
-from single_cell.utils import gatkutils
-from single_cell.utils import hdfutils
-from single_cell.utils.bamutils import biobloom_categorizer
-
-from single_cell.utils.singlecell_copynumber_plot_utils import PlotMetrics
 
 
 def merge_bams(inputs, output, output_index, containers):
     picardutils.merge_bams(inputs, output, docker_image=containers['picard'])
     bamutils.bam_index(output, output_index, docker_image=containers['samtools'])
 
-def merge_biobloom(inputs, output, disable_biobloom,):
+
+def merge_biobloom(inputs, output, disable_biobloom, ):
     counts_metric = {
         "biobloom_human_count": 0 if not disable_biobloom else "NA",
         "biobloom_salmon_count": 0 if not disable_biobloom else "NA",
-        "biobloom_mouse_count":  0 if not disable_biobloom else "NA",
+        "biobloom_mouse_count": 0 if not disable_biobloom else "NA",
         "biobloom_multiMatch_count": 0 if not disable_biobloom else "NA",
         "biobloom_noMatch_count": 0 if not disable_biobloom else "NA",
     }
@@ -42,6 +42,7 @@ def merge_biobloom(inputs, output, disable_biobloom,):
     writer.write(','.join(str(v) for v in counts_metric.values()))
     writer.close()
 
+
 def merge_realignment(input_filenames, output_filename,
                       config, input_cell_id):
     merge_filenames = []
@@ -54,7 +55,6 @@ def merge_realignment(input_filenames, output_filename,
 
 
 def realign(input_bams, input_bais, output_bams, tempdir, config, interval):
-
     container_ctx = helpers.get_container_ctx(config['containers'], 'samtools', docker_only=True)
 
     # make the dir
@@ -131,13 +131,13 @@ def get_readgroup(run_id, cell_id, library_id, centre, sample_info):
     barcode = sample_info["primer_i7"] + "-" + sample_info["primer_i5"]
 
     read_group_template = (
-        r'@RG\tID:' + str(library_id) + '_' + cell_id + '_' + str(run_id) +
-        r'\tPL:' + platform +
-        r'\tPU:' + str(run_id) +
-        r'\tLB:' + str(library_id) + '_' + cell_id +
-        r'\tSM:' + cell_id +
-        r'\tCN:' + centre +
-        r'\tKS:' + barcode)
+            r'@RG\tID:' + str(library_id) + '_' + cell_id + '_' + str(run_id) +
+            r'\tPL:' + platform +
+            r'\tPU:' + str(run_id) +
+            r'\tLB:' + str(library_id) + '_' + cell_id +
+            r'\tSM:' + cell_id +
+            r'\tCN:' + centre +
+            r'\tKS:' + barcode)
 
     return read_group_template
 
@@ -145,7 +145,6 @@ def get_readgroup(run_id, cell_id, library_id, centre, sample_info):
 def bwa_mem_paired_end(fastq1, fastq2, output,
                        reference, readgroup, tempdir,
                        containers):
-
     samfile = os.path.join(tempdir, "bwamem.sam")
     bamutils.bwa_mem_paired_end(fastq1, fastq2, samfile, reference, readgroup,
                                 docker_image=containers['bwa'])
@@ -155,18 +154,24 @@ def bwa_mem_paired_end(fastq1, fastq2, output,
 
 
 def bwa_aln_paired_end(fastq1, fastq2, output, tempdir,
-                         reference, readgroup, containers):
+                       reference, readgroup, containers):
     samfile = os.path.join(tempdir, "bwamem.sam")
     bamutils.bwa_aln_paired_end(fastq1, fastq2, samfile, tempdir, reference, readgroup,
                                 docker_image=containers['bwa'])
     bamutils.samtools_sam_to_bam(samfile, output, docker_image=containers['samtools'])
 
 
-def align_pe(fastq1, fastq2, output, biobloom_count_metrics, disable_biobloom, reports, metrics, tempdir,
-             reference, trim, centre, sample_info, cell_id,
-             lane_id, library_id, aligner, containers, adapter,
-             adapter2, biobloom_filters, ref_type):
-    fastq1, fastq2 = biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, disable_biobloom, containers['biobloom'],biobloom_filters, ref_type)
+def align_pe(
+        fastq1, fastq2, output, biobloom_count_metrics, disable_biobloom,
+        reports, metrics, tempdir, reference, trim, centre, sample_info,
+        cell_id, lane_id, library_id, aligner, containers, adapter,
+        adapter2, biobloom_filters, ref_type
+):
+    fastq1, fastq2 = biobloom_categorizer(
+        fastq1, fastq2, tempdir, biobloom_count_metrics,
+        disable_biobloom, containers['biobloom'], biobloom_filters, ref_type
+    )
+
     readgroup = get_readgroup(
         lane_id,
         cell_id,
@@ -210,7 +215,6 @@ def align_pe(fastq1, fastq2, output, biobloom_count_metrics, disable_biobloom, r
 
 def postprocess_bam(infile, outfile, tempdir,
                     containers, markdups_metrics, flagstat_metrics):
-
     outfile_index = outfile + '.bai'
 
     if not os.path.exists(tempdir):
@@ -230,7 +234,6 @@ def postprocess_bam(infile, outfile, tempdir,
 def run_trimgalore(seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt, tempdir,
                    adapter, adapter2, report_r1, report_r2, qc_report_r1,
                    qc_report_r2, qc_zip_r1, qc_zip_r2, docker_image):
-
     run_tg = RunTrimGalore(seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt,
                            tempdir, adapter, adapter2, report_r1, report_r2,
                            qc_report_r1, qc_report_r2, qc_zip_r1, qc_zip_r2,
@@ -274,23 +277,7 @@ def trim_fastqs(fastq1, fastq2, cell_id, tempdir, adapter, adapter2, trimgalore_
     return trim1, trim2
 
 
-def get_postprocess_metrics(infile, tempdir,
-                    containers, flagstat_metrics):
-
-    if not os.path.exists(tempdir):
-        helpers.makedirs(tempdir)
-
-    outfile = os.path.join(tempdir, 'markdps.bam')
-    outfile_index = outfile + '.bai'
-
-    # picardutils.bam_markdups(infile, outfile, markdups_metrics, tempdir,
-    #                          docker_image=containers['picard'])
-
-    bamutils.bam_index(outfile, outfile_index, docker_image=containers['samtools'])
-    bamutils.bam_flagstat(outfile, flagstat_metrics, docker_image=containers['samtools'])
-
 def plot_metrics(metrics, output, plot_title, gc_matrix, gc_content):
-
     plot = PlotMetrics(
         metrics, output, plot_title, gcbias_matrix=gc_matrix,
         gc_content=gc_content, tablename='/alignment/metrics',
@@ -304,7 +291,6 @@ def get_summary_metrics(infile, output):
 
 
 def annotate_metrics(infile, sample_info, outfile, yamlfile=None):
-
     csvutils.annotate_metrics(infile, sample_info, outfile, yamlfile=yamlfile)
 
 
@@ -314,7 +300,6 @@ def merge_all_metrics(infiles, outfile):
 
 def bam_collect_wgs_metrics(
         bam_filename, ref_genome, metrics_filename, containers, picard_wgs_params, tempdir):
-
     picardutils.bam_collect_wgs_metrics(
         bam_filename,
         ref_genome,
@@ -336,10 +321,8 @@ def bam_collect_gc_metrics(
         docker_image=containers['picard'])
 
 
-
 def bam_collect_insert_metrics(
-        bam_filename, flagstat_metrics_filename, metrics_filename, histogram_filename, tempdir,containers):
-
+        bam_filename, flagstat_metrics_filename, metrics_filename, histogram_filename, tempdir, containers):
     picardutils.bam_collect_insert_metrics(
         bam_filename,
         flagstat_metrics_filename,
@@ -349,7 +332,6 @@ def bam_collect_insert_metrics(
 
 
 def collect_gc(infiles, outfile, tempdir, yamlfile=None):
-
     helpers.makedirs(tempdir)
 
     tempouts = []
@@ -369,7 +351,6 @@ def collect_gc(infiles, outfile, tempdir, yamlfile=None):
 
 def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
                     wgs_metrics, tempdir, merged_metrics, biobloom_count_metrics):
-
     helpers.makedirs(tempdir)
     sample_outputs = []
     for sample in flagstat_metrics.keys():
