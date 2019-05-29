@@ -118,7 +118,7 @@ def get_align_params(cluster, reference, aligner):
         'gc_windows': referencedata['gc_windows'],
         'biobloom_filters': referencedata['biobloom_filters'],
         'ref_type': reference,
-        'disable_biobloom': False
+        'disable_biobloom': True
     }
 
     return {"alignment": params}
