@@ -85,7 +85,7 @@ def get_hmmcopy_params(cluster, reference, binsize, smoothing_function):
     return {"hmmcopy": params}
 
 
-def get_align_params(cluster, reference, binsize, smoothing_function, aligner):
+def get_align_params(cluster, reference, aligner):
     if cluster == "azure":
         referencedata = config_reference.reference_data_azure(reference)
     else:
@@ -109,7 +109,7 @@ def get_align_params(cluster, reference, binsize, smoothing_function, aligner):
         'aligner': aligner,
         'adapter': 'CTGTCTCTTATACACATCTCCGAGCCCACGAGAC',
         'adapter2': 'CTGTCTCTTATACACATCTGACGCTGCCGACGA',
-        'picard_wgs_params' : {
+        'picard_wgs_params': {
             "min_bqual": 20,
             "min_mqual": 20,
             "count_unpaired": False,
@@ -117,7 +117,8 @@ def get_align_params(cluster, reference, binsize, smoothing_function, aligner):
         'chromosomes': referencedata['chromosomes'],
         'gc_windows': referencedata['gc_windows'],
         'biobloom_filters': referencedata['biobloom_filters'],
-        'ref_type' : referencedata['ref_type'],
+        'ref_type': reference,
+        'disable_biobloom': False
     }
 
     return {"alignment": params}
@@ -132,6 +133,7 @@ def get_annotation_params(cluster, reference):
     docker_containers = config_reference.containers()['docker']
     docker_containers = {
         'single_cell_pipeline': docker_containers['single_cell_pipeline'],
+        'cell_cycle_classifier': docker_containers['cell_cycle_classifier'],
     }
 
     params = {
@@ -436,8 +438,7 @@ def get_singlecell_pipeline_config(config_params, override=None):
 
     params.update(
         get_align_params(
-            cluster, reference, config_params["bin_size"],
-            config_params["smoothing_function"],
+            cluster, reference,
             config_params['aligner'],
 
         )

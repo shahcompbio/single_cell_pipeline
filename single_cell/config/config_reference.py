@@ -20,7 +20,7 @@ def containers():
         'vcftools': 'scp/vcftools:v0.0.1', 'snpeff': 'scp/vcftools:v0.0.1',
         'titan': 'scp/titan:v0.0.1', 'remixt': 'scp/remixt:v{}'.format(version),
         'destruct': 'scp/destruct:v{}'.format(version), 'trimgalore': 'scp/trimgalore:v0.0.1',
-        'lumpy': 'scp/lumpy:v0.0.2',
+        'lumpy': 'scp/lumpy:v0.0.2', 'cell_cycle_classifier': 'scp/cell_cycle_classifier:v0.0.1',
         'biobloom': 'scp/biobloom:v0.0.2',
     }
 
@@ -43,7 +43,6 @@ def reference_data_shahlab(reference):
         exclude_list = '/shahlab/pipelines/reference/repeats.satellite.regions'
         ref_genome = '/shahlab/pipelines/reference/GRCh37-lite.fa'
         ref_genome_index = '/shahlab/pipelines/reference/GRCh37-lite.fa.fai'
-        ref_type = reference
         gc_windows = '/shahlab/pipelines/reference/gc_windows.txt'
         copynumber_ref_data = '/shahlab/pipelines/remixt_ref_data_dir'
         chrom_info_filename = '/shahlab/pipelines/remixt_ref_data_dir/chromInfo.txt.gz'
@@ -79,7 +78,6 @@ def reference_data_shahlab(reference):
         exclude_list = None
         ref_genome = '/shahlab/pipelines/reference/mm10_build38_mouse.fasta'
         ref_genome_index = '/shahlab/pipelines/reference/mm10_build38_mouse.fasta.fai'
-        ref_type = reference
         gc_windows = None
         copynumber_ref_data = '/shahlab/pipelines/remixt_ref_data_dir'
         chrom_info_filename = '/data/not/available'
@@ -119,7 +117,6 @@ def reference_data_azure(reference):
         }
         exclude_list = '/refdata/repeats.satellite.regions'
         ref_genome = '/refdata/GRCh37-lite.fa'
-        ref_type = reference
         gc_windows = '/refdata/gc_windows.txt'
         copynumber_ref_data = '/refdata/'
         chrom_info_filename = '/refdata/chromInfo.txt.gz'
@@ -155,7 +152,6 @@ def reference_data_azure(reference):
         }
         exclude_list = None
         ref_genome = '/refdata/mm10_build38_mouse.fasta'
-        ref_type = reference
         gc_windows = None
         copynumber_ref_data = '/refdata/'
         chrom_info_filename = '/data/not/available'
