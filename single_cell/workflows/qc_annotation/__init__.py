@@ -8,7 +8,7 @@ import pypeliner.managed as mgd
 
 
 def create_qc_annotation_workflow(
-        hmmcopy_metrics, alignment_metrics, gc_metrics, merged_metrics, qc_report,
+        hmmcopy_metrics, hmmcopy_reads, alignment_metrics, gc_metrics, merged_metrics, qc_report,
         config
 ):
     ctx = {'docker_image': config['docker']['single_cell_pipeline']}
@@ -26,6 +26,18 @@ def create_qc_annotation_workflow(
             config['classifier_training_data'],
             mgd.TempSpace("hmmcopy_classify_tempdir")
         ),
+    )
+
+    workflow.transform(
+        name='cell_cycle_classifier',
+        func="single_cell.workflows.qc_annotation.tasks.cell_cycle_classifier",
+        args=(
+            mgd.InputFile(hmmcopy_reads),
+            mgd.InputFile(hmmcopy_metrics),
+            mgd.InputFile(alignment_metrics),
+            mgd.TempOutputFile('cell_state_classifier')
+        ),
+        kwargs={'docker_image': config['docker']['cell_cycle_classifier']}
     )
 
     workflow.transform(

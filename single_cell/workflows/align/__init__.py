@@ -25,7 +25,7 @@ def create_alignment_workflow(
         cell_ids,
 ):
 
-    disable_biobloom = args['disable_biobloom']
+    disable_biobloom = config['disable_biobloom']
 
     baseimage = config['docker']['single_cell_pipeline']
 

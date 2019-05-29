@@ -4,11 +4,14 @@ Created on Jul 24, 2017
 @author: dgrewal
 '''
 import os
+import pypeliner
+
 from single_cell.utils import csvutils
 from single_cell.utils import helpers
 
 from scripts import classify
 from scripts import generate_qc
+
 
 def annotate_metrics(
         metrics, output, sample_info, cells):
@@ -42,9 +45,9 @@ def add_quality(hmmcopy_metrics, alignment_metrics, output, training_data, tempd
     predictions = classify.classify(model, data)
 
     classify.write_to_output(
-            hmmcopy_metrics,
-            intermediate_output,
-            predictions)
+        hmmcopy_metrics,
+        intermediate_output,
+        predictions)
 
     csvutils.prep_csv_files(intermediate_output, output)
 
@@ -63,7 +66,19 @@ def merge_metrics(hmmcopy_metrics, alignment_metrics, merged_output):
 
 
 def generate_qc_report(tempdir, reference_gc, metrics_df, gc_metrics_df, qc_report):
-
     helpers.makedirs(tempdir)
 
     generate_qc.generate_html_report(tempdir, qc_report, reference_gc, metrics_df, gc_metrics_df)
+
+
+def cell_cycle_classifier(hmmcopy_reads, hmmcopy_metrics, alignment_metrics, output, docker_image=None):
+    cmd = [
+        'cell_cycle_classifier',
+        'train-classify',
+        hmmcopy_reads,
+        hmmcopy_metrics,
+        alignment_metrics,
+        output
+    ]
+
+    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
