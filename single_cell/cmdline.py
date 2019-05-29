@@ -108,11 +108,6 @@ def parse_args():
                        action="store_true",
                        help='''run alignment workflow''')
 
-    qc.add_argument("--disable_biobloom",
-                       default=False,
-                       action="store_true",
-                       help='''disable biobloom categorizer''')
-
     qc.add_argument("--hmmcopy",
                        default=False,
                        action="store_true",
