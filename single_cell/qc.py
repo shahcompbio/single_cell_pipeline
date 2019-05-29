@@ -79,7 +79,7 @@ def qc_workflow(args):
 
     if run_hmmcopy:
 
-        if not args['alignment']:
+        if not run_alignment:
             workflow.setobj(
                 obj=mgd.OutputChunks('cell_id'),
                 value=list(bam_files.keys()),
@@ -87,7 +87,7 @@ def qc_workflow(args):
 
         hmmcopy_config = config['hmmcopy']
 
-        results_dir = os.path.join(args['out_dir'], 'results', 'hmmcopy_autoploidy')
+        results_dir = os.path.join(args['out_dir'], 'results', 'QC', 'hmmcopy_autoploidy')
 
         reads_csvs = os.path.join(results_dir, '{0}_reads.csv.gz'.format(lib))
         segs_csvs = os.path.join(results_dir, '{0}_segments.csv.gz'.format(lib))
@@ -134,6 +134,8 @@ def qc_workflow(args):
     if run_annotation:
         results_dir = os.path.join(args['out_dir'], 'results', 'QC')
         metrics_csvs = os.path.join(results_dir, 'hmmcopy_autoploidy', '{0}_metrics.csv.gz'.format(lib))
+        reads_csvs = os.path.join(results_dir, 'hmmcopy_autoploidy', '{0}_reads.csv.gz'.format(lib))
+
         merged_metrics_csvs = os.path.join(results_dir, '{0}_metrics.csv.gz'.format(lib))
         qc_report = os.path.join(results_dir, '{0}_QC_report.html'.format(lib))
 
@@ -142,8 +144,9 @@ def qc_workflow(args):
             func=qc_annotation.create_qc_annotation_workflow,
             args=(
                 mgd.InputFile(metrics_csvs),
-                mgd.OutputFile(alignment_metrics_csv),
-                mgd.OutputFile(gc_metrics_csv),
+                mgd.InputFile(reads_csvs),
+                mgd.InputFile(alignment_metrics_csv),
+                mgd.InputFile(gc_metrics_csv),
                 mgd.OutputFile(merged_metrics_csvs),
                 mgd.OutputFile(qc_report),
                 config['annotation'],
