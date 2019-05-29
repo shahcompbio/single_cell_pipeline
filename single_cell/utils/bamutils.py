@@ -3,11 +3,13 @@ Created on Feb 19, 2018
 
 @author: dgrewal
 '''
-import pypeliner
-import shutil
 import os
-from helpers import makedirs
+import shutil
+
+import pypeliner
 from single_cell.utils import helpers
+
+from helpers import makedirs
 
 
 def produce_fastqc_report(fastq_filename, output_html, output_plots, temp_dir,
@@ -39,8 +41,8 @@ def produce_fastqc_report(fastq_filename, output_html, output_plots, temp_dir,
 
 
 def bwa_mem_paired_end(fastq1, fastq2, output,
-                         reference, readgroup,
-                         **kwargs):
+                       reference, readgroup,
+                       **kwargs):
     """
     run bwa aln on both fastq files,
     bwa sampe to align, and convert to bam with samtools view
@@ -62,8 +64,7 @@ def bwa_mem_paired_end(fastq1, fastq2, output,
 
 
 def samtools_sam_to_bam(samfile, bamfile,
-                         **kwargs):
-
+                        **kwargs):
     pypeliner.commandline.execute(
         'samtools', 'view', '-bSh', samfile,
         '>', bamfile,
@@ -71,8 +72,8 @@ def samtools_sam_to_bam(samfile, bamfile,
 
 
 def bwa_aln_paired_end(fastq1, fastq2, output, tempdir,
-                         reference, readgroup,
-                         **kwargs):
+                       reference, readgroup,
+                       **kwargs):
     """
     run bwa aln on both fastq files,
     bwa sampe to align, and convert to bam with samtools view
@@ -104,18 +105,17 @@ def bwa_aln_paired_end(fastq1, fastq2, output, tempdir,
     try:
         readgroup_literal = '"' + readgroup + '"'
         pypeliner.commandline.execute(
-            'bwa', 'sampe', '-r', readgroup_literal,  reference,  read_1_sai,
+            'bwa', 'sampe', '-r', readgroup_literal, reference, read_1_sai,
             read_2_sai, fastq1, fastq2, '>', output,
             **kwargs)
     except pypeliner.commandline.CommandLineException:
         pypeliner.commandline.execute(
-            'bwa', 'sampe', '-r', readgroup,  reference,  read_1_sai,
+            'bwa', 'sampe', '-r', readgroup, reference, read_1_sai,
             read_2_sai, fastq1, fastq2, '>', output,
             **kwargs)
 
 
 def bam_index(infile, outfile, **kwargs):
-
     pypeliner.commandline.execute(
         'samtools', 'index',
         infile,
@@ -124,7 +124,6 @@ def bam_index(infile, outfile, **kwargs):
 
 
 def bam_flagstat(bam, metrics, **kwargs):
-
     pypeliner.commandline.execute(
         'samtools', 'flagstat',
         bam,
@@ -134,7 +133,6 @@ def bam_flagstat(bam, metrics, **kwargs):
 
 
 def bam_merge(bams, output, **kwargs):
-
     if isinstance(bams, dict):
         bams = bams.values()
 
@@ -149,13 +147,13 @@ def bam_merge(bams, output, **kwargs):
 
 
 def bam_view(bam, output, region, **kwargs):
-
     cmd = ['samtools', 'view', '-b', bam, '-o', output, region]
 
     pypeliner.commandline.execute(*cmd, **kwargs)
 
 
-def biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, disable_biobloom, docker_image, biobloom_filters, ref_type):
+def biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, disable_biobloom, docker_image,
+                         biobloom_filters, ref_type):
     tempdir = os.path.join(tempdir, 'biobloom')
     if not os.path.exists(tempdir):
         helpers.makedirs(tempdir)
@@ -171,42 +169,59 @@ def biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, disabl
         fastq1,
         fastq2,
     ]
+
     if not disable_biobloom:
         pypeliner.commandline.execute(*cmd, docker_image=docker_image)
-    extract_biobloom_metrics(tempdir, biobloom_count_metrics, disable_biobloom)
 
-    if disable_biobloom: return fastq1, fastq2
-    elif ref_type == "grch37": return tempdir + "/biobloom_GRCh37-lite_1.fq", tempdir + "/biobloom_GRCh37-lite_2.fq"
-    else: return tempdir + "/biobloom_mm10_build38_mouse_1.fq", tempdir + "/biobloom_mm10_build38_mouse_2.fq"
+    extract_biobloom_metrics(tempdir, biobloom_count_metrics, disable_biobloom, biobloom_filters)
 
-def file_count(file1, file2):
-    count_1 = sum(1 for l in open(file1))
-    count_2 = sum(1 for l in open(file2))
-    return count_1 if count_1 == count_2 else ValueError('Two biobloom FastQ counts are not matching')
+    if disable_biobloom:
+        final_fastq1 = fastq1
+        final_fastq2 = fastq2
+    elif ref_type == 'grch37':
+        final_fastq1 = os.path.join(tempdir, "/biobloom_GRCh37-lite_1.fq")
+        final_fastq2 = os.path.join(tempdir, "/biobloom_GRCh37-lite_2.fq")
+    elif ref_type == 'mm10':
+        final_fastq1 = os.path.join(tempdir, "/biobloom_mm10_build38_mouse_1.fq")
+        final_fastq2 = os.path.join(tempdir, "/biobloom_mm10_build38_mouse_2.fq")
+    else:
+        raise Exception("Unknown reference type specified")
 
-def extract_biobloom_metrics(tempdir, path, disable_biobloom):
-    biobloom_files = [
-        "/biobloom_GRCh37-lite_1.fq",
-        "/biobloom_GRCh37-lite_2.fq",
-        "/biobloom_GCF_002021735.1_Okis_V1_genomic_1.fq",
-        "/biobloom_GCF_002021735.1_Okis_V1_genomic_2.fq",
-        "/biobloom_mm10_build38_mouse_1.fq",
-        "/biobloom_mm10_build38_mouse_2.fq",
-        "/biobloom_multiMatch_1.fq",
-        "/biobloom_multiMatch_2.fq",
-        "/biobloom_noMatch_1.fq",
-        "/biobloom_noMatch_2.fq",
-    ]
+    return final_fastq1, final_fastq2
 
-    counts_metric = {
-        "biobloom_human_count": file_count(tempdir + biobloom_files[0], tempdir + biobloom_files[0]) if not disable_biobloom else "NA",
-        "biobloom_salmon_count" : file_count(tempdir + biobloom_files[2],tempdir + biobloom_files[3]) if not disable_biobloom else "NA",
-        "biobloom_mouse_count" : file_count(tempdir + biobloom_files[4],tempdir + biobloom_files[5]) if not disable_biobloom else "NA",
-        "biobloom_multiMatch_count": file_count(tempdir + biobloom_files[6],tempdir + biobloom_files[7]) if not disable_biobloom else "NA",
-        "biobloom_noMatch_count": file_count(tempdir + biobloom_files[8],tempdir + biobloom_files[9]) if not disable_biobloom else "NA",
-    }
+
+def get_num_reads(fastq1, fastq2):
+    count_1 = 0
+    count_2 = 0
+    with open(fastq1) as fastqdata:
+        for _ in fastqdata:
+            count_1 += 1
+
+    with open(fastq2) as fastqdata:
+        for _ in fastqdata:
+            count_2 += 1
+
+    if not count_1 == count_2:
+        ValueError('Two biobloom FastQ counts are not matching')
+    else:
+        return (count_1 / 4) + (count_2 / 4)
+
+
+def extract_biobloom_metrics(tempdir, path, disable_biobloom, biobloom_filters):
+    biobloom_filters = [os.path.basename(val).replace('.bf', '') for val in biobloom_filters]
+
+    counts = {}
+    for biobloom_filter in biobloom_filters:
+        if disable_biobloom:
+            counts[biobloom_filter] = 'NA'
+        else:
+            numreads = get_num_reads(
+                os.path.join(tempdir, '{}_1.fq'.format(biobloom_filter)),
+                os.path.join(tempdir, '{}_2.fq'.format(biobloom_filter)),
+            )
+            counts[biobloom_filter] = numreads
 
     writer = open(path, 'w')
-    writer.write(','.join(counts_metric.keys()) + '\n')
-    writer.write(','.join(str(v) for v in counts_metric.values()))
+    writer.write(','.join(counts.keys()) + '\n')
+    writer.write(','.join(str(v) for v in counts.values()))
     writer.close()
