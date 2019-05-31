@@ -141,6 +141,7 @@ def reference_data_azure(reference):
             "/refdata/GCF_002021735.1_Okis_V1_genomic.bf",
             "/refdata/GRCh37-lite.bf",
             "/refdata/mm10_build38_mouse.bf"
+            "/refdata/pseudomonasbig.bf"
         ]
 
     else:
@@ -177,6 +178,7 @@ def reference_data_azure(reference):
             "/refdata/GCF_002021735.1_Okis_V1_genomic.bf",
             "/refdata/GRCh37-lite.bf",
             "/refdata/mm10_build38_mouse.bf"
+            "/refdata/pseudomonasbig.bf"
         ]
 
     return locals()
