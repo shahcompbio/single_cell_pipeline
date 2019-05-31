@@ -22,8 +22,9 @@ def merge_bams(inputs, output, output_index, containers):
     picardutils.merge_bams(inputs, output, docker_image=containers['picard'])
     bamutils.bam_index(output, output_index, docker_image=containers['samtools'])
 
-def merge_biobloom(inputs, output, disable_biobloom,):
+def merge_biobloom(inputs, output, disable_biobloom, cell_id):
     counts_metric = {
+        "cell_id": cell_id,
         "biobloom_human_count": 0 if not disable_biobloom else "NA",
         "biobloom_salmon_count": 0 if not disable_biobloom else "NA",
         "biobloom_mouse_count":  0 if not disable_biobloom else "NA",
