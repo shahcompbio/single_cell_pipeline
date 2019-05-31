@@ -28,6 +28,7 @@ def merge_biobloom(inputs, output, disable_biobloom, cell_id):
         "biobloom_human_count": 0 if not disable_biobloom else "NA",
         "biobloom_salmon_count": 0 if not disable_biobloom else "NA",
         "biobloom_mouse_count":  0 if not disable_biobloom else "NA",
+        "biobloom_pseudomonasbig_count":  0 if not disable_biobloom else "NA",
         "biobloom_multiMatch_count": 0 if not disable_biobloom else "NA",
         "biobloom_noMatch_count": 0 if not disable_biobloom else "NA",
     }

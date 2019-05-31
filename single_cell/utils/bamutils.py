@@ -196,14 +196,17 @@ def extract_biobloom_metrics(tempdir, path, disable_biobloom):
         "/biobloom_multiMatch_2.fq",
         "/biobloom_noMatch_1.fq",
         "/biobloom_noMatch_2.fq",
+        "/biobloom_pseudomonasbig_1.fq",
+        "/biobloom_pseudomonasbig_2.fq",
     ]
 
     counts_metric = {
-        "biobloom_human_count": file_count(tempdir + biobloom_files[0], tempdir + biobloom_files[0]) if not disable_biobloom else "NA",
+        "biobloom_human_count": file_count(tempdir + biobloom_files[0], tempdir + biobloom_files[1]) if not disable_biobloom else "NA",
         "biobloom_salmon_count" : file_count(tempdir + biobloom_files[2],tempdir + biobloom_files[3]) if not disable_biobloom else "NA",
         "biobloom_mouse_count" : file_count(tempdir + biobloom_files[4],tempdir + biobloom_files[5]) if not disable_biobloom else "NA",
         "biobloom_multiMatch_count": file_count(tempdir + biobloom_files[6],tempdir + biobloom_files[7]) if not disable_biobloom else "NA",
         "biobloom_noMatch_count": file_count(tempdir + biobloom_files[8],tempdir + biobloom_files[9]) if not disable_biobloom else "NA",
+        "biobloom_pseudomonasbig_count": file_count(tempdir + biobloom_files[10], tempdir + biobloom_files[11]) if not disable_biobloom else "NA",
     }
 
     writer = open(path, 'w')
