@@ -185,8 +185,6 @@ def file_count(file1, file2):
     return count_1 if count_1 == count_2 else ValueError('Two biobloom FastQ counts are not matching')
 
 def extract_biobloom_metrics(tempdir, path, disable_biobloom):
-    raise Exception(os.listdir(tempdir))
-
     biobloom_files = [
         "/biobloom_GRCh37-lite_1.fq",
         "/biobloom_GRCh37-lite_2.fq",
@@ -198,8 +196,8 @@ def extract_biobloom_metrics(tempdir, path, disable_biobloom):
         "/biobloom_multiMatch_2.fq",
         "/biobloom_noMatch_1.fq",
         "/biobloom_noMatch_2.fq",
-        "/biobloom_pseudomonasbig_1.fq",
-        "/biobloom_pseudomonasbig_2.fq",
+        "/biobloom_biobloom_1.fq",
+        "/biobloom_biobloom_2.fq",
     ]
 
     counts_metric = {
