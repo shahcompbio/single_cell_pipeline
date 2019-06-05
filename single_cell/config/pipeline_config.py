@@ -3,10 +3,13 @@ Created on Jun 6, 2018
 
 @author: dgrewal
 '''
-import yaml
-import config_reference
 import collections
 import copy
+
+import yaml
+
+import config_reference
+
 
 def override_config(config, override):
     def update(d, u):
@@ -36,6 +39,7 @@ def get_config_params(override=None):
     input_params = override_config(input_params, override)
 
     return input_params
+
 
 def write_config(params, filepath):
     with open(filepath, 'w') as outputfile:
@@ -134,13 +138,22 @@ def get_annotation_params(cluster, reference):
     docker_containers = {
         'single_cell_pipeline': docker_containers['single_cell_pipeline'],
         'cell_cycle_classifier': docker_containers['cell_cycle_classifier'],
+        'corrupt_tree': docker_containers['corrupt_tree']
     }
 
     params = {
         'docker': docker_containers,
         'memory': {'med': 6},
         'classifier_training_data': referencedata['classifier_training_data'],
-        'reference_gc': referencedata['reference_gc_qc']
+        'reference_gc': referencedata['reference_gc_qc'],
+        'corrupt_tree_params': {
+            'neighborhood_size': 2,
+            'lower_fraction': 0.05,
+            'engine_nchains': 1,
+            'engine_nscans': 10000,
+            'model_fpr_bound': 0.1,
+            'model_fnr_bound': 0.5
+        }
     }
 
     return {"annotation": params}
@@ -167,13 +180,12 @@ def get_aneufinder_params(cluster, reference):
 
 
 def get_merge_bams_params(cluster, reference):
-
     if cluster == "azure":
         referencedata = config_reference.reference_data_azure(reference)
-        one_split_job=True
+        one_split_job = True
     else:
         referencedata = config_reference.reference_data_shahlab(reference)
-        one_split_job=False
+        one_split_job = False
 
     docker_containers = config_reference.containers()['docker']
     params = {
@@ -192,7 +204,6 @@ def get_merge_bams_params(cluster, reference):
 
 
 def get_split_bam_params(cluster, reference):
-
     if cluster == "azure":
         referencedata = config_reference.reference_data_azure(reference)
     else:
@@ -201,7 +212,7 @@ def get_split_bam_params(cluster, reference):
     docker_containers = config_reference.containers()['docker']
 
     params = {
-        'memory': {'low':4, 'med': 6, 'high': 16},
+        'memory': {'low': 4, 'med': 6, 'high': 16},
         'max_cores': 8,
         'docker': {
             'single_cell_pipeline': docker_containers['single_cell_pipeline'],
@@ -217,7 +228,6 @@ def get_split_bam_params(cluster, reference):
 
 
 def get_germline_calling_params(cluster, reference):
-
     if cluster == "azure":
         referencedata = config_reference.reference_data_azure(reference)
     else:
@@ -237,11 +247,11 @@ def get_germline_calling_params(cluster, reference):
         'ref_genome': referencedata['ref_genome'],
         'chromosomes': referencedata['chromosomes'],
         'split_size': 10000000,
-        'databases':{
-            'mappability':{
-               'url': 'http://hgdownload-test.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/release3'
-                      '/wgEncodeCrgMapabilityAlign50mer.bigWig',
-               'local_path': referencedata['databases']['mappability']['local_path'],
+        'databases': {
+            'mappability': {
+                'url': 'http://hgdownload-test.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/release3'
+                       '/wgEncodeCrgMapabilityAlign50mer.bigWig',
+                'local_path': referencedata['databases']['mappability']['local_path'],
             },
             'snpeff': {"db": 'GRCh37.75'},
         },
@@ -251,7 +261,6 @@ def get_germline_calling_params(cluster, reference):
 
 
 def get_variant_calling_params(cluster, reference):
-
     if cluster == "azure":
         referencedata = config_reference.reference_data_azure(reference)
     else:
@@ -299,9 +308,9 @@ def get_variant_calling_params(cluster, reference):
                 'local_path': referencedata['databases']['dbsnp']['local_path'],
             },
             'mappability': {
-               'url': 'http://hgdownload-test.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/release3'
-                      '/wgEncodeCrgMapabilityAlign50mer.bigWig',
-               'local_path': referencedata['databases']['mappability']['local_path'],
+                'url': 'http://hgdownload-test.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/release3'
+                       '/wgEncodeCrgMapabilityAlign50mer.bigWig',
+                'local_path': referencedata['databases']['mappability']['local_path'],
             },
             'ref_genome': {
                 'url': 'http://www.bcgsc.ca/downloads/genomes/9606/hg19/1000genomes/bwa_ind/genome/GRCh37-lite.fa',
@@ -351,7 +360,7 @@ def get_copy_number_calling_params(cluster, reference, binsize):
         'titan_params': {
             "normal_contamination": [0.2, 0.4, 0.6, 0.8],
             'num_clusters': [1, 2],
-            'ploidy': [1,2,3,4],
+            'ploidy': [1, 2, 3, 4],
             'chrom_info_filename': referencedata['chrom_info_filename'],
             'window_size': binsize,
             'gc_wig': referencedata['gc_wig_file'][binsize],
@@ -422,7 +431,6 @@ def get_multi_sample_params():
     return {'multi_sample': params}
 
 
-
 def get_singlecell_pipeline_config(config_params, override=None):
     reference = config_params["reference"]
     cluster = config_params["cluster"]
@@ -468,5 +476,3 @@ def get_singlecell_pipeline_config(config_params, override=None):
     params = override_config(params, override)
 
     return params
-
-

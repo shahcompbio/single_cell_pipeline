@@ -21,7 +21,7 @@ def containers():
         'titan': 'scp/titan:v0.0.1', 'remixt': 'scp/remixt:v{}'.format(version),
         'destruct': 'scp/destruct:v{}'.format(version), 'trimgalore': 'scp/trimgalore:v0.0.1',
         'lumpy': 'scp/lumpy:v0.0.2', 'cell_cycle_classifier': 'scp/cell_cycle_classifier:v0.0.1',
-        'biobloom': 'scp/biobloom:v0.0.2',
+        'biobloom': 'scp/biobloom:v0.0.2', 'corrupt_tree': 'scp/corrupt_tree:v0.0.1',
     }
 
     singularity = {}
