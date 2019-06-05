@@ -8,8 +8,9 @@ import pypeliner.managed as mgd
 
 
 def create_qc_annotation_workflow(
-        hmmcopy_metrics, hmmcopy_reads, alignment_metrics, gc_metrics, merged_metrics, qc_report,
-        config
+        hmmcopy_metrics, hmmcopy_reads, alignment_metrics, gc_metrics,
+        merged_metrics, qc_report, corrupt_tree, consensus_tree, phylo_csv,
+        rank_trees, filtered_data, corrupt_tree_pdf, config, library_id
 ):
     ctx = {'docker_image': config['docker']['single_cell_pipeline']}
 
@@ -60,6 +61,23 @@ def create_qc_annotation_workflow(
             mgd.InputFile(merged_metrics, extensions=['.yaml']),
             mgd.InputFile(gc_metrics, extensions=['.yaml']),
             mgd.OutputFile(qc_report)
+        )
+    )
+
+    workflow.subworkflow(
+        name='corrupt_tree',
+        func='single_cell.workflows.corrupt_tree.create_corrupt_tree_workflow',
+        args=(
+            mgd.InputFile(merged_metrics, extensions=['.yaml']),
+            mgd.InputFile(hmmcopy_reads),
+            mgd.OutputFile(corrupt_tree),
+            mgd.OutputFile(consensus_tree),
+            mgd.OutputFile(phylo_csv),
+            mgd.OutputFile(rank_trees),
+            mgd.OutputFile(filtered_data),
+            mgd.OutputFile(corrupt_tree_pdf),
+            library_id,
+            config
         )
     )
 

@@ -4,15 +4,15 @@ Created on Feb 19, 2018
 @author: dgrewal
 '''
 import os
+
 import pypeliner
 import pypeliner.managed as mgd
-from workflows import align, hmmcopy, qc_annotation
 from single_cell.utils import helpers
-import copy
+
+from workflows import align, hmmcopy, qc_annotation
 
 
 def qc_workflow(args):
-
     run_alignment = args['alignment']
     run_hmmcopy = args['hmmcopy']
     run_annotation = args['annotation']
@@ -35,20 +35,18 @@ def qc_workflow(args):
     ctx = {'docker_image': align_config['docker']['single_cell_pipeline']}
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
-
     outdir = os.path.join(args["out_dir"], "results", "QC")
 
     metrics_dir = os.path.join(outdir, 'metrics')
 
     alignment_metrics_csv = os.path.join(outdir, '{}_alignment_metrics.csv.gz'.format(lib))
     gc_metrics_csv = os.path.join(outdir, '{}_gc_metrics.csv.gz'.format(lib))
-    plots_dir = os.path.join(outdir,  'plots')
+    plots_dir = os.path.join(outdir, 'plots')
     plot_metrics_output = os.path.join(plots_dir, '{}_plot_metrics.pdf'.format(lib))
 
     baseimage = align_config['docker']['single_cell_pipeline']
 
     if run_alignment:
-
         fastq1_files, fastq2_files = helpers.get_fastqs(args['input_yaml'])
         triminfo = helpers.get_trim_info(args['input_yaml'])
         centerinfo = helpers.get_center_info(args['input_yaml'])
@@ -143,6 +141,13 @@ def qc_workflow(args):
         merged_metrics_csvs = os.path.join(results_dir, '{0}_metrics.csv.gz'.format(lib))
         qc_report = os.path.join(results_dir, '{0}_QC_report.html'.format(lib))
 
+        corrupt_tree_newick = os.path.join(results_dir, '{0}_corrupt_tree.newick'.format(lib))
+        consensus_tree_newick = os.path.join(results_dir, '{0}_corrupt_tree_consensus.newick'.format(lib))
+        phylo_csv = os.path.join(results_dir, '{0}_phylo.csv'.format(lib))
+        loci_rank_trees = os.path.join(results_dir, '{0}_rank_loci_trees.csv'.format(lib))
+        filtered_data = os.path.join(results_dir, '{0}_filtered_data.csv'.format(lib))
+        corrupt_tree_pdf = os.path.join(results_dir, '{0}_corrupt_tree.pdf'.format(lib))
+
         workflow.subworkflow(
             name='annotation_workflow',
             func=qc_annotation.create_qc_annotation_workflow,
@@ -153,7 +158,14 @@ def qc_workflow(args):
                 mgd.InputFile(gc_metrics_csv),
                 mgd.OutputFile(merged_metrics_csvs),
                 mgd.OutputFile(qc_report),
+                mgd.OutputFile(corrupt_tree_newick),
+                mgd.OutputFile(consensus_tree_newick),
+                mgd.OutputFile(phylo_csv),
+                mgd.OutputFile(loci_rank_trees),
+                mgd.OutputFile(filtered_data),
+                mgd.OutputFile(corrupt_tree_pdf),
                 config['annotation'],
+                lib,
             ),
         )
 
