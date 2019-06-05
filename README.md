@@ -50,19 +50,35 @@ To install the latest production version from anaconda.org:
 conda install single_cell_pipeline
 ```
 
-## 1. Align
+## 1. QC
 
 ![align](readme_data/align.png)
+![align](readme_data/hmmcopy.png)
 
 The single cell analysis pipeline runs on a list of pairs of fastq file (paired end) and performs the following steps:
 
-* Run fastqc on the fastq files
-* Align the fastq pairs with bwa (supports both mem and aln)
-* Merge all lanes together
-* create targets and realign around those targets with GATK
-* sort bams files, mark duplicate reads and index final bams
-* collect metrics from samtools flagstat, picardtools CollectInsertSizeMetrics, picardtools CollectWgsMetrics and picardtools CollectGcBiasMetrics
-* generate QC plot
+Alignment:
+
+1. Run fastqc on the fastq files
+2. Align the fastq pairs with bwa (supports both mem and aln)
+3. Merge all lanes together
+4. create targets and realign around those targets with GATK
+5. sort bams files, mark duplicate reads and index final bams
+6. collect metrics from samtools flagstat, picardtools CollectInsertSizeMetrics, picardtools CollectWgsMetrics and picardtools CollectGcBiasMetrics
+7. generate QC plot
+
+
+Hmmcopy:
+
+1. generate read count wig files from the bam files
+2. perform  GC correction
+3. Run Hmmcopy to predict copynumber states
+4. generate segment and bias plots, kernel density plot and heatmaps 
+
+Annotation:
+1. Assign a quality score to each cell
+2. Assign cell state to each cell
+3. Generate a consolidated table with all metrics frim hmmcopy, alignment and from annotation
 
 ### Input
 The pipeline accepts a yaml file as input. The yaml file contains the input paths and metadata for each cell, the format for each cell is as follows:
@@ -78,7 +94,7 @@ SA12345-A12345-R01-C01:
       sequencing_center: CENTERID # sequencing center id
       sequencing_instrument: INSTRUMENT_TYPE # sequencing machine (HiseqX for hiseq, N550 for nextseq machine). pipeline will not run trim galore on N550 output.
     LANE_ID_2:
-      fastq_1: /path/to/fastqfile/ATTATT-ACTACT_1.fastq.gz
+      fastq_1: /path/to/fastqfile/ATTATT-ACI didTACT_1.fastq.gz
       fastq_2: /path/to/fastqfile/ATTATT-ACTACT_1.fastq.gz
       sequencing_center: CENTERID
       sequencing_instrument: INSTRUMENT_TYPE
@@ -95,7 +111,7 @@ SA12345-A12345-R01-C01:
 ### Run 
 
 ```
-single_cell align \
+single_cell qc \
 --input_yaml inputs/SC-1234/bams.yaml \
 --tmpdir temp/SC-1234/tmp \
 --pipelinedir pipeline/SC-1234  \
@@ -105,16 +121,8 @@ single_cell align \
 ```
 
 
-## 2. Hmmcopy
 
-![align](readme_data/hmmcopy.png)
 
-Hmmcopy runs the hmmcopy package on the aligned data and calls copy number:
-
-1. generate read count wig files from the bam files
-2. perform  GC correction
-3. Run Hmmcopy
-4. generate segment and bias plots, kernel density plot and heatmaps 
 
 ### Input
 The pipeline accepts a yaml file as input. The yaml file contains the input paths and metadata for each cell, the format for each cell is as follows:

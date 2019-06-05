@@ -108,27 +108,24 @@
       autoploidy:
         map_wig_file: /refdata/GRCh37-lite.map.ws_125_to_500000.wig
 	```
-11. align the fastq pairs:
+11. run the QC pipeline:
 	```
-	single_cell align --input_yaml single_cell_pipeline/INSTALL/input.yaml --out_dir dlp --submit local --library_id A96139A --loglevel DEBUG --tmpdir temp --pipelinedir pipeline --maxjobs 2 --config_file /path/to/config.yaml
+	single_cell qc --input_yaml single_cell_pipeline/INSTALL/input.yaml --out_dir dlp --submit local --library_id A96139A --loglevel DEBUG --tmpdir temp --pipelinedir pipeline --maxjobs 2 --config_file /path/to/config.yaml
 	```
 	Replace /path/to/ with your path to config.yaml
     *Outputs:*
     * ```data/SA123.bam``` and ```data/SA456.bam```: aligned bam files
-    * ```dlp/results/alignment/A123456_alignment_metrics.h5```: alignment metrics and metadata
+    * ```dlp/results/alignment/A123456_alignment_metrics.csv.gz```: alignment metrics and metadata
+    * ```dlp/results/alignment/A123456_gc_metrics.csv.gz```: alignment metrics and metadata
     * ```dlp/results/alignment/plots/A123456_plot_metrics.pdf```: alignment QC plots.
-12. run HMMCopy
-	```
-	single_cell hmmcopy --input_yaml single_cell_pipeline/INSTALL/input.yaml --out_dir dlp --submit local --library_id A96139A --loglevel DEBUG --tmpdir temp --pipelinedir pipeline --maxjobs 2
-	```
-
-    *Outputs:*
-
-	* ```dlp/results/hmmcopy_autoploidy/A123456_hmmcopy.h5``` with data from hmmcopy
+	* ```dlp/results/hmmcopy_autoploidy/A123456_reads.csv.gz``` with data from hmmcopy
+	* ```dlp/results/hmmcopy_autoploidy/A123456_metrics.csv.gz``` with data from hmmcopy
+	* ```dlp/results/hmmcopy_autoploidy/A123456_params.csv.gz``` with data from hmmcopy
+	* ```dlp/results/hmmcopy_autoploidy/A123456_segments.csv.gz``` with data from hmmcopy
     * ```dlp/results/hmmcopy_autoploidy/A123456_igv_segments.seg``` to load segments in IGV
     * ```dlp/results/hmmcopy_autoploidy/plots/A123456_heatmap_by_ec.pdf ```: copy number heatmap
     * ```dlp/results/hmmcopy_autoploidy/plots/A123456_heatmap_by_ec_filtered.pdf ```: heatmap with filters to remove bad cells
     * ```dlp/results/hmmcopy_autoploidy/plots/A123456_kernel_density.pdf ```: kernel density plot
     * ```dlp/results/hmmcopy_autoploidy/plots/A123456_metrics.pdf ``` hmmcopy metrics
-    * ```dlp/results/hmmcopy_autoploidy/plots/bias ``` GC bias plots
-    * ```dlp/results/hmmcopy_autoploidy/plots/segments ``` hmmcopy segments
+    * ```dlp/results/hmmcopy_autoploidy/plots/A123456_bias.tar.gz ``` GC bias plots
+    * ```dlp/results/hmmcopy_autoploidy/plots/A123456_segments.tar.gz ``` hmmcopy segments
