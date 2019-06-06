@@ -28,6 +28,8 @@ def create_alignment_workflow(
 ):
     disable_biobloom = config['disable_biobloom']
 
+    align_mem = 7 if disable_biobloom else 14
+
     baseimage = config['docker']['single_cell_pipeline']
 
     lane_metrics = os.path.join(metrics_dir, 'lanes', '{lane}')
@@ -68,7 +70,7 @@ def create_alignment_workflow(
     flagstat_metrics = os.path.join(lane_metrics, 'flagstat', '{cell_id}.txt')
     workflow.transform(
         name='align_reads',
-        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        ctx={'mem': align_mem, 'ncpus': 1, 'docker_image': baseimage},
         axes=('cell_id', 'lane',),
         func="single_cell.workflows.align.tasks.align_pe",
         args=(
