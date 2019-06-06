@@ -359,7 +359,7 @@ def run_cmd(cmd, output=None):
 def load_yaml(path):
     try:
         with open(path) as infile:
-            data = yaml.load(infile)
+            data = yaml.safe_load(infile)
 
     except IOError:
         raise Exception(
