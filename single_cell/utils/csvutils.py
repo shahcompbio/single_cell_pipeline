@@ -208,11 +208,11 @@ def extrapolate_types_from_yaml_files(csv_files, outputyaml):
     yamldata = [get_metadata(csvfile) for csvfile in csv_files]
 
     header = set([val[0] for val in yamldata])
-    assert len(header) == 1, 'mimatched yaml files'
+    assert len(header) == 1, 'mismatched yaml files'
     header = list(header)[0]
 
     cols = set([tuple(val[2]) for val in yamldata])
-    assert len(cols) == 1, 'mimatched yaml files'
+    assert len(cols) == 1, 'mismatched yaml files'
     cols = list(cols)[0]
 
     dtypes = [val[1] for val in yamldata]
