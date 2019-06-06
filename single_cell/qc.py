@@ -24,27 +24,44 @@ def qc_workflow(args):
 
     config = helpers.load_config(args)
 
-    align_config = config['alignment']
-
     sampleinfo = helpers.get_sample_info(args['input_yaml'])
     cellids = helpers.get_samples(args['input_yaml'])
     bam_files, _ = helpers.get_bams(args['input_yaml'])
 
     lib = args["library_id"]
 
-    ctx = {'docker_image': align_config['docker']['single_cell_pipeline']}
-    workflow = pypeliner.workflow.Workflow(ctx=ctx)
-
     outdir = os.path.join(args["out_dir"], "results", "QC")
 
-    metrics_dir = os.path.join(outdir, 'metrics')
+    alignment_dir = os.path.join(outdir, 'alignment')
+    alignment_metrics_csv = os.path.join(alignment_dir, '{}_alignment_metrics.csv.gz'.format(lib))
+    gc_metrics_csv = os.path.join(alignment_dir, '{}_gc_metrics.csv.gz'.format(lib))
+    plot_metrics_output = os.path.join(alignment_dir, '{}_plot_metrics.pdf'.format(lib))
+    metrics_dir = os.path.join(alignment_dir, 'metrics')
 
-    alignment_metrics_csv = os.path.join(outdir, '{}_alignment_metrics.csv.gz'.format(lib))
-    gc_metrics_csv = os.path.join(outdir, '{}_gc_metrics.csv.gz'.format(lib))
-    plots_dir = os.path.join(outdir, 'plots')
-    plot_metrics_output = os.path.join(plots_dir, '{}_plot_metrics.pdf'.format(lib))
+    hmmcopy_dir = os.path.join(outdir, 'hmmcopy_autoploidy')
+    reads_csvs = os.path.join(hmmcopy_dir, '{0}_reads.csv.gz'.format(lib))
+    segs_csvs = os.path.join(hmmcopy_dir, '{0}_segments.csv.gz'.format(lib))
+    params_csvs = os.path.join(hmmcopy_dir, '{0}_params.csv.gz'.format(lib))
+    metrics_csvs = os.path.join(hmmcopy_dir, '{0}_metrics.csv.gz'.format(lib))
+    igv_csvs = os.path.join(hmmcopy_dir, '{0}_igv_segments.seg'.format(lib))
+    segs_pdf = os.path.join(hmmcopy_dir, '{}_segs.tar.gz'.format(lib))
+    bias_pdf = os.path.join(hmmcopy_dir, '{}_bias.tar.gz'.format(lib))
+    heatmap_filt_pdf = os.path.join(hmmcopy_dir, '{}_heatmap_by_ec_filtered.pdf'.format(lib))
+    heatmap_pdf = os.path.join(hmmcopy_dir, '{}_heatmap_by_ec.pdf'.format(lib))
+    metrics_pdf = os.path.join(hmmcopy_dir, '{}_metrics.pdf'.format(lib))
+    kernel_density_pdf = os.path.join(hmmcopy_dir, '{}_kernel_density.pdf'.format(lib))
 
-    baseimage = align_config['docker']['single_cell_pipeline']
+    annotation_dir = os.path.join(outdir, 'annotation')
+    merged_metrics_csvs = os.path.join(annotation_dir, '{0}_metrics.csv.gz'.format(lib))
+    qc_report = os.path.join(annotation_dir, '{0}_QC_report.html'.format(lib))
+    corrupt_tree_newick = os.path.join(annotation_dir, '{0}_corrupt_tree.newick'.format(lib))
+    consensus_tree_newick = os.path.join(annotation_dir, '{0}_corrupt_tree_consensus.newick'.format(lib))
+    phylo_csv = os.path.join(annotation_dir, '{0}_phylo.csv'.format(lib))
+    loci_rank_trees = os.path.join(annotation_dir, '{0}_rank_loci_trees.csv'.format(lib))
+    filtered_data = os.path.join(annotation_dir, '{0}_filtered_data.csv'.format(lib))
+    corrupt_tree_pdf = os.path.join(annotation_dir, '{0}_corrupt_tree.pdf'.format(lib))
+
+    workflow = pypeliner.workflow.Workflow()
 
     if run_alignment:
         fastq1_files, fastq2_files = helpers.get_fastqs(args['input_yaml'])
@@ -58,7 +75,7 @@ def qc_workflow(args):
 
         workflow.subworkflow(
             name='alignment_workflow',
-            ctx={'docker_image': baseimage},
+            ctx={'docker_image': config['alignment']['docker']['single_cell_pipeline']},
             func=align.create_alignment_workflow,
             args=(
                 mgd.InputFile('fastq_1', 'cell_id', 'lane', fnames=fastq1_files, axes_origin=[]),
@@ -67,8 +84,8 @@ def qc_workflow(args):
                 mgd.OutputFile(alignment_metrics_csv),
                 mgd.OutputFile(gc_metrics_csv),
                 mgd.OutputFile(plot_metrics_output),
-                align_config['ref_genome'],
-                align_config,
+                config['alignment']['ref_genome'],
+                config['alignment'],
                 triminfo,
                 centerinfo,
                 sampleinfo,
@@ -80,39 +97,15 @@ def qc_workflow(args):
         )
 
     if run_hmmcopy:
-
         if not run_alignment:
             workflow.setobj(
                 obj=mgd.OutputChunks('cell_id'),
                 value=list(bam_files.keys()),
             )
 
-        hmmcopy_config = config['hmmcopy']
-
-        results_dir = os.path.join(args['out_dir'], 'results', 'QC', 'hmmcopy_autoploidy')
-
-        reads_csvs = os.path.join(results_dir, '{0}_reads.csv.gz'.format(lib))
-        segs_csvs = os.path.join(results_dir, '{0}_segments.csv.gz'.format(lib))
-        params_csvs = os.path.join(results_dir, '{0}_params.csv.gz'.format(lib))
-        metrics_csvs = os.path.join(results_dir, '{0}_metrics.csv.gz'.format(lib))
-        igv_csvs = os.path.join(results_dir, '{0}_igv_segments.seg'.format(lib))
-
-        plots_dir = os.path.join(results_dir, "plots")
-        segs_pdf = os.path.join(
-            plots_dir, "segments", '{}_segs.tar.gz'.format(lib))
-        bias_pdf = os.path.join(plots_dir, "bias", '{}_bias.tar.gz'.format(lib))
-
-        heatmap_filt_pdf = os.path.join(
-            plots_dir, '{}_heatmap_by_ec_filtered.pdf'.format(lib))
-        heatmap_pdf = os.path.join(
-            plots_dir, '{}_heatmap_by_ec.pdf'.format(lib))
-        metrics_pdf = os.path.join(
-            plots_dir, '{}_metrics.pdf'.format(lib))
-        kernel_density_pdf = os.path.join(
-            plots_dir, '{}_kernel_density.pdf'.format(lib))
-
         workflow.subworkflow(
             name='hmmcopy_workflow',
+            ctx={'docker_image': config['hmmcopy']['docker']['single_cell_pipeline']},
             func=hmmcopy.create_hmmcopy_workflow,
             args=(
                 mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files, extensions=['.bai']),
@@ -128,28 +121,15 @@ def qc_workflow(args):
                 mgd.OutputFile(metrics_pdf),
                 mgd.OutputFile(kernel_density_pdf),
                 cellids,
-                hmmcopy_config,
+                config['hmmcopy'],
                 sampleinfo
             ),
         )
 
     if run_annotation:
-        results_dir = os.path.join(args['out_dir'], 'results', 'QC')
-        metrics_csvs = os.path.join(results_dir, 'hmmcopy_autoploidy', '{0}_metrics.csv.gz'.format(lib))
-        reads_csvs = os.path.join(results_dir, 'hmmcopy_autoploidy', '{0}_reads.csv.gz'.format(lib))
-
-        merged_metrics_csvs = os.path.join(results_dir, '{0}_metrics.csv.gz'.format(lib))
-        qc_report = os.path.join(results_dir, '{0}_QC_report.html'.format(lib))
-
-        corrupt_tree_newick = os.path.join(results_dir, '{0}_corrupt_tree.newick'.format(lib))
-        consensus_tree_newick = os.path.join(results_dir, '{0}_corrupt_tree_consensus.newick'.format(lib))
-        phylo_csv = os.path.join(results_dir, '{0}_phylo.csv'.format(lib))
-        loci_rank_trees = os.path.join(results_dir, '{0}_rank_loci_trees.csv'.format(lib))
-        filtered_data = os.path.join(results_dir, '{0}_filtered_data.csv'.format(lib))
-        corrupt_tree_pdf = os.path.join(results_dir, '{0}_corrupt_tree.pdf'.format(lib))
-
         workflow.subworkflow(
             name='annotation_workflow',
+            ctx={'docker_image': config['annotation']['docker']['single_cell_pipeline']},
             func=qc_annotation.create_qc_annotation_workflow,
             args=(
                 mgd.InputFile(metrics_csvs),
