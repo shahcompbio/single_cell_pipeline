@@ -179,11 +179,11 @@ def biobloom_categorizer(fastq1, fastq2, tempdir, biobloom_count_metrics, disabl
         final_fastq1 = fastq1
         final_fastq2 = fastq2
     elif ref_type == 'grch37':
-        final_fastq1 = os.path.join(tempdir, "/biobloom_GRCh37-lite_1.fq")
-        final_fastq2 = os.path.join(tempdir, "/biobloom_GRCh37-lite_2.fq")
+        final_fastq1 = os.path.join(tempdir, "biobloom_GRCh37-lite_1.fq")
+        final_fastq2 = os.path.join(tempdir, "biobloom_GRCh37-lite_2.fq")
     elif ref_type == 'mm10':
-        final_fastq1 = os.path.join(tempdir, "/biobloom_mm10_build38_mouse_1.fq")
-        final_fastq2 = os.path.join(tempdir, "/biobloom_mm10_build38_mouse_2.fq")
+        final_fastq1 = os.path.join(tempdir, "biobloom_mm10_build38_mouse_1.fq")
+        final_fastq2 = os.path.join(tempdir, "biobloom_mm10_build38_mouse_2.fq")
     else:
         raise Exception("Unknown reference type specified")
 
