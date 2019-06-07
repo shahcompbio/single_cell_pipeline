@@ -209,6 +209,7 @@ def get_num_reads(fastq1, fastq2):
 
 def extract_biobloom_metrics(tempdir, path, disable_biobloom, biobloom_filters):
     biobloom_filters = [os.path.basename(val).replace('.bf', '') for val in biobloom_filters]
+    biobloom_filters = ['biobloom_'+val for val in biobloom_filters]
 
     counts = {}
     for biobloom_filter in biobloom_filters:
