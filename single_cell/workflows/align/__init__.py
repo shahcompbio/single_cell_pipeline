@@ -108,6 +108,7 @@ def create_alignment_workflow(
         args=(mgd.TempInputFile('biobloom_count_metrics', 'cell_id', 'lane'),
               mgd.TempOutputFile('biobloom_count_metrics_merged', 'cell_id'),
               disable_biobloom,
+              config['biobloom_filters']
               )
     )
 
