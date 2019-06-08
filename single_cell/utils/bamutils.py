@@ -211,6 +211,9 @@ def extract_biobloom_metrics(tempdir, path, disable_biobloom, biobloom_filters):
     biobloom_filters = [os.path.basename(val).replace('.bf', '') for val in biobloom_filters]
     biobloom_filters = ['biobloom_'+val for val in biobloom_filters]
 
+    biobloom_filters.append('biobloom_multiMatch')
+    biobloom_filters.append('biobloom_noMatch')
+
     counts = {}
     for biobloom_filter in biobloom_filters:
         if disable_biobloom:
