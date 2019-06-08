@@ -22,14 +22,16 @@ def merge_bams(inputs, output, output_index, containers):
     bamutils.bam_index(output, output_index, docker_image=containers['samtools'])
 
 
-def merge_biobloom(inputs, output, disable_biobloom, ):
-    counts_metric = {
-        "biobloom_human_count": 0 if not disable_biobloom else "NA",
-        "biobloom_salmon_count": 0 if not disable_biobloom else "NA",
-        "biobloom_mouse_count": 0 if not disable_biobloom else "NA",
-        "biobloom_multiMatch_count": 0 if not disable_biobloom else "NA",
-        "biobloom_noMatch_count": 0 if not disable_biobloom else "NA",
-    }
+def merge_biobloom(inputs, output, disable_biobloom, biobloom_filters):
+    biobloom_filters = [os.path.basename(val).replace('.bf', '') for val in biobloom_filters]
+    biobloom_filters = ['biobloom_'+val for val in biobloom_filters]
+
+    starting_value = 0 if not disable_biobloom else "NA"
+    counts_metric = {filter_name: starting_value for filter_name in biobloom_filters}
+
+    counts_metric["biobloom_multiMatch"] = starting_value
+    counts_metric["biobloom_noMatch"] = starting_value
+
     if not disable_biobloom:
         for filename in inputs.iteritems():
             with open(filename[1]) as f:
