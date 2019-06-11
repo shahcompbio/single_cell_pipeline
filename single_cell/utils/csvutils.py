@@ -32,6 +32,9 @@ def read_csv_and_yaml(infile, chunksize=None, sep=','):
 
     header, dtypes, columns = get_metadata(infile, sep=sep)
 
+    if dtypes:
+        dtypes = {k: v for k, v in dtypes.iteritems() if not v == "NA"}
+
     # if header exists then use first line (0) as header
     header = 0 if header else None
 
@@ -240,7 +243,7 @@ def concatenate_csv_files_quick_lowmem(inputfiles, output, header=False):
             with helpers.getFileHandle(infile) as inputdata:
                 shutil.copyfileobj(inputdata, outfile, length=16 * 1024 * 1024)
 
-    extrapolate_types_from_yaml_files(inputfiles, output+'.yaml')
+    extrapolate_types_from_yaml_files(inputfiles, output + '.yaml')
 
 
 def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', suffixes=None, header=False):
@@ -302,7 +305,7 @@ def merge_frames(frames, how, on, suffixes=None):
 def finalize_csv(infile, outfile):
     header, dtypes, columns = get_metadata(infile)
 
-    assert header==False, 'file already contains a header'
+    assert header == False, 'file already contains a header'
 
     header = ','.join(columns) + '\n'
 
@@ -311,7 +314,7 @@ def finalize_csv(infile, outfile):
         with helpers.getFileHandle(infile) as indata:
             shutil.copyfileobj(indata, output, length=16 * 0124 * 1024)
 
-    write_to_yaml(True, dtypes, columns, outfile+'.yaml')
+    write_to_yaml(True, dtypes, columns, outfile + '.yaml')
 
 
 def prep_csv_files(filepath, outputfile):
