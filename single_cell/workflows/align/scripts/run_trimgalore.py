@@ -4,13 +4,14 @@ Created on Jan 4, 2017
 @author: dgrewal
 '''
 
-from subprocess import Popen
-import os
-import logging
 import argparse
+import logging
+import os
 import shutil
 from shutil import copyfile
-import signal
+
+import pypeliner
+
 
 class RunTrimGalore(object):
     """
@@ -18,8 +19,8 @@ class RunTrimGalore(object):
     """
 
     def __init__(self, seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt, tempdir,
-                adapter, adapter2, report_r1, report_r2, qc_report_r1,
-                qc_report_r2, qc_zip_r1, qc_zip_r2):
+                 adapter, adapter2, report_r1, report_r2, qc_report_r1,
+                 qc_report_r2, qc_zip_r1, qc_zip_r2, docker_image):
         self.seq1 = seq1
         self.seq2 = seq2
         self.trimgalore_path = trimgalore
@@ -37,23 +38,18 @@ class RunTrimGalore(object):
         self.report_r2 = report_r2
         self.empty = False
 
+        self.docker_image = docker_image
+
         self.check_inputs()
 
         if not os.path.exists(self.tempdir):
             os.makedirs(self.tempdir)
 
-
-    @classmethod
-    def run_cmd(cls, cmd):
+    def run_cmd(self, cmd):
         """
         run a command with subprocess and return outputs
         """
-        import sys
-
-        proc = Popen(cmd, stdout=sys.stdout, stderr=sys.stderr,
-                     preexec_fn=lambda:signal.signal(signal.SIGPIPE, signal.SIG_DFL))
-
-        proc.communicate()
+        pypeliner.commandline.execute(*cmd, docker_image=self.docker_image)
 
     def check_file(self, path):
         """
@@ -72,7 +68,7 @@ class RunTrimGalore(object):
         if not self.empty and os.path.getsize(path) == 0:
             self.empty = True
             logging.getLogger("single_cell.align.trim").warn(
-                "empty file: %s, skipping trimming" %path)
+                "empty file: %s, skipping trimming" % path)
 
         ext = os.path.splitext(path)[1][1:]
         # get the last extension
@@ -94,7 +90,7 @@ class RunTrimGalore(object):
         assert ext1 == ext2, "input fastqfiles should have the same extension"
 
     def fake_run(self):
-        #copy files to output and rename to match trimgalore output
+        # copy files to output and rename to match trimgalore output
         output_r1 = os.path.join(self.tempdir, "R1_001_val_1.fq.gz")
         output_r2 = os.path.join(self.tempdir, "R2_001_val_2.fq.gz")
 
@@ -177,7 +173,8 @@ class RunTrimGalore(object):
                 if ext == '.fq.gz':
                     raise Exception("Couldn't move %s files" % ext)
                 else:
-                    logging.getLogger("single_cell.align.trim").warn("Couldn't move %s files" % ext)
+                    logging.getLogger("single_cell.align.trim").warn(
+                        "Couldn't move %s files" % ext)
 
     def gather_outputs(self):
         """
@@ -207,9 +204,9 @@ def parse_args():
     """
     parse cmd line params
     """
-    #=========================================================================
+    # =========================================================================
     # make a UI
-    #=========================================================================
+    # =========================================================================
     parser = argparse.ArgumentParser(prog='run_trim_galore',
                                      description="""This script runs trim_galore with options --paired --nextera""")
 
@@ -264,14 +261,15 @@ def parse_args():
 
     return args
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     args = parse_args()
-    run_tg = RunTrimGalore(args.seq1,args.seq2,args.fastq_r1,args.fastq_r2,
-                           args.trimgalore_path,args.cutadapt_path,
-                           args.tempdir,args.adapter,args.adapter2,
+    run_tg = RunTrimGalore(args.seq1, args.seq2, args.fastq_r1, args.fastq_r2,
+                           args.trimgalore_path, args.cutadapt_path,
+                           args.tempdir, args.adapter, args.adapter2,
                            args.report_r1, args.report_r2,
                            args.fastqc_report_r1, args.fastqc_report_r2,
-                           args.fastqc_zip_r1, args.fastqc_zip_r2,)
+                           args.fastqc_zip_r1, args.fastqc_zip_r2, )
     run_tg.run_trimgalore()
     run_tg.gather_outputs()
+
