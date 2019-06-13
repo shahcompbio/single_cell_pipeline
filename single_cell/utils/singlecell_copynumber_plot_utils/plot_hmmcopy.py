@@ -368,10 +368,9 @@ class GenHmmPlots(object):
                 s=scatter_size,
                 rasterized=True)
 
-        x, y = utl.get_segment_start_end(segments, remove_y)
-        plt.plot(x, y, color='black', linewidth=linewidth)
-
-        print np.nanmax(reads['copy'])
+        if segments:
+            x, y = utl.get_segment_start_end(segments, remove_y)
+            plt.plot(x, y, color='black', linewidth=linewidth)
 
         ylim = np.nanpercentile(reads['copy'], 99)
         if not np.isfinite(ylim):
