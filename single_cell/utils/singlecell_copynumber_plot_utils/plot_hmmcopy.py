@@ -368,7 +368,7 @@ class GenHmmPlots(object):
                 s=scatter_size,
                 rasterized=True)
 
-        if segments:
+        if segments is not None:
             x, y = utl.get_segment_start_end(segments, remove_y)
             plt.plot(x, y, color='black', linewidth=linewidth)
 
