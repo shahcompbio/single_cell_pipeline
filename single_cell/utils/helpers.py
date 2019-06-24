@@ -252,10 +252,28 @@ def eval_expr(val, operation, threshold):
     elif operation == 'ne':
         if not val == threshold:
             return True
+    elif operation == 'in':
+        if val in threshold:
+            return True
+    elif operation == 'notin':
+        if not val in threshold:
+            return True
     else:
         raise Exception("unknown operator type: {}".format(operation))
 
     return False
+
+
+def filter_metrics(metrics, cell_filters):
+
+    # cells to keep
+    for metric_col, operation, threshold in cell_filters:
+
+        rows_to_keep = metrics[metric_col].apply(eval_expr, args= (operation, threshold))
+
+        metrics = metrics[rows_to_keep]
+
+    return metrics
 
 
 def get_incrementing_filename(path):
@@ -513,15 +531,7 @@ def make_tarfile(output_filename, source_dir):
     with tarfile.open(output_filename, "w:gz") as tar:
         tar.add(source_dir, arcname=os.path.basename(source_dir))
 
-def is_gzip(filename):
-    """
-    Uses the file contents to check if the file is gzip or not.
-    The magic number for gzip is 1f 8b
-    See KRONOS-8 for details
-    """
-    with open(filename) as f:
-        file_start = f.read(4)
 
-        if file_start.startswith("\x1f\x8b\x08"):
-            return True
-        return False
+def extract_tar(input_tar, outdir):
+    with tarfile.open(input_tar) as tar:
+        tar.extract_all(path=outdir)
