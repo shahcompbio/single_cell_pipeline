@@ -97,7 +97,11 @@ def write_dataframe_to_csv_and_yaml(df, outfile, header=False):
         df.to_hdf5(outfile)
     else:
         df.to_csv(outfile, compression=compression, header=header, na_rep='NA', index=False)
-        generate_yaml_for_csv(df, outfile + '.yaml', header=header)
+        # write to csv to force pandas to infer types again. sometimes pandas sets all types
+        # to obj in concat.
+        if not header:
+            columns = list(df.columns.values)
+        generate_yaml_for_csv(outfile, outfile + '.yaml', header=header, columns=columns)
 
 
 def generate_yaml_for_csv(filepath, outputyaml, header=False, columns=None):
