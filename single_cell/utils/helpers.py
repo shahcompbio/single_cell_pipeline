@@ -534,4 +534,4 @@ def make_tarfile(output_filename, source_dir):
 
 def extract_tar(input_tar, outdir):
     with tarfile.open(input_tar) as tar:
-        tar.extract_all(path=outdir)
+        tar.extractall(path=outdir)
