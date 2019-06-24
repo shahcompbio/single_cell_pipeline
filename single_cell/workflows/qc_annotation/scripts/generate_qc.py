@@ -178,6 +178,7 @@ def generate_contamination_qc_table(df):
 
     # Create the output table
     metrics = pd.concat(metrics, axis=1)
+    metrics = metrics.fillna(0)
 
     return metrics
 
@@ -208,6 +209,7 @@ def generate_quality_qc_table(df):
     ]
     # Create the output table
     metrics = pd.concat(metrics, axis=1)
+    metrics = metrics.fillna(0)
 
     return metrics
 
@@ -231,6 +233,7 @@ def generate_library_metrics(df, gc_data, reference_gc):
         },
         orient='index'
     )
+    df = df.fillna(0)
 
     return df
 
