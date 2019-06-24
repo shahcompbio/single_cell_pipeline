@@ -112,6 +112,8 @@ def generate_yaml_for_csv(filepath, outputyaml, header=False, columns=None):
         with helpers.getFileHandle(filepath) as infile:
             if not columns:
                 columns = infile.readline().strip().split(',')
+            else:
+                columns=None
             types = generate_dtype_yaml(filepath, columns=columns)
 
     write_to_yaml(header, types, columns, outputyaml)
