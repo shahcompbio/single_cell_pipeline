@@ -101,6 +101,8 @@ def write_dataframe_to_csv_and_yaml(df, outfile, header=False):
         # to obj in concat.
         if not header:
             columns = list(df.columns.values)
+        else:
+            columns=None
         generate_yaml_for_csv(outfile, outfile + '.yaml', header=header, columns=columns)
 
 
@@ -112,8 +114,6 @@ def generate_yaml_for_csv(filepath, outputyaml, header=False, columns=None):
         with helpers.getFileHandle(filepath) as infile:
             if not columns:
                 columns = infile.readline().strip().split(',')
-            else:
-                columns=None
             types = generate_dtype_yaml(filepath, columns=columns)
 
     write_to_yaml(header, types, columns, outputyaml)
