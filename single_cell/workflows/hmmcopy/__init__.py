@@ -176,7 +176,6 @@ def create_hmmcopy_workflow(
         )
     )
 
-
     workflow.transform(
         name='plot_heatmap_ec',
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},

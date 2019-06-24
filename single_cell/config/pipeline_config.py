@@ -153,7 +153,12 @@ def get_annotation_params(cluster, reference):
             'engine_nscans': 10000,
             'model_fpr_bound': 0.1,
             'model_fnr_bound': 0.5
-        }
+        },
+        'good_cells': [
+            ['quality', 'ge', 0.75],
+            ['experimental_condition', 'notin', ["NTC", "NCC", "gDNA", "GM"]],
+            ['cell_call', 'in', ['C1']]
+        ]
     }
 
     return {"annotation": params}
