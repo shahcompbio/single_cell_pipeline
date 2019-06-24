@@ -73,6 +73,9 @@ def generate_primary_table(parsed_data):
 
     df = pd.DataFrame(data)
 
+    if df.empty:
+        return df
+
     columns = df.columns.values
 
     order = [
@@ -122,7 +125,11 @@ def generate_secondary_table(parsed_data):
         data.append((brkpt_id, cell_id, count))
 
     df = pd.DataFrame(data)
-    df.columns = ['breakpoint_id', 'cell_id', 'count']
+
+    if df.empty:
+        df = pd.DataFrame(columns=['breakpoint_id', 'cell_id', 'count'])
+    else:
+        df.columns = ['breakpoint_id', 'cell_id', 'count']
 
     return df
 
