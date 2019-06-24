@@ -8,9 +8,9 @@ import pypeliner.managed as mgd
 
 
 def create_qc_annotation_workflow(
-        hmmcopy_metrics, hmmcopy_reads, alignment_metrics, gc_metrics,
+        hmmcopy_metrics, hmmcopy_reads, alignment_metrics, gc_metrics, segs_tar,
         merged_metrics, qc_report, corrupt_tree, consensus_tree, phylo_csv,
-        rank_trees, filtered_data, corrupt_tree_pdf, config, library_id
+        rank_trees, filtered_data, corrupt_tree_pdf, pass_segs, fail_segs, config, library_id
 ):
     ctx = {'docker_image': config['docker']['single_cell_pipeline']}
 
@@ -78,6 +78,19 @@ def create_qc_annotation_workflow(
             mgd.OutputFile(corrupt_tree_pdf),
             library_id,
             config
+        )
+    )
+
+    workflow.transform(
+        name='filter_segs_plots',
+        func="single_cell.workflows.qc_annotation.tasks.filter_plot_tar",
+        args=(
+            mgd.InputFile(merged_metrics, extensions=['.yaml']),
+            mgd.InputFile(segs_tar),
+            mgd.OutputFile(pass_segs),
+            mgd.OutputFile(fail_segs),
+            mgd.TempSpace("filter_seg_plots"),
+            config['good_cells']
         )
     )
 

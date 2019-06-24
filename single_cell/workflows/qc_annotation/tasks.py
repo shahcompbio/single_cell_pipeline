@@ -4,8 +4,9 @@ Created on Jul 24, 2017
 @author: dgrewal
 '''
 import os
-import pypeliner
+import shutil
 
+import pypeliner
 from single_cell.utils import csvutils
 from single_cell.utils import helpers
 
@@ -82,3 +83,32 @@ def cell_cycle_classifier(hmmcopy_reads, hmmcopy_metrics, alignment_metrics, out
     ]
 
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+
+
+def filter_plot_tar(metrics, src_tar, pass_tar, fail_tar, tempdir, filters):
+    allplots = os.path.join(tempdir, 'allplots')
+    helpers.makedirs(allplots)
+    helpers.extract_tar(src_tar, allplots)
+
+    metrics_data = csvutils.read_csv_and_yaml(metrics)
+    all_cells = metrics_data.cell_id.tolist()
+
+    metrics_data = helpers.filter_metrics(metrics_data, filters)
+    good_cells = metrics_data.cell_id.tolist()
+    bad_cells = [cell for cell in all_cells if cell not in good_cells]
+
+    plotdir = os.path.join(tempdir, 'segs_pass')
+    helpers.makedirs(plotdir)
+    for cell in good_cells:
+        src_path = os.path.join(allplots, '{}_{}.png'.format(cell, 'segments'))
+        dest_path = os.path.join(plotdir, '{}_{}.png'.format(cell, 'segments'))
+        shutil.copyfile(src_path, dest_path)
+    helpers.make_tarfile(plotdir, pass_tar)
+
+    plotdir = os.path.join(tempdir, 'segs_fail')
+    helpers.makedirs(plotdir)
+    for cell in bad_cells:
+        src_path = os.path.join(allplots, '{}_{}.png'.format(cell, 'segments'))
+        dest_path = os.path.join(plotdir, '{}_{}.png'.format(cell, 'segments'))
+        shutil.copyfile(src_path, dest_path)
+    helpers.make_tarfile(plotdir, fail_tar)

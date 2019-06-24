@@ -60,6 +60,8 @@ def qc_workflow(args):
     loci_rank_trees = os.path.join(annotation_dir, '{0}_rank_loci_trees.csv'.format(lib))
     filtered_data = os.path.join(annotation_dir, '{0}_filtered_data.csv'.format(lib))
     corrupt_tree_pdf = os.path.join(annotation_dir, '{0}_corrupt_tree.pdf'.format(lib))
+    segs_pass = os.path.join(annotation_dir, '{0}_segs_pass.tar.gz'.format(lib))
+    segs_fail = os.path.join(annotation_dir, '{0}_segs_fail.tar.gz'.format(lib))
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -136,6 +138,7 @@ def qc_workflow(args):
                 mgd.InputFile(reads_csvs),
                 mgd.InputFile(alignment_metrics_csv),
                 mgd.InputFile(gc_metrics_csv),
+                mgd.InputFile(segs_pdf),
                 mgd.OutputFile(merged_metrics_csvs),
                 mgd.OutputFile(qc_report),
                 mgd.OutputFile(corrupt_tree_newick),
@@ -144,6 +147,8 @@ def qc_workflow(args):
                 mgd.OutputFile(loci_rank_trees),
                 mgd.OutputFile(filtered_data),
                 mgd.OutputFile(corrupt_tree_pdf),
+                mgd.OutputFile(segs_pass),
+                mgd.OutputFile(segs_fail),
                 config['annotation'],
                 lib,
             ),

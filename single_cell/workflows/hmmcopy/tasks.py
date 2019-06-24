@@ -159,7 +159,6 @@ def run_hmmcopy(
 
 
 def concatenate_csv(inputs, output, low_memory=False):
-
     if low_memory:
         csvutils.concatenate_csv_files_quick_lowmem(
             inputs, output
@@ -346,31 +345,15 @@ def plot_hmmcopy(reads, segments, params, metrics, ref_genome, segs_out,
         plot.main()
 
 
-def extract_cell_by_col(df, colname, colvalue, rowname):
-    return df[df[colname] == colvalue][rowname].iloc[0]
-
-
 def get_good_cells(metrics, cell_filters):
     metrics_data = csvutils.read_csv_and_yaml(metrics)
 
-    cells = metrics_data.cell_id
-
     if not cell_filters:
-        return cells.tolist()
+        return metrics_data.cell_id.tolist()
 
-    # cells to keep
-    for metric_col, operation, threshold in cell_filters:
-        cells = [cell for cell in cells
-                 if helpers.eval_expr(
-                extract_cell_by_col(
-                    metrics_data,
-                    'cell_id',
-                    cell,
-                    metric_col),
-                operation,
-                threshold)]
+    metrics_data = helpers.filter_metrics(metrics_data, cell_filters)
 
-    return cells
+    return metrics_data.cell_id.tolist()
 
 
 def sort_cells(metrics, good_cells, tableid):
@@ -378,10 +361,8 @@ def sort_cells(metrics, good_cells, tableid):
         data = metrics[tableid]
 
     cells_order = {
-        order: cell for cell,
-                        order in zip(
-        data.cell_id,
-        data.order)}
+        order: cell for cell, order in zip(data.cell_id, data.order)
+    }
 
     ordervals = sorted(cells_order.keys())
 
@@ -453,7 +434,6 @@ def get_hierarchical_clustering_order(
 
 
 def plot_metrics(metrics, output, plot_title):
-
     plot = PlotMetrics(
         metrics,
         output,
@@ -464,7 +444,6 @@ def plot_metrics(metrics, output, plot_title):
 
 def plot_kernel_density(
         infile, output, sep, colname, plot_title):
-
     plot = PlotKernelDensity(
         infile,
         output,
