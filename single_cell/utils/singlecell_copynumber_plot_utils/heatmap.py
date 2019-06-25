@@ -4,20 +4,21 @@ Created on Oct 24, 2017
 @author: dgrewal
 '''
 import logging
+
 import matplotlib
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import scipy.cluster.hierarchy as hc
 import scipy.spatial.distance as dist
-from matplotlib.colors import rgb2hex
-from matplotlib.colors import ListedColormap
 import seaborn as sns
+from matplotlib.colors import ListedColormap
+from matplotlib.colors import rgb2hex
 
 
 class ClusterMap(object):
 
     def __init__(self, data, colordata, max_cn, chromosomes=None,
-                 scale_by_cells=False):
+                 scale_by_cells=False, distance_matrix=None):
         """
         :param data pandas dataframe with bins as columns and samples as rows
         :param colordata: dict with samples and their corresponding type
@@ -42,6 +43,8 @@ class ClusterMap(object):
 
         # set max for data
         self.data = np.clip(self.data, 0, self.max_cn)
+
+        self.distance_matrix = distance_matrix
 
         self.generate_plot()
 
@@ -115,19 +118,18 @@ class ClusterMap(object):
         :param placement: list with [x,y,w,h] values for positioning plot
         :returns linkage matrix
         """
+
         # placement of dendrogram on the left of the heatmap
         ax1 = fig.add_axes(placement, frame_on=True)
 
-        # workaround: replace nan with -1 to cluster data with nans
-        mat_no_nan = np.copy(mat)
-        mat_no_nan[np.isnan(mat_no_nan)] = -1
+        if self.distance_matrix is None:
+            mat_no_nan = np.copy(mat)
+            mat_no_nan[np.isnan(mat_no_nan)] = -1
+            linkage = hc.linkage(dist.pdist(mat_no_nan, "cityblock"),
+                                 method='ward')
+        else:
+            linkage = hc.linkage(self.distance_matrix, method='average')
 
-        # Compute and plot left dendrogram.
-        linkage = hc.linkage(
-            dist.pdist(
-                mat_no_nan,
-                "cityblock"),
-            method='ward')
         hc.dendrogram(linkage, orientation='left')
         ax1.set_xticks([])
         ax1.set_yticks([])
@@ -274,7 +276,7 @@ class ClusterMap(object):
 
         # heatmap placement
         # x = cbar x + cbar w + margin
-        #w = width
+        # w = width
         # right will get scaled based on labels inside plot_heatmap
         hmap_plc = [0.117, y, 0.9, h]
         self.plot_heatmap(fig, self.data, linkage, hmap_plc)

@@ -3,12 +3,13 @@ Created on Sep 8, 2015
 
 @author: dgrewal
 '''
+import argparse
+import math
 import os
 import sys
-import math
-import argparse
+
 import matplotlib
-import gzip
+
 matplotlib.use("Agg")
 import numpy as np
 import pandas as pd
@@ -17,9 +18,12 @@ from collections import defaultdict
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import logging
-from single_cell.utils import helpers
-from single_cell.utils import csvutils
+import helpers
+import csvutils
 from heatmap import ClusterMap
+
+from ete3 import Tree
+from itertools import combinations
 
 sys.setrecursionlimit(2000)
 
@@ -81,6 +85,45 @@ class PlotPcolor(object):
         self.metrics_tablename = kwargs.get('metrics_tablename')
 
         self.cells = kwargs.get("cells")
+
+        self.corrupt_tree = self.load_corrupt_tree(kwargs.get('corrupt_tree'))
+
+    def load_corrupt_tree(self, corrupt_tree):
+        if not corrupt_tree:
+            return
+
+        with open(corrupt_tree) as newickfile:
+            newickdata = newickfile.readline()
+            assert newickfile.readline() == ''
+
+        tree = Tree(newickdata, format=1)
+
+        return tree
+
+    def get_corrupt_tree_cells(self):
+        leaves = self.corrupt_tree.get_leaf_names()
+        leaves = [val[len('cell_'):] for val in leaves if val.startswith("cell_")]
+        return leaves
+
+    def build_tree_distance_matrix(self, cell_ids):
+        if not self.corrupt_tree:
+            return None
+
+        leaves = self.corrupt_tree.get_leaf_names()
+        leaves = [val[len('cell_'):] for val in leaves if val.startswith("cell_")]
+
+        cell_ids = [v for v in cell_ids if v in leaves]
+
+        leaves_idx = {val: i for i, val in enumerate(cell_ids)}
+
+        dmat = np.zeros((len(cell_ids), len(cell_ids)))
+
+        for l1, l2 in combinations(cell_ids, 2):
+            d = self.corrupt_tree.get_distance('cell_' + l1, 'cell_' + l2)
+            dmat[leaves_idx[l1], leaves_idx[l2]] = d
+            dmat[leaves_idx[l2], leaves_idx[l1]] = d
+
+        return dmat
 
     def build_label_indices(self, header):
         '''
@@ -417,7 +460,7 @@ class PlotPcolor(object):
         data = data.loc[samples]
         return data
 
-    def plot_heatmap(self, data, ccdata, title, lims, pdfout):
+    def plot_heatmap(self, data, ccdata, title, lims, pdfout, distance_matrix=None):
         """
         generate heatmap, annotate and save
 
@@ -427,7 +470,9 @@ class PlotPcolor(object):
             ccdata,
             self.max_cn,
             chromosomes=self.chromosomes,
-            scale_by_cells=self.scale_by_cells)
+            scale_by_cells=self.scale_by_cells,
+            distance_matrix=distance_matrix
+        )
 
         plt.suptitle(title)
 
@@ -443,12 +488,20 @@ class PlotPcolor(object):
         """
 
         def genplot(data, samples):
+            distance_matrix, samples = self.build_tree_distance_matrix(samples)
+
+            if self.corrupt_tree and distance_matrix.size == 0:
+                return
+
             pltdata = data.loc[samples]
 
-            title = self.plot_title + \
-                    ' (%s) n=%s/%s' % (sep, len(samples), num_samples)
+            title = ' (%s) n=%s/%s' % (sep, len(samples), num_samples)
+            title = self.plot_title + title
 
-            self.plot_heatmap(pltdata, colordata, title, lims, pdfout)
+            self.plot_heatmap(
+                pltdata, colordata, title, lims, pdfout,
+                distance_matrix=distance_matrix
+            )
 
         if not self.output:
             return
@@ -470,6 +523,9 @@ class PlotPcolor(object):
             num_samples = len(samples)
 
             samples = set(samples).intersection(set(data.index))
+
+            if self.corrupt_tree:
+                samples = set(samples).intersection(set(self.get_corrupt_tree_cells()))
 
             if len(samples) < 2:
                 continue
