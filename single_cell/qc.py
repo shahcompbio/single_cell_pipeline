@@ -62,6 +62,8 @@ def qc_workflow(args):
     corrupt_tree_pdf = os.path.join(annotation_dir, '{0}_corrupt_tree.pdf'.format(lib))
     segs_pass = os.path.join(annotation_dir, '{0}_segs_pass.tar.gz'.format(lib))
     segs_fail = os.path.join(annotation_dir, '{0}_segs_fail.tar.gz'.format(lib))
+    corrupt_heatmap_pdf = os.path.join(annotation_dir, '{}_heatmap_corrupt_tree.pdf'.format(lib))
+
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -149,6 +151,7 @@ def qc_workflow(args):
                 mgd.OutputFile(corrupt_tree_pdf),
                 mgd.OutputFile(segs_pass),
                 mgd.OutputFile(segs_fail),
+                mgd.OutputFile(corrupt_heatmap_pdf),
                 config['annotation'],
                 lib,
             ),
