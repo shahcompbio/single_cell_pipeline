@@ -100,15 +100,15 @@ def filter_plot_tar(metrics, src_tar, pass_tar, fail_tar, tempdir, filters):
     plotdir = os.path.join(tempdir, 'segs_pass')
     helpers.makedirs(plotdir)
     for cell in good_cells:
-        src_path = os.path.join(allplots, '{}_{}.png'.format(cell, 'segments'))
+        src_path = os.path.join(allplots, 'segments', '{}_{}.png'.format(cell, 'segments'))
         dest_path = os.path.join(plotdir, '{}_{}.png'.format(cell, 'segments'))
         shutil.copyfile(src_path, dest_path)
-    helpers.make_tarfile(plotdir, pass_tar)
+    helpers.make_tarfile(pass_tar, plotdir)
 
     plotdir = os.path.join(tempdir, 'segs_fail')
     helpers.makedirs(plotdir)
     for cell in bad_cells:
-        src_path = os.path.join(allplots, '{}_{}.png'.format(cell, 'segments'))
+        src_path = os.path.join(allplots, 'segments', '{}_{}.png'.format(cell, 'segments'))
         dest_path = os.path.join(plotdir, '{}_{}.png'.format(cell, 'segments'))
         shutil.copyfile(src_path, dest_path)
-    helpers.make_tarfile(plotdir, fail_tar)
+    helpers.make_tarfile(fail_tar, plotdir)
