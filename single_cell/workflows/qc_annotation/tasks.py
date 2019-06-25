@@ -9,6 +9,7 @@ import shutil
 import pypeliner
 from single_cell.utils import csvutils
 from single_cell.utils import helpers
+from single_cell.utils.singlecell_copynumber_plot_utils import PlotPcolor
 
 from scripts import classify
 from scripts import generate_qc
@@ -112,3 +113,22 @@ def filter_plot_tar(metrics, src_tar, pass_tar, fail_tar, tempdir, filters):
         dest_path = os.path.join(plotdir, '{}_{}.png'.format(cell, 'segments'))
         shutil.copyfile(src_path, dest_path)
     helpers.make_tarfile(fail_tar, plotdir)
+
+
+
+def plot_pcolor(infile, metrics, corrupt_tree, output, plot_title=None,
+                column_name=None, plot_by_col=None,
+                chromosomes=None, max_cn=None,
+                scale_by_cells=None, color_by_col=None,
+                ):
+
+    plot = PlotPcolor(
+        infile, metrics, output, plot_title=plot_title,
+        column_name=column_name, plot_by_col=plot_by_col,
+        chromosomes=chromosomes,
+        max_cn=max_cn,
+        scale_by_cells=scale_by_cells,
+        color_by_col=color_by_col,
+        corrupt_tree=corrupt_tree
+    )
+    plot.main()

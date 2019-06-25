@@ -10,7 +10,8 @@ import pypeliner.managed as mgd
 def create_qc_annotation_workflow(
         hmmcopy_metrics, hmmcopy_reads, alignment_metrics, gc_metrics, segs_tar,
         merged_metrics, qc_report, corrupt_tree, consensus_tree, phylo_csv,
-        rank_trees, filtered_data, corrupt_tree_pdf, pass_segs, fail_segs, config, library_id
+        rank_trees, filtered_data, corrupt_tree_pdf, pass_segs, fail_segs,
+        corrupt_tree_heatmap_output, config, library_id
 ):
     ctx = {'docker_image': config['docker']['single_cell_pipeline']}
 
@@ -93,5 +94,28 @@ def create_qc_annotation_workflow(
             config['good_cells']
         )
     )
+
+    workflow.transform(
+        name='plot_heatmap_corrupt_tree',
+        func="single_cell.workflows.qc_annotation.tasks.plot_pcolor",
+        args=(
+            mgd.InputFile(hmmcopy_reads, extensions=['.yaml']),
+            mgd.InputFile(merged_metrics, extensions=['.yaml']),
+            mgd.InputFile(corrupt_tree),
+            mgd.OutputFile(corrupt_tree_heatmap_output),
+        ),
+        kwargs={
+            'plot_title': 'QC pipeline metrics',
+            'column_name': 'state',
+            'plot_by_col': 'experimental_condition',
+            'color_by_col': 'cell_call',
+            'chromosomes': config['chromosomes'],
+            'max_cn': config['num_states'],
+            'scale_by_cells': False,
+        }
+    )
+
+
+
 
     return workflow
