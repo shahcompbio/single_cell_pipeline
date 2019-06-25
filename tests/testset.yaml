@@ -1,11 +1,11 @@
 SA1044-A90707B-R03-C39:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA1044-A90707B-R03-C39.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA1044-A90707B-R03-C39.bam
   column: 39
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA1044-A90707B-R03-C39_S524_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA1044-A90707B-R03-C39_S524_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA1044-A90707B-R03-C39_S524_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA1044-A90707B-R03-C39_S524_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 34
@@ -17,13 +17,13 @@ SA1044-A90707B-R03-C39:
   row: 3
   sample_type: 'null'
 SA1044-A90707B-R04-C41:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA1044-A90707B-R04-C41.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA1044-A90707B-R04-C41.bam
   column: 41
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA1044-A90707B-R04-C41_S466_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA1044-A90707B-R04-C41_S466_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA1044-A90707B-R04-C41_S466_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA1044-A90707B-R04-C41_S466_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 32
@@ -35,13 +35,13 @@ SA1044-A90707B-R04-C41:
   row: 4
   sample_type: 'null'
 SA1044-A90707B-R04-C42:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA1044-A90707B-R04-C42.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA1044-A90707B-R04-C42.bam
   column: 42
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA1044-A90707B-R04-C42_S465_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA1044-A90707B-R04-C42_S465_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA1044-A90707B-R04-C42_S465_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA1044-A90707B-R04-C42_S465_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 31
@@ -53,13 +53,13 @@ SA1044-A90707B-R04-C42:
   row: 4
   sample_type: 'null'
 SA1044-A90707B-R05-C41:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA1044-A90707B-R05-C41.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA1044-A90707B-R05-C41.bam
   column: 41
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA1044-A90707B-R05-C41_S410_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA1044-A90707B-R05-C41_S410_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA1044-A90707B-R05-C41_S410_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA1044-A90707B-R05-C41_S410_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 32
@@ -71,13 +71,13 @@ SA1044-A90707B-R05-C41:
   row: 5
   sample_type: 'null'
 SA1044-A90707B-R07-C33:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA1044-A90707B-R07-C33.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA1044-A90707B-R07-C33.bam
   column: 33
   condition: A
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA1044-A90707B-R07-C33_S306_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA1044-A90707B-R07-C33_S306_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA1044-A90707B-R07-C33_S306_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA1044-A90707B-R07-C33_S306_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 40
@@ -89,13 +89,13 @@ SA1044-A90707B-R07-C33:
   row: 7
   sample_type: 'null'
 SA1044-A90707B-R10-C39:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA1044-A90707B-R10-C39.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA1044-A90707B-R10-C39.bam
   column: 39
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA1044-A90707B-R10-C39_S132_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA1044-A90707B-R10-C39_S132_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA1044-A90707B-R10-C39_S132_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA1044-A90707B-R10-C39_S132_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 34
@@ -107,13 +107,13 @@ SA1044-A90707B-R10-C39:
   row: 10
   sample_type: 'null'
 SA922-A90707B-R03-C61:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R03-C61.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R03-C61.bam
   column: 61
   condition: A
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA922-A90707B-R03-C61_S514_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA922-A90707B-R03-C61_S514_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R03-C61_S514_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R03-C61_S514_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 12
@@ -125,13 +125,13 @@ SA922-A90707B-R03-C61:
   row: 3
   sample_type: 'null'
 SA922-A90707B-R03-C62:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R03-C62.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R03-C62.bam
   column: 62
   condition: A
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA922-A90707B-R03-C62_S513_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA922-A90707B-R03-C62_S513_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R03-C62_S513_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R03-C62_S513_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 11
@@ -143,13 +143,13 @@ SA922-A90707B-R03-C62:
   row: 3
   sample_type: 'null'
 SA922-A90707B-R03-C65:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R03-C65.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R03-C65.bam
   column: 65
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA922-A90707B-R03-C65_S510_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA922-A90707B-R03-C65_S510_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R03-C65_S510_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R03-C65_S510_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 8
@@ -161,13 +161,13 @@ SA922-A90707B-R03-C65:
   row: 3
   sample_type: 'null'
 SA922-A90707B-R04-C65:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R04-C65.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R04-C65.bam
   column: 65
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA922-A90707B-R04-C65_S454_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA922-A90707B-R04-C65_S454_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R04-C65_S454_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R04-C65_S454_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 8
@@ -179,13 +179,13 @@ SA922-A90707B-R04-C65:
   row: 4
   sample_type: 'null'
 SA922-A90707B-R06-C68:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R06-C68.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R06-C68.bam
   column: 68
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA922-A90707B-R06-C68_S339_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA922-A90707B-R06-C68_S339_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R06-C68_S339_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R06-C68_S339_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 5
@@ -197,13 +197,13 @@ SA922-A90707B-R06-C68:
   row: 6
   sample_type: 'null'
 SA922-A90707B-R07-C61:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R07-C61.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R07-C61.bam
   column: 61
   condition: A
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA922-A90707B-R07-C61_S290_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA922-A90707B-R07-C61_S290_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R07-C61_S290_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R07-C61_S290_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 12
@@ -215,13 +215,13 @@ SA922-A90707B-R07-C61:
   row: 7
   sample_type: 'null'
 SA922-A90707B-R07-C65:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R07-C65.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R07-C65.bam
   column: 65
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA922-A90707B-R07-C65_S286_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA922-A90707B-R07-C65_S286_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R07-C65_S286_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R07-C65_S286_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 8
@@ -233,13 +233,13 @@ SA922-A90707B-R07-C65:
   row: 7
   sample_type: 'null'
 SA922-A90707B-R08-C60:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R08-C60.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R08-C60.bam
   column: 60
   condition: A
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA922-A90707B-R08-C60_S235_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA922-A90707B-R08-C60_S235_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R08-C60_S235_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R08-C60_S235_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 13
@@ -251,13 +251,13 @@ SA922-A90707B-R08-C60:
   row: 8
   sample_type: 'null'
 SA922-A90707B-R11-C65:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R11-C65.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R11-C65.bam
   column: 65
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA922-A90707B-R11-C65_S74_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA922-A90707B-R11-C65_S74_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R11-C65_S74_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R11-C65_S74_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 8
@@ -269,13 +269,13 @@ SA922-A90707B-R11-C65:
   row: 11
   sample_type: 'null'
 SA922-A90707B-R11-C67:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R11-C67.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R11-C67.bam
   column: 67
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA922-A90707B-R11-C67_S72_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA922-A90707B-R11-C67_S72_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R11-C67_S72_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R11-C67_S72_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 6
@@ -287,13 +287,13 @@ SA922-A90707B-R11-C67:
   row: 11
   sample_type: 'null'
 SA922-A90707B-R12-C66:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R12-C66.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA922-A90707B-R12-C66.bam
   column: 66
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA922-A90707B-R12-C66_S29_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA922-A90707B-R12-C66_S29_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R12-C66_S29_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA922-A90707B-R12-C66_S29_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 7
@@ -305,13 +305,13 @@ SA922-A90707B-R12-C66:
   row: 12
   sample_type: 'null'
 SA928-A90707B-R03-C11:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R03-C11.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R03-C11.bam
   column: 11
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA928-A90707B-R03-C11_S552_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA928-A90707B-R03-C11_S552_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R03-C11_S552_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R03-C11_S552_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 62
@@ -323,13 +323,13 @@ SA928-A90707B-R03-C11:
   row: 3
   sample_type: 'null'
 SA928-A90707B-R03-C19:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R03-C19.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R03-C19.bam
   column: 19
   condition: A
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA928-A90707B-R03-C19_S544_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA928-A90707B-R03-C19_S544_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R03-C19_S544_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R03-C19_S544_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 54
@@ -341,13 +341,13 @@ SA928-A90707B-R03-C19:
   row: 3
   sample_type: 'null'
 SA928-A90707B-R03-C24:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R03-C24.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R03-C24.bam
   column: 24
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA928-A90707B-R03-C24_S539_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA928-A90707B-R03-C24_S539_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R03-C24_S539_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R03-C24_S539_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 49
@@ -359,13 +359,13 @@ SA928-A90707B-R03-C24:
   row: 3
   sample_type: 'null'
 SA928-A90707B-R04-C12:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R04-C12.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R04-C12.bam
   column: 12
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA928-A90707B-R04-C12_S495_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA928-A90707B-R04-C12_S495_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R04-C12_S495_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R04-C12_S495_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 61
@@ -377,13 +377,13 @@ SA928-A90707B-R04-C12:
   row: 4
   sample_type: 'null'
 SA928-A90707B-R05-C16:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R05-C16.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R05-C16.bam
   column: 16
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA928-A90707B-R05-C16_S435_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA928-A90707B-R05-C16_S435_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R05-C16_S435_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R05-C16_S435_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 57
@@ -395,13 +395,13 @@ SA928-A90707B-R05-C16:
   row: 5
   sample_type: 'null'
 SA928-A90707B-R05-C26:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R05-C26.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R05-C26.bam
   column: 26
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA928-A90707B-R05-C26_S425_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA928-A90707B-R05-C26_S425_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R05-C26_S425_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R05-C26_S425_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 47
@@ -413,13 +413,13 @@ SA928-A90707B-R05-C26:
   row: 5
   sample_type: 'null'
 SA928-A90707B-R05-C27:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R05-C27.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R05-C27.bam
   column: 27
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA928-A90707B-R05-C27_S424_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA928-A90707B-R05-C27_S424_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R05-C27_S424_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R05-C27_S424_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 46
@@ -431,13 +431,13 @@ SA928-A90707B-R05-C27:
   row: 5
   sample_type: 'null'
 SA928-A90707B-R06-C29:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R06-C29.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R06-C29.bam
   column: 29
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA928-A90707B-R06-C29_S366_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA928-A90707B-R06-C29_S366_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R06-C29_S366_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R06-C29_S366_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 44
@@ -449,13 +449,13 @@ SA928-A90707B-R06-C29:
   row: 6
   sample_type: 'null'
 SA928-A90707B-R07-C11:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R07-C11.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R07-C11.bam
   column: 11
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA928-A90707B-R07-C11_S328_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA928-A90707B-R07-C11_S328_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R07-C11_S328_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R07-C11_S328_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 62
@@ -467,13 +467,13 @@ SA928-A90707B-R07-C11:
   row: 7
   sample_type: 'null'
 SA928-A90707B-R07-C16:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R07-C16.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R07-C16.bam
   column: 16
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA928-A90707B-R07-C16_S323_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA928-A90707B-R07-C16_S323_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R07-C16_S323_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R07-C16_S323_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 57
@@ -485,13 +485,13 @@ SA928-A90707B-R07-C16:
   row: 7
   sample_type: 'null'
 SA928-A90707B-R07-C19:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R07-C19.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R07-C19.bam
   column: 19
   condition: A
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA928-A90707B-R07-C19_S320_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA928-A90707B-R07-C19_S320_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R07-C19_S320_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R07-C19_S320_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 54
@@ -503,13 +503,13 @@ SA928-A90707B-R07-C19:
   row: 7
   sample_type: 'null'
 SA928-A90707B-R07-C44:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R07-C44.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R07-C44.bam
   column: 44
   condition: A
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA928-A90707B-R07-C44_S295_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA928-A90707B-R07-C44_S295_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R07-C44_S295_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R07-C44_S295_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 29
@@ -521,13 +521,13 @@ SA928-A90707B-R07-C44:
   row: 7
   sample_type: 'null'
 SA928-A90707B-R08-C26:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R08-C26.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R08-C26.bam
   column: 26
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA928-A90707B-R08-C26_S257_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA928-A90707B-R08-C26_S257_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R08-C26_S257_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R08-C26_S257_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 47
@@ -539,13 +539,13 @@ SA928-A90707B-R08-C26:
   row: 8
   sample_type: 'null'
 SA928-A90707B-R08-C28:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R08-C28.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R08-C28.bam
   column: 28
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA928-A90707B-R08-C28_S255_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA928-A90707B-R08-C28_S255_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R08-C28_S255_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R08-C28_S255_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 45
@@ -557,13 +557,13 @@ SA928-A90707B-R08-C28:
   row: 8
   sample_type: 'null'
 SA928-A90707B-R08-C44:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R08-C44.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R08-C44.bam
   column: 44
   condition: A
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA928-A90707B-R08-C44_S239_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA928-A90707B-R08-C44_S239_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R08-C44_S239_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R08-C44_S239_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 29
@@ -575,13 +575,13 @@ SA928-A90707B-R08-C44:
   row: 8
   sample_type: 'null'
 SA928-A90707B-R09-C21:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R09-C21.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R09-C21.bam
   column: 21
   condition: A
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA928-A90707B-R09-C21_S206_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA928-A90707B-R09-C21_S206_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R09-C21_S206_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R09-C21_S206_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 52
@@ -593,13 +593,13 @@ SA928-A90707B-R09-C21:
   row: 9
   sample_type: 'null'
 SA928-A90707B-R09-C25:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R09-C25.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R09-C25.bam
   column: 25
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA928-A90707B-R09-C25_S202_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA928-A90707B-R09-C25_S202_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R09-C25_S202_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R09-C25_S202_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 48
@@ -611,13 +611,13 @@ SA928-A90707B-R09-C25:
   row: 9
   sample_type: 'null'
 SA928-A90707B-R10-C14:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R10-C14.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R10-C14.bam
   column: 14
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA928-A90707B-R10-C14_S157_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA928-A90707B-R10-C14_S157_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R10-C14_S157_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R10-C14_S157_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 59
@@ -629,13 +629,13 @@ SA928-A90707B-R10-C14:
   row: 10
   sample_type: 'null'
 SA928-A90707B-R13-C11:
-  bam: testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R13-C11.bam
+  bam: singlecelldatatest/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA928-A90707B-R13-C11.bam
   column: 11
   condition: B
   fastqs:
     AHLLH2AFXX:
-      fastq_1: testdata/hmmcopy_testdata/SA928-A90707B-R13-C11_S18_R1_001.fastq.gz
-      fastq_2: testdata/hmmcopy_testdata/SA928-A90707B-R13-C11_S18_R2_001.fastq.gz
+      fastq_1: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R13-C11_S18_R1_001.fastq.gz
+      fastq_2: singlecelldatatest/testdata/hmmcopy_testdata/SA928-A90707B-R13-C11_S18_R2_001.fastq.gz
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 62
