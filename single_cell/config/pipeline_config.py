@@ -146,6 +146,8 @@ def get_annotation_params(cluster, reference):
         'memory': {'med': 6},
         'classifier_training_data': referencedata['classifier_training_data'],
         'reference_gc': referencedata['reference_gc_qc'],
+        'chromosomes': referencedata['chromosomes'],
+        'num_states': 12,
         'corrupt_tree_params': {
             'neighborhood_size': 2,
             'lower_fraction': 0.05,
