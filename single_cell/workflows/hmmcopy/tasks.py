@@ -31,6 +31,12 @@ scripts_directory = os.path.join(
 run_hmmcopy_rscript = os.path.join(scripts_directory, 'hmmcopy.R')
 
 
+def get_max_cn(reads):
+    df = csvutils.read_csv_and_yaml(reads)
+    max_cn = np.nanpercentile(df['copy'], 99)
+    return max_cn
+
+
 def run_correction_hmmcopy(
         bam_file, correct_reads_out, readcount_wig, hmmparams, docker_image):
     run_readcount_rscript = os.path.join(
@@ -101,13 +107,9 @@ def run_hmmcopy(
         segments_filename,
         parameters_filename,
         metrics_filename,
-        segs_pdf_filename,
-        bias_pdf_filename,
         cell_id,
-        reference,
         hmmparams,
         tempdir,
-        sample_info,
         docker_image
 ):
     # generate wig file for hmmcopy
@@ -144,18 +146,6 @@ def run_hmmcopy(
     csvutils.prep_csv_files(
         os.path.join(hmmcopy_outdir, "metrics.csv"), metrics_filename
     )
-
-    annotation_cols = ['cell_call', 'experimental_condition', 'sample_type',
-                       'mad_neutral_state', 'MSRSI_non_integerness',
-                       'total_mapped_reads_hmmcopy']
-
-    plot_hmmcopy(
-        corrected_reads_filename, segments_filename, parameters_filename,
-        metrics_filename, reference, segs_pdf_filename,
-        bias_pdf_filename, cell_id,
-        num_states=hmmparams['num_states'],
-        annotation_cols=annotation_cols,
-        sample_info=sample_info)
 
 
 def concatenate_csv(inputs, output, low_memory=False):
@@ -337,11 +327,17 @@ def create_igv_seg(merged_segs, merged_hmm_metrics,
 
 def plot_hmmcopy(reads, segments, params, metrics, ref_genome, segs_out,
                  bias_out, cell_id, num_states=7,
-                 annotation_cols=None, sample_info=None):
+                 annotation_cols=None, sample_info=None, max_cn=None):
+
+    if not annotation_cols:
+        annotation_cols = ['cell_call', 'experimental_condition', 'sample_type',
+                           'mad_neutral_state', 'MSRSI_non_integerness',
+                           'total_mapped_reads_hmmcopy']
+
     with GenHmmPlots(reads, segments, params, metrics, ref_genome, segs_out,
                      bias_out, cell_id, num_states=num_states,
                      annotation_cols=annotation_cols,
-                     sample_info=sample_info) as plot:
+                     sample_info=sample_info, max_cn=max_cn) as plot:
         plot.main()
 
 
