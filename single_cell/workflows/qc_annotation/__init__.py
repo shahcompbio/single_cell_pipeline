@@ -18,28 +18,29 @@ def create_qc_annotation_workflow(
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     workflow.transform(
+        name='cell_cycle_classifier',
+        func="single_cell.workflows.qc_annotation.tasks.cell_cycle_classifier",
+        args=(
+            mgd.InputFile(hmmcopy_reads),
+            mgd.InputFile(hmmcopy_metrics, extensions=['.yaml']),
+            mgd.InputFile(alignment_metrics),
+            mgd.TempOutputFile('cell_state_classifier.csv.gz', extensions=['.yaml']),
+            mgd.TempSpace('tempdata_cell_cycle')
+        ),
+        kwargs={'docker_image': config['docker']['cell_cycle_classifier']}
+    )
+
+    workflow.transform(
         name="add_quality",
         ctx={'mem': config['memory']['med'], 'ncpus': 1},
         func="single_cell.workflows.qc_annotation.tasks.add_quality",
         args=(
-            mgd.InputFile(hmmcopy_metrics, extensions=['.yaml']),
+            mgd.TempInputFile('cell_state_classifier.csv.gz', extensions=['.yaml']),
             mgd.InputFile(alignment_metrics, extensions=['.yaml']),
             mgd.TempOutputFile("hmmcopy_quality_metrics.csv.gz", extensions=['.yaml']),
             config['classifier_training_data'],
             mgd.TempSpace("hmmcopy_classify_tempdir")
         ),
-    )
-
-    workflow.transform(
-        name='cell_cycle_classifier',
-        func="single_cell.workflows.qc_annotation.tasks.cell_cycle_classifier",
-        args=(
-            mgd.InputFile(hmmcopy_reads),
-            mgd.InputFile(hmmcopy_metrics),
-            mgd.InputFile(alignment_metrics),
-            mgd.TempOutputFile('cell_state_classifier')
-        ),
-        kwargs={'docker_image': config['docker']['cell_cycle_classifier']}
     )
 
     workflow.transform(
@@ -49,7 +50,7 @@ def create_qc_annotation_workflow(
         args=(
             mgd.TempInputFile("hmmcopy_quality_metrics.csv.gz", extensions=['.yaml']),
             mgd.InputFile(alignment_metrics, extenstions=['.yaml']),
-            mgd.OutputFile(merged_metrics, extensions=['.yaml'])
+            mgd.TempOutputFile('merged_metrics.csv.gz', extensions=['.yaml'])
         )
     )
 
@@ -59,7 +60,7 @@ def create_qc_annotation_workflow(
         args=(
             mgd.TempSpace("QC_report_singlecellpipeline"),
             config['reference_gc'],
-            mgd.InputFile(merged_metrics, extensions=['.yaml']),
+            mgd.TempInputFile('merged_metrics.csv.gz', extensions=['.yaml']),
             mgd.InputFile(gc_metrics, extensions=['.yaml']),
             mgd.OutputFile(qc_report)
         )
@@ -69,7 +70,7 @@ def create_qc_annotation_workflow(
         name='corrupt_tree',
         func='single_cell.workflows.corrupt_tree.create_corrupt_tree_workflow',
         args=(
-            mgd.InputFile(merged_metrics, extensions=['.yaml']),
+            mgd.TempInputFile('merged_metrics.csv.gz', extensions=['.yaml']),
             mgd.InputFile(hmmcopy_reads),
             mgd.OutputFile(corrupt_tree),
             mgd.OutputFile(consensus_tree),
@@ -80,6 +81,17 @@ def create_qc_annotation_workflow(
             library_id,
             config
         )
+    )
+
+    workflow.transform(
+        name="add_corrupt_tree_order",
+        ctx={'mem': config['memory']['med'], 'ncpus': 1},
+        func="single_cell.workflows.qc_annotation.tasks.add_corrupt_tree_order",
+        args=(
+            mgd.InputFile(corrupt_tree),
+            mgd.TempInputFile('merged_metrics.csv.gz', extensions=['.yaml']),
+            mgd.OutputFile(merged_metrics, extensions=['.yaml'])
+        ),
     )
 
     workflow.transform(
