@@ -120,6 +120,8 @@ class GenHmmPlots(object):
 
         self.sample_info = kwargs.get("sample_info")
 
+        self.max_cn = kwargs.get("max_cn")
+
     def __enter__(self):
         return self
 
@@ -372,9 +374,12 @@ class GenHmmPlots(object):
             x, y = utl.get_segment_start_end(segments, remove_y)
             plt.plot(x, y, color='black', linewidth=linewidth)
 
-        ylim = np.nanpercentile(reads['copy'], 99)
-        if not np.isfinite(ylim):
-            ylim = ax.get_ylim()[1]
+        if self.max_cn and np.isfinite(self.max_cn):
+            ylim = self.max_cn
+        else:
+            ylim = np.nanpercentile(reads['copy'], 99)
+            if not np.isfinite(ylim):
+                ylim = ax.get_ylim()[1]
         ylim = int(ylim) + 1
         ylim = max(3, ylim)
 
