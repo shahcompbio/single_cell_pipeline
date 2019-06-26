@@ -208,7 +208,7 @@ def create_corrupt_tree_workflow(
 
     workflow.transform(
         name='merge_all_pdfs',
-        func='single_cell.utils.pdfutils.merge_pdfs',
+        func='single_cell.utils.pdfutils.merge_pdfs_with_scaling',
         args=(
             [
                 pypeliner.managed.TempInputFile("func_viz_out.pdf"),
