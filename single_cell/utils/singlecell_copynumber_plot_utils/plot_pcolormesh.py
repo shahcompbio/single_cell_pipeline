@@ -18,8 +18,8 @@ from collections import defaultdict
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import logging
-import helpers
-import csvutils
+from single_cell.utils import helpers
+from single_cell.utils import csvutils
 from heatmap import ClusterMap
 
 from ete3 import Tree
@@ -488,7 +488,7 @@ class PlotPcolor(object):
         """
 
         def genplot(data, samples):
-            distance_matrix, samples = self.build_tree_distance_matrix(samples)
+            distance_matrix = self.build_tree_distance_matrix(samples)
 
             if self.corrupt_tree and distance_matrix.size == 0:
                 return
