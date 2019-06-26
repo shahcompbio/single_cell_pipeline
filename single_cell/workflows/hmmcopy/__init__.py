@@ -51,13 +51,9 @@ def create_hmmcopy_workflow(
             mgd.TempOutputFile('segs.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
             mgd.TempOutputFile('params.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
             mgd.TempOutputFile('hmm_metrics.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
-            mgd.TempOutputFile('segments.png', 'cell_id', axes_origin=[]),
-            mgd.TempOutputFile('bias.png', 'cell_id', axes_origin=[]),
             mgd.InputInstance('cell_id'),
-            hmmparams['ref_genome'],
             hmmparams,
             mgd.TempSpace('hmmcopy_temp', 'cell_id'),
-            mgd.TempInputObj('sampleinfo', 'cell_id'),
             hmmcopy_docker
         ),
     )
@@ -94,7 +90,6 @@ def create_hmmcopy_workflow(
         ),
     )
 
-
     workflow.transform(
         name='merge_params',
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
@@ -103,6 +98,38 @@ def create_hmmcopy_workflow(
             mgd.TempInputFile('params.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
             mgd.TempOutputFile("params.csv.gz", axes_origin=[], extensions=['.yaml']),
         ),
+    )
+
+    workflow.transform(
+        name='get_max_cn',
+        ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        func="single_cell.workflows.hmmcopy.tasks.get_max_cn",
+        ret=mgd.TempOutputObj('max_cn'),
+        args=(
+            mgd.TempInputFile("reads.csv.gz", extensions=['.yaml']),
+        )
+    )
+
+    workflow.transform(
+        name='hmmcopy_plots',
+        ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        func="single_cell.workflows.hmmcopy.tasks.plot_hmmcopy",
+        axes=('cell_id',),
+        args=(
+            mgd.TempInputFile('reads.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
+            mgd.TempInputFile('segs.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
+            mgd.TempInputFile('params.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
+            mgd.TempInputFile('hmm_metrics.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
+            hmmparams['ref_genome'],
+            mgd.TempOutputFile('segments.png', 'cell_id', axes_origin=[]),
+            mgd.TempOutputFile('bias.png', 'cell_id', axes_origin=[]),
+            mgd.InputInstance('cell_id'),
+        ),
+        kwargs={
+            'num_states': hmmparams['num_states'],
+            'sample_info': mgd.TempInputObj('sampleinfo', 'cell_id'),
+            'max_cn': mgd.TempInputObj("max_cn")
+        }
     )
 
     workflow.transform(
