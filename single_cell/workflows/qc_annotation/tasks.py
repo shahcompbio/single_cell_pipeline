@@ -14,6 +14,37 @@ from single_cell.utils.singlecell_copynumber_plot_utils import PlotPcolor
 from scripts import classify
 from scripts import generate_qc
 
+from ete3 import Tree
+
+import pandas as pd
+
+
+def add_corrupt_tree_order(corrupt_tree, metrics, output):
+    """
+    adds corrupt tree order to metrics
+    """
+
+    with open(corrupt_tree) as newickfile:
+        newickdata = newickfile.readline()
+        assert newickfile.readline() == ''
+
+    tree = Tree(newickdata, format=1)
+
+    leaves = [node.name for node in tree.traverse("levelorder")]
+    leaves = [val[len('cell_'):] for val in leaves if val.startswith("cell_")]
+
+    ordering = {val: i for i, val in enumerate(leaves)}
+
+    metrics = csvutils.read_csv_and_yaml(metrics)
+
+    cells = metrics.cell_id
+
+    for cellid in cells:
+        order = ordering.get(cellid, float('nan'))
+        metrics.loc[metrics["cell_id"] == cellid, "order_corrupt_tree"] = order
+
+    csvutils.write_dataframe_to_csv_and_yaml(metrics, output)
+
 
 def annotate_metrics(
         metrics, output, sample_info, cells):
@@ -73,17 +104,27 @@ def generate_qc_report(tempdir, reference_gc, metrics_df, gc_metrics_df, qc_repo
     generate_qc.generate_html_report(tempdir, qc_report, reference_gc, metrics_df, gc_metrics_df)
 
 
-def cell_cycle_classifier(hmmcopy_reads, hmmcopy_metrics, alignment_metrics, output, docker_image=None):
+def cell_cycle_classifier(hmmcopy_reads, hmmcopy_metrics, alignment_metrics, output, tempdir, docker_image=None):
+    helpers.makedirs(tempdir)
+    temp_output = os.path.join(tempdir, 'cell_cycle_output.csv')
+
     cmd = [
         'cell_cycle_classifier',
         'train-classify',
         hmmcopy_reads,
         hmmcopy_metrics,
         alignment_metrics,
-        output
+        temp_output
     ]
 
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+
+    cell_cycle_df = pd.read_csv(temp_output)
+    hmm_metrics_df = csvutils.read_csv_and_yaml(hmmcopy_metrics)
+
+    hmm_metrics_df.merge(cell_cycle_df, on=['cell_id'], how='outer')
+
+    csvutils.write_dataframe_to_csv_and_yaml(hmm_metrics_df, output)
 
 
 def filter_plot_tar(metrics, src_tar, pass_tar, fail_tar, tempdir, filters):
