@@ -92,8 +92,10 @@ def get_hmmcopy_params(cluster, reference, binsize, smoothing_function):
 def get_align_params(cluster, reference, aligner):
     if cluster == "azure":
         referencedata = config_reference.reference_data_azure(reference)
+        refdata_callback = config_reference.reference_data_azure
     else:
         referencedata = config_reference.reference_data_shahlab(reference)
+        refdata_callback = config_reference.reference_data_shahlab
 
     docker_containers = config_reference.containers()['docker']
     docker_containers = {
@@ -103,7 +105,7 @@ def get_align_params(cluster, reference, aligner):
         'bwa': docker_containers['bwa'],
         'picard': docker_containers['picard'],
         'trimgalore': docker_containers['trimgalore'],
-        'biobloom': docker_containers['biobloom'],
+        'fastq_screen': docker_containers['fastq_screen'],
     }
 
     params = {
@@ -122,7 +124,15 @@ def get_align_params(cluster, reference, aligner):
         'gc_windows': referencedata['gc_windows'],
         'biobloom_filters': referencedata['biobloom_filters'],
         'ref_type': reference,
-        'disable_biobloom': True
+        'fastq_screen_params': {
+            'no_organism_filter': False,
+            'aligner': 'bwa',
+            'genomes': [
+                {'name': 'grch37', 'path': refdata_callback('grch37')['ref_genome']},
+                {'name': 'mm10', 'path': refdata_callback('mm10')['ref_genome']},
+                {'name': 'salmon', 'path': refdata_callback('GCF_002021735')['ref_genome']},
+            ]
+        }
     }
 
     return {"alignment": params}

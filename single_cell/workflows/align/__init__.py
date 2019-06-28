@@ -15,6 +15,7 @@ def create_alignment_workflow(
         bam_filename,
         alignment_metrics,
         gc_metrics,
+        detailed_fastqscreen_metrics,
         plot_metrics,
         ref_genome,
         config,
@@ -26,10 +27,6 @@ def create_alignment_workflow(
         library_id,
         realign=False
 ):
-    disable_biobloom = config['disable_biobloom']
-
-    align_mem = 7 if disable_biobloom else 14
-
     baseimage = config['docker']['single_cell_pipeline']
 
     lane_metrics = os.path.join(metrics_dir, 'lanes', '{lane}')
@@ -63,6 +60,41 @@ def create_alignment_workflow(
         obj=mgd.TempOutputObj('center', 'cell_id', 'lane', axes_origin=[]),
         value=centerinfo)
 
+    workflow.transform(
+        name='run_fastq_screen',
+        ctx={'mem': 7, 'ncpus': 1, 'docker_image': baseimage},
+        axes=('cell_id', 'lane',),
+        func="single_cell.workflows.align.tasks.organism_filter",
+        args=(
+            mgd.InputFile('fastq_1', 'cell_id', 'lane', fnames=fastq_1_filename),
+            mgd.InputFile('fastq_2', 'cell_id', 'lane', fnames=fastq_2_filename),
+            mgd.TempOutputFile('fastq_r1_matching_reads.fastq.gz', 'cell_id', 'lane'),
+            mgd.TempOutputFile('fastq_r2_matching_reads.fastq.gz', 'cell_id', 'lane'),
+            mgd.TempOutputFile('organism_detailed_count_per_lane.csv', 'cell_id', 'lane'),
+            mgd.TempOutputFile('organism_summary_count_per_lane.csv', 'cell_id', 'lane'),
+            mgd.TempSpace("tempdir_organism_filter", 'cell_id', 'lane'),
+            mgd.InputInstance('cell_id'),
+            config['fastq_screen_params'],
+            config['ref_type']
+        ),
+        kwargs={
+            'docker_image': config['docker']['fastq_screen'],
+            'no_organism_filter': config['fastq_screen_params']['no_organism_filter']
+        }
+    )
+
+    workflow.transform(
+        name='merge_fastq_screen_metrics',
+        ctx={'mem': 7, 'ncpus': 1, 'docker_image': baseimage},
+        func="single_cell.workflows.align.tasks.merge_fastq_screen_counts",
+        args=(
+            mgd.TempInputFile('organism_detailed_count_per_lane.csv', 'cell_id', 'lane'),
+            mgd.TempInputFile('organism_summary_count_per_lane.csv', 'cell_id', 'lane'),
+            mgd.OutputFile(detailed_fastqscreen_metrics, extensions=['.yaml']),
+            mgd.TempOutputFile('organism_summary_count_per_cell.csv'),
+        )
+    )
+
     fastqc_reports = os.path.join(
         lane_metrics,
         "fastqc",
@@ -70,18 +102,14 @@ def create_alignment_workflow(
     flagstat_metrics = os.path.join(lane_metrics, 'flagstat', '{cell_id}.txt')
     workflow.transform(
         name='align_reads',
-        ctx={'mem': align_mem, 'ncpus': 1, 'docker_image': baseimage},
+        ctx={'mem': 7, 'ncpus': 1, 'docker_image': baseimage},
         axes=('cell_id', 'lane',),
         func="single_cell.workflows.align.tasks.align_pe",
         args=(
-            mgd.InputFile(
-                'fastq_1', 'cell_id', 'lane', fnames=fastq_1_filename),
-            mgd.InputFile(
-                'fastq_2', 'cell_id', 'lane', fnames=fastq_2_filename),
+            mgd.TempInputFile('fastq_r2_matching_reads.fastq.gz', 'cell_id', 'lane'),
+            mgd.TempInputFile('fastq_r2_matching_reads.fastq.gz', 'cell_id', 'lane'),
             mgd.TempOutputFile(
                 'aligned_per_cell_per_lane.sorted.bam', 'cell_id', 'lane'),
-            mgd.TempOutputFile('biobloom_count_metrics', 'cell_id', 'lane'),
-            disable_biobloom,
             mgd.OutputFile(fastqc_reports, 'cell_id', 'lane'),
             mgd.OutputFile(flagstat_metrics, 'cell_id', 'lane'),
             mgd.TempSpace('alignment_temp', 'cell_id', 'lane'),
@@ -96,21 +124,10 @@ def create_alignment_workflow(
             config['docker'],
             config['adapter'],
             config['adapter2'],
-            config['biobloom_filters'],
-            config['ref_type']
+            config['fastq_screen_params'],
         )
     )
 
-    workflow.transform(
-        name='merge_biobloom',
-        func="single_cell.workflows.align.tasks.merge_biobloom",
-        axes=('cell_id',),
-        args=(mgd.TempInputFile('biobloom_count_metrics', 'cell_id', 'lane'),
-              mgd.TempOutputFile('biobloom_count_metrics_merged', 'cell_id'),
-              disable_biobloom,
-              config['biobloom_filters']
-              )
-    )
 
     workflow.transform(
         name='merge_bams',
@@ -274,7 +291,6 @@ def create_alignment_workflow(
             mgd.InputFile(wgs_metrics_filename, 'cell_id', axes_origin=[]),
             mgd.TempSpace("tempdir_collect_metrics"),
             mgd.TempOutputFile("alignment_metrics.csv.gz", extensions=['.yaml']),
-            mgd.TempInputFile('biobloom_count_metrics_merged', 'cell_id', axes_origin=[])
         ),
     )
 
@@ -286,6 +302,22 @@ def create_alignment_workflow(
             mgd.TempInputFile("alignment_metrics.csv.gz", extensions=['.yaml']),
             sample_info,
             mgd.TempOutputFile('alignment_metrics_annotated.csv.gz', extensions=['.yaml']),
+        ),
+    )
+
+
+    workflow.transform(
+        name='add_fastqscreen_metrics',
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        func="single_cell.utils.csvutils.merge_csv",
+        args=(
+            [
+                mgd.TempInputFile("alignment_metrics.csv.gz", extensions=['.yaml']),
+                mgd.TempInputFile('organism_summary_count_per_cell.csv'),
+            ],
+            mgd.TempOutputFile('alignment_metrics_fastq_screen_counts.csv.gz', extensions=['.yaml']),
+            'outer',
+            ['cell_id'],
         ),
     )
 
@@ -307,7 +339,7 @@ def create_alignment_workflow(
         ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.utils.csvutils.finalize_csv",
         args=(
-            mgd.TempInputFile('alignment_metrics_annotated.csv.gz', extensions=['.yaml']),
+            mgd.TempInputFile('alignment_metrics_fastq_screen_counts.csv.gz', extensions=['.yaml']),
             mgd.OutputFile(alignment_metrics, extensions=['.yaml']),
         ),
     )

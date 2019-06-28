@@ -7,6 +7,7 @@ import os
 import shutil
 
 import pypeliner
+import pysam
 from single_cell.utils import helpers
 
 from helpers import makedirs
@@ -209,7 +210,7 @@ def get_num_reads(fastq1, fastq2):
 
 def extract_biobloom_metrics(tempdir, path, disable_biobloom, biobloom_filters):
     biobloom_filters = [os.path.basename(val).replace('.bf', '') for val in biobloom_filters]
-    biobloom_filters = ['biobloom_'+val for val in biobloom_filters]
+    biobloom_filters = ['biobloom_' + val for val in biobloom_filters]
 
     biobloom_filters.append('biobloom_multiMatch')
     biobloom_filters.append('biobloom_noMatch')
@@ -229,3 +230,13 @@ def extract_biobloom_metrics(tempdir, path, disable_biobloom, biobloom_filters):
     writer.write(','.join(counts.keys()) + '\n')
     writer.write(','.join(str(v) for v in counts.values()))
     writer.close()
+
+
+def add_comment_bam_header(infile, outfile, comment):
+    with pysam.AlignmentFile(infile, mode='r', check_sq=False) as inbam:
+        header = inbam.header.to_dict()
+        header['CO'] = comment
+
+        with pysam.AlignmentFile(outfile, header=header, mode='wh') as outbam:
+            for read in inbam.fetch(until_eof=True):
+                outbam.write(read)
