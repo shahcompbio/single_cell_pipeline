@@ -22,6 +22,7 @@ def containers():
         'destruct': 'scp/destruct:v{}'.format(version), 'trimgalore': 'scp/trimgalore:v0.0.1',
         'lumpy': 'scp/lumpy:v0.0.2', 'cell_cycle_classifier': 'scp/cell_cycle_classifier:v0.0.1',
         'biobloom': 'scp/biobloom:v0.0.2', 'corrupt_tree': 'scp/corrupt_tree:v0.0.1',
+        'fastq_screen': 'scp/fastq_screen:v0.0.1'
     }
 
     singularity = {}
@@ -30,7 +31,10 @@ def containers():
 
 
 def reference_data_shahlab(reference):
-    if reference == 'grch37':
+    # salmon
+    if reference == 'GCF_002021735':
+        ref_genome = '/shahlab/pipelines/reference/GCF_002021735.1_Okis_V1_genomic.fna'
+    elif reference == 'grch37':
         classifier_training_data = '/shahlab/pipelines/reference/classifier_training_data.h5'
         gc_wig_file = {
             500000: '/shahlab/pipelines/reference/GRCh37-lite.gc.ws_500000.wig',
@@ -105,7 +109,10 @@ def reference_data_shahlab(reference):
 
 
 def reference_data_azure(reference):
-    if reference == "grch37":
+    # salmon
+    if reference == 'GCF_002021735':
+        ref_genome = '/refdata/GCF_002021735.1_Okis_V1_genomic.fna'
+    elif reference == "grch37":
         classifier_training_data = '/refdata/classifier_training_data.h5'
         gc_wig_file = {
             500000: '/refdata/GRCh37-lite.gc.ws_500000.wig',

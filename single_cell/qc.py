@@ -35,6 +35,7 @@ def qc_workflow(args):
     alignment_dir = os.path.join(outdir, 'alignment')
     alignment_metrics_csv = os.path.join(alignment_dir, '{}_alignment_metrics.csv.gz'.format(lib))
     gc_metrics_csv = os.path.join(alignment_dir, '{}_gc_metrics.csv.gz'.format(lib))
+    fastqc_metrics_csv = os.path.join(alignment_dir, '{}_detailed_fastqscreen_metrics.csv.gz'.format(lib))
     plot_metrics_output = os.path.join(alignment_dir, '{}_plot_metrics.pdf'.format(lib))
     metrics_dir = os.path.join(alignment_dir, 'metrics')
 
@@ -64,7 +65,6 @@ def qc_workflow(args):
     segs_fail = os.path.join(annotation_dir, '{0}_segs_fail.tar.gz'.format(lib))
     corrupt_heatmap_pdf = os.path.join(annotation_dir, '{}_heatmap_corrupt_tree.pdf'.format(lib))
 
-
     workflow = pypeliner.workflow.Workflow()
 
     if run_alignment:
@@ -87,6 +87,7 @@ def qc_workflow(args):
                 mgd.OutputFile('bam_markdups', 'cell_id', fnames=bam_files, axes_origin=[], extensions=['.bai']),
                 mgd.OutputFile(alignment_metrics_csv),
                 mgd.OutputFile(gc_metrics_csv),
+                mgd.OutputFile(fastqc_metrics_csv),
                 mgd.OutputFile(plot_metrics_output),
                 config['alignment']['ref_genome'],
                 config['alignment'],
