@@ -64,7 +64,7 @@ def get_metadata(filepath, sep=','):
             return header, dtypes, columns
 
     with open(filepath + '.yaml') as yamlfile:
-        yamldata = yaml.load(yamlfile)
+        yamldata = yaml.safe_load(yamlfile)
 
     header = yamldata['header']
 
@@ -87,7 +87,7 @@ def load_csv_metadata(csvfile):
         return None
 
     with open(yamlfile) as yamlinput:
-        return yaml.load(yamlinput)
+        return yaml.safe_load(yamlinput)
 
 
 def write_dataframe_to_csv_and_yaml(df, outfile, header=False):

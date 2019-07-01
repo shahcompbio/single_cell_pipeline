@@ -26,7 +26,7 @@ def walk_yaml(yamldata):
 def load_yaml(path):
     try:
         with open(path) as infile:
-            data = yaml.load(infile)
+            data = yaml.safe_load(infile)
 
     except IOError:
         raise Exception(
@@ -71,7 +71,6 @@ def get_mounts_from_yaml(yamlfile):
 
     mounts = []
 
-    leaf_nodes = []
     leaf_nodes = walk_yaml(data)
 
     for leafnode in leaf_nodes:
