@@ -96,7 +96,7 @@ def merge_bams(inputs, output, tempdir, docker_image=None):
 
 def load_metadata(infile):
     with open(infile) as fileinput:
-        data = yaml.load(fileinput)
+        data = yaml.safe_load(fileinput)
         return data['mean'], data['stdev']
 
 def run_lumpy(
