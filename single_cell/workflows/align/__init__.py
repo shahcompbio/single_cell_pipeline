@@ -305,7 +305,6 @@ def create_alignment_workflow(
         ),
     )
 
-
     workflow.transform(
         name='add_fastqscreen_metrics',
         ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
