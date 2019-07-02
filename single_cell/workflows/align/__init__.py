@@ -171,7 +171,7 @@ def bam_metrics_workflow(
         func="single_cell.utils.csvutils.merge_csv",
         args=(
             [
-                mgd.TempInputFile("alignment_metrics.csv.gz", extensions=['.yaml']),
+                mgd.TempInputFile("alignment_metrics_annotated.csv.gz", extensions=['.yaml']),
                 mgd.InputFile(summary_fastq_screen_count_per_cell),
             ],
             mgd.TempOutputFile('metrics_orgfilter_counts.csv.gz', extensions=['.yaml']),
