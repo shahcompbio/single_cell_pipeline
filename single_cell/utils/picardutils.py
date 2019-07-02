@@ -4,7 +4,9 @@ Created on Feb 19, 2018
 @author: dgrewal
 '''
 import os
+
 import pypeliner.commandline
+
 from helpers import makedirs
 
 
@@ -28,7 +30,7 @@ def merge_bams(inputs, output, mem="2G", **kwargs):
     pypeliner.commandline.execute(*cmd, **kwargs)
 
 
-def bam_sort(bam_filename, sorted_bam_filename, tempdir, mem="2G", **kwargs):
+def bam_sort(bam_filename, sorted_bam_filename, tempdir, mem="2G", docker_image=None):
     if not os.path.exists(tempdir):
         makedirs(tempdir)
 
@@ -42,11 +44,11 @@ def bam_sort(bam_filename, sorted_bam_filename, tempdir, mem="2G", **kwargs):
         'VALIDATION_STRINGENCY=LENIENT',
                   'TMP_DIR=' + tempdir,
         'MAX_RECORDS_IN_RAM=150000',
-        **kwargs)
+        docker_image=docker_image)
 
 
 def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename,
-                 tempdir, mem="2G", **kwargs):
+                 tempdir, mem="2G", docker_image=None):
     if not os.path.exists(tempdir):
         makedirs(tempdir)
 
@@ -54,19 +56,20 @@ def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename,
         'picard', '-Xmx' + mem, '-Xms' + mem,
         '-XX:ParallelGCThreads=1',
         'MarkDuplicates',
-        'INPUT=' + bam_filename,
-        'OUTPUT=' + markduped_bam_filename,
-        'METRICS_FILE=' + metrics_filename,
+                  'INPUT=' + bam_filename,
+                  'OUTPUT=' + markduped_bam_filename,
+                  'METRICS_FILE=' + metrics_filename,
         'REMOVE_DUPLICATES=False',
         'ASSUME_SORTED=True',
         'VALIDATION_STRINGENCY=LENIENT',
-        'TMP_DIR=' + tempdir,
+                  'TMP_DIR=' + tempdir,
         'MAX_RECORDS_IN_RAM=150000',
-        **kwargs)
+        docker_image=docker_image
+    )
 
 
 def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename,
-                            config, tempdir, mem="2G", **kwargs):
+                            config, tempdir, mem="2G", docker_image=None):
     if not os.path.exists(tempdir):
         makedirs(tempdir)
 
@@ -74,25 +77,26 @@ def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename,
         'picard', '-Xmx' + mem, '-Xms' + mem,
         '-XX:ParallelGCThreads=1',
         'CollectWgsMetrics',
-        'INPUT=' + bam_filename,
-        'OUTPUT=' + metrics_filename,
-        'REFERENCE_SEQUENCE=' + ref_genome,
-        'MINIMUM_BASE_QUALITY=' +
-            str(config['min_bqual']),
-                'MINIMUM_MAPPING_QUALITY=' +
-            str(config['min_mqual']),
+                  'INPUT=' + bam_filename,
+                  'OUTPUT=' + metrics_filename,
+                  'REFERENCE_SEQUENCE=' + ref_genome,
+                  'MINIMUM_BASE_QUALITY=' +
+                  str(config['min_bqual']),
+                  'MINIMUM_MAPPING_QUALITY=' +
+                  str(config['min_mqual']),
         'COVERAGE_CAP=500',
         'VALIDATION_STRINGENCY=LENIENT',
-        'COUNT_UNPAIRED=' +
-            ('True' if config['count_unpaired'] else 'False'),
-        'TMP_DIR=' + tempdir,
+                  'COUNT_UNPAIRED=' +
+                  ('True' if config['count_unpaired'] else 'False'),
+                  'TMP_DIR=' + tempdir,
         'MAX_RECORDS_IN_RAM=150000',
-        **kwargs)
+        docker_image=docker_image
+    )
 
 
 def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename,
                            summary_filename, chart_filename, tempdir,
-                           mem="2G", **kwargs):
+                           mem="2G", docker_image=None):
     if not os.path.exists(tempdir):
         makedirs(tempdir)
 
@@ -108,12 +112,13 @@ def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename,
         'VALIDATION_STRINGENCY=LENIENT',
                   'TMP_DIR=' + tempdir,
         'MAX_RECORDS_IN_RAM=150000',
-        **kwargs)
+        docker_image=docker_image
+    )
 
 
 def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename,
                                metrics_filename, histogram_filename, tempdir,
-                               mem="2G", **kwargs):
+                               mem="2G", docker_image=None):
     # Check if any paired reads exist
     has_paired = None
     with open(flagstat_metrics_filename) as f:
@@ -149,4 +154,5 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename,
         'VALIDATION_STRINGENCY=LENIENT',
                   'TMP_DIR=' + tempdir,
         'MAX_RECORDS_IN_RAM=150000',
-        **kwargs)
+        docker_image=docker_image
+    )
