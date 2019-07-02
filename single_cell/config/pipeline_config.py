@@ -130,7 +130,7 @@ def get_align_params(cluster, reference, aligner):
             'genomes': [
                 {'name': 'grch37', 'path': refdata_callback('grch37')['ref_genome']},
                 {'name': 'mm10', 'path': refdata_callback('mm10')['ref_genome']},
-                {'name': 'salmon', 'path': refdata_callback('GCF_002021735')['ref_genome']},
+                # {'name': 'salmon', 'path': refdata_callback('GCF_002021735')['ref_genome']},
             ]
         }
     }
