@@ -126,6 +126,7 @@ def write_summary_counts(counts, outfile, cell_id):
 def filter_reads(
         input_r1, input_r2, output_r1, output_r2, reference,
 ):
+
     reader = fastqutils.PairedTaggedFastqReader(input_r1, input_r2)
 
     with helpers.getFileHandle(output_r1, 'w') as writer_r1, helpers.getFileHandle(output_r2, 'w') as writer_r2:

@@ -37,13 +37,14 @@ def qc_workflow(args):
     gc_metrics_csv = os.path.join(alignment_dir, '{}_gc_metrics.csv.gz'.format(lib))
     fastqc_metrics_csv = os.path.join(alignment_dir, '{}_detailed_fastqscreen_metrics.csv.gz'.format(lib))
     plot_metrics_output = os.path.join(alignment_dir, '{}_plot_metrics.pdf'.format(lib))
-    metrics_dir = os.path.join(alignment_dir, 'metrics')
+    alignment_metrics_tar = os.path.join(alignment_dir, '{}_alignment_metrics.tar.gz'.format(lib))
 
     hmmcopy_dir = os.path.join(outdir, 'hmmcopy_autoploidy')
     reads_csvs = os.path.join(hmmcopy_dir, '{0}_reads.csv.gz'.format(lib))
     segs_csvs = os.path.join(hmmcopy_dir, '{0}_segments.csv.gz'.format(lib))
     params_csvs = os.path.join(hmmcopy_dir, '{0}_params.csv.gz'.format(lib))
     metrics_csvs = os.path.join(hmmcopy_dir, '{0}_metrics.csv.gz'.format(lib))
+    hmmcopy_data_tar = os.path.join(hmmcopy_dir, '{0}_data.tar.gz'.format(lib))
     igv_csvs = os.path.join(hmmcopy_dir, '{0}_igv_segments.seg'.format(lib))
     segs_pdf = os.path.join(hmmcopy_dir, '{}_segs.tar.gz'.format(lib))
     bias_pdf = os.path.join(hmmcopy_dir, '{}_bias.tar.gz'.format(lib))
@@ -95,7 +96,7 @@ def qc_workflow(args):
                 centerinfo,
                 sampleinfo,
                 cellids,
-                metrics_dir,
+                mgd.OutputFile(alignment_metrics_tar),
                 lib,
             ),
             kwargs={'realign': args['realign']}
@@ -125,6 +126,7 @@ def qc_workflow(args):
                 mgd.OutputFile(heatmap_filt_pdf),
                 mgd.OutputFile(metrics_pdf),
                 mgd.OutputFile(kernel_density_pdf),
+                mgd.OutputFile(hmmcopy_data_tar),
                 cellids,
                 config['hmmcopy'],
                 sampleinfo
