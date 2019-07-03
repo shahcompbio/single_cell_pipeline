@@ -3,7 +3,6 @@ Created on Jul 6, 2017
 
 @author: dgrewal
 '''
-import os
 
 import pypeliner
 import pypeliner.managed as mgd
@@ -14,36 +13,42 @@ def bam_metrics_workflow(
         summary_fastq_screen_count_per_cell,
         alignment_metrics,
         gc_metrics,
-        metrics_dir,
+        markdups_metrics_percell,
+        flagstat_metrics_percell,
+        wgs_metrics_percell,
+        gc_metrics_percell,
+        gc_metrics_summary_percell,
+        gc_metrics_pdf_percell,
+        insert_metrics_percell,
+        insert_metrics_pdf_percell,
         ref_genome,
         sample_info,
         config,
         cell_ids
 ):
-    markdups_metrics = os.path.join(
-        metrics_dir, 'markdups_metrics', '{cell_id}.markdups_metrics.txt'
-    )
-    flagstat_metrics = os.path.join(
-        metrics_dir, 'flagstat_metrics', '{cell_id}.flagstat_metrics.txt'
-    )
-    wgs_metrics_filename = os.path.join(
-        metrics_dir, 'wgs_metrics', '{cell_id}.wgs_metrics.txt'
-    )
-    gc_metrics_filename = os.path.join(
-        metrics_dir, 'gc_metrics', '{cell_id}.gc_metrics.txt'
-    )
-    gc_summary_filename = os.path.join(
-        metrics_dir, 'gc_metrics', '{cell_id}.gc_metrics.summ.txt'
-    )
-    gc_chart_filename = os.path.join(
-        metrics_dir, 'gc_metrics', '{cell_id}.gc_metrics.pdf'
-    )
-    insert_metrics_filename = os.path.join(
-        metrics_dir, 'insert_metrics', '{cell_id}.insert_metrics.txt'
-    )
-    insert_histogram_filename = os.path.join(
-        metrics_dir, 'insert_metrics', '{cell_id}.insert_metrics.pdf'
-    )
+    markdups_metrics_percell = dict([(cellid, markdups_metrics_percell[cellid])
+                                     for cellid in cell_ids])
+
+    flagstat_metrics_percell = dict([(cellid, flagstat_metrics_percell[cellid])
+                                     for cellid in cell_ids])
+
+    wgs_metrics_percell = dict([(cellid, wgs_metrics_percell[cellid])
+                                for cellid in cell_ids])
+
+    gc_metrics_percell = dict([(cellid, gc_metrics_percell[cellid])
+                               for cellid in cell_ids])
+
+    gc_metrics_summary_percell = dict([(cellid, gc_metrics_summary_percell[cellid])
+                                       for cellid in cell_ids])
+
+    gc_metrics_pdf_percell = dict([(cellid, gc_metrics_pdf_percell[cellid])
+                                   for cellid in cell_ids])
+
+    insert_metrics_percell = dict([(cellid, insert_metrics_percell[cellid])
+                                   for cellid in cell_ids])
+
+    insert_metrics_pdf_percell = dict([(cellid, insert_metrics_pdf_percell[cellid])
+                                       for cellid in cell_ids])
 
     baseimage = config['docker']['single_cell_pipeline']
     workflow = pypeliner.workflow.Workflow(ctx={'docker_image': baseimage})
@@ -60,7 +65,7 @@ def bam_metrics_workflow(
         args=(
             mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename),
             mgd.TempOutputFile("temp_markdup_bam.bam", 'cell_id'),
-            mgd.OutputFile(markdups_metrics, 'cell_id'),
+            mgd.OutputFile('markdups_metrics', 'cell_id', fnames=markdups_metrics_percell),
             mgd.TempSpace('tempdir_markdups', 'cell_id'),
         ),
         kwargs={'docker_image': config['docker']['picard']}
@@ -72,7 +77,7 @@ def bam_metrics_workflow(
         func="single_cell.utils.bamutils.bam_flagstat",
         args=(
             mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename),
-            mgd.OutputFile(flagstat_metrics, 'cell_id'),
+            mgd.OutputFile('flagstat_metrics_percell', 'cell_id', fnames=flagstat_metrics_percell),
         ),
         kwargs={'docker_image': config['docker']['samtools']}
     )
@@ -85,7 +90,7 @@ def bam_metrics_workflow(
         args=(
             mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename),
             ref_genome,
-            mgd.OutputFile(wgs_metrics_filename, 'cell_id'),
+            mgd.OutputFile('wgs_metrics_percell', 'cell_id', fnames=wgs_metrics_percell),
             config['picard_wgs_params'],
             mgd.TempSpace('wgs_tempdir', 'cell_id'),
         ),
@@ -102,9 +107,9 @@ def bam_metrics_workflow(
         args=(
             mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename),
             ref_genome,
-            mgd.OutputFile(gc_metrics_filename, 'cell_id'),
-            mgd.OutputFile(gc_summary_filename, 'cell_id'),
-            mgd.OutputFile(gc_chart_filename, 'cell_id'),
+            mgd.OutputFile('gc_metrics_percell', 'cell_id', fnames=gc_metrics_percell),
+            mgd.OutputFile('gc_metrics_summary_percell', 'cell_id', fnames=gc_metrics_summary_percell),
+            mgd.OutputFile('gc_metrics_pdf_percell', 'cell_id', fnames=gc_metrics_pdf_percell),
             mgd.TempSpace('gc_tempdir', 'cell_id'),
         ),
         kwargs={
@@ -119,9 +124,9 @@ def bam_metrics_workflow(
         axes=('cell_id',),
         args=(
             mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename),
-            mgd.InputFile(flagstat_metrics, 'cell_id'),
-            mgd.OutputFile(insert_metrics_filename, 'cell_id'),
-            mgd.OutputFile(insert_histogram_filename, 'cell_id'),
+            mgd.InputFile('flagstat_metrics_percell', 'cell_id', fnames=flagstat_metrics_percell),
+            mgd.OutputFile('insert_metrics_percell', 'cell_id', fnames=insert_metrics_percell),
+            mgd.OutputFile('insert_metrics_pdf_percell', 'cell_id', fnames=insert_metrics_pdf_percell),
             mgd.TempSpace('insert_tempdir', 'cell_id'),
         ),
         kwargs={
@@ -134,7 +139,7 @@ def bam_metrics_workflow(
         func="single_cell.workflows.align.tasks.collect_gc",
         ctx={'mem': config['memory']['med'], 'ncpus': 1},
         args=(
-            mgd.InputFile(gc_metrics_filename, 'cell_id', axes_origin=[]),
+            mgd.InputFile('gc_metrics_percell', 'cell_id', axes_origin=[], fnames=gc_metrics_percell),
             mgd.TempOutputFile('gc_metrics.csv.gz', extensions=['.yaml']),
             mgd.TempSpace("temp_gc")
         ),
@@ -145,10 +150,10 @@ def bam_metrics_workflow(
         ctx={'mem': config['memory']['med'], 'ncpus': 1},
         func="single_cell.workflows.align.tasks.collect_metrics",
         args=(
-            mgd.InputFile(flagstat_metrics, 'cell_id', axes_origin=[]),
-            mgd.InputFile(markdups_metrics, 'cell_id', axes_origin=[]),
-            mgd.InputFile(insert_metrics_filename, 'cell_id', axes_origin=[]),
-            mgd.InputFile(wgs_metrics_filename, 'cell_id', axes_origin=[]),
+            mgd.InputFile('flagstat_metrics', 'cell_id', axes_origin=[], fnames=flagstat_metrics_percell),
+            mgd.InputFile('markdups_metrics', 'cell_id', axes_origin=[], fnames=markdups_metrics_percell),
+            mgd.InputFile('insert_metrics_percell', 'cell_id', axes_origin=[], fnames=insert_metrics_percell),
+            mgd.InputFile('wgs_metrics_percell', 'cell_id', axes_origin=[], fnames=wgs_metrics_percell),
             mgd.TempSpace("tempdir_collect_metrics"),
             mgd.TempOutputFile("alignment_metrics.csv.gz", extensions=['.yaml']),
         ),
@@ -217,13 +222,11 @@ def create_alignment_workflow(
         centerinfo,
         sample_info,
         cell_ids,
-        metrics_dir,
+        metrics_tar,
         library_id,
         realign=False
 ):
     baseimage = config['docker']['single_cell_pipeline']
-
-    lane_metrics = os.path.join(metrics_dir, 'lanes', '{lane}')
 
     bam_filename = dict([(cellid, bam_filename[cellid])
                          for cellid in cell_ids])
@@ -289,11 +292,6 @@ def create_alignment_workflow(
         )
     )
 
-    fastqc_reports = os.path.join(
-        lane_metrics,
-        "fastqc",
-        "{cell_id}_reports.tar.gz")
-    flagstat_metrics = os.path.join(lane_metrics, 'flagstat', '{cell_id}.txt')
     workflow.transform(
         name='align_reads',
         ctx={'mem': 7, 'ncpus': 1, 'docker_image': baseimage},
@@ -304,8 +302,8 @@ def create_alignment_workflow(
             mgd.TempInputFile('fastq_r2_matching_reads.fastq.gz', 'cell_id', 'lane'),
             mgd.TempOutputFile(
                 'aligned_per_cell_per_lane.sorted.bam', 'cell_id', 'lane'),
-            mgd.OutputFile(fastqc_reports, 'cell_id', 'lane'),
-            mgd.OutputFile(flagstat_metrics, 'cell_id', 'lane'),
+            mgd.TempOutputFile('fastqc_reports.tar.gz', 'cell_id', 'lane'),
+            mgd.TempOutputFile('flagstat_metrics.txt', 'cell_id', 'lane'),
             mgd.TempSpace('alignment_temp', 'cell_id', 'lane'),
             ref_genome,
             mgd.TempInputObj('trim', 'cell_id', 'lane'),
@@ -392,7 +390,14 @@ def create_alignment_workflow(
             mgd.TempInputFile('organism_summary_count_per_cell.csv'),
             mgd.OutputFile(alignment_metrics, extensions=['.yaml']),
             mgd.OutputFile(gc_metrics, extensions=['.yaml']),
-            metrics_dir,
+            mgd.TempOutputFile('markdups_metrics.txt', 'cell_id', axes_origin=[]),
+            mgd.TempOutputFile('flagstat_metrics.txt', 'cell_id', axes_origin=[]),
+            mgd.TempOutputFile('wgs_metrics.txt', 'cell_id', axes_origin=[]),
+            mgd.TempOutputFile('gc_metrics.txt', 'cell_id', axes_origin=[]),
+            mgd.TempOutputFile('gc_metrics_summary.txt', 'cell_id', axes_origin=[]),
+            mgd.TempOutputFile('gc_metrics.pdf', 'cell_id', axes_origin=[]),
+            mgd.TempOutputFile('insert_metrics.txt', 'cell_id', axes_origin=[]),
+            mgd.TempOutputFile('insert_metrics.pdf', 'cell_id', axes_origin=[]),
             ref_genome,
             sample_info,
             config,
@@ -410,6 +415,28 @@ def create_alignment_workflow(
             'QC pipeline metrics',
             mgd.InputFile(gc_metrics, extensions=['.yaml']),
             config['gc_windows'],
+        )
+    )
+
+    workflow.transform(
+        name='tar_all_files',
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        func="single_cell.utils.helpers.tar_files",
+        args=(
+            [
+                mgd.TempInputFile('fastqc_reports.tar.gz', 'cell_id', 'lane'),
+                mgd.TempInputFile('flagstat_metrics.txt', 'cell_id', 'lane'),
+                mgd.TempInputFile('markdups_metrics.txt', 'cell_id'),
+                mgd.TempInputFile('flagstat_metrics.txt', 'cell_id'),
+                mgd.TempInputFile('wgs_metrics.txt', 'cell_id'),
+                mgd.TempInputFile('gc_metrics.txt', 'cell_id'),
+                mgd.TempInputFile('gc_metrics_summary.txt', 'cell_id'),
+                mgd.TempInputFile('gc_metrics.pdf', 'cell_id'),
+                mgd.TempInputFile('insert_metrics.txt', 'cell_id'),
+                mgd.TempInputFile('insert_metrics.pdf', 'cell_id'),
+            ],
+            mgd.OutputFile(metrics_tar),
+            mgd.TempSpace("merge_metrics_tar")
         )
     )
 

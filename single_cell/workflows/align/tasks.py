@@ -77,6 +77,11 @@ def run_fastqc(fastq1, fastq2, reports, tempdir, containers):
     if not os.path.exists(reports_dir):
         helpers.makedirs(reports_dir)
 
+    # empty fastq files
+    if os.stat(fastq1).st_size < 100 and os.stat(fastq2).st_size < 100:
+        helpers.make_tarfile(reports, reports_dir)
+        return
+
     out_html = os.path.join(reports_dir, 'fastqc_R1.html')
     out_plot = os.path.join(reports_dir, 'fastqc_R1.zip')
     if not os.path.getsize(fastq1) == 0:
@@ -257,8 +262,7 @@ def collect_gc(infiles, outfile, tempdir):
     for cell_id, infile in infiles.iteritems():
         tempout = os.path.join(
             tempdir,
-            os.path.basename(infile) +
-            ".parsed.csv")
+            "{}.parsed.csv".format(cell_id))
         tempouts.append(tempout)
         gen_gc = GenerateCNMatrix(infile, tempout, ',',
                                   'NORMALIZED_COVERAGE', cell_id,
