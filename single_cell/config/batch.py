@@ -188,11 +188,11 @@ def get_vm_image_id(disk_per_task, tasks_per_node):
 
     if required_disk_size <= 80:
         # uses the temp disk on node, usually 40 GB
-        imagename = 'dockerproduction-v2-verysmalldisk-image'
+        imagename = 'docker-production-v3-verysmalldisk'
     elif required_disk_size < 200:
-        imagename = 'docker-production-v2-smalldisk-image'
+        imagename = 'docker-production-v3-smalldisk'
     else:
-        imagename = 'docker-production-v2-image'
+        imagename = 'docker-production-v3-standard'
 
     subscription = os.environ.get("SUBSCRIPTION_ID", "id-missing")
     resource_group = os.environ.get("RESOURCE_GROUP", "sccompute")
@@ -217,7 +217,7 @@ def get_pool_def(
     task_start_commands = get_compute_start_commands(vm_image)
     task_finish_commands = get_compute_finish_commands(vm_image)
 
-    poolname = "singlecell{}{}_v2".format(reference, pool_type)
+    poolname = "singlecell{}{}_v3".format(reference, pool_type)
 
     pooldata = {
         "pool_vm_size": get_vm_size_azure(cpus_per_task, mem_per_task, tasks_per_node),
