@@ -13,7 +13,8 @@ def create_hmmcopy_workflow(
         bam_file, reads, segs, metrics, params, igv_seg_filename,
         segs_pdf, bias_pdf, plot_heatmap_ec_output,
         plot_heatmap_ec_filt_output, plot_metrics_output,
-        plot_kernel_density_output, cell_ids, hmmparams, sample_info
+        plot_kernel_density_output, hmmcopy_data_tar,
+        cell_ids, hmmparams, sample_info
 ):
     chromosomes = hmmparams["chromosomes"]
 
@@ -51,6 +52,7 @@ def create_hmmcopy_workflow(
             mgd.TempOutputFile('segs.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
             mgd.TempOutputFile('params.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
             mgd.TempOutputFile('hmm_metrics.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
+            mgd.TempOutputFile('hmm_data.tar.gz', 'cell_id', axes_origin=[]),
             mgd.InputInstance('cell_id'),
             hmmparams,
             mgd.TempSpace('hmmcopy_temp', 'cell_id'),
@@ -284,6 +286,18 @@ def create_hmmcopy_workflow(
             mgd.TempInputFile("params.csv.gz", extensions=['.yaml']),
             mgd.OutputFile(params, extensions=['.yaml']),
         ),
+    )
+
+    workflow.transform(
+        name='merge_hmmcopy_data_tars',
+        ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        func="single_cell.utils.helpers.tar_files",
+        args=(
+            mgd.TempInputFile('hmm_data.tar.gz', 'cell_id'),
+            mgd.OutputFile(hmmcopy_data_tar),
+            mgd.TempSpace("merge_tarballs")
+        ),
+
     )
 
     return workflow
