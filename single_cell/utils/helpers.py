@@ -535,3 +535,17 @@ def make_tarfile(output_filename, source_dir):
 def extract_tar(input_tar, outdir):
     with tarfile.open(input_tar) as tar:
         tar.extractall(path=outdir)
+
+
+def tar_files(infiles, tar_output, tempdir):
+    if isinstance(infiles, dict):
+        infiles = infiles.values()
+
+    for infile in infiles:
+        if isinstance(infile, dict):
+            for filepath in infile.values():
+                shutil.copyfile(filepath, tempdir)
+        else:
+            shutil.copyfile(infile, tempdir)
+
+    make_tarfile(tar_output, tempdir)
