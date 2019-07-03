@@ -107,6 +107,7 @@ def run_hmmcopy(
         segments_filename,
         parameters_filename,
         metrics_filename,
+        hmmcopy_tar,
         cell_id,
         hmmparams,
         tempdir,
@@ -125,15 +126,18 @@ def run_hmmcopy(
         docker_image
     )
 
+    hmmcopy_tempdir = os.path.join(tempdir, '{}_hmmcopy'.format(cell_id))
+    helpers.makedirs(hmmcopy_tempdir)
+
     run_hmmcopy_script(
         corrected_reads,
-        tempdir,
+        hmmcopy_tempdir,
         cell_id,
         hmmparams,
         docker_image
     )
 
-    hmmcopy_outdir = os.path.join(tempdir, str(0))
+    hmmcopy_outdir = os.path.join(hmmcopy_tempdir, str(0))
     csvutils.prep_csv_files(
         os.path.join(hmmcopy_outdir, "reads.csv"), corrected_reads_filename
     )
@@ -146,6 +150,8 @@ def run_hmmcopy(
     csvutils.prep_csv_files(
         os.path.join(hmmcopy_outdir, "metrics.csv"), metrics_filename
     )
+
+    helpers.make_tarfile(hmmcopy_tar, hmmcopy_tempdir)
 
 
 def concatenate_csv(inputs, output, low_memory=False):
