@@ -117,6 +117,7 @@ def generate_autoscale_formula(tasks_per_node, dedicated):
         node_type = "TargetLowPriorityNodes"
 
     formula = (
+        "$NodeDeallocationOption=taskcompletion;\n"
         "tasksPerNode = {0};\n"
         "numAddMax = 20;\n"
         "numDelMax = 20;\n"
