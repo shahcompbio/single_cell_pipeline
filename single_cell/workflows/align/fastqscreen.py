@@ -91,6 +91,9 @@ def write_detailed_counts(counts, outfile, cell_id):
 
         for read_end, read_end_counts in counts.iteritems():
 
+            if not read_end_counts:
+                continue
+
             if not header:
                 outstr = ['cell_id', 'readend']
                 outstr += [v[0] for v in read_end_counts.keys()[0]]
