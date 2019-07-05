@@ -4,6 +4,8 @@ For a detailed guide see [INSTALL](docs/INSTALL)
 
 For azure documentation see [azure](docs/azure)
 
+[Changelog](CHANGELOG.md)
+
 ## Setup and installation
 
 Set up conda with the required packages.
