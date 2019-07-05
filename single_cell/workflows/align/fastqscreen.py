@@ -44,6 +44,21 @@ def merge_fastq_screen_counts(
 
 
 def run_fastq_screen_paired_end(fastq_r1, fastq_r2, tempdir, params, docker_image=None):
+    basename = os.path.basename(fastq_r1)
+    basename = basename.split('.')[0]
+    tagged_fastq_r1 = os.path.join(tempdir, '{}.tagged.fastq.gz'.format(basename))
+
+    basename = os.path.basename(fastq_r2)
+    basename = basename.split('.')[0]
+    tagged_fastq_r2 = os.path.join(tempdir, '{}.tagged.fastq.gz'.format(basename))
+
+    # fastq screen fails if run on empty files
+    with helpers.getFileHandle(fastq_r1) as reader:
+        if not reader.readline():
+            shutil.copy(fastq_r1, tagged_fastq_r1)
+            shutil.copy(fastq_r2, tagged_fastq_r2)
+            return tagged_fastq_r1, tagged_fastq_r2
+
     config = os.path.join(tempdir, 'fastq_screen.config')
 
     with open(config, 'w') as config_writer:
@@ -65,13 +80,6 @@ def run_fastq_screen_paired_end(fastq_r1, fastq_r2, tempdir, params, docker_imag
 
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
 
-    basename = os.path.basename(fastq_r1)
-    basename = basename.split('.')[0]
-    tagged_fastq_r1 = os.path.join(tempdir, '{}.tagged.fastq.gz'.format(basename))
-
-    basename = os.path.basename(fastq_r2)
-    basename = basename.split('.')[0]
-    tagged_fastq_r2 = os.path.join(tempdir, '{}.tagged.fastq.gz'.format(basename))
 
     return tagged_fastq_r1, tagged_fastq_r2
 
