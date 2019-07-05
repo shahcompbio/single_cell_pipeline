@@ -45,7 +45,7 @@ class PairedFastqReader(object):
             if not read_r1 or not read_r2:
                 raise Exception()
 
-            assert read_r1[0].split()[0] == read_r2[0].split()[0]
+            assert read_r1[0].split()[0].split('/')[0] == read_r2[0].split()[0].split('/')[0]
 
             yield read_r1, read_r2
 
