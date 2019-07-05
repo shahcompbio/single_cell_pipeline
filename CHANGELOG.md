@@ -1,5 +1,34 @@
 # Change Log
 
+### v0.2.26
+
+##### added
+* added fastq screen
+	* runs fastqscreen with `--tag`
+	* all downstream analysis is run on the tagged data.
+	* bam headers contain required information for parsing fastq screen tag
+	* by default, pipeline removes all reads that belong to another organism
+	* generates a detailed table and adds summary metrics to alignment table 
+	* more details at [organism filter](docs/description/organism_filter.md)
+* added salmon reference to images.
+* added conda package for corrupt tree. updated docker container to use the conda package
+* added newick support to heatmap
+* added cell order based on corrupt tree to output
+* added this changelog
+##### changes:
+* hmmcopy segments plots have a global max for ylim per run (library)
+* standardized page size for corrupt tree output, annotated each page.
+* replaced yaml.load with yaml.safe_load
+* replaced nan values in QC html with 0
+* removed biobloom
+* destruct can now handle empty/small fastq files.
+* fixed strelka filename issue (missing _)
+* refactor alignment workflow
+* added a tarball output with all hmmcopy outputs except autoploidy (multipliers 1-6)
+* merged all picard based metrics into a single tarball
+##### bugs:
+* fixed missing header issue with destruct outputs
+
 ### v0.2.25
 ##### added
 * Added Corrupt Tree
