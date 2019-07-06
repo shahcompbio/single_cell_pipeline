@@ -212,6 +212,9 @@ def trim_fastqs(fastq1, fastq2, cell_id, tempdir, adapter, adapter2, trimgalore_
     run fastqc on both fastq files
     run trimgalore if needed, copy if not.
     """
+    with helpers.getFileHandle(fastq1) as reader:
+        if not reader.readline():
+            return fastq1, fastq2
 
     trim1 = os.path.join(tempdir, "fastq_R1_trimmed.fastq.gz")
     trim2 = os.path.join(tempdir, "fastq_R2_trimmed.fastq.gz")
