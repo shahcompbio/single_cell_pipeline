@@ -15,7 +15,11 @@ def merge_fastq_screen_counts(
     if isinstance(all_detailed_counts, dict):
         all_detailed_counts = all_detailed_counts.values()
 
-    detailed_data = [pd.read_csv(countsfile) for countsfile in all_detailed_counts]
+    detailed_data = []
+    for countsfile in all_detailed_counts:
+        if os.stat(countsfile).st_size == 0:
+            continue
+        detailed_data.append(pd.read_csv(countsfile))
 
     df = pd.concat(detailed_data)
 
