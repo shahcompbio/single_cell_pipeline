@@ -85,7 +85,7 @@ def get_spatial_effects(df):
 
 
 def get_fraction_unmapped(df):
-    df["fraction_unmapped"] = df["unmapped_reads"] / df["total_reads"]
+    df["fraction_unmapped"] = np.divide(df["unmapped_reads"], df["total_reads"])
     return df
 
 
@@ -155,6 +155,9 @@ def get_cells_other_species_df(df):
     total_breakdown = df.groupby(["experimental_condition", "cell_call"]).count()["cell_id"]
 
     cells_other_species_df = df[df["total_reads"] >= 250000]
+    if cells_other_species_df.empty:
+        return None, None
+
     unmapped_df = cells_other_species_df.apply(get_fraction_unmapped, axis=1)
     cells_other_species = \
         unmapped_df[unmapped_df["fraction_unmapped"] >= 0.5].groupby(["experimental_condition", "cell_call"]).count()[
@@ -169,6 +172,9 @@ def get_cells_other_species_df(df):
 def generate_contamination_qc_table(df):
     median_fraction_bg = get_cells_ref_species(df)
     cells_other_species, fraction_cells_other_species = get_cells_other_species_df(df)
+
+    if not cells_other_species and not fraction_cells_other_species:
+        return pd.DataFrame()
 
     metrics = [
         cells_other_species.rename("cells_other_species"),
