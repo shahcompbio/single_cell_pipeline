@@ -1,16 +1,15 @@
 # build on top of out base image
-FROM shahlab.azurecr.io/scp/python_singlecell_qc:v0.0.1
-
-# Set the working directory to /app
-#WORKDIR /datadrive/singlecell/docker/app
+FROM shahlab.azurecr.io/scp/python_singlecell_qc:v0.0.6
 
 # Copy the current directory contents into the container at /app
 ADD . /app
 
 # Install any needed packages specified in requirements.txt
-RUN pip install git+https://dgrewal@bitbucket.org/dranew/pypeliner.git@dev_staging
+RUN rm -rf /opt/conda/lib/python2.7/site-packages/pypeliner* /opt/conda/lib/python2.7/site-packages/single_cell_pipeline* /opt/conda/lib/python2.7/site-packages/biowrappers*
+RUN pip install git+https://github.com/shahcompbio/pypeliner.git@v0.5.7
 RUN pip install git+https://bitbucket.org/aroth85/biowrappers.git@singlecell
-RUN cd /app && python setup.py install
+RUN pip install ete3
+RUN cd /app && python setup.py install 
 # Make port 80 available to the world outside this container
 EXPOSE 80
 
@@ -18,4 +17,4 @@ EXPOSE 80
 ENV NAME scpipeline
 
 # Run app.py when the container launches
-CMD ["single_cell"]
+CMD ["python"]
