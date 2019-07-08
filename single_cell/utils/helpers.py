@@ -268,6 +268,8 @@ def filter_metrics(metrics, cell_filters):
 
     # cells to keep
     for metric_col, operation, threshold in cell_filters:
+        if metrics.empty:
+            continue
 
         rows_to_keep = metrics[metric_col].apply(eval_expr, args= (operation, threshold))
 
