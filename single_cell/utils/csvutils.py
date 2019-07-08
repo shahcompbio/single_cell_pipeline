@@ -102,7 +102,7 @@ def write_dataframe_to_csv_and_yaml(df, outfile, header=False):
         if not header:
             columns = list(df.columns.values)
         else:
-            columns=None
+            columns = None
         generate_yaml_for_csv(outfile, outfile + '.yaml', header=header, columns=columns)
 
 
@@ -309,16 +309,21 @@ def merge_frames(frames, how, on, suffixes=None):
 
 
 def finalize_csv(infile, outfile):
-    header, dtypes, columns = get_metadata(infile)
-
-    assert header == False, 'file already contains a header'
+    header_in_file, dtypes, columns = get_metadata(infile)
 
     header = ','.join(columns) + '\n'
 
     with helpers.getFileHandle(outfile, 'w') as output:
         output.write(header)
         with helpers.getFileHandle(infile) as indata:
-            shutil.copyfileobj(indata, output, length=16 * 0124 * 1024)
+
+            if not header_in_file:
+                shutil.copyfileobj(indata, output, length=16 * 0124 * 1024)
+            else:
+                header_in_file = indata.readline()
+                assert header_in_file == header
+                for line in indata:
+                    output.write(line)
 
     write_to_yaml(True, dtypes, columns, outfile + '.yaml')
 

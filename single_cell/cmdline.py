@@ -118,6 +118,11 @@ def parse_args():
                        action="store_true",
                        help='''run annotation workflow''')
 
+    qc.add_argument("--no_corrupt_tree",
+                       default=False,
+                       action="store_true",
+                       help='''dont run corrupt tree, only applies to --annotation''')
+
 
     #===========
     # copyclone
