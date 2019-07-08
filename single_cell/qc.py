@@ -158,6 +158,7 @@ def qc_workflow(args):
                 config['annotation'],
                 lib,
             ),
+            kwargs={'no_corrupt_tree': args['no_corrupt_tree']}
         )
 
     return workflow
