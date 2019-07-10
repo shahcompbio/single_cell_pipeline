@@ -35,7 +35,8 @@ def generate_container_yaml(filepath):
             'password': os.environ['SECRET_KEY'],
             'mounts': {
                 'refdata': '/refdata',
-                'mnt': '/mnt'
+                'mnt': '/mnt',
+                'datadrive': '/datadrive'
             }
         }
     }
