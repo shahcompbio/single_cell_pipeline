@@ -18,28 +18,19 @@ def create_hmmcopy_workflow(
 ):
     chromosomes = hmmparams["chromosomes"]
 
-    multipliers = copy.deepcopy(hmmparams["multipliers"])
-    multipliers = [0] + multipliers
-
     baseimage = hmmparams['docker']['single_cell_pipeline']
     hmmcopy_docker = hmmparams['docker']['hmmcopy']
 
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
-        obj=mgd.OutputChunks('multiplier'),
-        value=multipliers,
+        obj=mgd.OutputChunks('cell_id'),
+        value=cell_ids,
     )
 
     workflow.setobj(
         obj=mgd.TempOutputObj('sampleinfo', 'cell_id', axes_origin=[]),
         value=sample_info)
-
-    allfiles = [(cell, mult) for cell in cell_ids for mult in multipliers]
-    workflow.setobj(
-        obj=mgd.OutputChunks('cell_id', 'multiplier'),
-        value=allfiles,
-    )
 
     workflow.transform(
         name='run_hmmcopy',
@@ -48,11 +39,11 @@ def create_hmmcopy_workflow(
         axes=('cell_id',),
         args=(
             mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_file, extensions=['.bai']),
-            mgd.TempOutputFile('reads.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
-            mgd.TempOutputFile('segs.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
-            mgd.TempOutputFile('params.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
-            mgd.TempOutputFile('hmm_metrics.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
-            mgd.TempOutputFile('hmm_data.tar.gz', 'cell_id', axes_origin=[]),
+            mgd.TempOutputFile('reads.csv.gz', 'cell_id', extensions=['.yaml']),
+            mgd.TempOutputFile('segs.csv.gz', 'cell_id', extensions=['.yaml']),
+            mgd.TempOutputFile('params.csv.gz', 'cell_id', extensions=['.yaml']),
+            mgd.TempOutputFile('hmm_metrics.csv.gz', 'cell_id', extensions=['.yaml']),
+            mgd.TempOutputFile('hmm_data.tar.gz', 'cell_id'),
             mgd.InputInstance('cell_id'),
             hmmparams,
             mgd.TempSpace('hmmcopy_temp', 'cell_id'),
@@ -66,7 +57,7 @@ def create_hmmcopy_workflow(
         func="single_cell.workflows.hmmcopy.tasks.concatenate_csv",
         args=(
             mgd.TempInputFile('reads.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
-            mgd.TempOutputFile("reads.csv.gz", axes_origin=[], extensions=['.yaml']),
+            mgd.OutputFile(reads, extensions=['.yaml']),
         ),
         kwargs={'low_memory': True}
     )
@@ -77,7 +68,7 @@ def create_hmmcopy_workflow(
         func="single_cell.workflows.hmmcopy.tasks.concatenate_csv",
         args=(
             mgd.TempInputFile('segs.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
-            mgd.TempOutputFile("segs.csv.gz", axes_origin=[], extensions=['.yaml']),
+            mgd.OutputFile(segs, extensions=['.yaml']),
         ),
         kwargs={'low_memory': True}
     )
@@ -88,7 +79,7 @@ def create_hmmcopy_workflow(
         func="single_cell.workflows.hmmcopy.tasks.concatenate_csv",
         args=(
             mgd.TempInputFile('hmm_metrics.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
-            mgd.TempOutputFile("hmm_metrics.csv.gz", axes_origin=[], extensions=['.yaml']),
+            mgd.TempOutputFile("hmm_metrics.csv.gz", extensions=['.yaml']),
         ),
     )
 
@@ -98,7 +89,7 @@ def create_hmmcopy_workflow(
         func="single_cell.workflows.hmmcopy.tasks.concatenate_csv",
         args=(
             mgd.TempInputFile('params.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
-            mgd.TempOutputFile("params.csv.gz", axes_origin=[], extensions=['.yaml']),
+            mgd.OutputFile(params, extensions=['.yaml']),
         ),
     )
 
@@ -108,7 +99,7 @@ def create_hmmcopy_workflow(
         func="single_cell.workflows.hmmcopy.tasks.get_max_cn",
         ret=mgd.TempOutputObj('max_cn'),
         args=(
-            mgd.TempInputFile("reads.csv.gz", extensions=['.yaml']),
+            mgd.InputFile(reads, extensions=['.yaml']),
         )
     )
 
@@ -139,9 +130,9 @@ def create_hmmcopy_workflow(
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.workflows.hmmcopy.tasks.add_clustering_order",
         args=(
-            mgd.TempInputFile("reads.csv.gz", extensions=['.yaml']),
+            mgd.InputFile(reads, extensions=['.yaml']),
             mgd.TempInputFile("hmm_metrics.csv.gz", extensions=['.yaml']),
-            mgd.TempOutputFile("annotated_metrics.csv.gz", extensions=['.yaml']),
+            mgd.OutputFile(metrics, extensions=['.yaml']),
         ),
         kwargs={
             'chromosomes': hmmparams["chromosomes"],
@@ -162,7 +153,7 @@ def create_hmmcopy_workflow(
                 mgd.OutputFile(segs_pdf),
                 mgd.OutputFile(bias_pdf),
             ],
-            mgd.TempInputFile("annotated_metrics.csv.gz", extensions=['.yaml']),
+            mgd.InputFile(metrics, extensions=['.yaml']),
             None,
             mgd.TempSpace("hmmcopy_plot_merge_temp"),
             ['segments', 'bias']
@@ -174,8 +165,8 @@ def create_hmmcopy_workflow(
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.workflows.hmmcopy.tasks.create_igv_seg",
         args=(
-            mgd.TempInputFile("segs.csv.gz", extensions=['.yaml']),
-            mgd.TempInputFile("annotated_metrics.csv.gz", extensions=['.yaml']),
+            mgd.InputFile(segs, extensions=['.yaml']),
+            mgd.InputFile(metrics, extensions=['.yaml']),
             mgd.OutputFile(igv_seg_filename),
             hmmparams,
         )
@@ -186,7 +177,7 @@ def create_hmmcopy_workflow(
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.workflows.hmmcopy.tasks.plot_metrics",
         args=(
-            mgd.TempInputFile("annotated_metrics.csv.gz", extensions=['.yaml']),
+            mgd.InputFile(metrics, extensions=['.yaml']),
             mgd.OutputFile(plot_metrics_output),
             'QC pipeline metrics',
         )
@@ -197,7 +188,7 @@ def create_hmmcopy_workflow(
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.workflows.hmmcopy.tasks.plot_kernel_density",
         args=(
-            mgd.TempInputFile("annotated_metrics.csv.gz", extensions=['.yaml']),
+            mgd.InputFile(metrics, extensions=['.yaml']),
             mgd.OutputFile(plot_kernel_density_output),
             ',',
             'mad_neutral_state',
@@ -210,8 +201,8 @@ def create_hmmcopy_workflow(
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.workflows.hmmcopy.tasks.plot_pcolor",
         args=(
-            mgd.TempInputFile("reads.csv.gz", extensions=['.yaml']),
-            mgd.TempInputFile("annotated_metrics.csv.gz", extensions=['.yaml']),
+            mgd.InputFile(reads, extensions=['.yaml']),
+            mgd.InputFile(metrics, extensions=['.yaml']),
             mgd.OutputFile(plot_heatmap_ec_output),
         ),
         kwargs={
@@ -231,8 +222,8 @@ def create_hmmcopy_workflow(
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.workflows.hmmcopy.tasks.plot_pcolor",
         args=(
-            mgd.TempInputFile("reads.csv.gz", extensions=['.yaml']),
-            mgd.TempInputFile("annotated_metrics.csv.gz", extensions=['.yaml']),
+            mgd.InputFile(reads, extensions=['.yaml']),
+            mgd.InputFile(metrics, extensions=['.yaml']),
             mgd.OutputFile(plot_heatmap_ec_filt_output),
         ),
         kwargs={
@@ -249,51 +240,11 @@ def create_hmmcopy_workflow(
     )
 
     workflow.transform(
-        name='finalize_reads',
-        ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.utils.csvutils.finalize_csv",
-        args=(
-            mgd.TempInputFile("reads.csv.gz", extensions=['.yaml']),
-            mgd.OutputFile(reads, extensions=['.yaml']),
-        ),
-    )
-
-    workflow.transform(
-        name='finalize_segments',
-        ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.utils.csvutils.finalize_csv",
-        args=(
-            mgd.TempInputFile("segs.csv.gz", extensions=['.yaml']),
-            mgd.OutputFile(segs, extensions=['.yaml']),
-        ),
-    )
-
-    workflow.transform(
-        name='finalize_metrics',
-        ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.utils.csvutils.finalize_csv",
-        args=(
-            mgd.TempInputFile("annotated_metrics.csv.gz", extensions=['.yaml']),
-            mgd.OutputFile(metrics, extensions=['.yaml']),
-        ),
-    )
-
-    workflow.transform(
-        name='finalize_params',
-        ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.utils.csvutils.finalize_csv",
-        args=(
-            mgd.TempInputFile("params.csv.gz", extensions=['.yaml']),
-            mgd.OutputFile(params, extensions=['.yaml']),
-        ),
-    )
-
-    workflow.transform(
         name='merge_hmmcopy_data_tars',
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.utils.helpers.tar_files",
         args=(
-            mgd.TempInputFile('hmm_data.tar.gz', 'cell_id'),
+            mgd.TempInputFile('hmm_data.tar.gz', 'cell_id', axes_origin=[]),
             mgd.OutputFile(hmmcopy_data_tar),
             mgd.TempSpace("merge_tarballs")
         ),
