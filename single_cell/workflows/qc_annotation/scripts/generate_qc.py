@@ -173,7 +173,7 @@ def generate_contamination_qc_table(df):
     median_fraction_bg = get_cells_ref_species(df)
     cells_other_species, fraction_cells_other_species = get_cells_other_species_df(df)
 
-    if not cells_other_species and not fraction_cells_other_species:
+    if cells_other_species.empty and fraction_cells_other_species.empty:
         return pd.DataFrame()
 
     metrics = [

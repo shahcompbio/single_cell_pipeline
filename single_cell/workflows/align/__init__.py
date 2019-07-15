@@ -140,7 +140,7 @@ def bam_metrics_workflow(
         ctx={'mem': config['memory']['med'], 'ncpus': 1},
         args=(
             mgd.InputFile('gc_metrics_percell', 'cell_id', axes_origin=[], fnames=gc_metrics_percell),
-            mgd.TempOutputFile('gc_metrics.csv.gz', extensions=['.yaml']),
+            mgd.OutputFile(gc_metrics, extensions=['.yaml']),
             mgd.TempSpace("temp_gc")
         ),
     )
@@ -162,7 +162,7 @@ def bam_metrics_workflow(
     workflow.transform(
         name='annotate_metrics',
         ctx={'mem': config['memory']['med'], 'ncpus': 1},
-        func="single_cell.utils.csvutils.annotate_metrics",
+        func="single_cell.utils.csvutils.annotate_csv",
         args=(
             mgd.TempInputFile("alignment_metrics.csv.gz", extensions=['.yaml']),
             sample_info,
@@ -179,29 +179,9 @@ def bam_metrics_workflow(
                 mgd.TempInputFile("alignment_metrics_annotated.csv.gz", extensions=['.yaml']),
                 mgd.InputFile(summary_fastq_screen_count_per_cell),
             ],
-            mgd.TempOutputFile('metrics_orgfilter_counts.csv.gz', extensions=['.yaml']),
+            mgd.OutputFile(alignment_metrics, extensions=['.yaml']),
             'outer',
             ['cell_id'],
-        ),
-    )
-
-    workflow.transform(
-        name='finalize_metrics',
-        ctx={'mem': config['memory']['med'], 'ncpus': 1},
-        func="single_cell.utils.csvutils.finalize_csv",
-        args=(
-            mgd.TempInputFile('metrics_orgfilter_counts.csv.gz', extensions=['.yaml']),
-            mgd.OutputFile(alignment_metrics, extensions=['.yaml']),
-        ),
-    )
-
-    workflow.transform(
-        name='finalize_gc_metrics',
-        ctx={'mem': config['memory']['med'], 'ncpus': 1},
-        func="single_cell.utils.csvutils.finalize_csv",
-        args=(
-            mgd.TempInputFile('gc_metrics.csv.gz', extensions=['.yaml']),
-            mgd.OutputFile(gc_metrics, extensions=['.yaml']),
         ),
     )
 
