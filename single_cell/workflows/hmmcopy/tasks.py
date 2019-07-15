@@ -12,7 +12,6 @@ import pypeliner
 import scipy.cluster.hierarchy as hc
 import scipy.spatial as sp
 from single_cell.utils import csvutils
-from single_cell.utils import hdfutils
 from single_cell.utils import helpers
 from single_cell.utils.singlecell_copynumber_plot_utils import GenHmmPlots
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotKernelDensity
@@ -171,103 +170,17 @@ def add_clustering_order(
     adds sample information to metrics in place
     """
 
-    metrics = csvutils.read_csv_and_yaml(metrics)
-
     order = get_hierarchical_clustering_order(
         reads, chromosomes=chromosomes
     )
 
-    for cellid, value in order.iteritems():
+    if sample_info:
+        for cell_id, order in order.iteritems():
+            sample_info[cell_id]['order'] = order
+    else:
+        sample_info = order
 
-        cell_order = order[cellid]['order']
-        metrics.loc[metrics['cell_id'] == cellid, 'order'] = cell_order
-
-        if sample_info:
-            sample_info_percell = sample_info[cellid]
-            for colname, value in sample_info_percell.iteritems():
-                metrics.loc[metrics["cell_id"] == cellid, colname] = value
-
-    csvutils.write_dataframe_to_csv_and_yaml(metrics, output)
-
-
-def merge_hdf_files_on_disk(
-        reads, merged_reads, multipliers, tableprefix, dtypes={}):
-    output_store = pd.HDFStore(merged_reads, 'w', complevel=9, complib='blosc')
-
-    cells = reads.keys()
-
-    min_itemsize = {'cell_id': max(map(len, cells)) + 2}
-
-    for cellid, infile in reads.iteritems():
-        with pd.HDFStore(infile, 'r') as infilestore:
-            for multiplier in multipliers:
-                tablename = '/{}/{}/{}'.format(tableprefix, cellid, multiplier)
-                data = infilestore[tablename]
-
-                data = data.dropna(axis=0, how='all')
-                if data.empty:
-                    continue
-
-                # remove later, only added to fix a run
-                if "cell_id" not in data:
-                    data.cell_id = cellid
-
-                # make cellid categorical
-                data.cell_id = pd.Categorical(data.cell_id, cells)
-
-                for col, dtype in dtypes.iteritems():
-                    data[col] = data[col].astype(dtype)
-
-                out_tablename = '/{}/{}'.format(tableprefix, multiplier)
-                if out_tablename not in output_store:
-                    output_store.put(
-                        out_tablename,
-                        data,
-                        format='table', )
-                else:
-                    output_store.append(
-                        out_tablename,
-                        data,
-                        format='table', )
-
-    output_store.close()
-
-
-def merge_hdf_files_in_memory(
-        reads, merged_reads, multipliers, tableprefix, dtypes={}):
-    output_store = pd.HDFStore(merged_reads, 'w', complevel=9, complib='blosc')
-
-    cells = reads.keys()
-
-    for multiplier in multipliers:
-        all_cells_data = []
-        for cellid, infile in reads.iteritems():
-
-            tablename = '/{}/{}/{}'.format(tableprefix, cellid, multiplier)
-
-            with pd.HDFStore(infile, 'r') as infilestore:
-                data = infilestore[tablename]
-
-            for col, dtype in dtypes.iteritems():
-                data[col] = data[col].astype(dtype)
-
-            all_cells_data.append(data)
-
-        all_cells_data = pd.concat(all_cells_data)
-
-        all_cells_data = all_cells_data.reset_index()
-
-        out_tablename = '/{}/{}'.format(tableprefix, multiplier)
-
-        # make cellid categorical
-        all_cells_data.cell_id = pd.Categorical(all_cells_data.cell_id, cells)
-
-        output_store.put(
-            out_tablename,
-            all_cells_data,
-            format='table')
-
-    output_store.close()
+    csvutils.annotate_csv(metrics, sample_info, output)
 
 
 def group_cells_by_row(cells, metrics, sort_by_col=False):
@@ -358,23 +271,6 @@ def get_good_cells(metrics, cell_filters):
     return metrics_data.cell_id.tolist()
 
 
-def sort_cells(metrics, good_cells, tableid):
-    with pd.HDFStore(metrics, 'r') as metrics:
-        data = metrics[tableid]
-
-    cells_order = {
-        order: cell for cell, order in zip(data.cell_id, data.order)
-    }
-
-    ordervals = sorted(cells_order.keys())
-
-    sorted_cells = [cells_order[ordval] for ordval in ordervals]
-
-    sorted_cells = [cell for cell in sorted_cells if cell in good_cells]
-
-    return sorted_cells
-
-
 def sort_bins(bins, chromosomes):
     bins = bins.drop_duplicates()
 
@@ -430,7 +326,7 @@ def get_hierarchical_clustering_order(
 
     samps = table.index
     order = [samps[i] for i in order]
-    order = {v: {"order": i} for i, v in enumerate(order)}
+    order = {v: i for i, v in enumerate(order)}
 
     return order
 
@@ -473,11 +369,6 @@ def plot_pcolor(infile, metrics, output, plot_title=None,
         mappability_threshold=mappability_threshold
     )
     plot.main()
-
-
-def merge_tables(reads, segments, metrics, params, output, cells):
-    categories = {'cell_id': cells}
-    hdfutils.concat_hdf_tables([reads, segments, metrics, params], output, categories)
 
 
 def add_quality(hmmcopy_metrics, alignment_metrics, multipliers, output, training_data, tempdir):

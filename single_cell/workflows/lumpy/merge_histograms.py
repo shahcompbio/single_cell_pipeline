@@ -63,7 +63,7 @@ def write_histo_file(data, outfile):
 
 def write_metadata(mean, stdev, outfile):
     with open(outfile, 'w') as fileoutput:
-        yaml.dump({'mean': mean, 'stdev': stdev}, fileoutput)
+        yaml.safe_dump({'mean': mean, 'stdev': stdev}, fileoutput)
 
 def merge_histograms(infiles, outfile, metadata):
 
