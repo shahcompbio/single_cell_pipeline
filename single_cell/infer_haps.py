@@ -225,7 +225,6 @@ def extract_allele_readcounts(
         ),
         kwargs={
             'key_column': 'cell_id',
-            'sep': '\t',
             'write_header': True
         },
     )
