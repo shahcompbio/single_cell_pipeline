@@ -111,7 +111,6 @@ def get_mounts(args):
 def get_env_vars():
     env_vars = [
         'AZURE_BATCH_URL',
-        'AZURE_STORAGE_ACCOUNT',
         'CLIENT_ID',
         'TENANT_ID',
         'SECRET_KEY',

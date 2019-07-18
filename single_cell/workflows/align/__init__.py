@@ -278,7 +278,7 @@ def create_alignment_workflow(
         axes=('cell_id', 'lane',),
         func="single_cell.workflows.align.tasks.align_pe",
         args=(
-            mgd.TempInputFile('fastq_r2_matching_reads.fastq.gz', 'cell_id', 'lane'),
+            mgd.TempInputFile('fastq_r1_matching_reads.fastq.gz', 'cell_id', 'lane'),
             mgd.TempInputFile('fastq_r2_matching_reads.fastq.gz', 'cell_id', 'lane'),
             mgd.TempOutputFile(
                 'aligned_per_cell_per_lane.sorted.bam', 'cell_id', 'lane'),
