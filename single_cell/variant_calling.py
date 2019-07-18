@@ -161,7 +161,6 @@ def create_variant_calling_workflow(
         strelka_snv_vcf,
         strelka_indel_vcf,
         snv_h5,
-        meta_yaml,
         config,
         raw_data_dir,
 ):
@@ -324,33 +323,6 @@ def create_variant_calling_workflow(
         }
     )
 
-    normals = {k: helpers.format_file_yaml(v) for k,v in normal_region_bams.iteritems()}
-    tumours = {k: helpers.format_file_yaml(v) for k,v in tumour_region_bams.iteritems()}
-    cells = {k: helpers.format_file_yaml(v) for k,v in tumour_cell_bams.iteritems()}
-    inputs = {'normal': normals, 'tumour': tumours, 'cells':cells}
-
-    metadata = {
-        'variant_calling': {
-            'name': 'variant_calling',
-            'version': single_cell.__version__,
-            'containers': config['docker'],
-            'output_datasets': None,
-            'input_datasets': inputs,
-            'results': {'variant_calling_data': helpers.format_file_yaml(snv_h5)}
-        }
-    }
-
-    # TODO: will download results unnecessarily on cloud
-    workflow.transform(
-        name='generate_meta_yaml',
-        ctx=dict(mem=config['memory']['med']),
-        func="single_cell.utils.helpers.write_to_yaml",
-        args=(
-            mgd.OutputFile(meta_yaml),
-            metadata
-        )
-    )
-
     return workflow
 
 
@@ -372,7 +344,6 @@ def create_variant_counting_workflow(
         vcfs,
         tumour_cell_bams,
         results_h5,
-        meta_yaml,
         config,
 ):
     """ Count variant reads for multiple sets of variants across cells.
@@ -413,26 +384,6 @@ def create_variant_counting_workflow(
             mgd.OutputFile(results_h5),
             config['memory'],
         ),
-    )
-
-    # TODO: will download results unnecessarily on cloud
-    workflow.transform(
-        name='generate_meta_yaml',
-        func="single_cell.utils.helpers.write_to_yaml",
-        args=(
-            mgd.OutputFile(meta_yaml),
-            {
-                'name': 'variant_counting',
-                'version': single_cell.__version__,
-                'output_datasets': None,
-                'input_datasets': {
-                    'tumour_cell_bam': tumour_cell_bams,
-                },
-                'results': {
-                    'snv_counts': mgd.InputFile(results_h5),
-                },
-            },
-        )
     )
 
     return workflow

@@ -13,15 +13,6 @@ from workflows import align, hmmcopy, qc_annotation
 
 
 def qc_workflow(args):
-    run_alignment = args['alignment']
-    run_hmmcopy = args['hmmcopy']
-    run_annotation = args['annotation']
-
-    if not any((run_alignment, run_hmmcopy, run_annotation)):
-        run_alignment = True
-        run_hmmcopy = True
-        run_annotation = True
-
     config = helpers.load_config(args)
 
     sampleinfo = helpers.get_sample_info(args['input_yaml'])
@@ -30,45 +21,18 @@ def qc_workflow(args):
 
     lib = args["library_id"]
 
-    outdir = os.path.join(args["out_dir"], "results", "QC")
-
-    alignment_dir = os.path.join(outdir, 'alignment')
-    alignment_metrics_csv = os.path.join(alignment_dir, '{}_alignment_metrics.csv.gz'.format(lib))
-    gc_metrics_csv = os.path.join(alignment_dir, '{}_gc_metrics.csv.gz'.format(lib))
-    fastqc_metrics_csv = os.path.join(alignment_dir, '{}_detailed_fastqscreen_metrics.csv.gz'.format(lib))
-    plot_metrics_output = os.path.join(alignment_dir, '{}_plot_metrics.pdf'.format(lib))
-    alignment_metrics_tar = os.path.join(alignment_dir, '{}_alignment_metrics.tar.gz'.format(lib))
-
-    hmmcopy_dir = os.path.join(outdir, 'hmmcopy_autoploidy')
-    reads_csvs = os.path.join(hmmcopy_dir, '{0}_reads.csv.gz'.format(lib))
-    segs_csvs = os.path.join(hmmcopy_dir, '{0}_segments.csv.gz'.format(lib))
-    params_csvs = os.path.join(hmmcopy_dir, '{0}_params.csv.gz'.format(lib))
-    metrics_csvs = os.path.join(hmmcopy_dir, '{0}_metrics.csv.gz'.format(lib))
-    hmmcopy_data_tar = os.path.join(hmmcopy_dir, '{0}_data.tar.gz'.format(lib))
-    igv_csvs = os.path.join(hmmcopy_dir, '{0}_igv_segments.seg'.format(lib))
-    segs_pdf = os.path.join(hmmcopy_dir, '{}_segs.tar.gz'.format(lib))
-    bias_pdf = os.path.join(hmmcopy_dir, '{}_bias.tar.gz'.format(lib))
-    heatmap_filt_pdf = os.path.join(hmmcopy_dir, '{}_heatmap_by_ec_filtered.pdf'.format(lib))
-    heatmap_pdf = os.path.join(hmmcopy_dir, '{}_heatmap_by_ec.pdf'.format(lib))
-    metrics_pdf = os.path.join(hmmcopy_dir, '{}_metrics.pdf'.format(lib))
-    kernel_density_pdf = os.path.join(hmmcopy_dir, '{}_kernel_density.pdf'.format(lib))
-
-    annotation_dir = os.path.join(outdir, 'annotation')
-    merged_metrics_csvs = os.path.join(annotation_dir, '{0}_metrics.csv.gz'.format(lib))
-    qc_report = os.path.join(annotation_dir, '{0}_QC_report.html'.format(lib))
-    corrupt_tree_newick = os.path.join(annotation_dir, '{0}_corrupt_tree.newick'.format(lib))
-    consensus_tree_newick = os.path.join(annotation_dir, '{0}_corrupt_tree_consensus.newick'.format(lib))
-    phylo_csv = os.path.join(annotation_dir, '{0}_phylo.csv'.format(lib))
-    loci_rank_trees = os.path.join(annotation_dir, '{0}_rank_loci_trees.csv'.format(lib))
-    filtered_data = os.path.join(annotation_dir, '{0}_filtered_data.csv'.format(lib))
-    corrupt_tree_pdf = os.path.join(annotation_dir, '{0}_corrupt_tree.pdf'.format(lib))
-    segs_pass = os.path.join(annotation_dir, '{0}_segs_pass.tar.gz'.format(lib))
-    segs_fail = os.path.join(annotation_dir, '{0}_segs_fail.tar.gz'.format(lib))
-    corrupt_heatmap_pdf = os.path.join(annotation_dir, '{}_heatmap_corrupt_tree.pdf'.format(lib))
-
     workflow = pypeliner.workflow.Workflow()
 
-    if run_alignment:
+    annotation_only = args['annotation_only']
+
+    alignment_dir = args["alignment_output"]
+    if alignment_dir and not annotation_only:
+        alignment_metrics_csv = os.path.join(alignment_dir, '{}_alignment_metrics.csv.gz'.format(lib))
+        gc_metrics_csv = os.path.join(alignment_dir, '{}_gc_metrics.csv.gz'.format(lib))
+        fastqc_metrics_csv = os.path.join(alignment_dir, '{}_detailed_fastqscreen_metrics.csv.gz'.format(lib))
+        plot_metrics_output = os.path.join(alignment_dir, '{}_plot_metrics.pdf'.format(lib))
+        alignment_metrics_tar = os.path.join(alignment_dir, '{}_alignment_metrics.tar.gz'.format(lib))
+
         fastq1_files, fastq2_files = helpers.get_fastqs(args['input_yaml'])
         triminfo = helpers.get_trim_info(args['input_yaml'])
         centerinfo = helpers.get_center_info(args['input_yaml'])
@@ -102,8 +66,22 @@ def qc_workflow(args):
             kwargs={'realign': args['realign']}
         )
 
-    if run_hmmcopy:
-        if not run_alignment:
+    hmmcopy_dir = args["hmmcopy_output"]
+    if hmmcopy_dir and not annotation_only:
+        reads_csvs = os.path.join(hmmcopy_dir, '{0}_reads.csv.gz'.format(lib))
+        segs_csvs = os.path.join(hmmcopy_dir, '{0}_segments.csv.gz'.format(lib))
+        params_csvs = os.path.join(hmmcopy_dir, '{0}_params.csv.gz'.format(lib))
+        metrics_csvs = os.path.join(hmmcopy_dir, '{0}_metrics.csv.gz'.format(lib))
+        hmmcopy_data_tar = os.path.join(hmmcopy_dir, '{0}_data.tar.gz'.format(lib))
+        igv_csvs = os.path.join(hmmcopy_dir, '{0}_igv_segments.seg'.format(lib))
+        segs_pdf = os.path.join(hmmcopy_dir, '{}_segs.tar.gz'.format(lib))
+        bias_pdf = os.path.join(hmmcopy_dir, '{}_bias.tar.gz'.format(lib))
+        heatmap_filt_pdf = os.path.join(hmmcopy_dir, '{}_heatmap_by_ec_filtered.pdf'.format(lib))
+        heatmap_pdf = os.path.join(hmmcopy_dir, '{}_heatmap_by_ec.pdf'.format(lib))
+        metrics_pdf = os.path.join(hmmcopy_dir, '{}_metrics.pdf'.format(lib))
+        kernel_density_pdf = os.path.join(hmmcopy_dir, '{}_kernel_density.pdf'.format(lib))
+
+        if not alignment_dir:
             workflow.setobj(
                 obj=mgd.OutputChunks('cell_id'),
                 value=list(bam_files.keys()),
@@ -133,7 +111,31 @@ def qc_workflow(args):
             ),
         )
 
-    if run_annotation:
+    annotation_dir = args["annotation_output"]
+    if annotation_dir:
+        merged_metrics_csvs = os.path.join(annotation_dir, '{0}_metrics.csv.gz'.format(lib))
+        qc_report = os.path.join(annotation_dir, '{0}_QC_report.html'.format(lib))
+        corrupt_tree_newick = os.path.join(annotation_dir, '{0}_corrupt_tree.newick'.format(lib))
+        consensus_tree_newick = os.path.join(annotation_dir, '{0}_corrupt_tree_consensus.newick'.format(lib))
+        phylo_csv = os.path.join(annotation_dir, '{0}_phylo.csv'.format(lib))
+        loci_rank_trees = os.path.join(annotation_dir, '{0}_rank_loci_trees.csv'.format(lib))
+        filtered_data = os.path.join(annotation_dir, '{0}_filtered_data.csv'.format(lib))
+        corrupt_tree_pdf = os.path.join(annotation_dir, '{0}_corrupt_tree.pdf'.format(lib))
+        segs_pass = os.path.join(annotation_dir, '{0}_segs_pass.tar.gz'.format(lib))
+        segs_fail = os.path.join(annotation_dir, '{0}_segs_fail.tar.gz'.format(lib))
+        corrupt_heatmap_pdf = os.path.join(annotation_dir, '{}_heatmap_corrupt_tree.pdf'.format(lib))
+
+        hmmcopy_dir = args["hmmcopy_output"]
+        alignment_dir = args["alignment_output"]
+        if not hmmcopy_dir or not alignment_dir:
+            raise Exception()
+
+        metrics_csvs = os.path.join(hmmcopy_dir, '{0}_metrics.csv.gz'.format(lib))
+        reads_csvs = os.path.join(hmmcopy_dir, '{0}_reads.csv.gz'.format(lib))
+        alignment_metrics_csv = os.path.join(alignment_dir, '{}_alignment_metrics.csv.gz'.format(lib))
+        gc_metrics_csv = os.path.join(alignment_dir, '{}_gc_metrics.csv.gz'.format(lib))
+        segs_pdf = os.path.join(hmmcopy_dir, '{}_segs.tar.gz'.format(lib))
+
         workflow.subworkflow(
             name='annotation_workflow',
             ctx={'docker_image': config['annotation']['docker']['single_cell_pipeline']},

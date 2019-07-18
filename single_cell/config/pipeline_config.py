@@ -399,7 +399,10 @@ def get_infer_haps_params(cluster, reference):
         'memory': {'low': 4, 'med': 6, 'high': 16},
         'max_cores': None,
         'chromosomes': referencedata['chromosomes'],
-        'extract_seqdata': {},
+        'extract_seqdata': {
+            'genome_fasta': referencedata['ref_genome'],
+            'genome_fai': referencedata['ref_genome'] + '.fai',
+        },
         'ref_data_dir': referencedata['copynumber_ref_data'],
         'docker': {
             'single_cell_pipeline': docker_containers['remixt'],
