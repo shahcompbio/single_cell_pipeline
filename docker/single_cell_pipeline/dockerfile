@@ -1,5 +1,5 @@
 # build on top of out base image
-FROM shahlab.azurecr.io/scp/python_singlecell_qc:v0.0.6
+FROM scdnaprod.azurecr.io/scp/python_singlecell_qc:v0.0.6
 
 # Copy the current directory contents into the container at /app
 ADD . /app
