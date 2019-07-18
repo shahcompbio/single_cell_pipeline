@@ -129,8 +129,6 @@ def create_multi_sample_workflow(
     snv_calling_info_template = os.path.join(results_dir, '{sample_id}_{library_id}_snv_calling_info.yaml')
     snv_counting_info_template = os.path.join(results_dir, '{sample_id}_{library_id}_snv_counting_info.yaml')
 
-    regions = refgenome.get_split_regions(config["split_bam"]["split_size"], config["split_bam"]["ref_genome"])
-
     workflow = pypeliner.workflow.Workflow(default_ctx=ctx)
 
     workflow.set_filenames('normal_regions.bam', 'region', template=normal_region_bam_template)
@@ -167,9 +165,21 @@ def create_multi_sample_workflow(
     else:
         normal_bam = mgd.InputFile(normal_wgs_bam, extensions=['.bai'])
 
+    # regions = refgenome.get_split_regions(config["split_bam"]["split_size"], config["split_bam"]["ref_genome"])
+
+    workflow.transform(
+        name='get_regions',
+        ret=mgd.TempOutputObj("get_regions"),
+        func=refgenome.get_split_regions,
+        args=(
+            config["split_bam"]["split_size"],
+            config["split_bam"]["ref_genome"]
+        )
+    )
+
     workflow.setobj(
         obj=mgd.OutputChunks('region'),
-        value=regions,
+        value=mgd.TempInputObj('get_regions'),
     )
 
     workflow.setobj(
@@ -180,7 +190,7 @@ def create_multi_sample_workflow(
     workflow.setobj(
         obj=mgd.OutputChunks('sample_id', 'library_id', 'region'),
         axes=('sample_id', 'library_id',),
-        value=regions,
+        value=mgd.TempInputObj('get_regions'),
     )
 
     if run_varcall:
@@ -191,7 +201,7 @@ def create_multi_sample_workflow(
                 args=(
                     normal_bam,
                     mgd.OutputFile('normal_regions.bam', 'region', axes_origin=[], extensions=['.bai']),
-                    regions,
+                    mgd.TempInputObj('get_regions'),
                     config['merge_bams'],
                 )
             )
@@ -216,7 +226,7 @@ def create_multi_sample_workflow(
                 mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai']),
                 mgd.OutputFile('tumour_regions.bam', 'sample_id', 'library_id', 'region', axes_origin=[],
                                extensions=['.bai']),
-                regions,
+                mgd.TempInputObj('get_regions'),
                 config['merge_bams'],
             )
         )
