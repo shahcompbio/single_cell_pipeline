@@ -122,7 +122,6 @@ def get_align_params(cluster, reference, aligner):
         },
         'chromosomes': referencedata['chromosomes'],
         'gc_windows': referencedata['gc_windows'],
-        'biobloom_filters': referencedata['biobloom_filters'],
         'ref_type': reference,
         'fastq_screen_params': {
             'no_organism_filter': False,
@@ -420,16 +419,17 @@ def get_breakpoint_params(cluster, reference):
 
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 16},
-        'ref_data_directory': '/refdata/',
+        'ref_data_directory': referencedata['destruct_ref_data'],
         'destruct': {
             'genome_fasta': referencedata['ref_genome'],
             'genome_fai': referencedata['ref_genome'] + '.fai',
+            'gtf_filename': referencedata['destruct_gtf_file'],
         },
         'docker': {
             'single_cell_pipeline': docker_containers['single_cell_pipeline'],
             'destruct': docker_containers['destruct'],
             'lumpy': docker_containers['lumpy'],
-            'samtools': docker_containers['samtools']
+            'samtools': docker_containers['samtools'],
         },
     }
 

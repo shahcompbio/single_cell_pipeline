@@ -64,11 +64,6 @@ def reference_data_shahlab(reference):
                 'local_path': '/shahlab/pipelines/reference/dbsnp_b146_GRCh37p13.vcf.gz',
             }
         }
-        biobloom_filters = [
-            "/shahlab/pipelines/reference/GCF_002021735.1_Okis_V1_genomic.bf",
-            "/shahlab/pipelines/reference/GRCh37-lite.bf",
-            "/shahlab/pipelines/reference/mm10_build38_mouse.bf"
-        ]
     else:
         classifier_training_data = '/shahlab/pipelines/reference/classifier_training_data.h5'
         gc_wig_file = {
@@ -99,11 +94,6 @@ def reference_data_shahlab(reference):
                 'local_path': None,
             }
         }
-        biobloom_filters = [
-             "/shahlab/pipelines/reference/GCF_002021735.1_Okis_V1_genomic.bf",
-             "/shahlab/pipelines/reference/GRCh37-lite.bf",
-             "/shahlab/pipelines/reference/mm10_build38_mouse.bf"
-        ]
 
     return locals()
 
@@ -111,59 +101,56 @@ def reference_data_shahlab(reference):
 def reference_data_azure(reference):
     # salmon
     if reference == 'GCF_002021735':
-        ref_genome = '/refdata/GCF_002021735.1_Okis_V1_genomic.fna'
+        ref_genome = '/refdata/salmon/GCF_002021735.1_Okis_V1_genomic.fna'
     elif reference == "grch37":
-        classifier_training_data = '/refdata/classifier_training_data.h5'
+        classifier_training_data = '/refdata/human/classifier_training_data.h5'
         gc_wig_file = {
-            500000: '/refdata/GRCh37-lite.gc.ws_500000.wig',
-            1000: '/refdata/GRCh37-lite.gc.ws_1000.wig',
+            500000: '/refdata/human/GRCh37-lite.gc.ws_500000.wig',
+            1000: '/refdata/human/GRCh37-lite.gc.ws_1000.wig',
         }
         map_wig_file = {
-            500000: '/refdata/GRCh37-lite.map.ws_125_to_500000.wig',
-            1000: '/refdata/GRCh37-lite.map.ws_1000.wig',
+            500000: '/refdata/human/GRCh37-lite.map.ws_125_to_500000.wig',
+            1000: '/refdata/human/GRCh37-lite.map.ws_1000.wig',
         }
-        exclude_list = '/refdata/repeats.satellite.regions'
-        ref_genome = '/refdata/GRCh37-lite.fa'
-        gc_windows = '/refdata/gc_windows.txt'
-        copynumber_ref_data = '/refdata/'
-        chrom_info_filename = '/refdata/chromInfo.txt.gz'
+        exclude_list = '/refdata/human/repeats.satellite.regions'
+        ref_genome = '/refdata/human/GRCh37-lite.fa'
+        gc_windows = '/refdata/human/gc_windows.txt'
+        copynumber_ref_data = '/refdata/human/'
+        chrom_info_filename = '/refdata/human/chromInfo.txt.gz'
         chromosomes = get_chromosomes('grch37')
-        copynumber_ref_data = '/refdata/'
-        reference_gc_qc = '/refdata/reference_gc_grch37.csv'
+        destruct_ref_data = '/refdata/human/'
+        destruct_gtf_file = '/refdata/human/grch37-lite.gtf'
+        reference_gc_qc = '/refdata/human/reference_gc_grch37.csv'
         databases = {
             'mappability': {
-                'local_path': '/refdata/wgEncodeCrgMapabilityAlign50mer.bigWig',
+                'local_path': '/refdata/human/wgEncodeCrgMapabilityAlign50mer.bigWig',
             },
             'cosmic': {
-                'local_path': '/refdata/cosmic_v75.vcf.gz',
+                'local_path': '/refdata/human/cosmic_v75.vcf.gz',
             },
             'dbsnp': {
-                'local_path': '/refdata/dbsnp_b146_GRCh37p13.vcf.gz',
+                'local_path': '/refdata/human/dbsnp_b146_GRCh37p13.vcf.gz',
             }
         }
-        biobloom_filters = [
-            "/refdata/GCF_002021735.1_Okis_V1_genomic.bf",
-            "/refdata/GRCh37-lite.bf",
-            "/refdata/mm10_build38_mouse.bf"
-        ]
 
     else:
-        classifier_training_data = '/refdata/classifier_training_data.h5'
+        classifier_training_data = '/refdata/mouse/classifier_training_data.h5'
         gc_wig_file = {
-            500000: '/refdata/mm10_build38_mouse.gc.ws_500000.wig',
+            500000: '/refdata/mouse/mm10_build38_mouse.gc.ws_500000.wig',
             1000: '/data/not/available',
         }
         map_wig_file = {
-            500000: '/refdata/mm10_build38_mouse.map.rl_125_ws_500000.wig',
+            500000: '/refdata/mouse/mm10_build38_mouse.map.rl_125_ws_500000.wig',
             1000: '/data/not/available',
         }
         exclude_list = None
-        ref_genome = '/refdata/mm10_build38_mouse.fasta'
+        ref_genome = '/refdata/mouse/mm10_build38_mouse.fasta'
         gc_windows = None
-        copynumber_ref_data = '/refdata/'
+        copynumber_ref_data = '/refdata/mouse/'
         chrom_info_filename = '/data/not/available'
         chromosomes = get_chromosomes('mm10')
-        copynumber_ref_data = '/refdata/remixt_ref_data_dir'
+        destruct_ref_data = '/refdata/mouse/'
+        destruct_gtf_file = '/refdata/mouse/mm10_build38_mouse.gtf'
         reference_gc_qc = None
         databases = {
             'mappability': {
@@ -176,11 +163,6 @@ def reference_data_azure(reference):
                 'local_path': None,
             }
         }
-        biobloom_filters = [
-            "/refdata/GCF_002021735.1_Okis_V1_genomic.bf",
-            "/refdata/GRCh37-lite.bf",
-            "/refdata/mm10_build38_mouse.bf"
-        ]
 
     return locals()
 
