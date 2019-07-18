@@ -121,7 +121,7 @@ def generate_autoscale_formula(tasks_per_node, dedicated):
         "tasksPerNode = {0};\n"
         "numAddMax = 20;\n"
         "numDelMax = 20;\n"
-        "startingNumberOfVMs = 0;\n"
+        "startingNumberOfVMs = 1;\n"
         "minNumberofVMs = 0;\n"
         "maxNumberofVMs = 1000;\n"
         "pendingTaskSamplePercent = $PendingTasks.GetSamplePercent(180 * TimeInterval_Second);\n"
@@ -189,11 +189,11 @@ def get_vm_image_id(disk_per_task, tasks_per_node):
 
     if required_disk_size <= 80:
         # uses the temp disk on node, usually 40 GB
-        imagename = 'docker-production-v3-verysmalldisk'
-    elif required_disk_size < 200:
-        imagename = 'docker-production-v3-smalldisk'
-    else:
         imagename = 'docker-production-v3-standard'
+    elif required_disk_size < 200:
+        imagename = 'docker-production-v3-meddisk'
+    else:
+        imagename = 'docker-production-v3-largedisk'
 
     subscription = os.environ.get("SUBSCRIPTION_ID", "id-missing")
     resource_group = os.environ.get("RESOURCE_GROUP", "sccompute")
