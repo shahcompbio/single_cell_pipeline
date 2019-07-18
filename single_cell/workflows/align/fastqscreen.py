@@ -84,7 +84,6 @@ def run_fastq_screen_paired_end(fastq_r1, fastq_r2, tempdir, params, docker_imag
 
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
 
-
     return tagged_fastq_r1, tagged_fastq_r2
 
 
