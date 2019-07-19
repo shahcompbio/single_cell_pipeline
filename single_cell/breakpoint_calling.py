@@ -1,18 +1,16 @@
 import os
+
 import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import helpers
-import single_cell
 
 
 def breakpoint_calling_workflow(args):
-
     run_destruct = args['destruct']
     run_lumpy = args['lumpy']
     if not any((run_destruct, run_lumpy)):
         run_destruct = True
         run_lumpy = True
-
 
     config = helpers.load_config(args)
     config = config['breakpoint_calling']
@@ -86,44 +84,15 @@ def breakpoint_calling_workflow(args):
                 mgd.OutputFile(breakpoints_csv),
                 mgd.OutputFile(breakpoints_evidence_csv),
             ),
-            kwargs={'tumour_id': tumour_cells_id,'normal_id': normal_id}
+            kwargs={'tumour_id': tumour_cells_id, 'normal_id': normal_id}
         )
-
-    info_file = os.path.join(args["out_dir"],'results','breakpoint_calling', "info.yaml")
-
-    results = {
-        'destruct_data': helpers.format_file_yaml(breakpoints_filename),
-    }
-
-    tumour_dataset = {k: helpers.format_file_yaml(v) for k,v in tumour_cells.iteritems()}
-    if isinstance(normal_bams, dict):
-        normal_dataset = {k: helpers.format_file_yaml(v) for k, v in normal_bams.iteritems()}
-    else:
-        normal_dataset = helpers.format_file_yaml(normal_bams)
-    input_datasets = {'normal': normal_dataset,
-                      'tumour': tumour_dataset}
-
-    metadata = {
-        'breakpoint_calling': {
-            'ref_data': ref_data_directory,
-            'version': single_cell.__version__,
-            'results': results,
-            'containers': config['docker'],
-            'input_datasets': input_datasets,
-            'output_datasets': None
-        }
-    }
-
-    workflow.transform(
-        name='generate_meta_yaml',
-        ctx=dict(mem=config['memory']['med'],
-                 mem_retry_increment=2, ncpus=1),
-        func="single_cell.utils.helpers.write_to_yaml",
-        args=(
-            mgd.OutputFile(info_file),
-            metadata
-        )
-    )
 
     return workflow
 
+
+def breakpoint_calling_pipeline(args):
+    pyp = pypeliner.app.Pypeline(config=args)
+
+    workflow = breakpoint_calling_workflow(args)
+
+    pyp.run(workflow)

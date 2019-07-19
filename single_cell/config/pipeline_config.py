@@ -400,8 +400,8 @@ def get_infer_haps_params(cluster, reference):
         'max_cores': None,
         'chromosomes': referencedata['chromosomes'],
         'extract_seqdata': {
-            'genome_fasta': referencedata['ref_genome'],
-            'genome_fai': referencedata['ref_genome'] + '.fai',
+            'genome_fasta_template': referencedata['ref_genome'],
+            'genome_fai_template': referencedata['ref_genome'] + '.fai',
         },
         'ref_data_dir': referencedata['copynumber_ref_data'],
         'docker': {

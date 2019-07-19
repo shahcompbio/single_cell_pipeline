@@ -153,6 +153,14 @@ def variant_calling_workflow(args):
     return workflow
 
 
+def variant_calling_pipeline(args):
+
+    pyp = pypeliner.app.Pypeline(config=args)
+
+    workflow = variant_calling_workflow(args)
+
+    pyp.run(workflow)
+
 def create_variant_calling_workflow(
         tumour_cell_bams,
         tumour_region_bams,
@@ -387,3 +395,12 @@ def create_variant_counting_workflow(
     )
 
     return workflow
+
+
+def variant_counting_pipeline(args):
+
+    pyp = pypeliner.app.Pypeline(config=args)
+
+    workflow = variant_counting_workflow(args)
+
+    pyp.run(workflow)

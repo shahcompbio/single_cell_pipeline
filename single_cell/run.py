@@ -1,26 +1,24 @@
-import pypeliner
-from cmdline import parse_args
-from qc import qc_workflow
-from aneufinder import aneufinder_workflow
-from merge_bams import merge_bams_workflow
-from variant_calling import variant_calling_workflow
-from variant_calling import variant_counting_workflow
-from germline_calling import germline_calling_workflow
-from breakpoint_calling import breakpoint_calling_workflow
-from split_bam import split_bam_workflow
-from generate_config import generate_config
-from clean_sentinels import clean_sentinels
-from copy_number import copy_number_calling_workflow
-from ltm import ltm_workflow
-from infer_haps import infer_haps_workflow
-from multi_sample import multi_sample_workflow
-# from copyclone import copyclone_workflow
-from docker_run import run_with_docker
 import sys
+
+from aneufinder import aneufinder_pipeline
+from breakpoint_calling import breakpoint_calling_pipeline
+from clean_sentinels import clean_sentinels
+from cmdline import parse_args
+from copy_number import copy_number_calling_pipeline
+from docker_run import run_with_docker
+from generate_config import generate_config
+from germline_calling import germline_calling_pipeline
+from infer_haps import infer_haps_pipeline
+from ltm import ltm_pipeline
+from merge_bams import merge_bams_pipeline
+from multi_sample import multi_sample_pipeline
+from qc import qc_pipeline
+from split_bam import split_bam_pipeline
+from variant_calling import variant_calling_pipeline
+from variant_calling import variant_counting_pipeline
 
 
 def main():
-
     args = parse_args()
 
     if args["which"] == "generate_config":
@@ -35,54 +33,41 @@ def main():
         run_with_docker(args, sys.argv)
         return
 
-    pyp = pypeliner.app.Pypeline(config=args)
-
-    workflow = None
-
     if args["which"] == "qc":
-        workflow = qc_workflow(args)
-
-#     if args["which"] == "copyclone":
-#         pyp = pypeliner.app.Pypeline(config=args)
-#         workflow = pypeliner.workflow.Workflow()
-#         workflow = copyclone_workflow(workflow, args)
-#         pyp.run(workflow)
+        qc_pipeline(args)
 
     if args["which"] == "aneufinder":
-        workflow = aneufinder_workflow(args)
+        aneufinder_pipeline(args)
 
     if args["which"] == "merge_bams":
-        workflow = merge_bams_workflow(args)
+        merge_bams_pipeline(args)
 
     if args["which"] == "split_bam":
-        workflow = split_bam_workflow(args)
+        split_bam_pipeline(args)
 
     if args["which"] == "variant_calling":
-        workflow = variant_calling_workflow(args)
+        variant_calling_pipeline(args)
 
     if args["which"] == "copy_number_calling":
-        workflow = copy_number_calling_workflow(args)
+        copy_number_calling_pipeline(args)
 
     if args["which"] == "infer_haps":
-        workflow = infer_haps_workflow(args)
+        infer_haps_pipeline(args)
 
     if args["which"] == "germline_calling":
-        workflow = germline_calling_workflow(args)
+        germline_calling_pipeline(args)
 
     if args["which"] == "breakpoint_calling":
-        workflow = breakpoint_calling_workflow(args)
+        breakpoint_calling_pipeline(args)
 
     if args["which"] == "variant_counting":
-        workflow = variant_counting_workflow(args)
+        variant_counting_pipeline(args)
 
     if args["which"] == "ltm":
-        workflow = ltm_workflow(args)
+        ltm_pipeline(args)
 
     if args["which"] == "multi_sample_pseudo_bulk":
-        workflow = multi_sample_workflow(args)
-
-    if workflow:
-        pyp.run(workflow)
+        multi_sample_pipeline(args)
 
 
 if __name__ == "__main__":

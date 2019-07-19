@@ -84,3 +84,13 @@ def aneufinder_workflow(args):
     )
 
     return workflow
+
+
+
+def aneufinder_pipeline(args):
+
+    pyp = pypeliner.app.Pypeline(config=args)
+
+    workflow = aneufinder_workflow(args)
+
+    pyp.run(workflow)

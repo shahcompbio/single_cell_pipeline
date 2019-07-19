@@ -18,7 +18,6 @@ def split_bam_workflow(args):
 
     baseimage = config['docker']['single_cell_pipeline']
 
-    info_file = os.path.join(args["out_dir"], 'results', 'split_bam', 'info.yaml')
     split_bam_template = args["split_bam_template"]
 
     by_reads = False if "{region}" in split_bam_template else True
@@ -60,41 +59,13 @@ def split_bam_workflow(args):
         kwargs={"by_reads": by_reads}
     )
 
-    regions = mgd.InputChunks('reads') if by_reads else pypeliner.managed.TempInputObj('region')
-    workflow.transform(
-        name="get_files",
-        func='single_cell.utils.helpers.resolve_template',
-        ctx={'mem': config['memory']['low'], 'ncpus': 1, 'docker_image': baseimage},
-        ret=pypeliner.managed.TempOutputObj('outputs'),
-        args=(
-            pypeliner.managed.TempInputObj('region'),
-            split_bam_template,
-            'region'
-        )
-    )
-
-    metadata = {
-        'split_bams': {
-            'name': 'merge_bams',
-            'ref_genome': config["ref_genome"],
-            'version': single_cell.__version__,
-            'containers': config['docker'],
-            'output_datasets': pypeliner.managed.TempInputObj('outputs'),
-            'input_datasets': args['wgs_bam'],
-            'results': None
-        }
-    }
-
-    workflow.transform(
-        name='generate_meta_yaml',
-        ctx={'mem': config['memory']['low'], 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.utils.helpers.write_to_yaml",
-        args=(
-            mgd.OutputFile(info_file),
-            metadata
-        )
-    )
-
-
-
     return workflow
+
+
+def split_bam_pipeline(args):
+
+    pyp = pypeliner.app.Pypeline(config=args)
+
+    workflow = split_bam_workflow(args)
+
+    pyp.run(workflow)
