@@ -6,7 +6,7 @@ ADD . /app
 
 # Install any needed packages specified in requirements.txt
 RUN rm -rf /opt/conda/lib/python2.7/site-packages/pypeliner* /opt/conda/lib/python2.7/site-packages/single_cell_pipeline* /opt/conda/lib/python2.7/site-packages/biowrappers*
-RUN pip install git+https://github.com/shahcompbio/pypeliner.git@v0.5.7
+RUN pip install git+https://github.com/shahcompbio/pypeliner.git@refactor_azure
 RUN pip install git+https://bitbucket.org/aroth85/biowrappers.git@singlecell
 RUN pip install ete3
 RUN cd /app && python setup.py install 
