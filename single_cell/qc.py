@@ -125,6 +125,8 @@ def qc_workflow(args):
         segs_fail = os.path.join(annotation_dir, '{0}_segs_fail.tar.gz'.format(lib))
         corrupt_heatmap_pdf = os.path.join(annotation_dir, '{}_heatmap_corrupt_tree.pdf'.format(lib))
 
+        metadata_yaml = os.path.join(annotation_dir, 'metadata.yaml')
+
         hmmcopy_dir = args["hmmcopy_output"]
         alignment_dir = args["alignment_output"]
         if not hmmcopy_dir or not alignment_dir:
@@ -157,6 +159,8 @@ def qc_workflow(args):
                 mgd.OutputFile(segs_pass),
                 mgd.OutputFile(segs_fail),
                 mgd.OutputFile(corrupt_heatmap_pdf),
+                mgd.OutputFile(metadata_yaml),
+                cellids,
                 config['annotation'],
                 lib,
             ),

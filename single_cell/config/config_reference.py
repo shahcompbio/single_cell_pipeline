@@ -1,15 +1,7 @@
-import single_cell
-
-
-def get_version():
-    version = single_cell.__version__
-    # strip setuptools metadata
-    version = version.split("+")[0]
-    return version
-
+from single_cell.utils import helpers
 
 def containers():
-    version = get_version()
+    version = helpers.get_version()
     docker_images = {
         'bwa': 'scp/bwa:v0.0.1', 'samtools': 'scp/samtools:v0.0.2',
         'python_base': 'scp/python_base:v0.0.1', 'picard': 'scp/picard:v0.0.1',
