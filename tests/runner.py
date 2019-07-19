@@ -1,30 +1,11 @@
 import argparse
 import os
-import errno
 
-import azure.storage.blob as azureblob
 import yaml
-from azure.common.credentials import ServicePrincipalCredentials
-from azure.keyvault import KeyVaultClient, KeyVaultAuthentication
-from azure.keyvault.models import KeyVaultErrorException
+from pypeliner.contrib.azure import blobclient
+from single_cell.utils import helpers
 
-
-def makedirs(directory, isfile=False):
-
-    if isfile:
-        directory = os.path.dirname(directory)
-        if not directory:
-            return
-
-    try:
-        os.makedirs(directory)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
-
-
-class UnconfiguredStorageAccountError(Exception):
-    pass
+import compare
 
 
 def generate_container_yaml(filepath):
@@ -45,83 +26,40 @@ def generate_container_yaml(filepath):
         yaml.dump(data, container_out)
 
 
-def get_storage_account_key(
-        accountname, client_id, secret_key, tenant_id, keyvault_account
-):
-    """
-    Uses the azure management package and the active directory
-    credentials to fetch the authentication key for a storage
-    account from azure key vault. The key must be stored in azure
-    keyvault for this to work.
-    :param str accountname: storage account name
-    """
-
-    def auth_callback(server, resource, scope):
-        credentials = ServicePrincipalCredentials(
-            client_id=client_id,
-            secret=secret_key,
-            tenant=tenant_id,
-            resource="https://vault.azure.net"
-        )
-        token = credentials.token
-        return token['token_type'], token['access_token']
-
-    client = KeyVaultClient(KeyVaultAuthentication(auth_callback))
-    keyvault = "https://{}.vault.azure.net/".format(keyvault_account)
-    # passing in empty string for version returns latest key
-    try:
-        secret_bundle = client.get_secret(keyvault, accountname, "")
-    except KeyVaultErrorException:
-        err_str = "The pipeline is not setup to use the {} account. ".format(accountname)
-        err_str += "please add the storage key for the account to {} ".format(keyvault_account)
-        err_str += "as a secret. All input/output paths should start with accountname"
-        raise UnconfiguredStorageAccountError(err_str)
-    account_key = secret_bundle.value
-
-    return account_key
+def get_storage_account(path):
+    path = path.strip()
+    return path.split('/')[0]
 
 
-def get_blob_client(storage_account_name):
-    storage_account_key = get_storage_account_key(
-        storage_account_name,
-        os.environ['CLIENT_ID'],
-        os.environ['SECRET_KEY'],
-        os.environ['TENANT_ID'],
-        os.environ['AZURE_KEYVAULT_ACCOUNT'],
+def download_blob(blob_path, tempdir):
+    client_id = os.environ["CLIENT_ID"]
+    secret_key = os.environ["SECRET_KEY"]
+    tenant_id = os.environ["TENANT_ID"]
+    keyvault_account = os.environ['AZURE_KEYVAULT_ACCOUNT']
+
+    outpath = os.path.join(tempdir, blob_path)
+    helpers.makedirs(outpath, isfile=True)
+
+    storageaccountname = get_storage_account(blob_path)
+
+    client = blobclient.BlobStorageClient(
+        storageaccountname, client_id, tenant_id, secret_key,
+        keyvault_account
     )
 
-    blob_client = azureblob.BlockBlobService(
-        account_name=storage_account_name,
-        account_key=storage_account_key)
-    return blob_client
+    client.download_to_path(outpath, blob_uri=blob_path)
+
+    return outpath
 
 
-def download_blob(blob_client, container, blobpath, filepath):
-    blob = blob_client.get_blob_to_path(
-        container,
-        blobpath,
-        filepath)
-    return blob
+def compare_output(reads, metrics, ref_reads, ref_metrics, tempdir):
+    reads = download_blob(reads, tempdir)
+    metrics = download_blob(metrics, tempdir)
+    ref_reads = download_blob(ref_reads, tempdir)
+    ref_metrics = download_blob(ref_metrics, tempdir)
 
-
-def list_all_blobs(blob_client, container):
-    blobs = blob_client.list_blobs(container)
-    for blob in blobs:
-        yield blob.name
-
-
-def download_refdata(basedir):
-    blob_client = get_blob_client(os.environ['REFDATA_STORAGE_ACCOUNT'])
-    for blob in list_all_blobs(blob_client, 'refdata'):
-        outpath = os.path.join(basedir, blob)
-        if not os.path.exists(outpath):
-            makedirs(outpath, isfile=True)
-            print "downloading: {}".format(blob)
-            download_blob(blob_client, 'refdata', blob, outpath)
-
-
-def run_pipeline():
-    pass
+    compare.compare_metrics(ref_metrics, metrics)
+    compare.compare_reads(ref_reads, reads)
 
 
 def parse_args():
@@ -134,10 +72,28 @@ def parse_args():
     container_yaml.add_argument('output',
                                 help='specify path to the output file')
 
-    download_refdata = subparsers.add_parser('download_refdata')
-    download_refdata.set_defaults(which='download_refdata')
-    download_refdata.add_argument('basedir',
-                                help='specify path to the output dir')
+    compare = subparsers.add_parser('compare')
+    compare.set_defaults(which='compare')
+    compare.add_argument(
+        '--ref_reads',
+        help='specify path to the output dir'
+    )
+    compare.add_argument(
+        '--ref_metrics',
+        help='specify path to the output dir'
+    )
+    compare.add_argument(
+        '--reads',
+        help='specify path to the output dir'
+    )
+    compare.add_argument(
+        '--metrics',
+        help='specify path to the output dir'
+    )
+    compare.add_argument(
+        '--tempdir',
+        help='specify path to the output dir'
+    )
 
     args = parser.parse_args()
 
@@ -148,11 +104,15 @@ def parse_args():
 def main(args):
     if args['which'] == 'container_yaml':
         generate_container_yaml(args['output'])
-    elif args['which'] == 'download_refdata':
-        download_refdata(args['basedir'])
+
+    elif args['which'] == 'compare':
+        compare_output(
+            args['reads'], args['metrics'],
+            args['ref_reads'], args['ref_metrics'],
+            args['tempdir']
+        )
 
 
 if __name__ == '__main__':
     args = parse_args()
     main(args)
-
