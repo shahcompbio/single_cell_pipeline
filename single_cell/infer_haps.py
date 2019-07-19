@@ -5,20 +5,20 @@ Created on Aug 29, 2018
 '''
 
 import os
+
 import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import helpers
 
 
 def infer_haps(
-    bam_file,
-    seqdata_file,
-    haplotypes_filename,
-    allele_counts_filename,
-    config,
-    normal=False,
+        bam_file,
+        seqdata_file,
+        haplotypes_filename,
+        allele_counts_filename,
+        config,
+        normal=False,
 ):
-
     baseimage = {'docker_image': config['docker']['single_cell_pipeline']}
 
     remixt_config = config.get('extract_seqdata', {})
@@ -47,7 +47,7 @@ def infer_haps(
                     fnames=bam_file,
                     extensions=['.bai']
                 ),
-                mgd.TempOutputFile('seqdata_cell.h5','cell_id'),
+                mgd.TempOutputFile('seqdata_cell.h5', 'cell_id'),
                 config.get('extract_seqdata', {}),
                 config['ref_data_dir'],
                 config,
@@ -132,7 +132,7 @@ def infer_haps(
         func='remixt.analysis.segment.create_segments',
         args=(
             mgd.TempOutputFile('segments.tsv'),
-            config,
+            remixt_config,
             config['ref_data_dir'],
         ),
     )
@@ -146,7 +146,7 @@ def infer_haps(
             mgd.TempInputFile('segments.tsv'),
             mgd.InputFile(seqdata_file),
             mgd.InputFile(haplotypes_filename),
-            config,
+            remixt_config
         ),
     )
 
@@ -154,11 +154,11 @@ def infer_haps(
 
 
 def extract_allele_readcounts(
-    haplotypes_filename,
-    cell_bams,
-    cell_seqdata,
-    allele_counts_filename,
-    config,
+        haplotypes_filename,
+        cell_bams,
+        cell_seqdata,
+        allele_counts_filename,
+        config,
 ):
     baseimage = {'docker_image': config['docker']['single_cell_pipeline']}
 
@@ -190,7 +190,7 @@ def extract_allele_readcounts(
         ),
     )
 
-    #TODO Segments with bin width from single cell
+    # TODO Segments with bin width from single cell
     workflow.transform(
         name='create_segments',
         func='remixt.analysis.segment.create_segments',
@@ -232,7 +232,6 @@ def extract_allele_readcounts(
     return workflow
 
 
-
 def infer_haps_workflow(args):
     config = helpers.load_config(args)
     config = config['infer_haps']
@@ -240,7 +239,6 @@ def infer_haps_workflow(args):
 
     ctx = dict(mem_retry_increment=2, disk_retry_increment=50, ncpus=1, baseimage=baseimage)
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
-
 
     haps_dir = os.path.join(args["out_dir"], "infer_haps")
     seqdata_merged = os.path.join(haps_dir, "results", "seqdata.h5")
@@ -263,10 +261,9 @@ def infer_haps_workflow(args):
             obj=mgd.OutputChunks('cell_id'),
             value=list(bam_file.keys()),
         )
-        bam_file = mgd.InputFile('tumour.bam', 'cell_id',fnames=bam_file, extensions=['.bai'])
+        bam_file = mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_file, extensions=['.bai'])
     else:
         bam_file = mgd.InputFile(bam_file, extensions=['.bai'])
-
 
     workflow.subworkflow(
         name='infer_haps',
