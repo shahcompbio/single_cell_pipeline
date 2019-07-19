@@ -3,26 +3,59 @@ Created on Feb 19, 2018
 
 @author: dgrewal
 '''
-import os
 import errno
-import tarfile
-import yaml
+import gzip
 import logging
-
+import multiprocessing
+import os
+import re
 import shutil
-
+import sys
+import tarfile
+from multiprocessing.pool import ThreadPool
 from subprocess import Popen, PIPE
 
-import multiprocessing
-
-from multiprocessing.pool import ThreadPool
-import pypeliner
-import gzip
 import pandas as pd
+import pypeliner
+import single_cell
+import yaml
+
+
+def get_version():
+    version = single_cell.__version__
+    # strip setuptools metadata
+    version = version.split("+")[0]
+    return version
+
+
+def generate_meta_yaml_qc(
+        metadata_file,
+        filepaths=None, library_id=None,
+        cell_ids=None, pipeline_type=None,
+):
+    version = get_version()
+    command = ' '.join(sys.argv[0:])
+
+    samples = [re.split('[_-]', cell)[0] for cell in cell_ids]
+    samples = set(list(samples))
+
+    metadata = {
+        'filenames': filepaths,
+        'meta': {
+            'library_id': library_id,
+            'sample_ids': samples,
+            'type': pipeline_type,
+            'version': version,
+            'command': command
+        }
+    }
+
+    write_to_yaml(metadata_file, metadata)
 
 
 def copyfile(source, dest):
     shutil.copyfile(source, dest)
+
 
 class getFileHandle(object):
     def __init__(self, filename, mode='r'):
@@ -167,8 +200,9 @@ def get_coltype_reference():
 
 
 def resolve_template(regions, template, format_key):
-    outputs = {v: template.format(**{format_key:v}) for v in regions}
+    outputs = {v: template.format(**{format_key: v}) for v in regions}
     return outputs
+
 
 def get_fastq_files(input_yaml):
     data = load_yaml(input_yaml)
@@ -182,13 +216,14 @@ def get_fastq_files(input_yaml):
             items[cell_id][lane]['fastq_2'] = format_file_yaml(laneinfo['fastq_2'])
     return items
 
+
 def format_file_yaml(filepath):
     ext = os.path.splitext(filepath)
 
     if ext[1] == ".gz":
         ext = os.path.splitext(ext[0])
 
-    mapping = {'.bam':'bam', '.pdf': 'PDF',
+    mapping = {'.bam': 'bam', '.pdf': 'PDF',
                '.fastq': 'fastq', '.h5': 'H5',
                '.tar': 'tar', '.fq': 'fastq'}
 
@@ -198,19 +233,20 @@ def format_file_yaml(filepath):
 
     return {'filename': filepath, 'type': filetype}
 
+
 def get_container_ctx(container_config, image_name, docker_only=False):
     if docker_only and not container_config['container_type'] == 'docker':
         return {}
 
     credentials = container_config['images'][image_name]
     docker_context = {
-              'image': credentials['image'],
-              'container_type': container_config['container_type'],
-              'mounts': container_config['mounts'],
-              'username': credentials['username'],
-              'password': credentials['password'],
-              'server': credentials['server'],
-          }
+        'image': credentials['image'],
+        'container_type': container_config['container_type'],
+        'mounts': container_config['mounts'],
+        'username': credentials['username'],
+        'password': credentials['password'],
+        'server': credentials['server'],
+    }
     return docker_context
 
 
@@ -233,7 +269,6 @@ def write_to_yaml(outfile, data):
 
 
 def eval_expr(val, operation, threshold):
-
     if operation == "gt":
         if val > threshold:
             return True
@@ -265,13 +300,12 @@ def eval_expr(val, operation, threshold):
 
 
 def filter_metrics(metrics, cell_filters):
-
     # cells to keep
     for metric_col, operation, threshold in cell_filters:
         if metrics.empty:
             continue
 
-        rows_to_keep = metrics[metric_col].apply(eval_expr, args= (operation, threshold))
+        rows_to_keep = metrics[metric_col].apply(eval_expr, args=(operation, threshold))
 
         metrics = metrics[rows_to_keep]
 
@@ -309,7 +343,7 @@ def run_in_gnu_parallel(commands, tempdir, docker_image, ncores=None):
 
     scriptfiles = []
 
-    for tag,command in enumerate(commands):
+    for tag, command in enumerate(commands):
         scriptfiles.append(build_shell_script(command, tag, tempdir))
 
     parallel_outfile = os.path.join(tempdir, "commands.txt")
@@ -324,9 +358,7 @@ def run_in_gnu_parallel(commands, tempdir, docker_image, ncores=None):
     pypeliner.commandline.execute(*gnu_parallel_cmd, docker_image=docker_image)
 
 
-
 def run_in_parallel(worker, args, ncores=None):
-
     def args_unpack(worker, args):
         return worker(*args)
 
@@ -340,7 +372,6 @@ def run_in_parallel(worker, args, ncores=None):
     tasks = []
 
     for arg in args:
-
         task = pool.apply_async(args_unpack,
                                 args=(worker, arg),
                                 )
@@ -356,7 +387,6 @@ def run_in_parallel(worker, args, ncores=None):
 
 
 def run_cmd(cmd, output=None):
-
     stdout = PIPE
     if output:
         stdout = open(output, "w")
@@ -397,7 +427,6 @@ def copy_file(infile, output):
 
 
 def get_fastqs(fastqs_file):
-
     data = load_yaml(fastqs_file)
 
     for cell in data.keys():
@@ -417,7 +446,6 @@ def get_fastqs(fastqs_file):
 
 
 def get_trim_info(fastqs_file):
-
     data = load_yaml(fastqs_file)
 
     for cell in data.keys():
@@ -447,7 +475,6 @@ def get_trim_info(fastqs_file):
 
 
 def get_center_info(fastqs_file):
-
     data = load_yaml(fastqs_file)
 
     for cell in data.keys():
@@ -485,19 +512,17 @@ def get_sample_info(fastqs_file):
         del data[cell]["bam"]
         del data[cell]["pick_met"]
         del data[cell]["condition"]
-    
+
     return data
 
 
 def get_samples(fastqs_file):
-
     data = load_yaml(fastqs_file)
 
     return data.keys()
 
 
 def get_bams(fastqs_file):
-
     data = load_yaml(fastqs_file)
 
     for cell in data.keys():
@@ -511,12 +536,10 @@ def get_bams(fastqs_file):
 
 
 def load_config(args):
-
     return load_yaml(args["config_file"])
 
 
 def makedirs(directory, isfile=False):
-
     if isfile:
         directory = os.path.dirname(directory)
         if not directory:
