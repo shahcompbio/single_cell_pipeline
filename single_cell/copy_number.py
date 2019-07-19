@@ -16,6 +16,8 @@ def copy_number_calling_workflow(args):
     config = helpers.load_config(args)
     config = config['copy_number_calling']
 
+    pyp = pypeliner.app.Pypeline(config=args)
+
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
            'docker_image': config['docker']['single_cell_pipeline']
     }
@@ -147,39 +149,14 @@ def copy_number_calling_workflow(args):
             cloneid
         ),
     )
-    #
-    # info_file = os.path.join(args["out_dir"],'results','copynumber_calling', "info.yaml")
-    #
-    # results = {
-    #     'copynumber_data': helpers.format_file_yaml(out_file),
-    # }
-    #
-    # tumours = {k: helpers.format_file_yaml(v) for k,v in tumour_bam_files.iteritems()}
-    # normals = {k: helpers.format_file_yaml(v) for k,v in normal_bam_files.iteritems()}
-    # input_datasets = {'tumour': tumours, 'normal': normals}
-    #
-    # metadata = {
-    #     'copynumber_calling': {
-    #         'chromosomes': config['chromosomes'],
-    #         'ref_genome': config['ref_genome'],
-    #         'version': single_cell.__version__,
-    #         'results': results,
-    #         'containers': config['containers'],
-    #         'input_datasets': input_datasets,
-    #         'output_datasets': None
-    #     }
-    # }
-    #
-    # workflow.transform(
-    #     name='generate_meta_yaml',
-    #     ctx=dict(mem=config['memory']['med'],
-    #              pool_id=config['pools']['standard'],
-    #              mem_retry_increment=2, ncpus=1),
-    #     func="single_cell.utils.helpers.write_to_yaml",
-    #     args=(
-    #         mgd.OutputFile(info_file),
-    #         metadata
-    #     )
-    # )
 
-    return workflow
+    pyp.run(workflow)
+
+
+def copy_number_calling_pipeline(args):
+
+    pyp = pypeliner.app.Pypeline(config=args)
+
+    workflow = copy_number_calling_workflow(args)
+
+    pyp.run(workflow)

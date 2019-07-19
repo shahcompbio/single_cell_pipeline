@@ -3,6 +3,7 @@ Created on Jul 6, 2017
 
 @author: dgrewal
 '''
+
 import pypeliner
 import pypeliner.managed as mgd
 
@@ -11,7 +12,7 @@ def create_qc_annotation_workflow(
         hmmcopy_metrics, hmmcopy_reads, alignment_metrics, gc_metrics, segs_tar,
         merged_metrics, qc_report, corrupt_tree, consensus_tree, phylo_csv,
         rank_trees, filtered_data, corrupt_tree_pdf, pass_segs, fail_segs,
-        corrupt_tree_heatmap_output, metadata, cell_ids, config, library_id, no_corrupt_tree=False
+        corrupt_tree_heatmap_output, config, library_id, no_corrupt_tree=False,
 ):
     ctx = {'docker_image': config['docker']['single_cell_pipeline']}
 
@@ -133,37 +134,14 @@ def create_qc_annotation_workflow(
     else:
         final_metrics = mgd.TempInputFile('merged_metrics_order_ct.csv.gz', extensions=['.yaml'])
 
-
     workflow.transform(
         name='finalize_metrics',
-        ctx={'mem': config['memory']['med'], 'ncpus': 1},
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'num_retry': 1},
         func="single_cell.utils.csvutils.finalize_csv",
         args=(
             final_metrics,
             mgd.OutputFile(merged_metrics, extensions=['.yaml']),
         ),
-    )
-
-    workflow.transform(
-        name='generate_yaml',
-        func='single_cell.utils.helpers.generate_meta_yaml_qc',
-        args=(
-            mgd.OutputFile(metadata),
-        ),
-        kwargs={
-            'library_id': library_id,
-            'cell_ids': cell_ids,
-            'pipeline_type': 'annotation',
-            'filepaths': [
-                corrupt_tree,
-                consensus_tree,
-                phylo_csv,
-                rank_trees,
-                filtered_data,
-                corrupt_tree_pdf,
-                merged_metrics
-            ]
-        }
     )
 
     return workflow

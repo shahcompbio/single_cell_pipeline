@@ -125,12 +125,10 @@ def qc_workflow(args):
         segs_fail = os.path.join(annotation_dir, '{0}_segs_fail.tar.gz'.format(lib))
         corrupt_heatmap_pdf = os.path.join(annotation_dir, '{}_heatmap_corrupt_tree.pdf'.format(lib))
 
-        metadata_yaml = os.path.join(annotation_dir, 'metadata.yaml')
-
         hmmcopy_dir = args["hmmcopy_output"]
         alignment_dir = args["alignment_output"]
         if not hmmcopy_dir or not alignment_dir:
-            raise Exception()
+            raise Exception('--hmmcopy_output and --alignment_output are required to run annotation')
 
         metrics_csvs = os.path.join(hmmcopy_dir, '{0}_metrics.csv.gz'.format(lib))
         reads_csvs = os.path.join(hmmcopy_dir, '{0}_reads.csv.gz'.format(lib))
@@ -159,8 +157,6 @@ def qc_workflow(args):
                 mgd.OutputFile(segs_pass),
                 mgd.OutputFile(segs_fail),
                 mgd.OutputFile(corrupt_heatmap_pdf),
-                mgd.OutputFile(metadata_yaml),
-                cellids,
                 config['annotation'],
                 lib,
             ),
@@ -168,3 +164,34 @@ def qc_workflow(args):
         )
 
     return workflow
+
+def qc_pipeline(args):
+
+    pyp = pypeliner.app.Pypeline(config=args)
+
+    workflow = qc_workflow(args)
+
+    pyp.run(workflow)
+
+
+    # samples = [re.split('[_-]', cell)[0] for cell in cellids]
+    # samples = sorted(set(samples))
+    # metadata = {
+    #     'library_id': lib,
+    #     'sample_ids': samples,
+    # }
+    #
+    # if annotation_dir:
+    #     filepaths = [
+    #         corrupt_tree_newick,
+    #         consensus_tree_newick,
+    #         phylo_csv,
+    #         loci_rank_trees,
+    #         filtered_data,
+    #         corrupt_tree_pdf,
+    #         merged_metrics_csvs
+    #     ]
+    #     metadata['type'] = 'annotation'
+    #     helpers.generate_meta_yaml(
+    #         args, annotation_dir, filepaths, metadata,
+    #     )
