@@ -30,7 +30,7 @@ def qc_workflow(args):
         alignment_metrics_csv = os.path.join(alignment_dir, '{}_alignment_metrics.csv.gz'.format(lib))
         gc_metrics_csv = os.path.join(alignment_dir, '{}_gc_metrics.csv.gz'.format(lib))
         fastqc_metrics_csv = os.path.join(alignment_dir, '{}_detailed_fastqscreen_metrics.csv.gz'.format(lib))
-        plot_metrics_output = os.path.join(alignment_dir, '{}_plot_metrics.pdf'.format(lib))
+        plot_metrics_output = os.path.join(alignment_dir, '{}_alignment_metrics.pdf'.format(lib))
         alignment_metrics_tar = os.path.join(alignment_dir, '{}_alignment_metrics.tar.gz'.format(lib))
 
         fastq1_files, fastq2_files = helpers.get_fastqs(args['input_yaml'])
@@ -71,14 +71,14 @@ def qc_workflow(args):
         reads_csvs = os.path.join(hmmcopy_dir, '{0}_reads.csv.gz'.format(lib))
         segs_csvs = os.path.join(hmmcopy_dir, '{0}_segments.csv.gz'.format(lib))
         params_csvs = os.path.join(hmmcopy_dir, '{0}_params.csv.gz'.format(lib))
-        metrics_csvs = os.path.join(hmmcopy_dir, '{0}_metrics.csv.gz'.format(lib))
-        hmmcopy_data_tar = os.path.join(hmmcopy_dir, '{0}_data.tar.gz'.format(lib))
+        metrics_csvs = os.path.join(hmmcopy_dir, '{0}_hmmcopy_metrics.csv.gz'.format(lib))
+        hmmcopy_data_tar = os.path.join(hmmcopy_dir, '{0}_hmmcopy_data.tar.gz'.format(lib))
         igv_csvs = os.path.join(hmmcopy_dir, '{0}_igv_segments.seg'.format(lib))
         segs_pdf = os.path.join(hmmcopy_dir, '{}_segs.tar.gz'.format(lib))
         bias_pdf = os.path.join(hmmcopy_dir, '{}_bias.tar.gz'.format(lib))
         heatmap_filt_pdf = os.path.join(hmmcopy_dir, '{}_heatmap_by_ec_filtered.pdf'.format(lib))
         heatmap_pdf = os.path.join(hmmcopy_dir, '{}_heatmap_by_ec.pdf'.format(lib))
-        metrics_pdf = os.path.join(hmmcopy_dir, '{}_metrics.pdf'.format(lib))
+        metrics_pdf = os.path.join(hmmcopy_dir, '{}_hmmcopy_metrics.pdf'.format(lib))
         kernel_density_pdf = os.path.join(hmmcopy_dir, '{}_kernel_density.pdf'.format(lib))
 
         if not alignment_dir:
