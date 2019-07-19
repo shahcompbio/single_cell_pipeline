@@ -2,8 +2,8 @@ import argparse
 import os
 
 import yaml
-from pypeliner.contrib.azure import blobclient
 from single_cell.utils import helpers
+from single_cell.utils import storageutils
 
 import compare
 
@@ -32,22 +32,10 @@ def get_storage_account(path):
 
 
 def download_blob(blob_path, tempdir):
-    client_id = os.environ["CLIENT_ID"]
-    secret_key = os.environ["SECRET_KEY"]
-    tenant_id = os.environ["TENANT_ID"]
-    keyvault_account = os.environ['AZURE_KEYVAULT_ACCOUNT']
-
     outpath = os.path.join(tempdir, blob_path)
     helpers.makedirs(outpath, isfile=True)
 
-    storageaccountname = get_storage_account(blob_path)
-
-    client = blobclient.BlobStorageClient(
-        storageaccountname, client_id, tenant_id, secret_key,
-        keyvault_account
-    )
-
-    client.download_to_path(outpath, blob_uri=blob_path)
+    storageutils.download_blob(blob_path, outpath, storage='azureblob')
 
     return outpath
 

@@ -80,32 +80,14 @@ def merge_bams_workflow(args):
 
     )
 
-    info_file = os.path.join(args["out_dir"], 'results','merge_bams', "info.yaml")
-
-    inputs = {k: helpers.format_file_yaml(v) for k,v in bam_files.iteritems()}
-
-    metadata = {
-        'merge_bams': {
-            'name': 'merge_bams',
-            'ref_genome': config["ref_genome"],
-            'version': single_cell.__version__,
-            'containers': config['docker'],
-            'output_datasets': pypeliner.managed.TempInputObj('outputs'),
-            'input_datasets': inputs,
-            'results': None
-        }
-    }
-
-    workflow.transform(
-        name='generate_meta_yaml',
-        ctx={'mem': config['memory']['med']},
-        func="single_cell.utils.helpers.write_to_yaml",
-        args=(
-            mgd.OutputFile(info_file),
-            metadata
-        )
-    )
-
     return workflow
 
 
+
+def merge_bams_pipeline(args):
+
+    pyp = pypeliner.app.Pypeline(config=args)
+
+    workflow = merge_bams_workflow(args)
+
+    pyp.run(workflow)

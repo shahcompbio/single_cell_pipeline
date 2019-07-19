@@ -8,7 +8,6 @@ import gzip
 import logging
 import multiprocessing
 import os
-import re
 import shutil
 import sys
 import tarfile
@@ -20,37 +19,64 @@ import pypeliner
 import single_cell
 import yaml
 
+import storageutils
+
+
+def meta_yaml_wf(args, root_dir, filepaths, metadata):
+    meta_yaml = os.path.join(root_dir, 'metadata.yaml')
+    command = ' '.join(sys.argv[0:])
+    version = get_version()
+
+    metadata['command'] = command
+    metadata['version'] = version
+
+    run_type = metadata['type']
+
+    local_path = os.path.join(
+        args['pipelinedir'],
+        '{}_metadata.yaml'.format(run_type)
+    )
+
+    generate_meta_yaml(
+        local_path, filepaths=filepaths, metadata=metadata, root_dir=root_dir
+    )
+
+    storageutils.upload_blob(meta_yaml, local_path, storage=args['storage'])
+
+
+def generate_meta_yaml(
+        metadata_file,
+        filepaths=None,
+        metadata=None,
+        root_dir=None
+):
+    if not root_dir:
+        final_paths = filepaths
+    else:
+        final_paths = []
+        for filepath in filepaths:
+            if not filepath.startswith(root_dir):
+                error = 'file {} does not have {} in path'.format(
+                    filepath, root_dir
+                )
+                raise Exception(error)
+
+            filepath = os.path.relpath(filepath, root_dir)
+            final_paths.append(filepath)
+
+    metadata = {
+        'filenames': final_paths,
+        'meta': metadata,
+    }
+
+    write_to_yaml(metadata_file, metadata)
+
 
 def get_version():
     version = single_cell.__version__
     # strip setuptools metadata
     version = version.split("+")[0]
     return version
-
-
-def generate_meta_yaml_qc(
-        metadata_file,
-        filepaths=None, library_id=None,
-        cell_ids=None, pipeline_type=None,
-):
-    version = get_version()
-    command = ' '.join(sys.argv[0:])
-
-    samples = [re.split('[_-]', cell)[0] for cell in cell_ids]
-    samples = set(list(samples))
-
-    metadata = {
-        'filenames': filepaths,
-        'meta': {
-            'library_id': library_id,
-            'sample_ids': samples,
-            'type': pipeline_type,
-            'version': version,
-            'command': command
-        }
-    }
-
-    write_to_yaml(metadata_file, metadata)
 
 
 def copyfile(source, dest):

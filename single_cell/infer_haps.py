@@ -279,3 +279,12 @@ def infer_haps_workflow(args):
     )
 
     return workflow
+
+
+def infer_haps_pipeline(args):
+
+    pyp = pypeliner.app.Pypeline(config=args)
+
+    workflow = infer_haps_workflow(args)
+
+    pyp.run(workflow)

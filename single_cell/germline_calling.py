@@ -23,6 +23,8 @@ def germline_calling_workflow(args):
     samtoolsdocker = {'docker_image': config['docker']['samtools']}
     snpeffdocker = {'docker_image': config['docker']['snpeff']}
 
+    pyp = pypeliner.app.Pypeline(config=args)
+
     ctx = {'mem_retry_increment': 2, 'ncpus': 1, 'mem': config["memory"]['low'],
            'disk_retry_increment': 50, 'docker_image': baseimage},
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
@@ -146,46 +148,13 @@ def germline_calling_workflow(args):
         }
     )
 
-    info_file = os.path.join(args["out_dir"],'results', 'germline_calling', "info.yaml")
-
-    results = {
-        'germline_data': helpers.format_file_yaml(germline_h5_filename),
-    }
+    pyp.run(workflow)
 
 
-    tumour_datasets = {k: helpers.format_file_yaml(v) for k,v in tumour_cells.iteritems()}
-    workflow.transform(
-        name="get_files",
-        func='single_cell.utils.helpers.resolve_template',
-        ret=pypeliner.managed.TempOutputObj('normal_dataset'),
-        args=(
-            pypeliner.managed.TempInputObj('region'),
-            normal_bams,
-            'region'
-        )
-    )
-    input_datasets = {
-        'tumour': tumour_datasets, 'normal': mgd.TempInputObj('normal_dataset')
-    }
+def germline_calling_pipeline(args):
 
-    metadata = {
-        'germline_calling': {
-            'version': single_cell.__version__,
-            'results': results,
-            'containers': config['docker'],
-            'input_datasets': input_datasets,
-            'output_datasets': None
-        }
-    }
+    pyp = pypeliner.app.Pypeline(config=args)
 
-    workflow.transform(
-        name='generate_meta_yaml',
-        func="single_cell.utils.helpers.write_to_yaml",
-        args=(
-            mgd.OutputFile(info_file),
-            metadata
-        )
-    )
+    workflow = germline_calling_workflow(args)
 
-    return workflow
-
+    pyp.run(workflow)

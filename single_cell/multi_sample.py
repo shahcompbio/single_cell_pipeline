@@ -352,3 +352,12 @@ def create_multi_sample_workflow(
         )
 
     return workflow
+
+
+def multi_sample_pipeline(args):
+
+    pyp = pypeliner.app.Pypeline(config=args)
+
+    workflow = multi_sample_workflow(args)
+
+    pyp.run(workflow)
