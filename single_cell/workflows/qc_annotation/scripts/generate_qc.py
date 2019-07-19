@@ -13,6 +13,8 @@ import os
 
 import base64
 
+from single_cell.utils import csvutils
+
 sns.set(context='talk',
         style='darkgrid',
         # font='Helvetica',
@@ -30,8 +32,13 @@ def encode_as_base64(filepath):
     return encoded_string
 
 
-def load_data(infile, squeeze=False, gc=False):
-    df = pd.read_csv(infile, squeeze=squeeze)
+def load_reference(infile):
+    df = pd.read_csv(infile, squeeze=True)
+    return df
+
+
+def load_data(infile, gc=False):
+    df = csvutils.read_csv_and_yaml(infile)
 
     if gc:
         df.index = df.cell_id
@@ -363,7 +370,7 @@ def generate_html_report(tempdir, html, reference_gc, metrics, gc_metrics):
     heatmap = os.path.join(tempdir, 'heatmap.png')
 
     if reference_gc:
-        reference_gc = load_data(reference_gc, squeeze=True)
+        reference_gc = load_reference(reference_gc)
 
     data = load_data(metrics)
     gc_data = load_data(gc_metrics, gc=True)
@@ -387,4 +394,3 @@ def generate_html_report(tempdir, html, reference_gc, metrics, gc_metrics):
         ],
         html
     )
-
