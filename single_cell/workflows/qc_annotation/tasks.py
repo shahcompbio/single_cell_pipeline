@@ -94,6 +94,7 @@ def merge_metrics(hmmcopy_metrics, alignment_metrics, merged_output):
         merged_output,
         'outer',
         ['cell_id'],
+        write_header=False
     )
 
 
