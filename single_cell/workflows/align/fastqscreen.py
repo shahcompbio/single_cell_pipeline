@@ -155,7 +155,7 @@ def filter_reads(
 def organism_filter(
         fastq_r1, fastq_r2, filtered_fastq_r1, filtered_fastq_r2,
         detailed_metrics, summary_metrics, tempdir, cell_id, params,
-        reference, docker_image=None, no_organism_filter=False,
+        reference, docker_image=None, filter_contaminated_reads=False,
 ):
     helpers.makedirs(tempdir)
 
@@ -169,13 +169,13 @@ def organism_filter(
     write_detailed_counts(counts, detailed_metrics, cell_id)
     write_summary_counts(counts, summary_metrics, cell_id)
 
-    if no_organism_filter:
-        # use the full tagged fastq downstream
-        # with organism type information in readname
-        shutil.copy(tagged_fastq_r1, filtered_fastq_r1)
-        shutil.copy(tagged_fastq_r2, filtered_fastq_r2)
-    else:
+    if filter_contaminated_reads:
         filter_reads(
             tagged_fastq_r1, tagged_fastq_r2, filtered_fastq_r1,
             filtered_fastq_r2, reference,
         )
+    else:
+        # use the full tagged fastq downstream
+        # with organism type information in readname
+        shutil.copy(tagged_fastq_r1, filtered_fastq_r1)
+        shutil.copy(tagged_fastq_r2, filtered_fastq_r2)

@@ -256,7 +256,7 @@ def create_alignment_workflow(
         ),
         kwargs={
             'docker_image': config['docker']['fastq_screen'],
-            'no_organism_filter': config['fastq_screen_params']['no_organism_filter']
+            'filter_contaminated_reads': config['fastq_screen_params']['filter_contaminated_reads']
         }
     )
 
