@@ -124,7 +124,7 @@ def get_align_params(cluster, reference, aligner):
         'gc_windows': referencedata['gc_windows'],
         'ref_type': reference,
         'fastq_screen_params': {
-            'no_organism_filter': False,
+            'filter_contaminated_reads': False,
             'aligner': 'bwa',
             'genomes': [
                 {'name': 'grch37', 'path': refdata_callback('grch37')['ref_genome']},
