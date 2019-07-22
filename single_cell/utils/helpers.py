@@ -22,7 +22,7 @@ import yaml
 import storageutils
 
 
-def meta_yaml_wf(args, root_dir, filepaths, metadata):
+def generate_and_upload_metadata(args, root_dir, filepaths, metadata):
     meta_yaml = os.path.join(root_dir, 'metadata.yaml')
     command = ' '.join(sys.argv[0:])
     version = get_version()
@@ -37,14 +37,14 @@ def meta_yaml_wf(args, root_dir, filepaths, metadata):
         '{}_metadata.yaml'.format(run_type)
     )
 
-    generate_meta_yaml(
+    generate_meta_yaml_file(
         local_path, filepaths=filepaths, metadata=metadata, root_dir=root_dir
     )
 
     storageutils.upload_blob(meta_yaml, local_path, storage=args['storage'])
 
 
-def generate_meta_yaml(
+def generate_meta_yaml_file(
         metadata_file,
         filepaths=None,
         metadata=None,
