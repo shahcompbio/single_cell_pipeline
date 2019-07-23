@@ -43,7 +43,7 @@ class PairedFastqReader(object):
                 break
 
             if not read_r1 or not read_r2:
-                raise Exception()
+                raise Exception('mismatching number of reads in R1 and R2')
 
             assert read_r1[0].split()[0].split('/')[0] == read_r2[0].split()[0].split('/')[0]
 
@@ -65,7 +65,7 @@ class TaggedFastqReader(FastqReader):
             if len(fq_tag) > 2:
                 self.indices = {i: v for i, v in enumerate(fq_tag[1:-1])}
             else:
-                raise Exception()
+                raise Exception('First line in fastq file should have filter explanation')
 
         flag = map(int, list(fq_tag[-1]))
 
