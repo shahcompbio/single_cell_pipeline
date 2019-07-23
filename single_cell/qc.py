@@ -178,7 +178,7 @@ def get_output_files(outdir, pipeline_type, lib):
             'alignment_metrics_tar': os.path.join(outdir, '{}_alignment_metrics.tar.gz'.format(lib)),
         }
     else:
-        raise Exception()
+        raise Exception("Unknown pipeline type: {}".format(pipeline_type))
 
     return data
 
@@ -208,7 +208,7 @@ def generate_meta_files(args):
         metadata['type'] = 'alignment'
         helpers.generate_and_upload_metadata(
             args,
-            hmmcopy_dir,
+            alignment_dir,
             alignment_files.values(),
             metadata,
         )
