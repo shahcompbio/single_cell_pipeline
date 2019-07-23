@@ -286,8 +286,8 @@ def get_compute_finish_commands(imageid):
         prefix = '/mnt/datadrive'
 
     commands = (
-        'sg docker -c "docker run -v {0}:{0} -w {0}/$AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype l -delete"\n'.format(prefix),
-        'sg docker -c "docker run -v {0}:{0} -w {0}/$AZ_BATCH_TASK_WORKING_DIR ubuntu find . -xtype f -delete"\n'.format(prefix)
+        'sg docker -c "docker run -v {0}:{0} -w {0}/$AZ_BATCH_TASK_WORKING_DIR continuumio/miniconda find . -xtype l -delete"\n'.format(prefix),
+        'sg docker -c "docker run -v {0}:{0} -w {0}/$AZ_BATCH_TASK_WORKING_DIR continuumio/miniconda find . -xtype f -delete"\n'.format(prefix)
     )
     commands = ''.join(commands)
 
