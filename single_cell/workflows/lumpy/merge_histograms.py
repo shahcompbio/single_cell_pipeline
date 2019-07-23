@@ -1,10 +1,11 @@
 import yaml
 
+
 def parse_histogram(infile):
     data = []
 
     with open(infile) as inputdata:
-        for line in  inputdata:
+        for line in inputdata:
             if line.startswith('#'):
                 line = line.strip().split(':')
                 if line[0] == "#numreads":
@@ -20,27 +21,28 @@ def parse_histogram(infile):
             line = line.strip().split(',')
             i = int(line[0])
             val = float(line[1])
-            data.append((i,val))
-
+            data.append((i, val))
 
     return data, mean, stdev, numreads
 
 
 def merge_histo(indata, merged_data, numreads):
-    for (i,val) in indata:
+    for (i, val) in indata:
         if not i in merged_data:
             merged_data[i] = 0
-        merged_data[i] += (val*numreads)
+        merged_data[i] += (val * numreads)
     return merged_data
+
 
 def normalize_histo(merged_data, total_reads):
     data = []
     indices = sorted(merged_data.keys())
     for idx in indices:
         value = merged_data[idx]
-        value = value/total_reads
+        value = value / total_reads
         data.append((idx, value))
     return data
+
 
 def prune_histogram(histogram):
     # towards the tail end, most cells will be 0
@@ -56,17 +58,19 @@ def prune_histogram(histogram):
 
     return histogram
 
+
 def write_histo_file(data, outfile):
     with open(outfile, 'w') as histo_file:
-        for i,val in data:
-            histo_file.write("{}\t{}\n".format(i,val))
+        for i, val in data:
+            histo_file.write("{}\t{}\n".format(i, val))
+
 
 def write_metadata(mean, stdev, outfile):
     with open(outfile, 'w') as fileoutput:
         yaml.safe_dump({'mean': mean, 'stdev': stdev}, fileoutput)
 
-def merge_histograms(infiles, outfile, metadata):
 
+def merge_histograms(infiles, outfile, metadata):
     merged_data = {}
     total_reads = 0
 
@@ -80,7 +84,6 @@ def merge_histograms(infiles, outfile, metadata):
     if isinstance(infiles, str):
         infiles = [infiles]
 
-
     for infile in infiles:
         data, mean, stdev, numreads = parse_histogram(infile)
 
@@ -88,17 +91,15 @@ def merge_histograms(infiles, outfile, metadata):
 
         total_reads += numreads
 
-        means += (mean*numreads)
-        stdevs += (stdev*numreads)
-
+        means += (mean * numreads)
+        stdevs += (stdev * numreads)
 
     final_histo = normalize_histo(merged_data, total_reads)
     final_histo = prune_histogram(final_histo)
 
-    mean = means/total_reads
-    stdev = stdevs/total_reads
+    mean = means / total_reads
+    stdev = stdevs / total_reads
 
     write_histo_file(final_histo, outfile)
 
     write_metadata(mean, stdev, metadata)
-
