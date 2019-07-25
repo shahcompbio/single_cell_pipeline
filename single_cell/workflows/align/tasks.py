@@ -128,6 +128,7 @@ def align_pe_with_bwa(
         fastq1, fastq2, output, reference, readgroup, tempdir,
         containers, aligner='bwa-aln'
 ):
+
     samfile = os.path.join(tempdir, "bwamem.sam")
 
     if aligner == 'bwa-aln':
@@ -140,6 +141,7 @@ def align_pe_with_bwa(
         raise Exception(
             "Aligner %s not supported, pipeline supports bwa-aln and bwa-mem" %
             aligner)
+
 
     bamutils.samtools_sam_to_bam(samfile, output,
                                  docker_image=containers['samtools'])
@@ -169,12 +171,7 @@ def align_pe(
         tempdir, containers, aligner=aligner
     )
 
-    aln_temp_tagged = os.path.join(tempdir, 'comment_alignment_header.bam')
-    genome_order = [genome['name'] for genome in fastqscreen_params['genomes']]
-    bam_comment = 'cell:{}\torder:{}'.format(cell_id, ','.join(genome_order))
-    bamutils.add_comment_bam_header(aln_temp, aln_temp_tagged, [bam_comment])
-
-    picardutils.bam_sort(aln_temp_tagged, output, tempdir, docker_image=containers['picard'])
+    picardutils.bam_sort(aln_temp, output, tempdir, docker_image=containers['picard'])
 
     bamutils.bam_flagstat(output, metrics, docker_image=containers['samtools'])
 
