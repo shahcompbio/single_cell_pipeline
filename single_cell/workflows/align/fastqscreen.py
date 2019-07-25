@@ -4,9 +4,9 @@ from collections import defaultdict
 
 import pandas as pd
 import pypeliner
-from single_cell.utils import helpers
 from single_cell.utils import csvutils
 from single_cell.utils import fastqutils
+from single_cell.utils import helpers
 
 
 def merge_fastq_screen_counts(
@@ -138,18 +138,33 @@ def write_summary_counts(counts, outfile, cell_id):
 
 
 def filter_reads(
-        input_r1, input_r2, output_r1, output_r2, reference,
+        input_r1, input_r2, output_r1, output_r2, reference
 ):
-
     reader = fastqutils.PairedTaggedFastqReader(input_r1, input_r2)
 
     with helpers.getFileHandle(output_r1, 'w') as writer_r1, helpers.getFileHandle(output_r2, 'w') as writer_r2:
         for read_1, read_2 in reader.filter_read_iterator(reference):
+
+            read_1 = reader.add_tag_to_read_comment(read_1)
+            read_2 = reader.add_tag_to_read_comment(read_2)
+
             for line in read_1:
                 writer_r1.write(line)
 
             for line in read_2:
                 writer_r2.write(line)
+
+
+def re_tag_reads(infile, outfile):
+    reader = fastqutils.TaggedFastqReader(infile)
+
+    with helpers.getFileHandle(outfile, 'w') as writer:
+
+        for read in reader.get_read_iterator():
+            read = reader.add_tag_to_read_comment(read)
+
+            for line in read:
+                writer.write(line)
 
 
 def organism_filter(
@@ -172,10 +187,10 @@ def organism_filter(
     if filter_contaminated_reads:
         filter_reads(
             tagged_fastq_r1, tagged_fastq_r2, filtered_fastq_r1,
-            filtered_fastq_r2, reference,
+            filtered_fastq_r2, reference
         )
     else:
         # use the full tagged fastq downstream
         # with organism type information in readname
-        shutil.copy(tagged_fastq_r1, filtered_fastq_r1)
-        shutil.copy(tagged_fastq_r2, filtered_fastq_r2)
+        re_tag_reads(tagged_fastq_r1, filtered_fastq_r1)
+        re_tag_reads(tagged_fastq_r2, filtered_fastq_r2)

@@ -73,6 +73,24 @@ class TaggedFastqReader(FastqReader):
 
         return flag_map
 
+    def add_tag_to_read_comment(self, read, tag=None):
+        read_id = read[0].split(' ')
+        comment = read_id[1]
+        comment = comment[:comment.index('#FQST')]
+        read_id = read_id[0]
+
+        if not tag:
+            tag = self.get_read_tag(read)
+
+        tag = ['{}_{}'.format(k, v) for k, v in tag.iteritems()]
+        tag = ':'.join(tag)
+
+        comment = tag + ':FQST:' + comment
+
+        read[0] = read_id + ' ' + comment + '\n'
+
+        return read
+
     def filter_read_iterator(self, reference):
         for read in self.get_read_iterator():
             read_tags = self.get_read_tag(read)
