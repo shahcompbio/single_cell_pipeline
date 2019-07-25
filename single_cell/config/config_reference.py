@@ -111,7 +111,7 @@ def reference_data_azure(reference):
         chrom_info_filename = '/refdata/human/chromInfo.txt.gz'
         chromosomes = get_chromosomes('grch37')
         destruct_ref_data = '/refdata/human/'
-        destruct_gtf_file = '/refdata/human/grch37-lite.gtf'
+        destruct_gtf_file = '/refdata/human/GRCh37-lite.gtf'
         reference_gc_qc = '/refdata/human/reference_gc_grch37.csv'
         databases = {
             'mappability': {
