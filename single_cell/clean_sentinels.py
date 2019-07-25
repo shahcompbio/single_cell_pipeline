@@ -5,9 +5,9 @@ Created on Apr 9, 2018
 '''
 
 import os
-import shelve
-import re
 import fnmatch
+
+from pypeliner.sqlitedb import SqliteDb
 
 def clean_sentinels(args):
 
@@ -27,18 +27,15 @@ def clean_sentinels(args):
 
 def list_sentinels(dirname, pattern):
 
-    jobs_shelf = os.path.join(dirname, "jobs.shelf")
-    objs_shelf = os.path.join(dirname, "objs.shelf")
+    jobs_shelf = os.path.join(dirname, "jobs.db")
 
-    jobs = shelve.open(jobs_shelf)
+    jobs = SqliteDb(jobs_shelf)
 
     job_matches = [v for v in jobs.keys() if fnmatch.fnmatch(v, pattern)]
 
-    objs = shelve.open(objs_shelf)
+    jobs.close()
 
-    obj_matches = [v for v in objs.keys() if fnmatch.fnmatch(v, pattern)]
-
-    matches = job_matches + obj_matches
+    matches = job_matches
 
     matches = '\n'.join(matches)
 
@@ -47,23 +44,14 @@ def list_sentinels(dirname, pattern):
     
 def delete_sentinels(dirname, pattern):
     
-    jobs_shelf = os.path.join(dirname, "jobs.shelf")
-    objs_shelf = os.path.join(dirname, "objs.shelf")
+    jobs_shelf = os.path.join(dirname, "jobs.db")
 
-    jobs = shelve.open(jobs_shelf)
+    jobs = SqliteDb(jobs_shelf)
 
     for job in jobs.keys():
         if fnmatch.fnmatch(job, pattern):
-            del jobs[job]
+            jobs.delete(job)
 
     jobs.close()
-
-    objs = shelve.open(objs_shelf)
-
-    for obj in objs.keys():
-        if fnmatch.fnmatch(obj, pattern):
-            del objs[obj]
-
-    objs.close()
 
 
