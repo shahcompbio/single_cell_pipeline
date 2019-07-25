@@ -423,7 +423,7 @@ def get_breakpoint_params(cluster, reference):
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 16},
         'ref_data_directory': referencedata['destruct_ref_data'],
-        'destruct': {
+        'destruct_config': {
             'genome_fasta': referencedata['ref_genome'],
             'genome_fai': referencedata['ref_genome'] + '.fai',
             'gtf_filename': referencedata['destruct_gtf_file'],
