@@ -81,11 +81,32 @@ def create_qc_annotation_workflow(
     )
 
     if not no_corrupt_tree:
+        workflow.transform(
+            name='finalize_metrics',
+            ctx={'mem': config['memory']['med'], 'ncpus': 1, 'num_retry': 1},
+            func="single_cell.utils.csvutils.finalize_csv",
+            args=(
+                mgd.TempInputFile('merged_metrics.csv.gz', extensions=['.yaml']),
+                mgd.OutputFile(merged_metrics, extensions=['.yaml']),
+            ),
+        )
+    else:
+
+        workflow.transform(
+            name='finalize_metrics',
+            ctx={'mem': config['memory']['med'], 'ncpus': 1, 'num_retry': 1},
+            func="single_cell.utils.csvutils.finalize_csv",
+            args=(
+                mgd.TempInputFile('merged_metrics.csv.gz', extensions=['.yaml']),
+                mgd.TempOutputFile('merged_metrics_with_header.csv.gz', extensions=['.yaml'])
+            )
+        )
+
         workflow.subworkflow(
             name='corrupt_tree',
             func='single_cell.workflows.corrupt_tree.create_corrupt_tree_workflow',
             args=(
-                mgd.TempInputFile('merged_metrics.csv.gz', extensions=['.yaml']),
+                mgd.TempInputFile('merged_metrics_with_header.csv.gz', extensions=['.yaml']),
                 mgd.InputFile(hmmcopy_reads),
                 mgd.OutputFile(corrupt_tree),
                 mgd.OutputFile(consensus_tree),
@@ -128,20 +149,5 @@ def create_qc_annotation_workflow(
                 'scale_by_cells': False,
             }
         )
-
-    if no_corrupt_tree:
-        final_metrics = mgd.TempInputFile('merged_metrics.csv.gz', extensions=['.yaml'])
-    else:
-        final_metrics = mgd.TempInputFile('merged_metrics_order_ct.csv.gz', extensions=['.yaml'])
-
-    workflow.transform(
-        name='finalize_metrics',
-        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'num_retry': 1},
-        func="single_cell.utils.csvutils.finalize_csv",
-        args=(
-            final_metrics,
-            mgd.OutputFile(merged_metrics, extensions=['.yaml']),
-        ),
-    )
 
     return workflow
