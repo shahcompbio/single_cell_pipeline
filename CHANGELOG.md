@@ -16,6 +16,7 @@
 * added cell order based on corrupt tree to output
 * added this changelog
 * added metadata yaml files to output directories
+* added flag to disable corrupt tree
 ##### changes:
 * hmmcopy segments plots have a global max for ylim per run (library)
 * standardized page size for corrupt tree output, annotated each page.
@@ -28,9 +29,22 @@
 * added a tarball output with all hmmcopy outputs except autoploidy (multipliers 1-6)
 * merged all picard based metrics into a single tarball
 * reorganized reference data
+* now uses miniconda docker image to delete files in batch
+* arguments changes for QC 
+	* removed --out_dir
+	* add --alignment_output
+	* add --hmmcopy_output
+	* add --annotation_output
+* argument changes for pseudo bulk
+    * removed --out_dir
+    * added --variants_output
+    * added --haps_output
+    * added --destruct_output
+    * added --lumpy_output
 ##### bugs:
 * fixed missing header issue with destruct outputs
 * pipeline can now handle tsv files.
+* fixed issues with missing cell cycle data in outputs
 
 ### v0.2.25
 ##### added
