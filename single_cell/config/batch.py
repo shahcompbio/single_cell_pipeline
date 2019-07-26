@@ -340,7 +340,7 @@ def get_batch_config(defaults, override={}):
     config.update({"no_delete_pool": defaults["no_delete_pool"]})
     config.update({"no_delete_job": defaults["no_delete_job"]})
 
-    config.update({"pypeliner_storage_account": "singlecellpipelinetasks"})
+    config.update({"pypeliner_storage_account": "singlecellpypeliner"})
 
     config = override_config(config, override)
 
