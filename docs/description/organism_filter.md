@@ -26,11 +26,13 @@ All subsequent reads will have the following format:
 @<Read-id>#FQST:100
 ```
 
-The bam files will also contain the following comment:
+#### Bam format
+
+Each read in the bam file will contain the following tag:
+
 ```
-@CO cell:SA123  order:grch37,mm10,salmon
+FS:Z:mm10_0,salmon_0,grch37_1
 ```
-The order here is the same as the order in the first line of the fastq file.
 
 
 ## Pipeline features:
@@ -47,7 +49,6 @@ The pipeline generates a csv file with detailed counts for every flag option. Th
 * Mouse: The column will have values {0,1,2}. Please see the table in fastq screen for details
 * Salmon: The column will have values {0,1,2}. Please see the table in fastq screen for details
 * count: number of reads
-* Summary Metrics:
 
 ###### Summary Metrics:
 
@@ -66,12 +67,13 @@ The pipeline will also add some summary metrics to the main alignment metrics ta
 
 ###### Default functionality:
 
+do not filter the files at all. The output bam files will have the information in their read tags.
+
+
+###### Filter options:
+
+* filter_contaminated_reads flag in config file.
 keep the following read pairs:
 
 * Both R1 and R2 match human only (remove reads that match multiple references)
 * one of the mates matches human only, other one doesnt match anything.
-
-###### Filter options:
-
-* no_organism_filter: 
-do not filter the files at all. The output reads will have the information in their read ids.

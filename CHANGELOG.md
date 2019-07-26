@@ -15,6 +15,7 @@
 * added newick support to heatmap
 * added cell order based on corrupt tree to output
 * added this changelog
+* added metadata yaml files to output directories
 ##### changes:
 * hmmcopy segments plots have a global max for ylim per run (library)
 * standardized page size for corrupt tree output, annotated each page.
@@ -26,8 +27,10 @@
 * refactor alignment workflow
 * added a tarball output with all hmmcopy outputs except autoploidy (multipliers 1-6)
 * merged all picard based metrics into a single tarball
+* reorganized reference data
 ##### bugs:
 * fixed missing header issue with destruct outputs
+* pipeline can now handle tsv files.
 
 ### v0.2.25
 ##### added
