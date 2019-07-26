@@ -3,12 +3,9 @@ import os
 import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import helpers
-from single_cell.utils import refgenome
 
 import infer_haps
 import variant_calling
-from workflows import merge_bams
-from workflows import split_bams
 
 
 def load_cell_data(yamldata, key):
@@ -28,11 +25,13 @@ def load_tumour_data(yamldata):
 
 
 def load_normal_data(yamldata):
+    libraries = set()
     if 'normal_wgs' in yamldata:
         assert len(yamldata['normal_wgs'].keys()) == 1
         sample_id = yamldata['normal_wgs'].keys()[0]
         assert len(yamldata['normal_wgs'][sample_id].keys()) == 1
         library_id = yamldata['normal_wgs'][sample_id].keys()[0]
+        libraries.add(library_id)
         cell_bams = yamldata['normal_wgs'][sample_id][library_id]['bam']
     else:
         cell_bams = {}
@@ -41,18 +40,74 @@ def load_normal_data(yamldata):
             raise Exception("Pipeline does not support multiple normal samples")
 
         for sample_id, library_id, cell_id, cell_bam in load_cell_data(yamldata, 'normal_cells'):
+            libraries.add(library_id)
             if cell_id in cell_bams:
                 raise Exception("non unique cell id {} encountered".format(cell_id))
             cell_bams[cell_id] = cell_bam
 
-    return sample_id, cell_bams
+    return sample_id, sorted(libraries), cell_bams
 
 
-def multi_sample_workflow(args):
+def resolve_template(filepath, ids):
+    filepaths = []
+    for id_keys in ids:
+        try:
+            filepaths.append(filepath.format(**id_keys))
+        except KeyError:
+            filepaths.append(filepath)
+    return filepaths
+
+
+def generate_meta_files(normal_sample_id, normal_libraries, tumour_cell_bams, args):
+    destruct_dir = args['destruct_output']
+    lumpy_dir = args['lumpy_output']
+    haps_dir = args['haps_output']
+    varcall_dir = args["variants_output"]
+
+    tumour_ids = sorted(set([(val[0], val[1]) for val in tumour_cell_bams]))
+    tumour_ids = [
+        {'sample_id': val[0], 'library_id': val[1]} for val in tumour_ids
+    ]
+
+    metadata = {
+        'normal_sample': {
+            'sample_id': normal_sample_id,
+            'library_id': normal_libraries,
+        },
+        'tumour_samples': tumour_ids
+    }
+
+    if destruct_dir:
+        destruct_files = get_file_paths(destruct_dir, 'destruct')
+        filepaths = [resolve_template(v, tumour_ids) for v in destruct_files.values()]
+        filepaths = [x for v in filepaths for x in v]
+        helpers.generate_and_upload_metadata(
+            args,
+            destruct_dir,
+            filepaths,
+            metadata,
+        )
+
+    if varcall_dir:
+        var_files = get_file_paths(varcall_dir, 'variant_calling')
+        metadata['type'] = 'variant_calling'
+        filepaths = [resolve_template(v, tumour_ids) for v in var_files.values()]
+        filepaths = [x for v in filepaths for x in v]
+        helpers.generate_and_upload_metadata(
+            args,
+            varcall_dir,
+            filepaths,
+            metadata,
+        )
+
+
+def multi_sample_pipeline(args):
     data = helpers.load_yaml(args['input_yaml'])
 
     tumour_cell_bams = load_tumour_data(data)
-    normal_sample_id, normal_bams = load_normal_data(data)
+    normal_sample_id, normal_libraries, normal_bams = load_normal_data(data)
+
+    pyp = pypeliner.app.Pypeline(config=args)
 
     workflow = create_multi_sample_workflow(
         normal_bams,
@@ -65,7 +120,60 @@ def multi_sample_workflow(args):
         normal_sample_id=normal_sample_id
     )
 
-    return workflow
+    pyp.run(workflow)
+
+    generate_meta_files(normal_sample_id, normal_libraries, tumour_cell_bams, args)
+
+
+def get_file_paths(root_dir, pipeline_type):
+    if pipeline_type == 'variant_calling':
+        data = {
+            'museq_vcfs': os.path.join(root_dir, '{sample_id}_{library_id}_museq.vcf.gz'),
+            'strelka_snvs': os.path.join(root_dir, '{sample_id}_{library_id}_strelka_snv.vcf.gz'),
+            'strelka_indels': os.path.join(root_dir, '{sample_id}_{library_id}_strelka_indel.vcf.gz'),
+            'snv_annotations': os.path.join(root_dir, '{sample_id}_{library_id}_snv_annotations.h5'),
+            'snv_counts': os.path.join(root_dir, '{sample_id}_{library_id}_snv_counts.h5'),
+        }
+    elif pipeline_type == 'haps_calling':
+        data = {
+            'normal_seqdata_file': os.path.join(
+                root_dir, 'normal_seqdata', 'normal_seqdata.h5'
+            ),
+            'tumour_cell_seqdata_template': os.path.join(
+                root_dir, 'tumour_seqdata', '{sample_id}_{library_id}_{cell_id}_seqdata.h5'
+            ),
+            'haplotypes_file': os.path.join(root_dir, 'haplotypes.tsv'),
+            'allele_counts_template': os.path.join(
+                root_dir, '{sample_id}_{library_id}_allele_counts.csv'
+            ),
+        }
+    elif pipeline_type == 'destruct':
+        data = {
+            'breakpoints_template': os.path.join(
+                root_dir, '{sample_id}_{library_id}_destruct.csv.gz'
+            ),
+            'breakpoints_library_template': os.path.join(
+                root_dir, '{sample_id}_{library_id}_destruct_library.csv.gz'
+            ),
+            'cell_counts_template': os.path.join(
+                root_dir, '{sample_id}_{library_id}_cell_counts_destruct.csv.gz'
+            )
+        }
+    elif pipeline_type == 'lumpy':
+        data = {
+            'lumpy_breakpoints_bed': os.path.join(
+                root_dir, '{sample_id}_{library_id}_lumpy_breakpoints.bed'
+            ),
+            'lumpy_breakpoints_csv': os.path.join(
+                root_dir, '{sample_id}_{library_id}_lumpy_breakpoints.csv.gz'
+            ),
+            'lumpy_breakpoints_evidence': os.path.join(
+                root_dir, '{sample_id}_{library_id}_lumpy_breakpoints_evidence.csv.gz'),
+        }
+    else:
+        raise Exception('unknown pipeline type: {}'.format(pipeline_type))
+
+    return data
 
 
 def create_multi_sample_workflow(
@@ -85,8 +193,6 @@ def create_multi_sample_workflow(
 
     workflow = pypeliner.workflow.Workflow(default_ctx=ctx)
 
-    workflow.set_filenames('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', fnames=tumour_cell_bams)
-
     if isinstance(normal_wgs_bam, dict):
         workflow.setobj(
             obj=mgd.OutputChunks('normal_cell_id'),
@@ -97,180 +203,50 @@ def create_multi_sample_workflow(
     else:
         normal_bam = mgd.InputFile(normal_wgs_bam, extensions=['.bai'])
 
-    workflow.transform(
-        name='get_regions',
-        ret=mgd.TempOutputObj("get_regions"),
-        func=refgenome.get_split_regions,
-        args=(
-            config["split_bam"]["split_size"],
-            config["split_bam"]["ref_genome"]
-        )
-    )
-
-    workflow.setobj(
-        obj=mgd.OutputChunks('region'),
-        value=mgd.TempInputObj('get_regions'),
-    )
-
     workflow.setobj(
         obj=mgd.OutputChunks('sample_id', 'library_id', 'cell_id'),
         value=list(tumour_cell_bams.keys()),
     )
 
-    workflow.setobj(
-        obj=mgd.OutputChunks('sample_id', 'library_id', 'region'),
-        axes=('sample_id', 'library_id',),
-        value=mgd.TempInputObj('get_regions'),
-    )
-
     if varcall_dir:
-        normal_region_bam_template = os.path.join(
-            varcall_dir, 'normal_region_bams', 'normal_{region}.bam'
-        )
-        tumour_region_bam_template = os.path.join(
-            varcall_dir, 'tumour_region_bams', '{sample_id}_{library_id}_{region}.bam'
-        )
-
-        variant_calling_raw_data_template = os.path.join(
-            varcall_dir, 'variant_calling_rawdata', '{sample_id}_{library_id}_variant_calling'
-        )
-        destruct_raw_data_template = os.path.join(
-            destruct_dir, 'destruct_rawdata', '{sample_id}_{library_id}_destruct'
-        )
-        museq_vcf_template = os.path.join(varcall_dir, '{sample_id}_{library_id}_museq.vcf.gz')
-        strelka_snv_template = os.path.join(varcall_dir, '{sample_id}_{library_id}_strelka_snv.vcf.gz')
-        strelka_indel_template = os.path.join(varcall_dir, '{sample_id}_{library_id}_strelka_indel.vcf.gz')
-        snv_annotations_template = os.path.join(varcall_dir, '{sample_id}_{library_id}_snv_annotations.h5')
-        snv_counts_template = os.path.join(varcall_dir, '{sample_id}_{library_id}_snv_counts.h5')
-
-        workflow.set_filenames('museq.vcf', 'sample_id', 'library_id', template=museq_vcf_template)
-        workflow.set_filenames('strelka_snv.vcf', 'sample_id', 'library_id', template=strelka_snv_template)
-        workflow.set_filenames('strelka_indel.vcf', 'sample_id', 'library_id', template=strelka_indel_template)
-        workflow.set_filenames('snv_annotations.h5', 'sample_id', 'library_id', template=snv_annotations_template)
-        workflow.set_filenames('snv_counts.h5', 'sample_id', 'library_id', template=snv_counts_template)
-        workflow.set_filenames('normal_regions.bam', 'region', template=normal_region_bam_template)
-        workflow.set_filenames('tumour_regions.bam', 'sample_id', 'library_id', 'region',
-                               template=tumour_region_bam_template)
-
-        if isinstance(normal_wgs_bam, dict):
-            workflow.subworkflow(
-                name="merge_normal_cells",
-                func=merge_bams.create_merge_bams_workflow,
-                args=(
-                    normal_bam,
-                    mgd.OutputFile('normal_regions.bam', 'region', axes_origin=[], extensions=['.bai']),
-                    mgd.TempInputObj('get_regions'),
-                    config['merge_bams'],
-                )
-            )
-        else:
-            workflow.subworkflow(
-                name="split_normal",
-                func=split_bams.create_split_workflow,
-                args=(
-                    normal_bam,
-                    mgd.OutputFile('normal_regions.bam', 'region', extensions=['.bai'], axes_origin=[]),
-                    pypeliner.managed.TempInputObj('region'),
-                    config['split_bam'],
-                ),
-                kwargs={"by_reads": False}
-            )
+        varcall_files = get_file_paths(varcall_dir, 'variant_calling')
 
         workflow.subworkflow(
-            name="split_merge_tumour",
-            axes=('sample_id', 'library_id',),
-            func=merge_bams.create_merge_bams_workflow,
+            name='variant_calling_multi_sample',
+            func=variant_calling.variant_calling_multi_sample_workflow,
             args=(
-                mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai']),
-                mgd.OutputFile('tumour_regions.bam', 'sample_id', 'library_id', 'region', axes_origin=[],
-                               extensions=['.bai']),
-                mgd.TempInputObj('get_regions'),
-                config['merge_bams'],
+                config,
+                normal_wgs_bam,
+                tumour_cell_bams,
+                varcall_dir,
+                mgd.OutputFile('museq.vcf', 'sample_id', 'library_id', axes_origin=[],
+                               template=varcall_files['museq_vcfs']),
+                mgd.OutputFile('strelka_snv.vcf', 'sample_id', 'library_id', axes_origin=[],
+                               template=varcall_files['strelka_snvs']),
+                mgd.OutputFile('strelka_indel.vcf', 'sample_id', 'library_id', axes_origin=[],
+                               template=varcall_files['strelka_indels']),
+                mgd.OutputFile('snv_annotations.h5', 'sample_id', 'library_id', axes_origin=[],
+                               template=varcall_files['snv_annotations']),
+                mgd.OutputFile('snv_counts.h5', 'sample_id', 'library_id', axes_origin=[],
+                               template=varcall_files['snv_counts']),
             )
-        )
-
-        workflow.subworkflow(
-            name='variant_calling',
-            func=variant_calling.create_variant_calling_workflow,
-            axes=('sample_id', 'library_id',),
-            args=(
-                mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai']),
-                mgd.InputFile('tumour_regions.bam', 'sample_id', 'library_id', 'region', extensions=['.bai']),
-                mgd.InputFile('normal_regions.bam', 'region', extensions=['.bai']),
-                mgd.OutputFile('museq.vcf', 'sample_id', 'library_id', extensions=['.tbi', '.csi']),
-                mgd.OutputFile('strelka_snv.vcf', 'sample_id', 'library_id', extensions=['.tbi', '.csi']),
-                mgd.OutputFile('strelka_indel.vcf', 'sample_id', 'library_id', extensions=['.tbi', '.csi']),
-                mgd.OutputFile('snv_annotations.h5', 'sample_id', 'library_id'),
-                config['variant_calling'],
-                mgd.Template(variant_calling_raw_data_template, 'sample_id', 'library_id'),
-            ),
-        )
-
-        vcftools_image = {'docker_image': config['variant_calling']['docker']['vcftools']}
-        workflow.transform(
-            name='merge_museq_snvs',
-            func='biowrappers.components.io.vcf.tasks.concatenate_vcf',
-            args=(
-                mgd.InputFile('museq.vcf', 'sample_id', 'library_id', axes_origin=[], extensions=['.tbi', '.csi']),
-                mgd.TempOutputFile('museq.vcf.gz', extensions=['.tbi', '.csi']),
-            ),
-            kwargs={
-                'allow_overlap': True,
-                'docker_config': vcftools_image,
-            },
-        )
-
-        workflow.transform(
-            name='merge_strelka_snvs',
-            func='biowrappers.components.io.vcf.tasks.concatenate_vcf',
-            args=(
-                mgd.InputFile('strelka_snv.vcf', 'sample_id', 'library_id',
-                              axes_origin=[], extensions=['.tbi', '.csi']),
-                mgd.TempOutputFile('strelka_snv.vcf.gz', extensions=['.tbi', '.csi']),
-            ),
-            kwargs={
-                'allow_overlap': True,
-                'docker_config': vcftools_image,
-            },
-        )
-
-        workflow.subworkflow(
-            name='variant_counting',
-            func=variant_calling.create_variant_counting_workflow,
-            axes=('sample_id', 'library_id',),
-            args=(
-                [
-                    mgd.TempInputFile('museq.vcf.gz', extensions=['.tbi', '.csi']),
-                    mgd.TempInputFile('strelka_snv.vcf.gz', extensions=['.tbi', '.csi']),
-                ],
-                mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai']),
-                mgd.OutputFile('snv_counts.h5', 'sample_id', 'library_id'),
-                config['variant_calling'],
-            ),
         )
 
     if haps_dir:
-        normal_seqdata_file = os.path.join(
-            haps_dir, 'normal_seqdata', 'normal_seqdata.h5'
-        )
-        tumour_cell_seqdata_template = os.path.join(
-            haps_dir, 'tumour_seqdata', '{sample_id}_{library_id}_{cell_id}_seqdata.h5'
-        )
-
-        haplotypes_file = os.path.join(haps_dir, 'haplotypes.tsv')
-        allele_counts_template = os.path.join(haps_dir, '{sample_id}_{library_id}_allele_counts.csv')
+        haps_files = get_file_paths(haps_dir, 'haps_calling')
 
         workflow.set_filenames('tumour_cell_seqdata.h5', 'sample_id', 'library_id', 'cell_id',
-                               template=tumour_cell_seqdata_template)
-        workflow.set_filenames('allele_counts.csv', 'sample_id', 'library_id', template=allele_counts_template)
+                               template=haps_files['tumour_cell_seqdata_template'])
+        workflow.set_filenames('allele_counts.csv', 'sample_id', 'library_id',
+                               template=haps_files['allele_counts_template'])
 
         workflow.subworkflow(
             name='infer_haps_from_cells_normal',
             func=infer_haps.infer_haps,
             args=(
                 normal_bam,
-                mgd.OutputFile(normal_seqdata_file),
-                mgd.OutputFile(haplotypes_file),
+                mgd.OutputFile(haps_files['normal_seqdata_file']),
+                mgd.OutputFile(haps_files['haplotypes_file']),
                 mgd.TempOutputFile("allele_counts.csv"),
                 config['infer_haps'],
             ),
@@ -282,22 +258,26 @@ def create_multi_sample_workflow(
             func=infer_haps.extract_allele_readcounts,
             axes=('sample_id', 'library_id',),
             args=(
-                mgd.InputFile(haplotypes_file),
-                mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai']),
+                mgd.InputFile(haps_files['haplotypes_file']),
+                mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai'],
+                              fnames=tumour_cell_bams),
                 mgd.OutputFile('tumour_cell_seqdata.h5', 'sample_id', 'library_id', 'cell_id', axes_origin=[]),
-                mgd.OutputFile('allele_counts.csv', 'sample_id', 'library_id', template=allele_counts_template),
+                mgd.OutputFile('allele_counts.csv', 'sample_id', 'library_id',
+                               template=haps_files['allele_counts_template']),
                 config['infer_haps'],
             ),
         )
 
     if destruct_dir:
-        breakpoints_template = os.path.join(destruct_dir, '{sample_id}_{library_id}_destruct.csv.gz')
-        breakpoints_library_template = os.path.join(destruct_dir, '{sample_id}_{library_id}_destruct_library.csv.gz')
-        cell_counts_template = os.path.join(destruct_dir, '{sample_id}_{library_id}_cell_counts_destruct.csv.gz')
-        workflow.set_filenames('breakpoints.h5', 'sample_id', 'library_id', template=breakpoints_template)
+        destruct_files = get_file_paths(destruct_dir, 'destruct')
+        workflow.set_filenames(
+            'breakpoints.h5', 'sample_id', 'library_id', template=destruct_files['breakpoints_template']
+        )
         workflow.set_filenames('breakpoints_library.h5', 'sample_id', 'library_id',
-                               template=breakpoints_library_template)
-        workflow.set_filenames('cell_counts.h5', 'sample_id', 'library_id', template=cell_counts_template)
+                               template=destruct_files['breakpoints_library_template']
+                               )
+        workflow.set_filenames('cell_counts.h5', 'sample_id', 'library_id',
+                               template=destruct_files['cell_counts_template'])
 
         destruct_pipeline_config = config['breakpoint_calling']
         destruct_config = destruct_pipeline_config.get('destruct_config', {})
@@ -311,7 +291,7 @@ def create_multi_sample_workflow(
             args=(
                 normal_bam,
                 mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai'],
-                              axes_origin=[]),
+                              axes_origin=[], fnames=tumour_cell_bams),
                 destruct_config,
                 destruct_pipeline_config,
                 destruct_ref_data_dir,
@@ -324,15 +304,16 @@ def create_multi_sample_workflow(
         )
 
     if lumpy_dir:
-        lumpy_breakpoints_bed = os.path.join(lumpy_dir, '{sample_id}_{library_id}_lumpy_breakpoints.bed')
-        lumpy_breakpoints_csv = os.path.join(lumpy_dir, '{sample_id}_{library_id}_lumpy_breakpoints.csv.gz')
-        lumpy_breakpoints_evidence = os.path.join(lumpy_dir,
-                                                  '{sample_id}_{library_id}_lumpy_breakpoints_evidence.csv.gz')
+        lumpy_files = get_file_paths(lumpy_dir, 'lumpy')
 
-        workflow.set_filenames('lumpy_breakpoints.csv.gz', 'sample_id', 'library_id', template=lumpy_breakpoints_csv)
+        workflow.set_filenames(
+            'lumpy_breakpoints.csv.gz', 'sample_id', 'library_id',
+            template=lumpy_files['lumpy_breakpoints_csv']
+        )
         workflow.set_filenames('lumpy_breakpoints_evidence.csv.gz', 'sample_id', 'library_id',
-                               template=lumpy_breakpoints_evidence)
-        workflow.set_filenames('lumpy_breakpoints.bed', 'sample_id', 'library_id', template=lumpy_breakpoints_bed)
+                               template=lumpy_files['lumpy_breakpoints_evidence'])
+        workflow.set_filenames('lumpy_breakpoints.bed', 'sample_id', 'library_id',
+                               template=lumpy_files['lumpy_breakpoints_bed'])
 
         lumpy_pipeline_config = config['breakpoint_calling']
 
@@ -344,7 +325,7 @@ def create_multi_sample_workflow(
                 lumpy_pipeline_config,
                 normal_bam,
                 mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai'],
-                              axes_origin=[]),
+                              axes_origin=[], fnames=tumour_cell_bams),
                 mgd.OutputFile('lumpy_breakpoints.csv.gz', 'sample_id', 'library_id', axes_origin=[]),
                 mgd.OutputFile('lumpy_breakpoints_evidence.csv.gz', 'sample_id', 'library_id', axes_origin=[]),
                 mgd.OutputFile('lumpy_breakpoints.bed', 'sample_id', 'library_id', axes_origin=[]),
@@ -352,12 +333,3 @@ def create_multi_sample_workflow(
         )
 
     return workflow
-
-
-def multi_sample_pipeline(args):
-
-    pyp = pypeliner.app.Pypeline(config=args)
-
-    workflow = multi_sample_workflow(args)
-
-    pyp.run(workflow)
