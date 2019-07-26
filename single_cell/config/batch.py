@@ -196,7 +196,7 @@ def get_vm_image_id(disk_per_task, tasks_per_node):
         imagename = 'docker-production-v3-largedisk'
 
     subscription = os.environ.get("SUBSCRIPTION_ID", "id-missing")
-    resource_group = os.environ.get("RESOURCE_GROUP", "sccompute")
+    resource_group = os.environ.get("RESOURCE_GROUP", "scdna-prod")
     imageid = ['subscriptions', subscription, 'resourceGroups',
                resource_group, 'providers', 'Microsoft.Compute',
                'images', imagename]
