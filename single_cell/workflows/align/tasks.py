@@ -142,7 +142,6 @@ def align_pe_with_bwa(
             "Aligner %s not supported, pipeline supports bwa-aln and bwa-mem" %
             aligner)
 
-
     bamutils.samtools_sam_to_bam(samfile, output,
                                  docker_image=containers['samtools'])
 
