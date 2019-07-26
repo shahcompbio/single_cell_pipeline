@@ -120,9 +120,10 @@ def cell_cycle_classifier(hmmcopy_reads, hmmcopy_metrics, alignment_metrics, out
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
 
     cell_cycle_df = pd.read_csv(temp_output)
+
     hmm_metrics_df = csvutils.read_csv_and_yaml(hmmcopy_metrics)
 
-    hmm_metrics_df.merge(cell_cycle_df, on=['cell_id'], how='outer')
+    hmm_metrics_df = hmm_metrics_df.merge(cell_cycle_df, on=['cell_id'], how='outer')
 
     csvutils.write_dataframe_to_csv_and_yaml(hmm_metrics_df, output)
 
