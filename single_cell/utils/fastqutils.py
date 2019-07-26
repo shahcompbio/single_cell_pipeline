@@ -74,18 +74,16 @@ class TaggedFastqReader(FastqReader):
         return flag_map
 
     def add_tag_to_read_comment(self, read, tag=None):
-        read_id = read[0].split(' ')
-        comment = read_id[1]
-        comment = comment[:comment.index('#FQST')]
-        read_id = read_id[0]
+        read_id = read[0].split(' ')[0]
 
         if not tag:
             tag = self.get_read_tag(read)
 
         tag = ['{}_{}'.format(k, v) for k, v in tag.iteritems()]
-        tag = ':'.join(tag)
+        tag = ','.join(tag)
+        tag = 'FS:Z:'+tag
 
-        comment = tag + ':FQST:' + comment
+        comment = tag
 
         read[0] = read_id + ' ' + comment + '\n'
 
