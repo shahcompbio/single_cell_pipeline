@@ -5,12 +5,16 @@ Created on Feb 22, 2018
 '''
 
 import os
+
 import pypeliner
 import pypeliner.managed as mgd
-from workflows import mutationseq
-from workflows import strelka
-import single_cell
 from single_cell.utils import helpers
+from single_cell.utils import refgenome
+
+from workflows import merge_bams
+from workflows import mutationseq
+from workflows import split_bams
+from workflows import strelka
 
 default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 
@@ -103,12 +107,13 @@ def variant_calling_workflow(args):
 
     baseimage = config['docker']['single_cell_pipeline']
 
-    ctx={'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
-         'mem': config["memory"]['low'], 'docker_image': baseimage}
+    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
+           'mem': config["memory"]['low'], 'docker_image': baseimage}
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     if isinstance(normal_bams, dict) and isinstance(tumour_bams, dict):
-        assert list(normal_bams.keys()) == list(tumour_bams.keys()), 'keys for tumour and normal bams should be the same'
+        assert list(normal_bams.keys()) == list(
+            tumour_bams.keys()), 'keys for tumour and normal bams should be the same'
         workflow.setobj(
             obj=mgd.OutputChunks('region'),
             value=list(normal_bams.keys()),
@@ -131,8 +136,6 @@ def variant_calling_workflow(args):
         assert '{region}' in tumour_bams, 'only supports a list of files or a template on regions'
         workflow.set_filenames('tumour_split.bam', 'region', template=normal_bams)
 
-
-
     workflow.subworkflow(
         func=create_variant_calling_workflow,
         name='create_varcall',
@@ -154,12 +157,12 @@ def variant_calling_workflow(args):
 
 
 def variant_calling_pipeline(args):
-
     pyp = pypeliner.app.Pypeline(config=args)
 
     workflow = variant_calling_workflow(args)
 
     pyp.run(workflow)
+
 
 def create_variant_calling_workflow(
         tumour_cell_bams,
@@ -398,9 +401,176 @@ def create_variant_counting_workflow(
 
 
 def variant_counting_pipeline(args):
-
     pyp = pypeliner.app.Pypeline(config=args)
 
     workflow = variant_counting_workflow(args)
 
     pyp.run(workflow)
+
+
+def variant_calling_multi_sample_workflow(
+        config, normal_wgs_bam, tumour_cell_bams, varcall_dir,
+        museq_vcf, strelka_snvs, strelka_indels, snv_annotations, snv_counts
+):
+    keys = [(sample_id, library_id) for (sample_id, library_id, _) in list(tumour_cell_bams.keys())]
+    keys = sorted(set(keys))
+
+    museq_vcf = dict([(key, museq_vcf(*key)) for key in keys])
+    strelka_snvs = dict([(key, strelka_snvs(*key)) for key in keys])
+    strelka_indels = dict([(key, strelka_indels(*key)) for key in keys])
+    snv_annotations = dict([(key, snv_annotations(*key)) for key in keys])
+    snv_counts = dict([(key, snv_counts(*key)) for key in keys])
+
+    variant_calling_raw_data_template = os.path.join(
+        varcall_dir, 'variant_calling_rawdata', '{sample_id}_{library_id}_variant_calling'
+    )
+    normal_region_bam_template = os.path.join(
+        varcall_dir, 'normal_region_bams', 'normal_{region}.bam'
+    )
+    tumour_region_bam_template = os.path.join(
+        varcall_dir, 'tumour_region_bams', '{sample_id}_{library_id}_{region}.bam'
+    )
+
+    vcftools_image = {'docker_image': config['variant_calling']['docker']['vcftools']}
+
+    workflow = pypeliner.workflow.Workflow(
+        default_ctx={'docker_image': config['multi_sample']['docker']['single_cell_pipeline']}
+    )
+
+    workflow.transform(
+        name='get_regions',
+        ret=mgd.TempOutputObj("get_regions"),
+        func=refgenome.get_split_regions,
+        args=(
+            config["split_bam"]["split_size"],
+            config["split_bam"]["ref_genome"]
+        )
+    )
+
+    workflow.setobj(
+        obj=mgd.OutputChunks('region'),
+        value=mgd.TempInputObj('get_regions'),
+    )
+
+    workflow.setobj(
+        obj=mgd.OutputChunks('sample_id', 'library_id', 'cell_id'),
+        value=list(tumour_cell_bams.keys()),
+    )
+
+    workflow.setobj(
+        obj=mgd.OutputChunks('sample_id', 'library_id', 'region'),
+        axes=('sample_id', 'library_id',),
+        value=mgd.TempInputObj('get_regions'),
+    )
+
+    if isinstance(normal_wgs_bam, dict):
+        workflow.setobj(
+            obj=mgd.OutputChunks('normal_cell_id'),
+            value=list(normal_wgs_bam.keys()),
+        )
+        workflow.set_filenames('normal_cells.bam', 'normal_cell_id', fnames=normal_wgs_bam)
+        workflow.subworkflow(
+            name="merge_normal_cells",
+            func=merge_bams.create_merge_bams_workflow,
+            args=(
+                mgd.InputFile('normal_cells.bam', 'normal_cell_id', extensions=['.bai']),
+                mgd.OutputFile('normal_regions.bam', 'region', axes_origin=[], extensions=['.bai'],
+                               template=normal_region_bam_template),
+                mgd.TempInputObj('get_regions'),
+                config['merge_bams'],
+            )
+        )
+    else:
+        workflow.subworkflow(
+            name="split_normal",
+            func=split_bams.create_split_workflow,
+            args=(
+                mgd.InputFile(normal_wgs_bam, extensions=['.bai']),
+                mgd.OutputFile('normal_regions.bam', 'region', extensions=['.bai'], axes_origin=[],
+                               template=normal_region_bam_template),
+                pypeliner.managed.TempInputObj('region'),
+                config['split_bam'],
+            ),
+            kwargs={"by_reads": False}
+        )
+
+    workflow.subworkflow(
+        name="split_merge_tumour",
+        axes=('sample_id', 'library_id',),
+        func=merge_bams.create_merge_bams_workflow,
+        args=(
+            mgd.InputFile('tumour_all_cells.bam', 'sample_id', 'library_id', 'cell_id', fnames=tumour_cell_bams,
+                          extensions=['.bai'], axes_origin=[]),
+            mgd.OutputFile('tumour_regions.bam', 'sample_id', 'library_id', 'region', axes_origin=[],
+                           extensions=['.bai'], template=tumour_region_bam_template),
+            mgd.TempInputObj('get_regions'),
+            config['merge_bams'],
+        )
+    )
+
+    workflow.subworkflow(
+        name='variant_calling',
+        func=create_variant_calling_workflow,
+        axes=('sample_id', 'library_id',),
+        args=(
+            mgd.InputFile('tumour_all_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai'],
+                          fnames=tumour_cell_bams),
+            mgd.InputFile('tumour_regions.bam', 'sample_id', 'library_id', 'region', extensions=['.bai'],
+                          template=tumour_region_bam_template),
+            mgd.InputFile('normal_regions.bam', 'region', extensions=['.bai'], template=normal_region_bam_template),
+            mgd.OutputFile('museq.vcf', 'sample_id', 'library_id', extensions=['.tbi', '.csi'], fnames=museq_vcf),
+            mgd.OutputFile('strelka_snv.vcf', 'sample_id', 'library_id', extensions=['.tbi', '.csi'],
+                           fnames=strelka_snvs),
+            mgd.OutputFile('strelka_indel.vcf', 'sample_id', 'library_id', extensions=['.tbi', '.csi'],
+                           fnames=strelka_indels),
+            mgd.OutputFile('snv_annotations.h5', 'sample_id', 'library_id', fnames=snv_annotations),
+            config['variant_calling'],
+            mgd.Template(variant_calling_raw_data_template, 'sample_id', 'library_id'),
+        ),
+    )
+
+    workflow.transform(
+        name='merge_museq_snvs',
+        func='biowrappers.components.io.vcf.tasks.concatenate_vcf',
+        args=(
+            mgd.InputFile('museq.vcf', 'sample_id', 'library_id', axes_origin=[], extensions=['.tbi', '.csi'],
+                          fnames=museq_vcf),
+            mgd.TempOutputFile('museq.vcf.gz', extensions=['.tbi', '.csi']),
+        ),
+        kwargs={
+            'allow_overlap': True,
+            'docker_config': vcftools_image,
+        },
+    )
+
+    workflow.transform(
+        name='merge_strelka_snvs',
+        func='biowrappers.components.io.vcf.tasks.concatenate_vcf',
+        args=(
+            mgd.InputFile('strelka_snv.vcf', 'sample_id', 'library_id',
+                          axes_origin=[], extensions=['.tbi', '.csi'], fnames=strelka_snvs),
+            mgd.TempOutputFile('strelka_snv.vcf.gz', extensions=['.tbi', '.csi']),
+        ),
+        kwargs={
+            'allow_overlap': True,
+            'docker_config': vcftools_image,
+        },
+    )
+
+    workflow.subworkflow(
+        name='variant_counting',
+        func=create_variant_counting_workflow,
+        axes=('sample_id', 'library_id',),
+        args=(
+            [
+                mgd.TempInputFile('museq.vcf.gz', extensions=['.tbi', '.csi']),
+                mgd.TempInputFile('strelka_snv.vcf.gz', extensions=['.tbi', '.csi']),
+            ],
+            mgd.InputFile('tumour_all_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai'],
+                          fnames=tumour_cell_bams),
+            mgd.OutputFile('snv_counts.h5', 'sample_id', 'library_id', fnames=snv_counts),
+            config['variant_calling'],
+        ),
+    )
+
+    return workflow
