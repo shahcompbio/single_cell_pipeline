@@ -13,7 +13,6 @@ from single_cell.utils import helpers
 
 def infer_haps(
         bam_file,
-        seqdata_file,
         haplotypes_filename,
         allele_counts_filename,
         config,
@@ -57,7 +56,7 @@ def infer_haps(
             name='merge_all_seqdata',
             func="single_cell.workflows.titan.tasks.merge_overlapping_seqdata",
             args=(
-                mgd.OutputFile(seqdata_file),
+                mgd.TempOutputFile('seqdata_file.h5'),
                 mgd.TempInputFile("seqdata_cell.h5", "cell_id"),
                 config["chromosomes"]
             ),
@@ -72,7 +71,7 @@ def infer_haps(
             ctx={'disk': 150},
             args=(
                 mgd.InputFile(bam_file, extensions=['.bai']),
-                mgd.OutputFile(seqdata_file),
+                mgd.TempOutputFile('seqdata_file.h5'),
                 remixt_config,
                 remixt_ref_data_dir,
             ),
@@ -95,7 +94,7 @@ def infer_haps(
         func=func,
         args=(
             mgd.TempOutputFile('snp_genotype.tsv', 'chromosome'),
-            mgd.InputFile(seqdata_file),
+            mgd.TempInputFile('seqdata_file.h5'),
             mgd.InputInstance('chromosome'),
             config,
         ),
@@ -144,7 +143,7 @@ def infer_haps(
         args=(
             mgd.OutputFile(allele_counts_filename),
             mgd.TempInputFile('segments.tsv'),
-            mgd.InputFile(seqdata_file),
+            mgd.TempInputFile('seqdata_file.h5'),
             mgd.InputFile(haplotypes_filename),
             remixt_config
         ),
@@ -156,13 +155,10 @@ def infer_haps(
 def extract_allele_readcounts(
         haplotypes_filename,
         cell_bams,
-        cell_seqdata,
         allele_counts_filename,
         config,
 ):
     baseimage = {'docker_image': config['docker']['single_cell_pipeline']}
-
-    cell_seqdata = {cell_id: cell_seqdata[cell_id] for cell_id in cell_bams}
 
     remixt_config = config.get('extract_seqdata', {})
     remixt_ref_data_dir = config['ref_data_dir']
@@ -170,7 +166,6 @@ def extract_allele_readcounts(
     workflow = pypeliner.workflow.Workflow(ctx=baseimage)
 
     workflow.set_filenames('cell.bam', 'cell_id', fnames=cell_bams)
-    workflow.set_filenames('seqdata.h5', 'cell_id', fnames=cell_seqdata)
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
@@ -183,7 +178,7 @@ def extract_allele_readcounts(
         func='single_cell.workflows.extract_seqdata.create_extract_seqdata_workflow',
         args=(
             mgd.InputFile('cell.bam', 'cell_id', extensions=['.bai']),
-            mgd.OutputFile('seqdata.h5', 'cell_id', axes_origin=[]),
+            mgd.TempOutputFile('seqdata.h5', 'cell_id', axes_origin=[]),
             config.get('extract_seqdata', {}),
             config['ref_data_dir'],
             config,
@@ -209,7 +204,7 @@ def extract_allele_readcounts(
         args=(
             mgd.TempOutputFile('allele_counts.tsv', 'cell_id', axes_origin=[]),
             mgd.TempInputFile('segments.tsv'),
-            mgd.InputFile('seqdata.h5', 'cell_id'),
+            mgd.TempInputFile('seqdata.h5', 'cell_id'),
             mgd.InputFile(haplotypes_filename),
             remixt_config,
         ),
@@ -241,7 +236,6 @@ def infer_haps_workflow(args):
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     haps_dir = os.path.join(args["out_dir"], "infer_haps")
-    seqdata_merged = os.path.join(haps_dir, "results", "seqdata.h5")
     haplotypes_filename = os.path.join(haps_dir, "results", "haplotypes.tsv")
     allele_counts_filename = os.path.join(haps_dir, "results", "allele_counts.tsv")
 
@@ -270,7 +264,6 @@ def infer_haps_workflow(args):
         func=infer_haps,
         args=(
             bam_file,
-            mgd.OutputFile(seqdata_merged),
             mgd.OutputFile(haplotypes_filename),
             mgd.OutputFile(allele_counts_filename),
             config,
@@ -282,7 +275,6 @@ def infer_haps_workflow(args):
 
 
 def infer_haps_pipeline(args):
-
     pyp = pypeliner.app.Pypeline(config=args)
 
     workflow = infer_haps_workflow(args)
