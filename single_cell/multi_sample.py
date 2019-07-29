@@ -81,9 +81,34 @@ def generate_meta_files(normal_sample_id, normal_libraries, tumour_cell_bams, ar
         destruct_files = get_file_paths(destruct_dir, 'destruct')
         filepaths = [resolve_template(v, tumour_ids) for v in destruct_files.values()]
         filepaths = [x for v in filepaths for x in v]
+        metadata['type'] = 'destruct'
         helpers.generate_and_upload_metadata(
             args,
             destruct_dir,
+            filepaths,
+            metadata,
+        )
+
+    if lumpy_dir:
+        lumpy_files = get_file_paths(lumpy_dir, 'lumpy')
+        filepaths = [resolve_template(v, tumour_ids) for v in lumpy_files.values()]
+        filepaths = [x for v in filepaths for x in v]
+        metadata['type'] = 'lumpy'
+        helpers.generate_and_upload_metadata(
+            args,
+            lumpy_dir,
+            filepaths,
+            metadata,
+        )
+
+    if haps_dir:
+        haps_files = get_file_paths(haps_dir, 'haps_calling')
+        filepaths = [resolve_template(v, tumour_ids) for v in haps_files.values()]
+        filepaths = [x for v in filepaths for x in v]
+        metadata['type'] = 'haplotype_calling'
+        helpers.generate_and_upload_metadata(
+            args,
+            haps_dir,
             filepaths,
             metadata,
         )
@@ -136,12 +161,6 @@ def get_file_paths(root_dir, pipeline_type):
         }
     elif pipeline_type == 'haps_calling':
         data = {
-            'normal_seqdata_file': os.path.join(
-                root_dir, 'normal_seqdata', 'normal_seqdata.h5'
-            ),
-            'tumour_cell_seqdata_template': os.path.join(
-                root_dir, 'tumour_seqdata', '{sample_id}_{library_id}_{cell_id}_seqdata.h5'
-            ),
             'haplotypes_file': os.path.join(root_dir, 'haplotypes.tsv'),
             'allele_counts_template': os.path.join(
                 root_dir, '{sample_id}_{library_id}_allele_counts.csv'
@@ -234,9 +253,6 @@ def create_multi_sample_workflow(
 
     if haps_dir:
         haps_files = get_file_paths(haps_dir, 'haps_calling')
-
-        workflow.set_filenames('tumour_cell_seqdata.h5', 'sample_id', 'library_id', 'cell_id',
-                               template=haps_files['tumour_cell_seqdata_template'])
         workflow.set_filenames('allele_counts.csv', 'sample_id', 'library_id',
                                template=haps_files['allele_counts_template'])
 
@@ -245,7 +261,6 @@ def create_multi_sample_workflow(
             func=infer_haps.infer_haps,
             args=(
                 normal_bam,
-                mgd.OutputFile(haps_files['normal_seqdata_file']),
                 mgd.OutputFile(haps_files['haplotypes_file']),
                 mgd.TempOutputFile("allele_counts.csv"),
                 config['infer_haps'],
@@ -261,7 +276,6 @@ def create_multi_sample_workflow(
                 mgd.InputFile(haps_files['haplotypes_file']),
                 mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai'],
                               fnames=tumour_cell_bams),
-                mgd.OutputFile('tumour_cell_seqdata.h5', 'sample_id', 'library_id', 'cell_id', axes_origin=[]),
                 mgd.OutputFile('allele_counts.csv', 'sample_id', 'library_id',
                                template=haps_files['allele_counts_template']),
                 config['infer_haps'],
