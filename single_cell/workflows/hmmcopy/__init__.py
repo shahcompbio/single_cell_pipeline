@@ -12,7 +12,7 @@ from single_cell.utils import helpers
 def create_hmmcopy_workflow(
         bam_file, reads, segs, metrics, params, igv_seg_filename,
         segs_pdf, bias_pdf, plot_heatmap_ec_output,
-        plot_heatmap_ec_filt_output, plot_metrics_output,
+        plot_metrics_output,
         plot_kernel_density_output, hmmcopy_data_tar,
         cell_ids, hmmparams, sample_info
 ):
@@ -213,28 +213,6 @@ def create_hmmcopy_workflow(
             'chromosomes': chromosomes,
             'max_cn': hmmparams['num_states'],
             'scale_by_cells': False,
-            'mappability_threshold': hmmparams["map_cutoff"]
-        }
-    )
-
-    workflow.transform(
-        name='plot_heatmap_ec_filtered',
-        ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.workflows.hmmcopy.tasks.plot_pcolor",
-        args=(
-            mgd.InputFile(reads, extensions=['.yaml']),
-            mgd.InputFile(metrics, extensions=['.yaml']),
-            mgd.OutputFile(plot_heatmap_ec_filt_output),
-        ),
-        kwargs={
-            'plot_title': 'QC pipeline metrics',
-            'column_name': 'state',
-            'plot_by_col': 'experimental_condition',
-            'color_by_col': 'cell_call',
-            'chromosomes': chromosomes,
-            'max_cn': hmmparams['num_states'],
-            'scale_by_cells': False,
-            'cell_filters': hmmparams["good_cells"],
             'mappability_threshold': hmmparams["map_cutoff"]
         }
     )

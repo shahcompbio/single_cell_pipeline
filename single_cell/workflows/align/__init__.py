@@ -368,7 +368,7 @@ def create_alignment_workflow(
         args=(
             mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename, extensions=['.bai']),
             mgd.TempInputFile('organism_summary_count_per_cell.csv'),
-            mgd.OutputFile(alignment_metrics, extensions=['.yaml']),
+            mgd.TempOutputFile('alignment_metrics.csv', extensions=['.yaml']),
             mgd.OutputFile(gc_metrics, extensions=['.yaml']),
             mgd.TempOutputFile('markdups_metrics.txt', 'cell_id', axes_origin=[]),
             mgd.TempOutputFile('flagstat_metrics.txt', 'cell_id', axes_origin=[]),
@@ -383,6 +383,17 @@ def create_alignment_workflow(
             config,
             cell_ids
         )
+    )
+
+    workflow.transform(
+        name='add_contamination_status',
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        func="single_cell.workflows.align.tasks.add_contamination_status",
+        args=(
+            mgd.TempInputFile('alignment_metrics.csv', extensions=['.yaml']),
+            mgd.OutputFile(alignment_metrics, extensions=['.yaml']),
+        ),
+        kwargs={'reference': config['ref_type']}
     )
 
     workflow.transform(

@@ -12,7 +12,8 @@ def create_qc_annotation_workflow(
         hmmcopy_metrics, hmmcopy_reads, alignment_metrics, gc_metrics, segs_tar,
         merged_metrics, qc_report, corrupt_tree, consensus_tree, phylo_csv,
         rank_trees, filtered_data, corrupt_tree_pdf, pass_segs, fail_segs,
-        corrupt_tree_heatmap_output, config, library_id, no_corrupt_tree=False,
+        corrupt_tree_heatmap_output, plot_heatmap_ec_filt_output, config,
+        library_id, no_corrupt_tree=False,
 ):
     ctx = {'docker_image': config['docker']['single_cell_pipeline']}
 
@@ -80,7 +81,28 @@ def create_qc_annotation_workflow(
         )
     )
 
-    if not no_corrupt_tree:
+    workflow.transform(
+        name='plot_heatmap_ec_filtered',
+        func="single_cell.workflows.qc_annotation.tasks.plot_pcolor",
+        args=(
+            mgd.InputFile(hmmcopy_reads, extensions=['.yaml']),
+            mgd.TempInputFile('merged_metrics.csv.gz', extensions=['.yaml']),
+            mgd.OutputFile(plot_heatmap_ec_filt_output),
+        ),
+        kwargs={
+            'plot_title': 'QC pipeline metrics',
+            'column_name': 'state',
+            'plot_by_col': 'experimental_condition',
+            'color_by_col': 'cell_call',
+            'chromosomes': config['chromosomes'],
+            'max_cn': config['num_states'],
+            'scale_by_cells': False,
+            'cell_filters': config["good_cells"],
+            'mappability_threshold': config["map_cutoff"]
+        }
+    )
+
+    if no_corrupt_tree:
         workflow.transform(
             name='finalize_metrics',
             ctx={'mem': config['memory']['med'], 'ncpus': 1, 'num_retry': 1},
@@ -125,8 +147,8 @@ def create_qc_annotation_workflow(
             func="single_cell.workflows.qc_annotation.tasks.add_corrupt_tree_order",
             args=(
                 mgd.InputFile(corrupt_tree),
-                mgd.TempInputFile('merged_metrics.csv.gz', extensions=['.yaml']),
-                mgd.TempOutputFile('merged_metrics_order_ct.csv.gz', extensions=['.yaml'])
+                mgd.TempInputFile('merged_metrics_with_header.csv.gz', extensions=['.yaml']),
+                mgd.OutputFile(merged_metrics, extensions=['.yaml'])
             ),
         )
 
@@ -136,7 +158,6 @@ def create_qc_annotation_workflow(
             args=(
                 mgd.InputFile(hmmcopy_reads, extensions=['.yaml']),
                 mgd.TempInputFile('merged_metrics.csv.gz', extensions=['.yaml']),
-                mgd.InputFile(corrupt_tree),
                 mgd.OutputFile(corrupt_tree_heatmap_output),
             ),
             kwargs={
@@ -147,6 +168,7 @@ def create_qc_annotation_workflow(
                 'chromosomes': config['chromosomes'],
                 'max_cn': config['num_states'],
                 'scale_by_cells': False,
+                'corrupt_tree': mgd.InputFile(corrupt_tree),
             }
         )
 
