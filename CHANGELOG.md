@@ -1,6 +1,18 @@
 # Change Log
 
-### v0.2.26
+
+### v0.3.1
+
+#### added
+* added a column indicating if a cell is contaminated
+* added a column indication if a segment is low mappability
+* filtered contaminated cells from heatmap
+* added extensions to metadata yaml files
+#### Changes:
+* seqdata files from haplotype calling are now temporary files
+
+
+### v0.3.0
 
 ##### added
 * added fastq screen

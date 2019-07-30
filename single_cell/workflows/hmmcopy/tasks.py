@@ -164,6 +164,67 @@ def concatenate_csv(inputs, output, low_memory=False):
         )
 
 
+def get_hierarchical_clustering_order(
+        reads_filename, chromosomes=None):
+    data = []
+    chunksize = 10 ** 5
+    for chunk in csvutils.read_csv_and_yaml(
+            reads_filename, chunksize=chunksize):
+        chunk["bin"] = list(zip(chunk.chr, chunk.start, chunk.end))
+
+        chunk = chunk.pivot(index='cell_id', columns='bin', values='state')
+
+        data.append(chunk)
+
+    # merge chunks, sum cells that get split across chunks
+    table = pd.concat(data)
+    table = table.groupby(table.index).sum()
+
+    bins = pd.DataFrame(
+        table.columns.values.tolist(),
+        columns=[
+            'chr',
+            'start',
+            'end'])
+
+    bins['chr'] = bins['chr'].astype(str)
+
+    bins = sort_bins(bins, chromosomes)
+
+    table = table.sort_values(bins, axis=0)
+
+    data_mat = np.array(table.values)
+
+    data_mat[np.isnan(data_mat)] = -1
+
+    row_linkage = hc.linkage(sp.distance.pdist(data_mat, 'cityblock'),
+                             method='ward')
+
+    order = hc.leaves_list(row_linkage)
+
+    samps = table.index
+    order = [samps[i] for i in order]
+    order = {v: i for i, v in enumerate(order)}
+
+    return order
+
+
+def get_mappability_col(reads, annotated_reads):
+
+    reads = csvutils.read_csv_and_yaml(reads, chunksize=100)
+
+    alldata = []
+    for read_data in reads:
+        read_data['is_low_mappability'] = (read_data['map'] <= 0.9)
+        alldata.append(read_data)
+
+    alldata = pd.concat(alldata)
+
+    csvutils.write_dataframe_to_csv_and_yaml(
+        alldata, annotated_reads, write_header=True
+    )
+
+
 def add_clustering_order(
         reads, metrics, output, chromosomes=None, sample_info=None):
     """
@@ -284,51 +345,6 @@ def sort_bins(bins, chromosomes):
     bins = [tuple(v) for v in bins.values.tolist()]
 
     return bins
-
-
-def get_hierarchical_clustering_order(
-        reads_filename, chromosomes=None):
-    data = []
-    chunksize = 10 ** 5
-    for chunk in csvutils.read_csv_and_yaml(
-            reads_filename, chunksize=chunksize):
-        chunk["bin"] = list(zip(chunk.chr, chunk.start, chunk.end))
-
-        chunk = chunk.pivot(index='cell_id', columns='bin', values='state')
-
-        data.append(chunk)
-
-    # merge chunks, sum cells that get split across chunks
-    table = pd.concat(data)
-    table = table.groupby(table.index).sum()
-
-    bins = pd.DataFrame(
-        table.columns.values.tolist(),
-        columns=[
-            'chr',
-            'start',
-            'end'])
-
-    bins['chr'] = bins['chr'].astype(str)
-
-    bins = sort_bins(bins, chromosomes)
-
-    table = table.sort_values(bins, axis=0)
-
-    data_mat = np.array(table.values)
-
-    data_mat[np.isnan(data_mat)] = -1
-
-    row_linkage = hc.linkage(sp.distance.pdist(data_mat, 'cityblock'),
-                             method='ward')
-
-    order = hc.leaves_list(row_linkage)
-
-    samps = table.index
-    order = [samps[i] for i in order]
-    order = {v: i for i, v in enumerate(order)}
-
-    return order
 
 
 def plot_metrics(metrics, output, plot_title):
