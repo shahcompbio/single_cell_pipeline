@@ -15,6 +15,22 @@ from scripts import RunTrimGalore
 from scripts import SummaryMetrics
 
 
+def add_contamination_status(infile, outfile, reference='grch37', threshold=0.6):
+    data = csvutils.read_csv_and_yaml(infile)
+
+    data['perc_ref'] = data[reference] / data['total_reads']
+
+    data['is_contaminated'] = False
+
+    data[data['perc_ref'] <= threshold]['is_contaminated'] = True
+
+    del data['perc_ref']
+
+    csvutils.write_dataframe_to_csv_and_yaml(
+        data, outfile, write_header=True
+    )
+
+
 def merge_bams(inputs, output, output_index, containers):
     picardutils.merge_bams(inputs, output, docker_image=containers['picard'])
     bamutils.bam_index(output, output_index, docker_image=containers['samtools'])
@@ -128,7 +144,6 @@ def align_pe_with_bwa(
         fastq1, fastq2, output, reference, readgroup, tempdir,
         containers, aligner='bwa-aln'
 ):
-
     samfile = os.path.join(tempdir, "bwamem.sam")
 
     if aligner == 'bwa-aln':

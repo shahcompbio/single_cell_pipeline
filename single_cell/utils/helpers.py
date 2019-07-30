@@ -44,6 +44,20 @@ def generate_and_upload_metadata(args, root_dir, filepaths, metadata):
     storageutils.upload_blob(meta_yaml, local_path, storage=args['storage'])
 
 
+def add_extensions(filepaths):
+    paths_extensions = []
+    for filepath in filepaths:
+        paths_extensions.append(filepath)
+
+        if filepath.endswith('.csv.gz'):
+            paths_extensions.append(filepath + '.yaml')
+        elif filepath.endswith('.vcf.gz'):
+            paths_extensions.append(filepath + '.csi')
+            paths_extensions.append(filepath + '.tbi')
+
+    return paths_extensions
+
+
 def generate_meta_yaml_file(
         metadata_file,
         filepaths=None,
@@ -63,6 +77,8 @@ def generate_meta_yaml_file(
 
             filepath = os.path.relpath(filepath, root_dir)
             final_paths.append(filepath)
+
+    final_paths = add_extensions(final_paths)
 
     metadata = {
         'filenames': final_paths,

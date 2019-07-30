@@ -6,17 +6,15 @@ Created on Jul 24, 2017
 import os
 import shutil
 
+import pandas as pd
 import pypeliner
+from ete3 import Tree
 from single_cell.utils import csvutils
 from single_cell.utils import helpers
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotPcolor
 
 from scripts import classify
 from scripts import generate_qc
-
-from ete3 import Tree
-
-import pandas as pd
 
 
 def add_corrupt_tree_order(corrupt_tree, metrics, output):
@@ -157,12 +155,24 @@ def filter_plot_tar(metrics, src_tar, pass_tar, fail_tar, tempdir, filters):
     helpers.make_tarfile(fail_tar, plotdir)
 
 
+def get_good_cells(metrics, cell_filters):
+    metrics_data = csvutils.read_csv_and_yaml(metrics)
 
-def plot_pcolor(infile, metrics, corrupt_tree, output, plot_title=None,
+    if not cell_filters:
+        return metrics_data.cell_id.tolist()
+
+    metrics_data = helpers.filter_metrics(metrics_data, cell_filters)
+
+    return metrics_data.cell_id.tolist()
+
+
+def plot_pcolor(infile, metrics, output, corrupt_tree=None, plot_title=None,
                 column_name=None, plot_by_col=None,
                 chromosomes=None, max_cn=None,
                 scale_by_cells=None, color_by_col=None,
+                mappability_threshold=None, cell_filters=None
                 ):
+    cells = get_good_cells(metrics, cell_filters)
 
     plot = PlotPcolor(
         infile, metrics, output, plot_title=plot_title,
@@ -171,6 +181,8 @@ def plot_pcolor(infile, metrics, corrupt_tree, output, plot_title=None,
         max_cn=max_cn,
         scale_by_cells=scale_by_cells,
         color_by_col=color_by_col,
-        corrupt_tree=corrupt_tree
+        corrupt_tree=corrupt_tree,
+        mappability_threshold=mappability_threshold,
+        cells=cells,
     )
     plot.main()

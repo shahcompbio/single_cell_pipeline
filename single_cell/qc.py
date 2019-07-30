@@ -89,7 +89,6 @@ def qc_workflow(args):
                 mgd.OutputFile(hmmcopy_files['segs_pdf']),
                 mgd.OutputFile(hmmcopy_files['bias_pdf']),
                 mgd.OutputFile(hmmcopy_files['heatmap_pdf']),
-                mgd.OutputFile(hmmcopy_files['heatmap_filt_pdf']),
                 mgd.OutputFile(hmmcopy_files['metrics_pdf']),
                 mgd.OutputFile(hmmcopy_files['kernel_density_pdf']),
                 mgd.OutputFile(hmmcopy_files['hmmcopy_data_tar']),
@@ -128,6 +127,7 @@ def qc_workflow(args):
                 mgd.OutputFile(annotation_files['segs_pass']),
                 mgd.OutputFile(annotation_files['segs_fail']),
                 mgd.OutputFile(annotation_files['corrupt_heatmap_pdf']),
+                mgd.OutputFile(annotation_files['heatmap_filt_pdf']),
                 config['annotation'],
                 lib,
             ),
@@ -151,6 +151,7 @@ def get_output_files(outdir, pipeline_type, lib):
             'segs_pass': os.path.join(outdir, '{0}_segs_pass.tar.gz'.format(lib)),
             'segs_fail': os.path.join(outdir, '{0}_segs_fail.tar.gz'.format(lib)),
             'corrupt_heatmap_pdf': os.path.join(outdir, '{}_heatmap_corrupt_tree.pdf'.format(lib)),
+            'heatmap_filt_pdf': os.path.join(outdir, '{}_heatmap_by_ec_filtered.pdf'.format(lib)),
         }
 
     elif pipeline_type == 'hmmcopy':
@@ -163,7 +164,6 @@ def get_output_files(outdir, pipeline_type, lib):
             'igv_csvs': os.path.join(outdir, '{0}_igv_segments.seg'.format(lib)),
             'segs_pdf': os.path.join(outdir, '{}_segs.tar.gz'.format(lib)),
             'bias_pdf': os.path.join(outdir, '{}_bias.tar.gz'.format(lib)),
-            'heatmap_filt_pdf': os.path.join(outdir, '{}_heatmap_by_ec_filtered.pdf'.format(lib)),
             'heatmap_pdf': os.path.join(outdir, '{}_heatmap_by_ec.pdf'.format(lib)),
             'metrics_pdf': os.path.join(outdir, '{}_hmmcopy_metrics.pdf'.format(lib)),
             'kernel_density_pdf': os.path.join(outdir, '{}_kernel_density.pdf'.format(lib)),
