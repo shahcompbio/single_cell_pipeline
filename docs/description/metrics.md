@@ -62,7 +62,7 @@
 |paired_mapped_reads|number of mapped reads that were properly paired|
 |mm10_multihit|number of reads classified as mouse and something else|
 |paired_duplicate_reads|number of paired reads that were also marked as duplicate|
-
+|is_contaminated|boolean, set to True if most reads belong to a different genome|
 
 # HMMCopy Reads
 
@@ -85,6 +85,7 @@
 |multiplier|hmmcopy parameter set used [1..6]|
 |state|the copy number state of the bin|
 |cell_id|label of the cell|
+|is_low_mappability|bool, set to True if the segment has a low mappability score|
 
 # HMMCopy Segments
 |Column|Description|
