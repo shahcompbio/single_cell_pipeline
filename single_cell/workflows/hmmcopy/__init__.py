@@ -57,9 +57,19 @@ def create_hmmcopy_workflow(
         func="single_cell.workflows.hmmcopy.tasks.concatenate_csv",
         args=(
             mgd.TempInputFile('reads.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
-            mgd.OutputFile(reads, extensions=['.yaml']),
+            mgd.TempOutputFile('reads_merged.csv.gz', extensions=['.yaml']),
         ),
         kwargs={'low_memory': True}
+    )
+
+    workflow.transform(
+        name='add_mappability_bool',
+        ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        func="single_cell.workflows.hmmcopy.tasks.get_mappability_col",
+        args=(
+            mgd.TempInputFile('reads_merged.csv.gz', extensions=['.yaml']),
+            mgd.OutputFile(reads, extensions=['.yaml']),
+        ),
     )
 
     workflow.transform(
