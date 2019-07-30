@@ -3,6 +3,8 @@ Created on Jun 14, 2018
 
 @author: dgrewal
 '''
+import warnings
+
 import numpy as np
 from single_cell.utils import csvutils
 
@@ -44,9 +46,17 @@ def load_metrics_data(filename):
 
 
 def compare_tables(data, refdata):
-    assert np.array_equal(data.columns.values, refdata.columns.values)
+    data_cols = set(data.columns.values)
+    ref_cols = set(refdata.columns.values)
 
-    for colname in data.columns.values:
+    common_cols = list(data_cols.intersection(ref_cols))
+
+    missing_cols = list(ref_cols - data_cols)
+
+    if missing_cols:
+        warnings.warn("missing cols in reference: {}".format(missing_cols))
+
+    for colname in common_cols:
         exact_compare_cols(data, refdata, colname)
 
 
