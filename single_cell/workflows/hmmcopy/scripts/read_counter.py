@@ -3,18 +3,20 @@ Created on Oct 10, 2017
 
 @author: dgrewal
 '''
-import os
-import pysam
 import argparse
-import pandas as pd
+import os
+
 import numpy as np
+import pandas as pd
+import pysam
+
 
 class ReadCounter(object):
     """
     calculate reads per bin from the input bam file
     """
 
-    def __init__(self, bam, output, window_size, chromosomes, mapq, seg=None, excluded=None):
+    def __init__(self, bam, output, window_size, chromosomes, mapq, seg=None, excluded=None, reference=None):
         self.bam = bam
 
         self.output = output
@@ -35,15 +37,19 @@ class ReadCounter(object):
 
         if excluded is not None:
             self.excluded = pd.read_csv(excluded, sep="\t", )
-            self.excluded.columns = ["chrom","start","end"]
+            self.excluded.columns = ["chrom", "start", "end"]
         else:
             self.excluded = None
 
-    def __get_chrom_excluded(self, chrom, chrom_length):
-#         chrom_excluded = np.zeros(chrom_length, dtype=np.uint8)
-        #add some padding in case the list is 1 based and chr length is 0 based
-        chrom_excluded = np.zeros(chrom_length+1, dtype=np.uint8)
+        self.reference = reference
 
+    def __get_bam_header(self):
+        return self.bam.header
+
+    def __get_chrom_excluded(self, chrom, chrom_length):
+        # chrom_excluded = np.zeros(chrom_length, dtype=np.uint8)
+        # add some padding in case the list is 1 based and chr length is 0 based
+        chrom_excluded = np.zeros(chrom_length + 1, dtype=np.uint8)
 
         for start, end in self.excluded.loc[self.excluded['chrom'] == chrom, ['start', 'end']].values:
             start = min(start, chrom_length)
@@ -56,10 +62,9 @@ class ReadCounter(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        #clean up output if there are any exceptions
+        # clean up output if there are any exceptions
         if exc_type and os.path.exists(self.output):
             os.remove(self.output)
-
 
     def __get_chr_lengths(self):
         """ returns dict with chromosome names and lengths
@@ -110,6 +115,15 @@ class ReadCounter(object):
         if pileupobj.mapping_quality < self.mapq_threshold:
             return True
 
+        fastqscreen_tags = pileupobj.get_tag('FS')
+        if fastqscreen_tags and self.reference:
+            fastqscreen_tags = fastqscreen_tags.split(',')
+            fastqscreen_tags = [val.split('_') for val in fastqscreen_tags]
+            fastqscreen_tags = {val[0]: val[1] for val in fastqscreen_tags}
+
+            if int(fastqscreen_tags[self.reference]) == 0:
+                return True
+
         return False
 
     def write_header(self, chrom, outfile):
@@ -121,8 +135,8 @@ class ReadCounter(object):
         if self.seg:
             outfile.write("data\tchr\tstart\tend\tcount\n")
         else:
-            outstr = "fixedStep chrom=%s start=1 step=%s span=%s\n"\
-                % (chrom, self.window_size, self.window_size)
+            outstr = "fixedStep chrom=%s start=1 step=%s span=%s\n" \
+                     % (chrom, self.window_size, self.window_size)
             outfile.write(outstr)
 
     def write(self, chrom, start, stop, count, outfile):
@@ -141,7 +155,7 @@ class ReadCounter(object):
         else:
             outfile.write(str(count) + '\n')
 
-    def get_data(self, data, chrom, outfile):
+    def get_data(self, data, chrom, outfile, reference=None):
         """iterates over reads, calculates counts and writes to output
         :param data: pysam iterator over reads
         :param chrom: str: chromosome name
@@ -149,7 +163,7 @@ class ReadCounter(object):
         """
         reflen = self.chr_lengths[chrom]
 
-        chrom_excluded=None
+        chrom_excluded = None
         if self.excluded is not None:
             chrom_excluded = self.__get_chrom_excluded(chrom, reflen)
 
@@ -166,10 +180,10 @@ class ReadCounter(object):
             if not self.filter(pileupobj, chrom_excluded):
                 count += 1
 
-        #catch up with end of chromosome
+        # catch up with end of chromosome
         while True:
             self.write(chrom, start, end, count, outfile)
-            count=0
+            count = 0
             start += self.window_size
             end = start + self.window_size
             if start > reflen:
@@ -219,8 +233,8 @@ def parse_args():
     parser.add_argument('-m', '--mapping_quality_threshold',
                         type=int,
                         default=0,
-                        help='threshold for the mapping quality, reads '\
-                        'with quality lower than threshold will be ignored')
+                        help='threshold for the mapping quality, reads ' \
+                             'with quality lower than threshold will be ignored')
 
     parser.add_argument('--seg',
                         default=False,
@@ -231,15 +245,17 @@ def parse_args():
                         default=None,
                         help='regions to skip')
 
-
+    parser.add_argument('--reference', default=None)
 
     args = parser.parse_args()
 
     return args
 
+
 if __name__ == "__main__":
     args = parse_args()
     with ReadCounter(args.bam, args.output, args.window_size,
                      args.chromosomes, args.mapping_quality_threshold,
-                     args.seg, excluded=args.exclude_list) as rcount:
+                     args.seg, excluded=args.exclude_list,
+                     reference=args.reference) as rcount:
         rcount.main()
