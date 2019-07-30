@@ -83,7 +83,10 @@ def get_hmmcopy_params(cluster, reference, binsize, smoothing_function):
         'docker': docker_containers,
         'igv_segs_quality_threshold': 0.75,
         'memory': {'med': 6},
-        'good_cells': [['median_hmmcopy_reads_per_bin', 'ge', 50]]
+        'good_cells': [
+            ['median_hmmcopy_reads_per_bin', 'ge', 50],
+            ['is_contaminated', 'in', ['False', 'false', False]],
+        ]
     }
 
     return {"hmmcopy": params}
@@ -157,6 +160,7 @@ def get_annotation_params(cluster, reference):
         'reference_gc': referencedata['reference_gc_qc'],
         'chromosomes': referencedata['chromosomes'],
         'num_states': 12,
+        'map_cutoff': 0.9,
         'corrupt_tree_params': {
             'neighborhood_size': 2,
             'lower_fraction': 0.05,
@@ -168,7 +172,8 @@ def get_annotation_params(cluster, reference):
         'good_cells': [
             ['quality', 'ge', 0.75],
             ['experimental_condition', 'notin', ["NTC", "NCC", "gDNA", "GM"]],
-            ['cell_call', 'in', ['C1']]
+            ['cell_call', 'in', ['C1']],
+            ['is_contaminated', 'in', ['False', 'false', False]],
         ]
     }
 
