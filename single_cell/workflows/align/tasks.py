@@ -1,3 +1,5 @@
+from __future__ import division
+
 import logging
 import os
 import shutil
@@ -15,20 +17,41 @@ from scripts import RunTrimGalore
 from scripts import SummaryMetrics
 
 
-def add_contamination_status(infile, outfile, reference='grch37', threshold=0.6):
+def add_contamination_status(
+        infile, outfile, reference='grch37', ref_threshold=0.6, alt_threshold=0.2
+):
     data = csvutils.read_csv_and_yaml(infile)
 
-    data['perc_ref'] = data[reference] / data['total_reads']
+    data = data.set_index('cell_id', drop=False)
+
+    fastqscreen_cols = [col for col in data.columns.values if col.startswith('fastqscreen_')]
+
+    reference = "fastqscreen_{}".format(reference)
+    if reference not in fastqscreen_cols:
+        raise Exception("Could not find the fastq screen counts")
+
+    alts = [col for col in fastqscreen_cols if not col == reference]
 
     data['is_contaminated'] = False
 
-    data[data['perc_ref'] <= threshold]['is_contaminated'] = True
+    perc_ref = data[reference] / data['total_reads']
+    data[perc_ref <= ref_threshold]['is_contaminated'] = True
 
-    del data['perc_ref']
+    for altcol in alts:
+        perc_alt = data[altcol] / data['total_reads']
+        data[perc_alt > alt_threshold]['is_contaminated'] = True
 
     csvutils.write_dataframe_to_csv_and_yaml(
         data, outfile, write_header=True
     )
+
+    try:
+        count_contaminated = data['is_contaminated'].value_counts()[True]
+        if count_contaminated / len(data) > 0.2:
+            raise Exception("over 20% of cells are contaminated")
+    # if there are no contaminated cells
+    except KeyError:
+        pass
 
 
 def merge_bams(inputs, output, output_index, containers):
