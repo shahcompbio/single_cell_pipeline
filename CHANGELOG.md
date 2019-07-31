@@ -5,11 +5,12 @@
 
 #### added
 * added a column indicating if a cell is contaminated
-* added a column indication if a segment is low mappability
+* added a column indicating if a segment is low mappability
 * filtered contaminated cells from heatmap
 * added extensions to metadata yaml files
 #### Changes:
 * seqdata files from haplotype calling are now temporary files
+* fastqscreen counts column names begin with fastqscreen_
 
 
 ### v0.3.0
