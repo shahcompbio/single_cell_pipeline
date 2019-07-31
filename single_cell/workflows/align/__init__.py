@@ -393,7 +393,10 @@ def create_alignment_workflow(
             mgd.TempInputFile('alignment_metrics.csv', extensions=['.yaml']),
             mgd.OutputFile(alignment_metrics, extensions=['.yaml']),
         ),
-        kwargs={'reference': config['ref_type']}
+        kwargs={
+            'reference': config['ref_type'],
+            'strict_validation': config['fastq_screen_params']['strict_validation']
+        }
     )
 
     workflow.transform(
