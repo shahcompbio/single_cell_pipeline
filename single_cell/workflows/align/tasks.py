@@ -17,8 +17,14 @@ from scripts import RunTrimGalore
 from scripts import SummaryMetrics
 
 
+class LibraryContaminationError(Exception):
+    pass
+
+
 def add_contamination_status(
-        infile, outfile, reference='grch37', ref_threshold=0.6, alt_threshold=0.2
+        infile, outfile,
+        reference='grch37', ref_threshold=0.6, alt_threshold=0.2,
+        strict_validation=True
 ):
     data = csvutils.read_csv_and_yaml(infile)
 
@@ -47,8 +53,9 @@ def add_contamination_status(
 
     try:
         count_contaminated = data['is_contaminated'].value_counts()[True]
-        if count_contaminated / len(data) > 0.2:
-            raise Exception("over 20% of cells are contaminated")
+
+        if strict_validation and (count_contaminated / len(data) > 0.2):
+            raise LibraryContaminationError("over 20% of cells are contaminated")
     # if there are no contaminated cells
     except KeyError:
         pass
