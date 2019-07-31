@@ -35,11 +35,11 @@ def add_contamination_status(
     data['is_contaminated'] = False
 
     perc_ref = data[reference] / data['total_reads']
-    data[perc_ref <= ref_threshold]['is_contaminated'] = True
+    data.loc[perc_ref <= ref_threshold, 'is_contaminated'] = True
 
     for altcol in alts:
         perc_alt = data[altcol] / data['total_reads']
-        data[perc_alt > alt_threshold]['is_contaminated'] = True
+        data.loc[perc_alt > alt_threshold, 'is_contaminated'] = True
 
     csvutils.write_dataframe_to_csv_and_yaml(
         data, outfile, write_header=True
