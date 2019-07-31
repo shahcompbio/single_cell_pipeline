@@ -187,7 +187,7 @@ def get_vm_size_azure(numcores, memory, tasks_per_node):
 def get_vm_image_id(disk_per_task, tasks_per_node):
     required_disk_size = disk_per_task * tasks_per_node
 
-    if required_disk_size <= 80:
+    if required_disk_size <= 40:
         # uses the temp disk on node, usually 40 GB
         imagename = 'docker-production-v3-standard'
     elif required_disk_size < 200:
@@ -252,10 +252,10 @@ def get_compute_start_commands(imageid):
     # to explicitly specify the user group when running docker commands. sg in
     # linux can be used to set group when executing commands
 
-    if 'dockerproduction-smalldisk' in imageid or 'docker-production' in imageid:
-        prefix = '/datadrive'
-    else:
+    if 'docker-production-v3-standard' in imageid:
         prefix = '/mnt/datadrive'
+    else:
+        prefix = '/datadrive'
 
     commands = [
         'clean_up () {',
@@ -280,10 +280,10 @@ def get_compute_start_commands(imageid):
 
 def get_compute_finish_commands(imageid):
 
-    if 'dockerproduction-smalldisk' in imageid or 'docker-production' in imageid:
-        prefix = '/datadrive'
-    else:
+    if 'docker-production-v3-standard' in imageid:
         prefix = '/mnt/datadrive'
+    else:
+        prefix = '/datadrive'
 
     commands = (
         'sg docker -c "docker run -v {0}:{0} -w {0}/$AZ_BATCH_TASK_WORKING_DIR continuumio/miniconda find . -xtype l -delete"\n'.format(prefix),
