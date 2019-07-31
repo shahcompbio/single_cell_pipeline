@@ -16,7 +16,10 @@ class ReadCounter(object):
     calculate reads per bin from the input bam file
     """
 
-    def __init__(self, bam, output, window_size, chromosomes, mapq, seg=None, excluded=None, reference=None):
+    def __init__(
+            self, bam, output, window_size, chromosomes, mapq,
+            seg=None, excluded=None, reference=None
+    ):
         self.bam = bam
 
         self.output = output
@@ -155,7 +158,7 @@ class ReadCounter(object):
         else:
             outfile.write(str(count) + '\n')
 
-    def get_data(self, data, chrom, outfile, reference=None):
+    def get_data(self, data, chrom, outfile):
         """iterates over reads, calculates counts and writes to output
         :param data: pysam iterator over reads
         :param chrom: str: chromosome name
