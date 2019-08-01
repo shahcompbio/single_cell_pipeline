@@ -35,7 +35,7 @@ def get_regions(chromosome_lengths, split_size):
 
     regions = []
 
-    for chrom, length in chromosome_lengths.iteritems():
+    for chrom, length in chromosome_lengths.items():
         lside_interval = range(1, length + 1, split_size)
         rside_interval = range(split_size, length + split_size, split_size)
 

@@ -3,11 +3,9 @@ Created on Jul 24, 2017
 
 @author: dgrewal
 '''
-import os
-import pypeliner
-
-from single_cell.utils import helpers
 from single_cell.utils import vcfutils
+
+import pypeliner
 
 
 def run_museq(tumour, normal, out, log, region, config, docker_kwargs={}):
@@ -30,9 +28,8 @@ def run_museq(tumour, normal, out, log, region, config, docker_kwargs={}):
            'reference:' + reference, '--out', out,
            '--log', log, '--interval', region]
 
-
-    museq_params = config.get('museq_params',{})
-    for key, val in museq_params.iteritems():
+    museq_params = config.get('museq_params', {})
+    for key, val in museq_params.items():
         if isinstance(val, bool):
             if val:
                 cmd.append('--{}'.format(key))
@@ -48,5 +45,3 @@ def run_museq(tumour, normal, out, log, region, config, docker_kwargs={}):
 
 def concatenate_vcfs(inputs, output):
     vcfutils.concatenate_vcf(inputs, output)
-
-

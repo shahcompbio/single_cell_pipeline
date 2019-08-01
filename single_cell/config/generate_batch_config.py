@@ -1,8 +1,9 @@
 
-import os
-from single_cell.utils import helpers
 import logging
-import batch
+import os
+
+from single_cell.config import batch
+from single_cell.utils import helpers
 
 
 def generate_submit_config_in_temp(args):

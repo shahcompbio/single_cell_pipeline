@@ -1,6 +1,6 @@
 from pypeliner.workflow import Workflow
+
 import pypeliner
-from single_cell.utils import helpers
 
 default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 
@@ -15,7 +15,6 @@ def create_strelka_workflow(
         chromosomes=default_chromosomes,
         split_size=int(1e7),
         use_depth_thresholds=True):
-
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
            'num_retry': 3, 'docker_image': config['docker']['single_cell_pipeline']}
 
@@ -54,8 +53,8 @@ def create_strelka_workflow(
         func="single_cell.workflows.strelka.tasks.get_known_chromosome_sizes",
         ret=pypeliner.managed.TempOutputObj('known_sizes'),
         args=(
-              pypeliner.managed.TempInputFile('ref_base_counts.tsv'),
-              chromosomes
+            pypeliner.managed.TempInputFile('ref_base_counts.tsv'),
+            chromosomes
         )
     )
 

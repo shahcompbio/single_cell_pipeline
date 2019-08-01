@@ -3,8 +3,9 @@ Created on Feb 27, 2018
 
 @author: dgrewal
 '''
-import os
 import logging
+import os
+
 
 def _get_header(infile):
     '''
@@ -29,6 +30,7 @@ def _get_header(infile):
     )
     return []
 
+
 def concatenate_vcf(infiles, outfile):
     '''
     Concatenate VCF files
@@ -40,7 +42,7 @@ def concatenate_vcf(infiles, outfile):
     with open(outfile, 'w') as ofile:
         header = None
 
-        for _,ifile in infiles.iteritems():
+        for _, ifile in infiles.items():
 
             if os.path.getsize(ifile) == 0:
                 logging.getLogger("single_cell.helpers.vcfutils").warn(
@@ -62,5 +64,4 @@ def concatenate_vcf(infiles, outfile):
                         )
 
                 for l in f:
-                    print >> ofile, l,
-
+                    ofile.write(l)

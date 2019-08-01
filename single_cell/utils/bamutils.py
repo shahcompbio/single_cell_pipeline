@@ -10,7 +10,7 @@ import pypeliner
 import pysam
 from single_cell.utils import helpers
 
-from helpers import makedirs
+from single_cell.utils.helpers import makedirs
 
 
 def produce_fastqc_report(fastq_filename, output_html, output_plots, temp_dir,

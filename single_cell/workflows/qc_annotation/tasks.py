@@ -7,14 +7,14 @@ import os
 import shutil
 
 import pandas as pd
-import pypeliner
 from ete3 import Tree
+from .scripts import classify
+from .scripts import generate_qc
 from single_cell.utils import csvutils
 from single_cell.utils import helpers
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotPcolor
 
-from scripts import classify
-from scripts import generate_qc
+import pypeliner
 
 
 def add_corrupt_tree_order(corrupt_tree, metrics, output):
@@ -55,7 +55,7 @@ def annotate_metrics(
     for cellid in cells:
         cellinfo = sample_info[cellid]
 
-        for colname, value in cellinfo.iteritems():
+        for colname, value in cellinfo.items():
             metrics.loc[metrics["cell_id"] == cellid, colname] = value
 
     csvutils.write_dataframe_to_csv_and_yaml(metrics, output)

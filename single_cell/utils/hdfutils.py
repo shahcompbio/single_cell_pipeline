@@ -4,7 +4,7 @@ Created on May 9, 2018
 @author: dgrewal
 '''
 import pandas as pd
-import helpers
+from single_cell.utils import helpers
 import logging
 import gc
 from biowrappers.components.io.hdf5 import tasks as biowrappers_hdf5
@@ -14,8 +14,8 @@ def get_min_itemsize(files):
 
     itemsizes = biowrappers_hdf5._get_min_itemsize(files)
 
-    for tablename, tableitemsizes in itemsizes.iteritems():
-        for col, len_item in tableitemsizes.iteritems():
+    for tablename, tableitemsizes in itemsizes.items():
+        for col, len_item in tableitemsizes.items():
             if col in min_itemsize:
                 min_itemsize[col] = max(min_itemsize[col], len_item)
             else:
@@ -149,7 +149,7 @@ def merge_cells_in_memory(
     data = pd.concat(data)
     data = data.reset_index()
 
-    for col, dtype in dtypes.iteritems():
+    for col, dtype in dtypes.items():
         data[col] = data[col].astype(dtype)
 
     output_store_obj.put(tablename, data, format="table")
@@ -167,7 +167,7 @@ def merge_cells_on_disk(
         for tableid in tables_to_merge:
             celldata = input_store[tableid]
 
-            for col, dtype in dtypes.iteritems():
+            for col, dtype in dtypes.items():
                 celldata[col] = celldata[col].astype(dtype)
 
             if tablename not in output_store_obj:
@@ -220,7 +220,7 @@ def annotate_per_cell_store_with_dict(infile, annotation_data, output):
 
             cell_info = annotation_data[cell_id]
 
-            for colname, value in cell_info.iteritems():
+            for colname, value in cell_info.items():
                 data[colname] = value
 
                 output.put(tableid, data, format="table")
@@ -251,7 +251,7 @@ def annotate_store_with_dict(infile, annotation_data, output, tables=None):
 
         for cellid in cells:
             cell_info = annotation_data[cellid]
-            for colname, value in cell_info.iteritems():
+            for colname, value in cell_info.items():
                 data.loc[data["cell_id"] == cellid, colname] = value
 
         output_store.put(tableid, data, format="table")

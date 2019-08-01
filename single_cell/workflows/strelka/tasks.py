@@ -5,19 +5,16 @@ Created on Nov 1, 2015
 '''
 from __future__ import division
 
+import csv
+import math
+import re
 from collections import OrderedDict
 
-import csv
-import ConfigParser
-import math
+from configparser import ConfigParser
 import pandas as pd
-import pypeliner
 import vcf
 
-import re
-from single_cell.utils import helpers
-
-
+import pypeliner
 
 FILTER_ID_BASE = 'BCNoise'
 FILTER_ID_DEPTH = 'DP'
@@ -29,16 +26,15 @@ FILTER_ID_SPANNING_DELETION = 'SpanDel'
 
 
 def _get_files_for_chrom(infiles, intervals, chrom):
-
     if not isinstance(infiles, dict):
-        infiles = {ival:infiles[ival] for ival in intervals}
+        infiles = {ival: infiles[ival] for ival in intervals}
 
     outfiles = {}
 
     for interval in intervals:
         ival_chrom = interval.split("-")[0]
 
-        if ival_chrom==chrom:
+        if ival_chrom == chrom:
             outfiles[interval] = infiles[interval]
 
     return outfiles
@@ -58,8 +54,8 @@ def get_known_chromosome_sizes(size_file, chromosomes):
 
     return sizes
 
-def count_fasta_bases(ref_genome_fasta_file, out_file, docker_config):
 
+def count_fasta_bases(ref_genome_fasta_file, out_file, docker_config):
     cmd = [
         'countFastaBases',
         ref_genome_fasta_file,
@@ -90,15 +86,13 @@ def call_somatic_variants(
         ssnv_noise=0.0000005,
         ssnv_noise_strand_bias_frac=0.5,
         ssnv_prior=0.000001):
-
-    chrom,beg,end = re.split("-", region)
+    chrom, beg, end = re.split("-", region)
 
     genome_size = sum(known_sizes.values())
 
     beg = int(beg)
-    beg = beg+1 if beg==0 else beg
+    beg = beg + 1 if beg == 0 else beg
     end = int(end)
-
 
     cmd = [
         'strelka2',
@@ -147,9 +141,10 @@ def call_somatic_variants(
 
     pypeliner.commandline.execute(*cmd, **docker_config)
 
-#=======================================================================================================================
+
+# =======================================================================================================================
 # SNV filtering
-#=======================================================================================================================
+# =======================================================================================================================
 
 
 def filter_snv_file_list(
@@ -164,8 +159,6 @@ def filter_snv_file_list(
         max_spanning_deletion_frac=0.75,
         quality_lower_bound=15,
         use_depth_filter=True):
-
-
     known_chrom_size = known_chrom_size[chrom]
 
     in_files = _get_files_for_chrom(in_files, intervals, chrom)
@@ -175,7 +168,7 @@ def filter_snv_file_list(
 
     writer = None
 
-    with open(out_file, 'wb') as out_fh:
+    with open(out_file, 'wt') as out_fh:
         for key in sorted(in_files):
             reader = vcf.Reader(filename=in_files[key])
 
@@ -222,8 +215,7 @@ def filter_snv_file_list(
                 tumour_filtered_base_call_fraction = _get_filtered_base_call_fraction(tumour.data)
 
                 if (normal_filtered_base_call_fraction >= max_filtered_basecall_frac) or \
-                   (tumour_filtered_base_call_fraction >= max_filtered_basecall_frac):
-
+                        (tumour_filtered_base_call_fraction >= max_filtered_basecall_frac):
                     record.add_filter(FILTER_ID_BASE)
 
                 # Spanning deletion fraction
@@ -232,8 +224,7 @@ def filter_snv_file_list(
                 tumour_spanning_deletion_fraction = _get_spanning_deletion_fraction(tumour.data)
 
                 if (normal_spanning_deletion_fraction > max_spanning_deletion_frac) or \
-                   (tumour_spanning_deletion_fraction > max_spanning_deletion_frac):
-
+                        (tumour_spanning_deletion_fraction > max_spanning_deletion_frac):
                     record.add_filter(FILTER_ID_SPANNING_DELETION)
 
                 # Q-val filter
@@ -246,7 +237,6 @@ def filter_snv_file_list(
 
 
 def _get_max_normal_coverage(chrom, depth_filter_multiple, known_chrom_size, stats_files):
-
     normal_coverage = _get_normal_coverage(stats_files.values())
 
     normal_mean_coverage = normal_coverage / known_chrom_size
@@ -298,9 +288,10 @@ def _get_spanning_deletion_fraction(data):
 
     return frac
 
-#=======================================================================================================================
+
+# =======================================================================================================================
 # Indel filtering
-#=======================================================================================================================
+# =======================================================================================================================
 
 
 def filter_indel_file_list(
@@ -317,7 +308,6 @@ def filter_indel_file_list(
         max_window_filtered_basecall_frac=0.3,
         quality_lower_bound=30,
         use_depth_filter=True):
-
     window_cols = (
         'chrom',
         'coord',
@@ -329,7 +319,6 @@ def filter_indel_file_list(
         'tumour_window_submap'
     )
 
-
     known_chrom_size = known_chrom_size[chrom]
 
     vcf_files = _get_files_for_chrom(vcf_files, intervals, chrom)
@@ -340,12 +329,12 @@ def filter_indel_file_list(
 
     writer = None
 
-    with open(out_file, 'wb') as out_fh:
+    with open(out_file, 'wt') as out_fh:
         for key in sorted(vcf_files):
             window = pd.read_csv(
                 window_files[key],
                 comment='#',
-                        converters={'chrom': str},
+                converters={'chrom': str},
                 header=None,
                 names=window_cols,
                 sep='\t')
@@ -442,8 +431,6 @@ def filter_indel_file_list(
 
                 tumour.data = _convert_dict_to_call(tumour_data)
 
-                print normal.data
-
                 # Add filters
 
                 # Normal depth filter
@@ -470,8 +457,7 @@ def filter_indel_file_list(
                 tumour_filtered_base_call_fraction = _get_filtered_base_call_fraction_indel(tumour.data)
 
                 if (normal_filtered_base_call_fraction >= max_window_filtered_basecall_frac) or \
-                   (tumour_filtered_base_call_fraction >= max_window_filtered_basecall_frac):
-
+                        (tumour_filtered_base_call_fraction >= max_window_filtered_basecall_frac):
                     record.add_filter(FILTER_ID_BASE)
 
                 # Q-val filter
@@ -497,9 +483,10 @@ def _get_filtered_base_call_fraction_indel(data):
 
     return frac
 
-#=======================================================================================================================
+
+# =======================================================================================================================
 # Write config file for make style strelka
-#=======================================================================================================================
+# =======================================================================================================================
 
 
 def configure_run(normal_bam_file,
@@ -527,7 +514,6 @@ def configure_run(normal_bam_file,
                   ssnv_quality_lower_bound=15,
                   skip_depth_filters=False,
                   write_realigned_bam=False):
-
     parser = ConfigParser.ConfigParser()
 
     parser.add_section('user')
@@ -581,12 +567,13 @@ def configure_run(normal_bam_file,
 
     parser.set('derived', 'refFile', ref_genome_fasta_file)
 
-    with open(out_file, 'wb') as out_fh:
+    with open(out_file, 'wt') as out_fh:
         parser.write(out_fh)
 
-#=======================================================================================================================
+
+# =======================================================================================================================
 # Dump to table
-#=======================================================================================================================
+# =======================================================================================================================
 
 
 def convert_vcf_to_hdf5(in_file, out_file, data_type='snv', table_name=None):
@@ -622,5 +609,3 @@ def convert_vcf_to_hdf5(in_file, out_file, data_type='snv', table_name=None):
         out_store.append(table_name, row)
 
     out_store.close()
-
-

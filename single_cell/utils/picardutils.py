@@ -7,7 +7,7 @@ import os
 
 import pypeliner.commandline
 
-from helpers import makedirs
+from single_cell.utils.helpers import makedirs
 
 
 def merge_bams(inputs, output, mem="2G", **kwargs):

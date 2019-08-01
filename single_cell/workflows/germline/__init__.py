@@ -1,6 +1,6 @@
 from pypeliner.workflow import Workflow
-import pypeliner
 
+import pypeliner
 
 default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 
@@ -13,7 +13,6 @@ def create_samtools_germline_workflow(
         samtools_docker=None,
         vcftools_docker=None
 ):
-
     baseimage = config['docker']['single_cell_pipeline']
 
     ctx = {'mem': config["memory"]['low'],
@@ -45,7 +44,7 @@ def create_samtools_germline_workflow(
             'vcftools_docker': samtools_docker
         },
     )
-  
+
     workflow.transform(
         name='concatenate_variants',
         func="single_cell.workflows.strelka.vcf_tasks.concatenate_vcf",

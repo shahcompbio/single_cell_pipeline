@@ -3,10 +3,10 @@ Created on Nov 21, 2015
 
 @author: Andrew Roth
 '''
+import errno
 import os
 import random
 import time
-import errno
 
 
 def find(name, path):
@@ -30,7 +30,7 @@ def get_ancestor_directory(path, level=1):
     return ancestor_dir
 
 
-def make_directory(target_dir, mode=0775):
+def make_directory(target_dir, mode=775):
     '''
     Check if a directory exists and make it if not.
 
@@ -58,7 +58,7 @@ def make_directory(target_dir, mode=0775):
         os.umask(old_umask)
 
 
-def make_parent_directory(file_name, mode=0775):
+def make_parent_directory(file_name, mode=775):
     '''
     Given a file name, make the parent directory if it does not exist using make_directory.
 
@@ -70,7 +70,6 @@ def make_parent_directory(file_name, mode=0775):
 
 
 def flatten_input(files):
-
     if type(files) == dict:
         parsed_files = [files[x] for x in sorted(files)]
     elif type(files) == str:
@@ -117,6 +116,7 @@ def symlink(filename, link_name=None, link_directory=None):
     filename = os.path.abspath(filename)
     os.symlink(filename, link_filename)
     return link_filename
+
 
 if __name__ == '__main__':
     import doctest

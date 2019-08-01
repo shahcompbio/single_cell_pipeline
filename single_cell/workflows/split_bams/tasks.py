@@ -3,15 +3,16 @@ Created on Nov 21, 2017
 
 @author: dgrewal
 '''
-import os
 import gzip
-import pypeliner
-from single_cell.utils import helpers
+import os
+
 from single_cell.utils import bamutils
+from single_cell.utils import helpers
+
+import pypeliner
 
 
 def split_bam_file_one_job(bam, outbam, regions, samtools_docker, tempdir, ncores=None):
-
     commands = []
     for region in regions:
         output = outbam[region]
@@ -23,12 +24,12 @@ def split_bam_file_one_job(bam, outbam, regions, samtools_docker, tempdir, ncore
     commands = []
     for region in regions:
         output = outbam[region]
-        commands.append(['samtools', 'index', output, output+".bai"])
+        commands.append(['samtools', 'index', output, output + ".bai"])
 
     helpers.run_in_gnu_parallel(commands, tempdir, samtools_docker, ncores=ncores)
 
-def split_bam_file(bam, outbam, interval, samtools_docker):
 
+def split_bam_file(bam, outbam, interval, samtools_docker):
     outbai = outbam + '.bai'
     bamutils.bam_view(bam, outbam, interval, docker_image=samtools_docker)
 
@@ -94,7 +95,6 @@ def get_file_linecount(infile):
 
 
 def split(infile, outfiles, headerfile=None):
-
     if headerfile:
         with open(headerfile) as headerdata:
             header = headerdata.readlines()

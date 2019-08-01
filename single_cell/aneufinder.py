@@ -4,12 +4,13 @@ Created on Feb 20, 2018
 @author: dgrewal
 '''
 
-
 import os
+
 import pypeliner.managed as mgd
-from workflows import aneufinder 
-from single_cell.utils import helpers
 import single_cell
+from single_cell.utils import helpers
+from single_cell.workflows import aneufinder
+
 import pypeliner
 
 
@@ -29,7 +30,7 @@ def aneufinder_workflow(args):
         value=cellids,
     )
 
-    info_file = os.path.join(args["out_dir"],'results', 'aneufinder', "info.yaml")
+    info_file = os.path.join(args["out_dir"], 'results', 'aneufinder', "info.yaml")
 
     output = os.path.join(args['out_dir'], 'results', "aneufinder")
 
@@ -54,13 +55,13 @@ def aneufinder_workflow(args):
 
     results = {
         'aneufinder_plot': helpers.format_file_yaml(aneufinder_pdf_file),
-        'aneufinder_data':helpers.format_file_yaml(results_filename),
+        'aneufinder_data': helpers.format_file_yaml(results_filename),
     }
 
-    input_datasets = {k: helpers.format_file_yaml(v) for k, v in bam_files.iteritems()}
+    input_datasets = {k: helpers.format_file_yaml(v) for k, v in bam_files.items()}
 
     metadata = {
-        'aneufinder':{
+        'aneufinder': {
             'reads_table': '/aneufinder/reads',
             'segments_table': '/aneufinder/segments/',
             'chromosomes': config['chromosomes'],
@@ -86,9 +87,7 @@ def aneufinder_workflow(args):
     return workflow
 
 
-
 def aneufinder_pipeline(args):
-
     pyp = pypeliner.app.Pypeline(config=args)
 
     workflow = aneufinder_workflow(args)

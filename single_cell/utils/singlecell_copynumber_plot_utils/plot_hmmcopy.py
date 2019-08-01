@@ -6,23 +6,22 @@ Created on Nov 16, 2016
 from __future__ import division
 
 import argparse
-import pandas as pd
+
 import matplotlib
+import pandas as pd
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 import statsmodels.api as sm
-import utils as utl
+import single_cell.utils.singlecell_copynumber_plot_utils.utils as utl
 import matplotlib.gridspec as gridspec
 
 from matplotlib.colors import rgb2hex
 
-from single_cell.utils import helpers
 from single_cell.utils import csvutils
 
 import numpy as np
-import os
-import yaml
 
 lowess = sm.nonparametric.lowess
 
@@ -30,14 +29,13 @@ matplotlib.rcParams['pdf.fonttype'] = 42
 
 
 def parse_args():
-
     ann_cols = ['cell_call', 'experimental_condition', 'sample_type',
                 'median_hmmcopy_reads_per_bin', 'mad_neutral_state',
                 'MSRSI_non_integerness']
 
-    #=========================================================================
+    # =========================================================================
     # Read Command Line Input
-    #=========================================================================
+    # =========================================================================
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--corrected_reads',
@@ -138,7 +136,6 @@ class GenHmmPlots(object):
         metrics_file = self.metrics
         return self.read_csv(metrics_file)
 
-
     def read_params(self):
         """
 
@@ -173,7 +170,7 @@ class GenHmmPlots(object):
         if not df.empty:
             # just the sort order in here, dont need to change for mouse.
             # might need to extend if reference has more genomes than human
-            chromosomes = map(str, range(1, 23)) + ['X', 'Y']
+            chromosomes = list(map(str, range(1, 23))) + ['X', 'Y']
             df["chr"] = pd.Categorical(df["chr"], chromosomes)
             df = df.sort_values(['chr', 'start', 'end'])
             df = utl.compute_chromosome_coordinates(df, self.ref_genome)
@@ -204,7 +201,7 @@ class GenHmmPlots(object):
 
         fig.text(pos[0], pos[1], annotations, fontsize=fontsize,
                  horizontalalignment='center',
-                 verticalalignment='center',)
+                 verticalalignment='center', )
 
     def plot_bias(self, pdfout):
         """
@@ -245,9 +242,9 @@ class GenHmmPlots(object):
 
             mapp = {
                 gc: pred for gc,
-                pred in zip(
-                    df_ideal["gc"],
-                    df_ideal["modal_curve"])}
+                             pred in zip(
+                df_ideal["gc"],
+                df_ideal["modal_curve"])}
             x = sorted(df_ideal["gc"])
             y = [mapp[v] for v in x]
             plt.plot(x, y)
@@ -335,7 +332,7 @@ class GenHmmPlots(object):
         utl.add_legend(
             fig,
             cmap,
-            self.num_states+1,
+            self.num_states + 1,
             type='rectangle',
             location='upper center')
 
@@ -427,7 +424,6 @@ class GenHmmPlots(object):
         # clip the copy column to 40 to avoid crashes due to super high outliers in data
         # df["copy"] = np.clip(df["copy"], 0, 40)
 
-
         utl.add_open_grid_lines(ax)
 
         fig.suptitle(self.sample_id, x=0.5, y=0.97)
@@ -470,13 +466,13 @@ class GenHmmPlots(object):
             x = np.arange(0, np.nanmax(np.array(reads["copy"])), 0.01)
             mu = params[
                 (params["parameter"] == "mus") & (
-                    params["state"] == state)]["final"].iloc[0]
+                        params["state"] == state)]["final"].iloc[0]
             lmbda = params[
                 (params["parameter"] == "lambdas") & (
-                    params["state"] == state)]["final"].iloc[0]
+                        params["state"] == state)]["final"].iloc[0]
             nu = params[
                 (params["parameter"] == "nus") & (
-                    params["state"] == state)]["final"].iloc[0]
+                        params["state"] == state)]["final"].iloc[0]
 
             y = utl.t_dist_pdf(x, mu, lmbda, nu)
             x = x * scale

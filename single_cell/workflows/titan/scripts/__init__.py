@@ -5,4 +5,4 @@ Created on Apr 13, 2018
 '''
 
 
-import merge_wigs
+from . import merge_wigs

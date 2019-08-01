@@ -15,11 +15,11 @@ from multiprocessing.pool import ThreadPool
 from subprocess import Popen, PIPE
 
 import pandas as pd
-import pypeliner
 import single_cell
 import yaml
+from single_cell.utils import storageutils
 
-import storageutils
+import pypeliner
 
 
 def generate_and_upload_metadata(args, root_dir, filepaths, metadata):
@@ -100,7 +100,7 @@ def copyfile(source, dest):
 
 
 class getFileHandle(object):
-    def __init__(self, filename, mode='r'):
+    def __init__(self, filename, mode='rt'):
         self.filename = filename
         self.mode = mode
 
@@ -183,7 +183,7 @@ def load_yaml_section(data, section_name):
         if 'bam' in section_data:
             section_data = section_data['bam']
         else:
-            section_data = {cell_id: bamdata['bam'] for cell_id, bamdata in section_data.iteritems()}
+            section_data = {cell_id: bamdata['bam'] for cell_id, bamdata in section_data.items()}
     else:
         section_id = None
         section_data = None
@@ -250,9 +250,9 @@ def get_fastq_files(input_yaml):
     data = load_yaml(input_yaml)
 
     items = {}
-    for cell_id, cell_data in data.iteritems():
+    for cell_id, cell_data in data.items():
         items[cell_id] = {}
-        for lane, laneinfo in cell_data["fastqs"].iteritems():
+        for lane, laneinfo in cell_data["fastqs"].items():
             items[cell_id][lane] = {}
             items[cell_id][lane]['fastq_1'] = format_file_yaml(laneinfo['fastq_1'])
             items[cell_id][lane]['fastq_2'] = format_file_yaml(laneinfo['fastq_2'])
@@ -480,7 +480,7 @@ def get_fastqs(fastqs_file):
     for cell in data.keys():
         fastqs = data[cell]["fastqs"]
 
-        for lane, paths in fastqs.iteritems():
+        for lane, paths in fastqs.items():
             fastq_1_filenames[(cell, lane)] = paths["fastq_1"]
             fastq_2_filenames[(cell, lane)] = paths["fastq_2"]
 
@@ -498,7 +498,7 @@ def get_trim_info(fastqs_file):
     for cell in data.keys():
         fastqs = data[cell]["fastqs"]
 
-        for lane, paths in fastqs.iteritems():
+        for lane, paths in fastqs.items():
             if 'trim' in paths:
                 seqinfo[(cell, lane)] = paths["trim"]
             elif 'sequencing_instrument' in paths:
@@ -527,7 +527,7 @@ def get_center_info(fastqs_file):
     for cell in data.keys():
         fastqs = data[cell]["fastqs"]
 
-        for lane, paths in fastqs.iteritems():
+        for lane, paths in fastqs.items():
 
             if "sequencing_center" not in paths:
                 raise Exception(
@@ -561,7 +561,7 @@ def get_sample_info(fastqs_file):
 def get_samples(fastqs_file):
     data = load_yaml(fastqs_file)
 
-    return data.keys()
+    return list(data.keys())
 
 
 def get_bams(fastqs_file):

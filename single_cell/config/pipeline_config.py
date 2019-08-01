@@ -8,12 +8,12 @@ import copy
 
 import yaml
 
-import config_reference
+from single_cell.config import config_reference
 
 
 def override_config(config, override):
     def update(d, u):
-        for k, v in u.iteritems():
+        for k, v in u.items():
             if isinstance(v, collections.Mapping):
                 d[k] = update(d.get(k, {}), v)
             else:

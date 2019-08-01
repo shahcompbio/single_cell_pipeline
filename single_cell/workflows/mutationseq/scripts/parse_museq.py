@@ -45,7 +45,7 @@ class ParseMuseq(object):
         '''
         header = False
         with open(self.output, 'w') as outfile:
-            for (case, tum, norm), fname in self.infiles.iteritems():
+            for (case, tum, norm), fname in self.infiles.items():
     
                 museq = Vcf(tumour_id = tum,
                             normal_id = norm,

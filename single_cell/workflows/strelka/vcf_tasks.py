@@ -3,20 +3,16 @@ Created on Oct 31, 2015
 
 @author: Andrew Roth
 '''
-# from pypeliner.workflow import Workflow
-
-import os
 import itertools
-import pandas as pd
-import pypeliner
+import os
 import shutil
-# import time
-import vcf
 
-from components_utils import flatten_input
+import pandas as pd
+import vcf
+from .components_utils import flatten_input
 from single_cell.utils import helpers
 
-# from ._merge import merge_vcfs
+import pypeliner
 
 
 def compress_vcf(in_file, out_file):
@@ -42,7 +38,7 @@ def filter_vcf(in_file, out_file):
 
     reader = vcf.Reader(filename=in_file)
 
-    with open(out_file, 'wb') as out_fh:
+    with open(out_file, 'wt') as out_fh:
         writer = vcf.Writer(out_fh, reader)
 
         for record in reader:
@@ -138,8 +134,8 @@ def concatenate_vcf(
 
     pypeliner.commandline.execute(*cmd, **docker_config)
 
-    #sort merged vcf file
-    cmd = ['bcftools', 'sort', '-O', 'z', '-o', out_file,  merged_file]
+    # sort merged vcf file
+    cmd = ['bcftools', 'sort', '-O', 'z', '-o', out_file, merged_file]
     pypeliner.commandline.execute(*cmd, **docker_config)
 
     index_vcf(out_file, docker_config)
@@ -198,7 +194,7 @@ def split_vcf(in_file, out_file_callback, lines_per_file):
     for file_idx, records in itertools.groupby(reader, key=line_group):
         file_name = out_file_callback(file_idx)
 
-        with open(file_name, 'w') as out_fh:
+        with open(file_name, 'wt') as out_fh:
             writer = vcf.Writer(out_fh, reader)
 
             for record in records:
@@ -208,15 +204,14 @@ def split_vcf(in_file, out_file_callback, lines_per_file):
 
 
 def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
-
     def line_group(line, line_idx=itertools.count()):
         return int(next(line_idx) / chunk_size)
 
     chunk_size = 1000
 
-    #===================================================================================================================
+    # ===================================================================================================================
     # find all entries in categories
-    #===================================================================================================================
+    # ===================================================================================================================
     reader = vcf.Reader(filename=in_file)
 
     chrom_categories = set()
@@ -232,7 +227,6 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
         ref_categories.add(str(record.REF))
 
         for alt in record.ALT:
-
             alt_categories.add(str(alt))
 
     chrom_categories = sorted(chrom_categories)
@@ -241,9 +235,9 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
 
     alt_categories = sorted(alt_categories)
 
-    #===================================================================================================================
+    # ===================================================================================================================
     # convert
-    #===================================================================================================================
+    # ===================================================================================================================
 
     # reopen reader to restart iter
     reader = vcf.Reader(filename=in_file)
@@ -292,7 +286,6 @@ def convert_vcf_to_hdf5(in_file, out_file, table_name, score_callback=None):
 
 
 def sort_vcf(in_file, out_file):
-
     pypeliner.commandline.execute(
         'vcf-sort',
         in_file,

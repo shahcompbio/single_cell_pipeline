@@ -3,10 +3,9 @@ Created on Jul 6, 2017
 
 @author: dgrewal
 '''
-import copy
-import pypeliner
 import pypeliner.managed as mgd
-from single_cell.utils import helpers
+
+import pypeliner
 
 
 def create_hmmcopy_workflow(

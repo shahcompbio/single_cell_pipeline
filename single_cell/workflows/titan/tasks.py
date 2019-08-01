@@ -1,10 +1,10 @@
-import numpy as np
-import pandas as pd
-from scripts import merge_wigs
 import logging
 
-from single_cell.utils import csvutils
+import numpy as np
+import pandas as pd
 import remixt
+from .scripts import merge_wigs
+from single_cell.utils import csvutils
 
 
 def merge_overlapping_seqdata(outfile, infiles, chromosomes):
@@ -12,7 +12,7 @@ def merge_overlapping_seqdata(outfile, infiles, chromosomes):
 
     index_offsets = pd.Series(0, index=chromosomes, dtype=np.int64)
 
-    for _id, infile in infiles.iteritems():
+    for _id, infile in infiles.items():
         store = pd.HDFStore(infile)
         tables = store.keys()
 
@@ -54,9 +54,7 @@ def merge_overlapping_seqdata(outfile, infiles, chromosomes):
 def create_chromosome_seqdata(seqdata, bam_file, snp_positions, chromosomes,
                               bam_max_fragment_length, bam_max_soft_clipped,
                               bam_check_proper_pair):
-
     for chromosome in chromosomes:
-
         chrom_seqdata = seqdata[chromosome]
 
         remixt.seqdataio.create_chromosome_seqdata(
@@ -66,7 +64,6 @@ def create_chromosome_seqdata(seqdata, bam_file, snp_positions, chromosomes,
 
 
 def merge_wig_files(input_wigs, output):
-
     input_wigs = input_wigs.values()
     merge_wigs.main(input_wigs, output)
 
@@ -78,10 +75,9 @@ def merge_het_positions(input_csvs, output):
 
 
 def merge_tumour_alleles(input_csvs, output):
-
     data = {}
 
-    for _, infile in input_csvs.iteritems():
+    for _, infile in input_csvs.items():
 
         with open(infile) as reader:
             for line in reader:
@@ -97,17 +93,16 @@ def merge_tumour_alleles(input_csvs, output):
                     data[(chrom, pos)] = (oldref + ref, oldalt + alt)
 
     with open(output, "w") as writer:
-        for (chrom, pos), (ref, alt) in data.iteritems():
+        for (chrom, pos), (ref, alt) in data.items():
             writer.write("{}\t{}\tA\t{}\tT\t{}\n".format(chrom, pos, ref, alt))
 
 
 def concat_tumour_alleles(input_csvs, output_filename, chromosomes):
-
     store = pd.HDFStore(output_filename, 'w', complevel=9, complib='blosc')
 
-    for cell_id, input_filename in input_csvs.iteritems():
+    for cell_id, input_filename in input_csvs.items():
         cell_data = pd.read_csv(input_filename, sep='\t', header=None,
-            names=['chromosome', 'coord', 'ref', 'ref_counts', 'alt', 'alt_counts'])
+                                names=['chromosome', 'coord', 'ref', 'ref_counts', 'alt', 'alt_counts'])
         cell_data = cell_data.drop(['ref', 'alt'], axis=1)
         cell_data['chromosome'] = cell_data['chromosome'].astype('category', categories=chromosomes)
         cell_data['cell_id'] = cell_id
@@ -116,5 +111,3 @@ def concat_tumour_alleles(input_csvs, output_filename, chromosomes):
         store.append('/allele_counts', cell_data, data_columns=['cell_id', 'chromosome'])
 
     store.close()
-
-

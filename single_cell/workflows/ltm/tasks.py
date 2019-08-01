@@ -4,15 +4,15 @@ Created on July 31, 2018
 @author: pwalters
 '''
 
-import os
-import pypeliner
 import multiprocessing
-import subprocess
+import os
+
 import pandas as pd
 from scipy.special import comb
-
-from single_cell.utils import ltmutils
 from single_cell.utils import helpers
+from single_cell.utils import ltmutils
+
+import pypeliner
 
 scripts_directory = os.path.join(
     os.path.realpath(
@@ -20,22 +20,23 @@ scripts_directory = os.path.join(
     'scripts')
 
 
-def generate_cn_matrices(hmmcopy, cn_matrix, ploidy = '0'):
+def generate_cn_matrices(hmmcopy, cn_matrix, ploidy='0'):
     cn_df, dropped_cells = ltmutils.get_cn_matrix_from_hdf(hmmcopy, ploidy)
     metrics_summary_df = pd.read_hdf(hmmcopy, '/hmmcopy/metrics/' + ploidy)
     reads_df = pd.read_hdf(hmmcopy, '/hmmcopy/reads/' + ploidy)
 
     if dropped_cells:
-        metrics_summary_df = metrics_summary_df.drop(index = metrics_summary_df.loc[metrics_summary_df['cell_id'].isin(dropped_cells)].index)
+        metrics_summary_df = metrics_summary_df.drop(
+            index=metrics_summary_df.loc[metrics_summary_df['cell_id'].isin(dropped_cells)].index)
 
     # Filter out cells with quality less than 0.75
-    cn_df = cn_df.drop(columns = metrics_summary_df[metrics_summary_df['quality'] < 0.75]['cell_id'])
-   
+    cn_df = cn_df.drop(columns=metrics_summary_df[metrics_summary_df['quality'] < 0.75]['cell_id'])
+
     # Filter out bins with mappability < 0.99
     i = reads_df.loc[(reads_df['cell_id'] == reads_df.iloc[0]['cell_id']) & (reads_df['map'] >= 0.99)].index
     cn_df = cn_df.iloc[i]
 
-    cn_df.to_csv(cn_matrix, index = False)
+    cn_df.to_csv(cn_matrix, index=False)
 
 
 def merge_cn_matrices(infiles, outfile):
@@ -44,8 +45,8 @@ def merge_cn_matrices(infiles, outfile):
     for cn_matrix in infiles.values():
         cn_list.append(pd.read_csv(cn_matrix))
 
-    cn_matrix = pd.concat(cn_list, axis = 1, join = 'outer')
-    cn_matrix = cn_matrix.T.drop_duplicates().T # Get rid of any duplicate columns
+    cn_matrix = pd.concat(cn_list, axis=1, join='outer')
+    cn_matrix = cn_matrix.T.drop_duplicates().T  # Get rid of any duplicate columns
     cn_matrix = cn_matrix.set_index(['chr', 'start', 'end', 'width'])
 
     cn_matrix.to_csv(outfile)
@@ -85,7 +86,7 @@ def _calculate_distances_worker(node_pair_csv, outfile, cn_matrix):
     script = os.path.join(scripts_directory, 'calculate_distance.py')
 
     cmd = ['python', script, '-input_file', node_pair_csv,
-            '-output_path', outfile, '-data_path', cn_matrix]
+           '-output_path', outfile, '-data_path', cn_matrix]
 
     helpers.run_cmd(cmd)
 
@@ -100,7 +101,7 @@ def calculate_distances(node_pair_csvs, cn_matrix, outfiles, config):
         node_pair_csv = job[0]
         outfile = job[1]
 
-        task = pool.apply_async(_calculate_distances_worker, 
+        task = pool.apply_async(_calculate_distances_worker,
                                 args=(node_pair_csv, outfile, cn_matrix))
 
         tasks.append(task)
@@ -113,7 +114,8 @@ def calculate_distances(node_pair_csvs, cn_matrix, outfiles, config):
 
 ## VISUALIZATION ##
 
-def generate_cellscape_inputs(cn_matrix, annotations, edges_list, cn_data, tree_gml, rooted_tree_gml, root_id, root_id_file):
+def generate_cellscape_inputs(cn_matrix, annotations, edges_list, cn_data, tree_gml, rooted_tree_gml, root_id,
+                              root_id_file):
     cells_list = pd.read_csv(cn_matrix).columns.tolist()[4:]
 
     if root_id:
@@ -124,14 +126,14 @@ def generate_cellscape_inputs(cn_matrix, annotations, edges_list, cn_data, tree_
 
     script = os.path.join(scripts_directory, 'generate_cellscape_inputs.py')
 
-    cmd = ['python', script, 
-            '--path_to_data', cn_matrix,
-            '--path_to_annotations', annotations,
-            '--path_to_edges_list', edges_list,
-            '--path_to_cn_data', cn_data,
-            '--path_to_tree', tree_gml,
-            '--path_to_rooted_tree', rooted_tree_gml,
-            '--root_id', root_id]
+    cmd = ['python', script,
+           '--path_to_data', cn_matrix,
+           '--path_to_annotations', annotations,
+           '--path_to_edges_list', edges_list,
+           '--path_to_cn_data', cn_data,
+           '--path_to_tree', tree_gml,
+           '--path_to_rooted_tree', rooted_tree_gml,
+           '--root_id', root_id]
 
     pypeliner.commandline.execute(*cmd)
 

@@ -124,7 +124,7 @@ def read_hmm_cn_data(data_path, outfile_path, infile_path):
     calculate_distance(cell_data, infile_path, outfile_path)
     CL_end = timeit.default_timer()
     
-    print "total time "+str(CL_end-CL_start)
+    print ("total time "+str(CL_end-CL_start))
     
 
 if __name__=='__main__':

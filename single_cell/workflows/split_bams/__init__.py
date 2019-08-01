@@ -3,16 +3,15 @@ Created on Nov 21, 2017
 
 @author: dgrewal
 '''
-import pypeliner
 import pypeliner.managed as mgd
-from single_cell.utils import helpers
-import single_cell
+
+import pypeliner
+
 
 def create_split_workflow(
-    normal_bam, normal_split_bam,
-    regions, config, by_reads=False
+        normal_bam, normal_split_bam,
+        regions, config, by_reads=False
 ):
-
     baseimage = config['docker']['single_cell_pipeline']
     samtoolsimage = config['docker']['samtools']
 
@@ -82,6 +81,5 @@ def create_split_workflow(
                 samtoolsimage
             )
         )
-
 
     return workflow

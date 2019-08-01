@@ -3,8 +3,9 @@ Created on Jul 6, 2017
 
 @author: dgrewal
 '''
-import pypeliner
 import pypeliner.managed as mgd
+
+import pypeliner
 
 
 def create_corrupt_tree_workflow(

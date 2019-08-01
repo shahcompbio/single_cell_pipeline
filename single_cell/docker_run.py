@@ -9,7 +9,7 @@ import yaml
 def walk_yaml(yamldata):
     mounts = []
 
-    for k, v in yamldata.iteritems():
+    for k, v in yamldata.items():
         if isinstance(v, collections.Mapping):
             mounts += walk_yaml(v)
 
@@ -83,7 +83,7 @@ def get_mounts_from_yaml(yamlfile):
 def get_path_mounts(args):
     mounts = set()
 
-    for arg, argvalue in args.iteritems():
+    for arg, argvalue in args.items():
         if is_path(argvalue):
             mounts.add(get_root_dir(argvalue))
             if is_yaml(argvalue):
@@ -164,6 +164,6 @@ def run_with_docker(args, sc_cmd):
     docker_part = cmd.index('--run_with_docker')
     del cmd[docker_part]
 
-    print "running command: {}".format(' '.join(cmd))
+    print ("running command: {}".format(' '.join(cmd)))
 
     subprocess.check_call(cmd)

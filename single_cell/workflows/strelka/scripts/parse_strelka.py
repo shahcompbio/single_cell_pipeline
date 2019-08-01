@@ -75,7 +75,7 @@ class ParseStrelka(object):
 
         header = False
         with open(self.output, 'w') as outfile:
-            for (case, tum_samp, ref_samp), fname in self.infiles.iteritems():
+            for (case, tum_samp, ref_samp), fname in self.infiles.items():
                 strelka = Vcf(tumour_id = tum_samp,
                                   normal_id = ref_samp,
                                   case_id = case,

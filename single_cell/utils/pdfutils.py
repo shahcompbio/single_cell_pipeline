@@ -8,7 +8,7 @@ import os
 
 from PyPDF2 import PdfFileMerger, PdfFileWriter, PdfFileReader
 
-import helpers
+from single_cell.utils import helpers
 
 
 def merge_pdfs(infiles, outfile):
@@ -37,7 +37,7 @@ def merge_pdfs_with_scaling(infiles, outfile, width=500, height=500):
     pagenum = 0
 
     for infile in infiles:
-        pdf_file = PdfFileReader(file(infile, 'rb'))
+        pdf_file = PdfFileReader(open(infile, 'rb'))
         num_pages = pdf_file.getNumPages()
 
         for page_number in range(0, num_pages):

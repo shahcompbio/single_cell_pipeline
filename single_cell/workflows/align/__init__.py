@@ -226,7 +226,7 @@ def create_alignment_workflow(
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id', 'lane'),
-        value=fastq_1_filename.keys(),
+        value=list(fastq_1_filename.keys()),
     )
 
     workflow.setobj(

@@ -1,7 +1,6 @@
 import pypeliner
 
-
-default_chromosomes = [str(a) for a in xrange(1, 23)] + ['X', 'Y']
+default_chromosomes = [str(a) for a in range(1, 23)] + ['X', 'Y']
 
 
 def create_vardict_paired_sample_workflow(
@@ -15,10 +14,9 @@ def create_vardict_paired_sample_workflow(
         min_allele_frequency=0.01,
         remove_duplicate_reads=False,
         sample_names=None):
-
     workflow = pypeliner.workflow.Workflow(
         default_ctx={
-            'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'ncpus':1, 'disk_retry_increment': 50
+            'mem': 2, 'num_retry': 3, 'mem_retry_increment': 2, 'ncpus': 1, 'disk_retry_increment': 50
         })
 
     workflow.setobj(

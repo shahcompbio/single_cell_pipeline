@@ -1,8 +1,7 @@
-import os
-import pypeliner
 import pypeliner.managed as mgd
-import single_cell
-from single_cell.utils import helpers
+
+import pypeliner
+
 
 def create_aneufinder_workflow(bam_file,
                                cell_ids,
@@ -10,7 +9,6 @@ def create_aneufinder_workflow(bam_file,
                                aneufinder_results_filename,
                                aneufinder_pdf_filename,
                                ):
-
     baseimage = config['docker']['single_cell_pipeline']
 
     workflow = pypeliner.workflow.Workflow()

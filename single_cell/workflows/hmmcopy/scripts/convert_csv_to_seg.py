@@ -39,7 +39,7 @@ class ConvertCSVToSEG(object):
         if os.stat(path).st_size == 0:
             return True
 
-        with open(path) as infile:
+        with helpers.getFileHandle(path) as infile:
             # header line
             _ = infile.readline()
             # data?
