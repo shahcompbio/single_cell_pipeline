@@ -1,9 +1,6 @@
-import numpy as np
 import pandas as pd
-import pkg_resources
 
-
-default_chromosomes = [str(a) for a in xrange(1, 23)] + ['X', 'Y']
+default_chromosomes = [str(a) for a in range(1, 23)] + ['X', 'Y']
 
 
 def read_chromosome_lengths(genome_fasta_index, chromosomes=default_chromosomes):
@@ -23,7 +20,7 @@ def get_split_regions(split_size, refgenome, chromosomes=default_chromosomes):
 
     regions = []
 
-    for chrom, length in chromosome_lengths.iteritems():
+    for chrom, length in chromosome_lengths.items():
         lside_interval = range(1, length + 1, split_size)
         rside_interval = range(split_size, length + split_size, split_size)
 

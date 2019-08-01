@@ -4,9 +4,9 @@ Created on July 31, 2018
 @author: pwalters
 '''
 
-import pandas as pd
-import pypeliner
 import pypeliner.managed as mgd
+
+import pypeliner
 
 
 def create_ltm_workflow(hmmcopy,
@@ -22,7 +22,6 @@ def create_ltm_workflow(hmmcopy,
                         root_id_file,
                         number_jobs,
                         ploidy):
-
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(

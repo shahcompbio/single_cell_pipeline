@@ -3,16 +3,14 @@ Created on Jul 24, 2017
 
 @author: dgrewal
 '''
-import pypeliner
 import pypeliner.managed as mgd
-from single_cell.utils import helpers
+
+import pypeliner
 
 
 def create_museq_workflow(
         normal_bam, tumour_bam, ref_genome, snv_vcf,
         config):
-
-
     museq_docker = {'docker_image': config['docker']['mutationseq']}
     vcftools_docker = {'docker_image': config['docker']['vcftools']}
 
@@ -80,4 +78,3 @@ def create_museq_workflow(
     )
 
     return workflow
-

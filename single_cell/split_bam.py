@@ -3,15 +3,14 @@ Created on Apr 6, 2018
 
 @author: dgrewal
 '''
-import os
-import pypeliner
 import pypeliner.managed as mgd
-from workflows import split_bams
 from single_cell.utils import helpers
-import single_cell
+from single_cell.workflows import split_bams
+
+import pypeliner
+
 
 def split_bam_workflow(args):
-
     workflow = pypeliner.workflow.Workflow()
     config = helpers.load_config(args)
     config = config['split_bam']
@@ -63,7 +62,6 @@ def split_bam_workflow(args):
 
 
 def split_bam_pipeline(args):
-
     pyp = pypeliner.app.Pypeline(config=args)
 
     workflow = split_bam_workflow(args)

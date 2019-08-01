@@ -1,6 +1,6 @@
 import os
 import logging
-import pipeline_config
+from single_cell.config import pipeline_config
 from single_cell.utils import helpers
 
 

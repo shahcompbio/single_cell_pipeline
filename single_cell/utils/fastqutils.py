@@ -14,6 +14,8 @@ class FastqReader(object):
             while True:
                 fastq_read = list(islice(fq_reader, 4))
 
+                fastq_read = [line for line in fastq_read]
+
                 if not fastq_read:
                     break
 
@@ -79,7 +81,7 @@ class TaggedFastqReader(FastqReader):
         if not tag:
             tag = self.get_read_tag(read)
 
-        tag = ['{}_{}'.format(k, v) for k, v in tag.iteritems()]
+        tag = ['{}_{}'.format(k, v) for k, v in tag.items()]
         tag = ','.join(tag)
         tag = 'FS:Z:'+tag
 

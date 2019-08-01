@@ -8,7 +8,6 @@ import shutil
 
 import numpy as np
 import pandas as pd
-import pypeliner
 import scipy.cluster.hierarchy as hc
 import scipy.spatial as sp
 from single_cell.utils import csvutils
@@ -18,10 +17,11 @@ from single_cell.utils.singlecell_copynumber_plot_utils import PlotKernelDensity
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotMetrics
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotPcolor
 
-from scripts import ConvertCSVToSEG
-from scripts import CorrectReadCount
-from scripts import ReadCounter
-from scripts import classify
+import pypeliner
+from .scripts import ConvertCSVToSEG
+from .scripts import CorrectReadCount
+from .scripts import ReadCounter
+from .scripts import classify
 
 scripts_directory = os.path.join(
     os.path.realpath(
@@ -210,7 +210,6 @@ def get_hierarchical_clustering_order(
 
 
 def get_mappability_col(reads, annotated_reads):
-
     reads = csvutils.read_csv_and_yaml(reads, chunksize=100)
 
     alldata = []
@@ -236,7 +235,7 @@ def add_clustering_order(
     )
 
     if sample_info:
-        for cell_id, order in order.iteritems():
+        for cell_id, order in order.items():
             sample_info[cell_id]['order'] = order
     else:
         sample_info = order
@@ -263,7 +262,7 @@ def group_cells_by_row(cells, metrics, sort_by_col=False):
         grouped_data[row].append(value)
 
     if sort_by_col:
-        for row, coldata in grouped_data.iteritems():
+        for row, coldata in grouped_data.items():
             coldata = sorted(coldata, key=lambda tup: tup[1])
             coldata = [cell for cell, col in coldata]
             grouped_data[row] = coldata
@@ -308,7 +307,6 @@ def create_igv_seg(merged_segs, merged_hmm_metrics,
 def plot_hmmcopy(reads, segments, params, metrics, ref_genome, segs_out,
                  bias_out, cell_id, num_states=7,
                  annotation_cols=None, sample_info=None, max_cn=None):
-
     if not annotation_cols:
         annotation_cols = ['cell_call', 'experimental_condition', 'sample_type',
                            'mad_neutral_state', 'MSRSI_non_integerness',

@@ -14,7 +14,7 @@ def generate_targets(input_bams, config, intervals, interval, **kwargs):
            '-o', intervals, '-L', interval,
            ]
 
-    for _, bamfile in input_bams.iteritems():
+    for _, bamfile in input_bams.items():
         cmd.extend(['-I', bamfile])
 
     pypeliner.commandline.execute(*cmd, **kwargs)
@@ -32,7 +32,7 @@ def gatk_realigner(inputs, config, targets, interval, tempdir, **kwargs):
            '--maxReadsForRealignment','150000'
            ]
 
-    for _, bamfile in inputs.iteritems():
+    for _, bamfile in inputs.items():
         bamfile = os.path.abspath(bamfile)
         cmd.extend(['-I', bamfile])
 

@@ -87,7 +87,7 @@ def calculate_histogram(readgroups, data, counts, min_elements, mads, read_lengt
     stdevs=[]
 
     finaldata = {v: None for v in readgroups}
-    for readgroup, rgdata in data.iteritems():
+    for readgroup, rgdata in data.items():
         if len(rgdata) < min_elements:
             warn_str = "cannot generate histogram for readgroup {}".format(readgroup)
             logging.getLogger("lumpy.histogram").warn(warn_str)
@@ -140,7 +140,7 @@ def calculate_histogram(readgroups, data, counts, min_elements, mads, read_lengt
 
 def merge_readgroups(readgroups, histogram_data):
     keys = set()
-    for readgroup, rgdata in histogram_data.iteritems():
+    for readgroup, rgdata in histogram_data.items():
         if not rgdata:
             continue
         for isize in rgdata:

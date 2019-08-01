@@ -67,7 +67,7 @@ def merge_two_wigs(wig1, wig2):
 def write_to_wig(wigdata, wigfile):
 
     with open(wigfile, 'w') as wigout:
-        for chrom_key, data in wigdata.iteritems():
+        for chrom_key, data in wigdata.items():
             header = "fixedStep chrom={} start={} step={} span={}\n".format(*chrom_key)
             wigout.write(header)
             for binval in data:

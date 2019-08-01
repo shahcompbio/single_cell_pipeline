@@ -161,8 +161,8 @@ def reference_data_azure(reference):
 
 def get_chromosomes(reference):
     if reference == 'grch37':
-        return map(str, range(1, 23)) + ['X', 'Y']
+        return [str(val) for val in range(1, 23)] + ['X', 'Y']
     elif reference == 'mm10':
-        return map(str, range(1, 20)) + ['X', 'Y']
+        return [str(val) for val in range(1, 20)] + ['X', 'Y']
     else:
         raise Exception("unknown reference genome type {}".format(reference))

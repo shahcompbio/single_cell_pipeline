@@ -1,13 +1,12 @@
 import os
-import pandas as pd
-import pypeliner
 import shutil
-from PyPDF2 import PdfFileMerger
 
+import pandas as pd
+from single_cell.utils import csvutils
 from single_cell.utils import helpers, hdfutils
 from single_cell.utils import pdfutils
-from single_cell.utils import csvutils
 
+import pypeliner
 
 scripts_directory = os.path.join(
     os.path.realpath(
@@ -20,7 +19,6 @@ rdata_to_csv_rscript = os.path.join(scripts_directory, 'Rdatatocsv.R')
 def convert_segments_to_hmmcopy_format(
         csv_name,
         cell_id):
-
     rdata_df = pd.read_csv(csv_name)
 
     df = rdata_df[['seqnames', 'start', 'end', 'mean.counts', 'state']]
@@ -34,7 +32,6 @@ def convert_segments_to_hmmcopy_format(
 def convert_reads_to_hmmcopy_format(
         csv_name,
         cell_id):
-
     rdata_df = pd.read_csv(csv_name)
 
     df = rdata_df[['seqnames', 'start', 'end', 'counts', 'GC', 'state']]
@@ -53,7 +50,6 @@ def run_aneufinder(
         reads,
         dnacopy_plot,
         docker_image=None):
-
     # Create an output folder for temp storage
     helpers.makedirs(working_dir)
 
@@ -133,7 +129,6 @@ def merge_pdf(in_filenames, out_filename):
 
 def merge_outputs_to_hdf(
         reads_files, segs_files, outfile, tempdir):
-
     helpers.makedirs(tempdir)
 
     reads_csv_merged = os.path.join(tempdir, "merged_reads.csv")

@@ -147,7 +147,7 @@ def destruct_preprocess_workflow(
     else:
         workflow.setobj(
             obj=mgd.OutputChunks('normal_cell_id'),
-            value=normal_bam_files.keys(),
+            value=list(normal_bam_files.keys()),
         )
 
         workflow.subworkflow(

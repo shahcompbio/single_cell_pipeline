@@ -4,16 +4,17 @@ import logging
 import os
 import shutil
 
-from scripts import CollectMetrics
-from scripts import GenerateCNMatrix
-from scripts import RunTrimGalore
-from scripts import SummaryMetrics
 from single_cell.utils import bamutils
 from single_cell.utils import csvutils
 from single_cell.utils import gatkutils
 from single_cell.utils import helpers
 from single_cell.utils import picardutils
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotMetrics
+
+from .scripts import CollectMetrics
+from .scripts import GenerateCNMatrix
+from .scripts import RunTrimGalore
+from .scripts import SummaryMetrics
 
 
 class LibraryContaminationError(Exception):
@@ -66,7 +67,7 @@ def merge_bams(inputs, output, output_index, containers):
 def merge_realignment(input_filenames, output_filename,
                       config, input_cell_id):
     merge_filenames = []
-    for (_, cell_id), filename in input_filenames.iteritems():
+    for (_, cell_id), filename in input_filenames.items():
         if input_cell_id != cell_id:
             continue
         merge_filenames.append(filename)
@@ -85,7 +86,7 @@ def realign(input_bams, input_bais, output_bams, tempdir, config, interval):
     # different for mapping file nwayout to work
     # realign
     new_inputs = {}
-    for key, bamfile in input_bams.iteritems():
+    for key, bamfile in input_bams.items():
         new_bam = os.path.join(tempdir, key + '.bam')
         new_bai = os.path.join(tempdir, key + '.bam.bai')
 
@@ -300,7 +301,7 @@ def collect_gc(infiles, outfile, tempdir):
     helpers.makedirs(tempdir)
 
     tempouts = []
-    for cell_id, infile in infiles.iteritems():
+    for cell_id, infile in infiles.items():
         tempout = os.path.join(
             tempdir,
             "{}.parsed.csv".format(cell_id))

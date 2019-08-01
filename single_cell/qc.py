@@ -6,11 +6,11 @@ Created on Feb 19, 2018
 import os
 import re
 
-import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import helpers
+from single_cell.workflows import align, hmmcopy, qc_annotation
 
-from workflows import align, hmmcopy, qc_annotation
+import pypeliner
 
 
 def qc_workflow(args):

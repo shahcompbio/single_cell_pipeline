@@ -22,7 +22,7 @@ def lumpy_preprocess_workflow(
     if isinstance(bam_files, dict):
         workflow.setobj(
             obj=mgd.OutputChunks('cell_id'),
-            value=bam_files.keys(),
+            value=list(bam_files.keys()),
         )
         workflow.set_filenames('cells.bam', 'cell_id', fnames=bam_files)
         workflow.subworkflow(

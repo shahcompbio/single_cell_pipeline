@@ -3,19 +3,18 @@ Created on Apr 13, 2018
 
 @author: dgrewal
 '''
-import pypeliner
 import pypeliner.managed as mgd
-from single_cell.utils import helpers
+
+import pypeliner
 
 
 def create_extract_seqdata_workflow(
-     bam_filename,
-     seqdata_filename,
-     remixt_config,
-     remixt_ref_data_dir,
-     config,
+        bam_filename,
+        seqdata_filename,
+        remixt_config,
+        remixt_ref_data_dir,
+        config,
 ):
-
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50,
            'docker_image': config['docker']['single_cell_pipeline'],
            'mem': config["memory"]['high']}

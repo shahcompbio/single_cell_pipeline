@@ -4,18 +4,18 @@ Created on Apr 13, 2018
 @author: dgrewal
 '''
 import os
-import pypeliner
+
 import pypeliner.managed as mgd
-from single_cell.utils import helpers
+
+import pypeliner
 
 
 def create_titan_workflow(normal_seqdata, tumour_seqdata, ref_genome,
                           raw_data_dir, out_file, config, args,
                           tumour_cells, normal_cells, cloneid):
-
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
            'docker_image': config['docker']['single_cell_pipeline']
-    }
+           }
 
     titan_docker = {'docker_image': config['docker']['titan']}
 

@@ -36,7 +36,7 @@ def list_sentinels(dirname, pattern):
 
     matches = '\n'.join(matches)
 
-    print matches
+    print(matches)
 
 
 def delete_sentinels(dirname, pattern):

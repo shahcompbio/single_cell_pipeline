@@ -5,4 +5,4 @@ Created on Jul 24, 2017
 '''
 
 
-from collect_metrics import CollectMetrics
+from .collect_metrics import CollectMetrics

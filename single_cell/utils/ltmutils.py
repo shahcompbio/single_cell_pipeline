@@ -4,14 +4,12 @@ Created on July 31, 2018
 @author: pwalters
 '''
 
-import os
-import pandas as pd
-import pypeliner
 import logging
+
+import pandas as pd
 
 
 def read_input_file(input_file):
-
     inputs = pd.read_csv(input_file, dtype=str)
 
     for column in ('timepoint', 'hmmcopy',):
@@ -31,7 +29,7 @@ def read_input_file(input_file):
     return hmmcopy, timepoints
 
 
-def get_cn_matrix_from_hdf(hmmcopy_hdf_file, ploidy = '0'):
+def get_cn_matrix_from_hdf(hmmcopy_hdf_file, ploidy='0'):
     df = pd.read_hdf(hmmcopy_hdf_file, '/hmmcopy/reads/' + ploidy)
 
     df["bin"] = list(zip(df.chr, df.start, df.end))
@@ -59,7 +57,7 @@ def get_cn_matrix_from_hdf(hmmcopy_hdf_file, ploidy = '0'):
     start = []
     end = []
     width = []
-    for i, b in df['bin'].iteritems():
+    for i, b in df['bin'].items():
         chrom.append(b[0])
         start.append(b[1])
         end.append(b[2])
@@ -69,7 +67,7 @@ def get_cn_matrix_from_hdf(hmmcopy_hdf_file, ploidy = '0'):
     df['end'] = end
     df['width'] = width
 
-    df = df.drop(columns = 'bin')
+    df = df.drop(columns='bin')
 
     return df, dropped_cells
 

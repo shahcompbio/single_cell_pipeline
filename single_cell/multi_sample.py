@@ -4,8 +4,8 @@ import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import helpers
 
-import infer_haps
-import variant_calling
+from single_cell import infer_haps
+from single_cell import variant_calling
 
 
 def load_cell_data(yamldata, key):
@@ -28,9 +28,9 @@ def load_normal_data(yamldata):
     libraries = set()
     if 'normal_wgs' in yamldata:
         assert len(yamldata['normal_wgs'].keys()) == 1
-        sample_id = yamldata['normal_wgs'].keys()[0]
+        sample_id = list(yamldata['normal_wgs'].keys())[0]
         assert len(yamldata['normal_wgs'][sample_id].keys()) == 1
-        library_id = yamldata['normal_wgs'][sample_id].keys()[0]
+        library_id = list(yamldata['normal_wgs'][sample_id].keys())[0]
         libraries.add(library_id)
         cell_bams = yamldata['normal_wgs'][sample_id][library_id]['bam']
     else:

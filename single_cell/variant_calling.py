@@ -6,15 +6,15 @@ Created on Feb 22, 2018
 
 import os
 
-import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import helpers
 from single_cell.utils import refgenome
+from single_cell.workflows import merge_bams
+from single_cell.workflows import mutationseq
+from single_cell.workflows import split_bams
+from single_cell.workflows import strelka
 
-from workflows import merge_bams
-from workflows import mutationseq
-from workflows import split_bams
-from workflows import strelka
+import pypeliner
 
 default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
 

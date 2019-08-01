@@ -1,11 +1,13 @@
 import logging
 import os
 import shutil
+import gzip
+
 
 import pandas as pd
 import yaml
 
-import helpers
+from single_cell.utils import helpers
 
 
 class CsvParseError(Exception):
@@ -27,7 +29,7 @@ def get_dtypes_from_df(df, na_rep='NA'):
     }
 
     typeinfo = {}
-    for column, dtype in df.dtypes.iteritems():
+    for column, dtype in df.dtypes.items():
         if column in ['chr', 'chrom', 'chromosome']:
             typeinfo[column] = 'str'
         else:
@@ -166,7 +168,7 @@ class CsvInput(object):
                 self.__verify_data(df)
                 yield df
 
-        dtypes = {k: v for k, v in self.dtypes.iteritems() if v != "NA"}
+        dtypes = {k: v for k, v in self.dtypes.items() if v != "NA"}
         # if header exists then use first line (0) as header
         header = 0 if self.header else None
 
@@ -232,7 +234,7 @@ class CsvOutput(object):
             data = {'name': column, 'dtype': self.dtypes[column]}
             yamldata['columns'].append(data)
 
-        with helpers.getFileHandle(self.yaml_file, 'w') as f:
+        with helpers.getFileHandle(self.yaml_file, 'wt') as f:
             yaml.safe_dump(yamldata, f, default_flow_style=False)
 
     def write_df(self, df):
@@ -252,36 +254,51 @@ class CsvOutput(object):
 
         self.__write_yaml()
 
+    def write_csv_data(self, reader, writer):
+        reader_gzip = type(reader) == gzip.GzipFile
+        writer_gzip = type(writer) == gzip.GzipFile
+
+        if reader_gzip == writer_gzip:
+            same_format = True
+        else:
+            same_format = False
+
+        if same_format:
+            shutil.copyfileobj(
+                reader, writer, length=16 * 1024 * 1024
+            )
+        else:
+            for line in reader:
+                writer.write(line)
+
+
     def concatenate_files(self, infiles):
         header = self.header_line if self.header else None
 
-        with helpers.getFileHandle(self.filepath, 'w') as writer:
+        with helpers.getFileHandle(self.filepath, 'wt') as writer:
             if header:
                 writer.write(header)
             for infile in infiles:
                 with helpers.getFileHandle(infile) as reader:
-                    shutil.copyfileobj(
-                        reader, writer, length=16 * 1024 * 1024
-                    )
+                    self.write_csv_data(reader, writer)
+
         self.__write_yaml()
 
     def write_headerless_csv(self, infile):
-        with helpers.getFileHandle(self.filepath, 'w') as writer:
+        with helpers.getFileHandle(self.filepath, 'wt') as writer:
             with helpers.getFileHandle(infile) as reader:
                 if not reader.readline() == self.header_line:
                     raise CsvWriterError("cannot write, wrong header")
-                shutil.copyfileobj(
-                    reader, writer, length=16 * 1024 * 1024
-                )
+                self.write_csv_data(reader, writer)
+
         self.__write_yaml()
 
     def write_csv_with_header(self, infile):
-        with helpers.getFileHandle(self.filepath, 'w') as writer:
-            writer.write(self.header_line)
+        with helpers.getFileHandle(self.filepath, 'wt') as writer:
             with helpers.getFileHandle(infile) as reader:
-                shutil.copyfileobj(
-                    reader, writer, length=16 * 1024 * 1024
-                )
+                writer.write(self.header_line)
+                self.write_csv_data(reader, writer)
+
         self.__write_yaml()
 
 
@@ -295,7 +312,7 @@ def annotate_csv(infile, annotation_data, outfile, on="cell_id", write_header=Tr
     for cell in merge_on:
         col_data = annotation_data[cell]
 
-        for column, value in col_data.iteritems():
+        for column, value in col_data.items():
             metrics_df.loc[metrics_df[on] == cell, column] = value
 
     output = CsvOutput(outfile, sep=csvinput.sep, header=write_header)
@@ -309,7 +326,7 @@ def concatenate_csv(in_filenames, out_filename, key_column=None, write_header=Tr
     data = []
     sep = None
 
-    for key, in_filename in in_filenames.iteritems():
+    for key, in_filename in in_filenames.items():
         csvinput = CsvInput(in_filename)
 
         if not sep:

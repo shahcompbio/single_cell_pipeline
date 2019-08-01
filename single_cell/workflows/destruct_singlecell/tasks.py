@@ -5,8 +5,9 @@ import shutil
 from itertools import islice
 
 import pandas as pd
-import pypeliner
 from single_cell.utils import helpers
+
+import pypeliner
 
 
 def destruct_bamdisc_and_numreads(
@@ -81,7 +82,7 @@ def re_index_reads(input_fastq, output_fastq, cell_id, cells, cell_read_counts, 
     start_count = get_start_count(cells, cell_read_counts, cell_id)
 
     with helpers.getFileHandle(input_fastq) as infile:
-        with helpers.getFileHandle(output_fastq, 'w') as outfile:
+        with helpers.getFileHandle(output_fastq, 'wt') as outfile:
 
             while True:
                 fastq_read = list(islice(infile, 4))
@@ -97,7 +98,7 @@ def re_index_reads(input_fastq, output_fastq, cell_id, cells, cell_read_counts, 
                 if not fastq_read[2].startswith('+'):
                     raise ValueError('Expected = as first character of read comment')
 
-                fastq_read[0] = '@' + str(start_count) + '/' + fastq_read[0].split('/')[1]
+                fastq_read[0] = '@' + str(int(start_count)) + '/' + fastq_read[0].split('/')[1]
 
                 start_count += 1
 
@@ -123,7 +124,7 @@ def get_read_count(input_fastq):
 
     readcount = linecount / 4
 
-    return readcount
+    return int(readcount)
 
 
 def merge_cell_fastqs(input_fastqs_1, output_fastq_1):
@@ -137,7 +138,7 @@ def merge_cell_fastqs(input_fastqs_1, output_fastq_1):
     :type output_fastq_1: str
     """
     with open(output_fastq_1, 'wb') as outfile:
-        for cell_id, filepath in input_fastqs_1.iteritems():
+        for cell_id, filepath in input_fastqs_1.items():
             with open(filepath, 'rb') as infile:
                 shutil.copyfileobj(infile, outfile, length=16 * 1024 * 1024)
 
@@ -178,7 +179,7 @@ def read_paired_cell_fastqs(input_fastqs_1, input_fastqs_2):
     for idx, cell_id in enumerate(input_fastqs_1.keys()):
         opener_1 = (open, gzip.open)[input_fastqs_1[cell_id].endswith('.gz')]
         opener_2 = (open, gzip.open)[input_fastqs_2[cell_id].endswith('.gz')]
-        with opener_1(input_fastqs_1[cell_id], 'r') as file_1, opener_2(input_fastqs_2[cell_id], 'r') as file_2:
+        with opener_1(input_fastqs_1[cell_id], 'rt') as file_1, opener_2(input_fastqs_2[cell_id], 'rt') as file_2:
             fastq_lines = [[], []]
             for fastq_1_line, fastq_2_line in zip(file_1, file_2):
                 fastq_lines[0].append(fastq_1_line.rstrip())
@@ -206,7 +207,7 @@ def resample_fastqs(input_fastqs_1, input_fastqs_2, output_fastq_1, output_fastq
     """
     fastq_iterator = read_paired_cell_fastqs(input_fastqs_1, input_fastqs_2)
     fastq_sample = random_subset(fastq_iterator, num_reads)
-    with gzip.open(output_fastq_1, 'w') as file_1, gzip.open(output_fastq_2, 'w') as file_2:
+    with gzip.open(output_fastq_1, 'wt') as file_1, gzip.open(output_fastq_2, 'wt') as file_2:
         for cell_id, fastq_lines in fastq_sample:
             for line in fastq_lines[0]:
                 file_1.write(line + '\n')
@@ -280,5 +281,5 @@ def filter_reads_file(
 
     for i, breakpoint_reads in enumerate(breakpoint_reads_iter):
         passed_reads = breakpoint_reads[breakpoint_reads['cluster_id'].isin(passed_brks)]
-        passed_reads = passed_reads[passed_reads['filtered']==False]
+        passed_reads = passed_reads[passed_reads['filtered'] == False]
         passed_reads.to_csv(filtered_breakpoint_reads_filename, sep='\t', header=False, index=False, mode='a')

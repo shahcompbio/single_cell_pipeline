@@ -5,14 +5,15 @@ Created on Feb 22, 2018
 '''
 
 import os
-import pypeliner
+
 import pypeliner.managed as mgd
-from workflows import germline
 from single_cell.utils import helpers
-import single_cell
+from single_cell.workflows import germline
+
+import pypeliner
+
 
 def germline_calling_workflow(args):
-
     config = helpers.load_config(args)
     config = config['germline_calling']
 
@@ -78,7 +79,7 @@ def germline_calling_workflow(args):
             config,
         ),
         kwargs={'vcftools_docker': vcftoolsdocker,
-                'samtools_docker': samtoolsdocker,}
+                'samtools_docker': samtoolsdocker, }
     )
 
     workflow.subworkflow(
@@ -137,11 +138,11 @@ def germline_calling_workflow(args):
         name='build_results_file',
         func="biowrappers.components.io.hdf5.tasks.concatenate_tables",
         args=([
-                mgd.InputFile(counts_template),
-                mgd.InputFile(mappability_filename),
-                mgd.InputFile(normal_genotype_filename),
-            ],
-            pypeliner.managed.OutputFile(germline_h5_filename),
+                  mgd.InputFile(counts_template),
+                  mgd.InputFile(mappability_filename),
+                  mgd.InputFile(normal_genotype_filename),
+              ],
+              pypeliner.managed.OutputFile(germline_h5_filename),
         ),
         kwargs={
             'drop_duplicates': True,
@@ -152,7 +153,6 @@ def germline_calling_workflow(args):
 
 
 def germline_calling_pipeline(args):
-
     pyp = pypeliner.app.Pypeline(config=args)
 
     workflow = germline_calling_workflow(args)

@@ -6,9 +6,9 @@ Created on Apr 13, 2018
 
 import os
 import pypeliner.managed as mgd
-from workflows import titan
+from single_cell.workflows import titan
 from single_cell.utils import helpers
-from workflows import extract_seqdata
+from single_cell.workflows import extract_seqdata
 import pypeliner
 
 def copy_number_calling_workflow(args):

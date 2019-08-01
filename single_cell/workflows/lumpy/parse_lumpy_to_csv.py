@@ -26,7 +26,7 @@ def generate_primary_table(parsed_data):
     for lumpy_call in parsed_data:
         assert len(lumpy_call.keys()) == 1
 
-        brk_call = lumpy_call.keys()[0]
+        brk_call = list(lumpy_call.keys())[0]
 
         row_data = dict()
 
@@ -103,7 +103,7 @@ def generate_secondary_table(parsed_data):
 
     for lumpy_call in parsed_data:
         assert len(lumpy_call.keys()) == 1
-        key = lumpy_call.keys()[0]
+        key = list(lumpy_call.keys())[0]
         data = lumpy_call[key]
 
         breakpoint_id = key[6]
@@ -121,7 +121,7 @@ def generate_secondary_table(parsed_data):
             counts[(breakpoint_id, cell_id)] += 1
 
     data = []
-    for (brkpt_id, cell_id), count in counts.iteritems():
+    for (brkpt_id, cell_id), count in counts.items():
         data.append((brkpt_id, cell_id, count))
 
     df = pd.DataFrame(data)

@@ -2,9 +2,11 @@
 Plot sequencing metrics based on metric table and SampleSheet files.
 '''
 from __future__ import division
-import os
+
 import argparse
+
 import matplotlib
+
 matplotlib.use('Agg')  # required for running on the cluster
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,6 +18,7 @@ import re
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle
 from matplotlib.backends.backend_pdf import PdfPages
+
 matplotlib.rcParams['pdf.fonttype'] = 42
 
 from single_cell.utils import helpers
@@ -23,9 +26,9 @@ from single_cell.utils import csvutils
 
 
 def parse_args():
-    #=========================================================================
+    # =========================================================================
     # Read Command Line Input
-    #=========================================================================
+    # =========================================================================
     parser = argparse.ArgumentParser()
 
     parser.add_argument('metric_table',
@@ -33,18 +36,20 @@ def parse_args():
 
     parser.add_argument('out_file',
                         help='Path to output file where .pdf'
-                        ' plots will be written.')
+                             ' plots will be written.')
 
     parser.add_argument('--plot_title',
                         help='plot title to differentiate'
-                        ' QC runs from full runs.')
+                             ' QC runs from full runs.')
 
     args = parser.parse_args()
 
     return args
-#=========================================================================
+
+
+# =========================================================================
 # Functions
-#=========================================================================
+# =========================================================================
 
 
 class PlotMetrics(object):
@@ -125,7 +130,7 @@ class PlotMetrics(object):
         yticklabels = None
         ylim = None
 
-        dfs = [df.iloc[n:n+cells_per_page, :] for n in range(0, len(df), cells_per_page)]
+        dfs = [df.iloc[n:n + cells_per_page, :] for n in range(0, len(df), cells_per_page)]
 
         if not plot_title:
             plot_title = ""
@@ -162,7 +167,7 @@ class PlotMetrics(object):
                                 df['experimental_condition']]
             sample_labels = [
                 x + y for x,
-                y in zip(
+                          y in zip(
                     df['cell_id'],
                     sample_condition)]
 
@@ -210,13 +215,12 @@ class PlotMetrics(object):
                     'ytick.labelsize': 12,
                     'legend.fontsize': 12})
 
-        dfs = [df.iloc[n:n+cells_per_page, :] for n in range(0, len(df), cells_per_page)]
+        dfs = [df.iloc[n:n + cells_per_page, :] for n in range(0, len(df), cells_per_page)]
 
         if not plot_title:
             plot_title = ""
 
         for i, df in enumerate(dfs):
-
             fig = plt.figure(figsize=(len(df['cell_id']) / 4, 5))
 
             ax = fig.gca()
@@ -240,7 +244,7 @@ class PlotMetrics(object):
                                 df['experimental_condition']]
             sample_labels = [
                 x + y for x,
-                y in zip(
+                          y in zip(
                     df['cell_id'],
                     sample_condition)]
 
@@ -279,7 +283,7 @@ class PlotMetrics(object):
             )
             text_spacing = 0.2 * max(df[metric])
 
-        dfs = [df.iloc[n:n+cells_per_page, :] for n in range(0, len(df), cells_per_page)]
+        dfs = [df.iloc[n:n + cells_per_page, :] for n in range(0, len(df), cells_per_page)]
         num_pages = len(dfs) + 1
 
         for i, df in enumerate(dfs):
@@ -305,13 +309,13 @@ class PlotMetrics(object):
                                 df['experimental_condition']]
             sample_labels = [
                 x + y for x,
-                y in zip(
+                          y in zip(
                     df['cell_id'],
                     sample_condition)]
 
             ax.set_xticklabels(sample_labels)
 
-            ax.set_title("{}(page {}/{})".format(plot_title, i+1, num_pages), y=1.08, fontsize=10)
+            ax.set_title("{}(page {}/{})".format(plot_title, i + 1, num_pages), y=1.08, fontsize=10)
 
             plt.xticks(rotation=90)
 
@@ -326,7 +330,6 @@ class PlotMetrics(object):
 
             pdf.savefig(bbox_inches='tight', pad_inches=0.4)
             plt.close()
-
 
     def plot_metric_heatmap(
             self, df, metric, title, pdf, plot_title,
@@ -388,7 +391,7 @@ class PlotMetrics(object):
             matrix_value = float(df.ix[i, metric])
             matrix[row_idx - 1, col_idx - 1] = matrix_value
 
-        #raise Exception(set([c for v in np.isnan(matrix) for c in v]))
+        # raise Exception(set([c for v in np.isnan(matrix) for c in v]))
         try:
             sns.heatmap(matrix,
                         xticklabels=tick_labels,
@@ -546,7 +549,7 @@ class PlotMetrics(object):
         for samp in samples:
             cc = metrics[metrics['cell_id'] == samp]["cell_call"].iloc[0]
             plt.plot(range(0, 101), df.loc[samp][
-                     map(str, range(0, 101))], color=cmap[cc], alpha=alpha)
+                map(str, range(0, 101))], color=cmap[cc], alpha=alpha)
 
         if self.gc_content:
             ax = sns.barplot(x='gc', y='windows', data=gcdata,
@@ -570,7 +573,7 @@ class PlotMetrics(object):
         plt.gca().add_artist(legend1)
 
         patches = [matplotlib.patches.Patch(color=v, label=k)
-                   for k, v in cmap.iteritems()]
+                   for k, v in cmap.items()]
         plt.legend(handles=patches, bbox_to_anchor=(0, 0, 0.6, -0.15), ncol=6)
 
         pdf.savefig(bbox_inches='tight', pad_inches=0.4)
@@ -580,6 +583,7 @@ class PlotMetrics(object):
         """
         generate gcbias curves for all samples by ec and cc in legend
         """
+
         def get_samples_by_ec(metrics):
             """
             returns samples that belong to each ec
@@ -610,12 +614,12 @@ class PlotMetrics(object):
 
         # we dont want different alpha on different pages, so calculate it
         # using max
-        alpha = self.get_alpha(max([len(v) for v in samps.itervalues()]))
-        for ec, samps in samps.iteritems():
+        alpha = self.get_alpha(max([len(v) for v in samps.values()]))
+        for ec, samps in samps.items():
             for samp in samps:
                 cc = metrics[metrics['cell_id'] == samp]["cell_call"].iloc[0]
                 plt.plot(range(0, 101), df.loc[samp][
-                         map(str, range(0, 101))], color=cmap[cc], alpha=alpha)
+                    map(str, range(0, 101))], color=cmap[cc], alpha=alpha)
 
             if self.gc_content:
                 ax = sns.barplot(x='gc', y='windows', data=gcdata,
@@ -630,7 +634,7 @@ class PlotMetrics(object):
             plt.gca().add_artist(legend1)
 
             patches = [matplotlib.patches.Patch(color=v, label=k)
-                       for k, v in cmap.iteritems()]
+                       for k, v in cmap.items()]
             plt.legend(
                 handles=patches, bbox_to_anchor=(
                     0, 0, 0.6, -0.15), ncol=6)
@@ -650,6 +654,7 @@ class PlotMetrics(object):
         """
         generate gcbias curves for all samples by cc and ec
         """
+
         def get_samples_by_ec_cc(metrics):
             """
             returns samples that belong to each ec and cc
@@ -678,12 +683,12 @@ class PlotMetrics(object):
 
         # we dont want different alpha on different pages, so calculate it
         # using max
-        alpha = self.get_alpha(max([len(v) for v in samps.itervalues()]))
-        for ec, samps in samps.iteritems():
+        alpha = self.get_alpha(max([len(v) for v in samps.values()]))
+        for ec, samps in samps.items():
             plt.figure(figsize=(12, 12))
             for samp in samps:
                 plt.plot(range(0, 101), df.loc[samp][
-                         map(str, range(0, 101))], color='#2098AE', alpha=alpha)
+                    map(str, range(0, 101))], color='#2098AE', alpha=alpha)
 
             if self.gc_content:
                 ax = sns.barplot(x='gc', y='windows', data=gcdata,
@@ -735,7 +740,7 @@ class PlotMetrics(object):
                     'legend.fontsize': 12})
 
         df_melt = pd.melt(df, id_vars=['cell_id', 'index_i5', 'index_i7'],
-                          value_vars=[metric],)
+                          value_vars=[metric], )
 
         if df_melt.index_i5.isnull().all() or df_melt.index_i5.isnull().all():
             logging.getLogger("single_cell.plot_metrics").warn(
@@ -768,7 +773,6 @@ class PlotMetrics(object):
     def read_input_data(self, infile, tablename):
         fileformat = helpers.get_file_format(infile)
 
-
         if fileformat == "csv" or fileformat == 'gzip':
             metrics = csvutils.read_csv_and_yaml(infile)
         else:
@@ -785,10 +789,9 @@ class PlotMetrics(object):
 
         return metrics
 
-
-    #=========================================================================
+    # =========================================================================
     # Run script
-    #=========================================================================
+    # =========================================================================
 
     def plot_hmmcopy_metrics(self, ):
 
@@ -798,18 +801,18 @@ class PlotMetrics(object):
 
         with PdfPages(self.output) as pdf:
             self.plot_metric(df, 'log_likelihood', 'Log Likelihood', 500,
-                             pdf, self.plot_title,)
+                             pdf, self.plot_title, )
             self.plot_metric(df, 'mad_neutral_state', 'Mad Neutral State', 0.01,
-                             pdf, self.plot_title,)
+                             pdf, self.plot_title, )
             self.plot_metric(df, 'MSRSI_non_integerness', 'MSRSI Non Integerness', 0.01,
-                             pdf, self.plot_title,)
+                             pdf, self.plot_title, )
             self.plot_metric(df, 'MBRSI_dispersion_non_integerness', 'MBRSI Dispersion Non Integerness', 0.01,
-                             pdf, self.plot_title,)
+                             pdf, self.plot_title, )
             self.plot_metric(df, 'MBRSM_dispersion', 'MBRSM Dispersion', 0.01,
-                             pdf, self.plot_title,)
+                             pdf, self.plot_title, )
 
             self.plot_metric_heatmap(df, 'quality', 'Classifier Score',
-                                    pdf, self.plot_title, cmap="RdBu_r")
+                                     pdf, self.plot_title, cmap="RdBu_r")
             self.plot_metric_heatmap(df, 'log_likelihood', 'Log Likelihood',
                                      pdf, self.plot_title)
             self.plot_metric_heatmap(df, 'mad_neutral_state', 'Mad Neutral State',
@@ -849,20 +852,21 @@ class PlotMetrics(object):
                                             self.plot_title, from_top=False)
 
             self.plot_metric_fraction(df, 'total_mapped_reads', 'total_reads', 'Fraction mapped of total',
-                                      pdf, self.plot_title,)
-            self.plot_metric_fraction(df, 'total_duplicate_reads', 'total_mapped_reads', 'Fraction duplicates of mapped',
-                                      pdf, self.plot_title,)
+                                      pdf, self.plot_title, )
+            self.plot_metric_fraction(df, 'total_duplicate_reads', 'total_mapped_reads',
+                                      'Fraction duplicates of mapped',
+                                      pdf, self.plot_title, )
             self.plot_metric_fraction(df, 'total_properly_paired', 'total_mapped_reads',
-                                      'Fraction properly paired of mapped', pdf, self.plot_title,)
+                                      'Fraction properly paired of mapped', pdf, self.plot_title, )
 
             self.plot_metric(df, 'coverage_depth', 'Coverage depth', 0.0015,
-                             pdf, self.plot_title,)
+                             pdf, self.plot_title, )
             self.plot_metric(df, 'coverage_breadth', 'Coverage breadth', 0.0015,
-                             pdf, self.plot_title,)
+                             pdf, self.plot_title, )
             self.plot_metric(df, 'mean_insert_size', 'Mean insert size', 0.05,
-                             pdf, self.plot_title,)
+                             pdf, self.plot_title, )
             self.plot_metric(df, 'median_insert_size', 'Median insert size', 0.05,
-                             pdf, self.plot_title,)
+                             pdf, self.plot_title, )
             self.plot_metric_heatmap(df, 'total_reads', 'Total reads',
                                      pdf, self.plot_title, center=250000, cmap="RdBu_r")
             self.plot_metric_heatmap(df, 'percent_duplicate_reads', 'Percent duplicate reads',

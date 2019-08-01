@@ -222,7 +222,7 @@ class ClusterMap(object):
         axcb = fig.add_axes(legend_plc, frame_on=False)
 
         ticklabels = range(0, self.max_cn)
-        ticklabels = map(str, ticklabels)
+        ticklabels = list(map(str, ticklabels))
         ticklabels.append('{}+'.format(self.max_cn - 1))
         self.plot_legend(axcb, cmap, ticklabels=ticklabels)
 

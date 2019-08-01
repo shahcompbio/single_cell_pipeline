@@ -20,7 +20,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import logging
 from single_cell.utils import helpers
 from single_cell.utils import csvutils
-from heatmap import ClusterMap
+from .heatmap import ClusterMap
 
 from ete3 import Tree
 from itertools import combinations
@@ -220,7 +220,7 @@ class PlotPcolor(object):
 
         header, dtypes, columns = csvutils.get_metadata(self.input)
 
-        with helpers.getFileHandle(self.input) as freader:
+        with helpers.getFileHandle(self.input, 'rt') as freader:
             idxs = self.build_label_indices(columns)
 
             if header:
@@ -241,7 +241,7 @@ class PlotPcolor(object):
 
                 seg = (chrom, start, end)
 
-                if float(line[idxs["map"]]) <= self.mappability_threshold:
+                if self.mappability_threshold and float(line[idxs["map"]]) <= self.mappability_threshold:
                     val = float("nan")
 
                 if chrom not in bins:
@@ -519,7 +519,7 @@ class PlotPcolor(object):
         vmin = np.nanmin(data.values)
         lims = (vmin, vmax)
 
-        for sep, samples in sepdata.iteritems():
+        for sep, samples in sepdata.items():
             num_samples = len(samples)
 
             samples = set(samples).intersection(set(data.index))

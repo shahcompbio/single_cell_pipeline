@@ -1,21 +1,21 @@
 import sys
 
-from aneufinder import aneufinder_pipeline
-from breakpoint_calling import breakpoint_calling_pipeline
-from clean_sentinels import clean_sentinels
-from cmdline import parse_args
-from copy_number import copy_number_calling_pipeline
-from docker_run import run_with_docker
-from generate_config import generate_config
-from germline_calling import germline_calling_pipeline
-from infer_haps import infer_haps_pipeline
-from ltm import ltm_pipeline
-from merge_bams import merge_bams_pipeline
-from multi_sample import multi_sample_pipeline
-from qc import qc_pipeline
-from split_bam import split_bam_pipeline
-from variant_calling import variant_calling_pipeline
-from variant_calling import variant_counting_pipeline
+from single_cell.aneufinder import aneufinder_pipeline
+from single_cell.breakpoint_calling import breakpoint_calling_pipeline
+from single_cell.clean_sentinels import clean_sentinels
+from single_cell.cmdline import parse_args
+from single_cell.copy_number import copy_number_calling_pipeline
+from single_cell.docker_run import run_with_docker
+from single_cell.generate_config import generate_config
+from single_cell.germline_calling import germline_calling_pipeline
+from single_cell.infer_haps import infer_haps_pipeline
+from single_cell.ltm import ltm_pipeline
+from single_cell.merge_bams import merge_bams_pipeline
+from single_cell.multi_sample import multi_sample_pipeline
+from single_cell.qc import qc_pipeline
+from single_cell.split_bam import split_bam_pipeline
+from single_cell.variant_calling import variant_calling_pipeline
+from single_cell.variant_calling import variant_counting_pipeline
 
 
 def main():

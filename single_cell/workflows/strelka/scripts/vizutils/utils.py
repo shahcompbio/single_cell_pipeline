@@ -368,7 +368,7 @@ class Utils(object):
             '''
             recurse into dict and yield ylims.
             '''
-            for key, val in data.iteritems():
+            for key, val in data.items():
                 if isinstance(val, dict):
                     outdata[i].add(key)
                     i+=1
@@ -393,7 +393,7 @@ class Utils(object):
             '''
             recurse into dict and yield ylims.
             '''
-            for key, val in data.iteritems():
+            for key, val in data.items():
                 if isinstance(val, dict):
                     recurse_dict(val, out[key])
                 else:

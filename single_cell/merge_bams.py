@@ -3,15 +3,14 @@ Created on Feb 22, 2018
 
 @author: dgrewal
 '''
-import os
-import pypeliner
 import pypeliner.managed as mgd
-from workflows import merge_bams
 from single_cell.utils import helpers
-import single_cell
+from single_cell.workflows import merge_bams
+
+import pypeliner
+
 
 def merge_bams_workflow(args):
-
     config = helpers.load_config(args)
     config = config['merge_bams']
 
@@ -30,7 +29,6 @@ def merge_bams_workflow(args):
 
     bam_files = tumour_cells if tumour_cells else normal_cells
     wgs_bams = tumour_wgs if tumour_cells else normal_wgs
-
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
@@ -83,9 +81,7 @@ def merge_bams_workflow(args):
     return workflow
 
 
-
 def merge_bams_pipeline(args):
-
     pyp = pypeliner.app.Pypeline(config=args)
 
     workflow = merge_bams_workflow(args)

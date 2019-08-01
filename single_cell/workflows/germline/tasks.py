@@ -1,10 +1,11 @@
-import pypeliner
-import vcf
-import pandas as pd
-import shutil
 import os
-import scipy.stats
+import shutil
+
 import biowrappers.components.io.vcf.tasks
+import pandas as pd
+import vcf
+
+import pypeliner
 
 NUCLEOTIDES = ('A', 'C', 'G', 'T')
 
@@ -49,7 +50,6 @@ def run_samtools_variant_calling(
         region=None,
         samtools_docker=None,
         vcftools_docker=None):
-
     mpileup_cmd = [
         'samtools',
         'mpileup',
@@ -88,19 +88,19 @@ def annotate_normal_genotype(vcf_filename, results_filename, chromosomes):
 
     hdf_store = pd.HDFStore(results_filename, 'w', complevel=9, complib='blosc')
     table_name = '/genotype'
-    
+
     nucleotides = ['A', 'C', 'T', 'G']
-    
+
     chunk_size = 100000
-    
+
     num_rows = 0
     genotype_table = []
-    
+
     def store_table(genotype_table, num_rows):
         if len(genotype_table) > 0:
             df = pd.DataFrame(
                 genotype_table,
-                index=xrange(num_rows, num_rows + len(genotype_table)),
+                index=range(num_rows, num_rows + len(genotype_table)),
                 columns=['chrom', 'coord', 'ref', 'alt', 'is_het'])
 
             df['chrom'] = df['chrom'].astype('category', categories=chromosomes)
@@ -108,7 +108,7 @@ def annotate_normal_genotype(vcf_filename, results_filename, chromosomes):
             df['alt'] = df['alt'].astype('category', categories=nucleotides)
 
             hdf_store.append(table_name, df)
-            
+
             num_rows += len(genotype_table)
 
         return num_rows
@@ -133,5 +133,3 @@ def annotate_normal_genotype(vcf_filename, results_filename, chromosomes):
     num_rows = store_table(genotype_table, num_rows)
 
     hdf_store.close()
-
-

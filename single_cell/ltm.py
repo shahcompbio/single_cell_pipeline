@@ -5,13 +5,13 @@ Created on July 30, 2018
 '''
 
 import os
-import pypeliner
-import pypeliner.managed as mgd
 
-from workflows import ltm
+import pypeliner.managed as mgd
 from single_cell.utils import helpers
 from single_cell.utils import ltmutils
-import single_cell
+from single_cell.workflows import ltm
+
+import pypeliner
 
 
 def ltm_workflow(args):
@@ -59,8 +59,8 @@ def ltm_workflow(args):
 
     return workflow
 
-def ltm_pipeline(args):
 
+def ltm_pipeline(args):
     pyp = pypeliner.app.Pypeline(config=args)
 
     workflow = ltm_workflow(args)

@@ -3,10 +3,11 @@ import shutil
 from collections import defaultdict
 
 import pandas as pd
-import pypeliner
 from single_cell.utils import csvutils
 from single_cell.utils import fastqutils
 from single_cell.utils import helpers
+
+import pypeliner
 
 
 def merge_fastq_screen_counts(
@@ -103,21 +104,21 @@ def run_fastq_screen_paired_end(fastq_r1, fastq_r2, tempdir, params, docker_imag
 def write_detailed_counts(counts, outfile, cell_id):
     header = None
 
-    with helpers.getFileHandle(outfile, 'w') as writer:
+    with helpers.getFileHandle(outfile, 'wt') as writer:
 
-        for read_end, read_end_counts in counts.iteritems():
+        for read_end, read_end_counts in counts.items():
 
             if not read_end_counts:
                 continue
 
             if not header:
                 outstr = ['cell_id', 'readend']
-                outstr += [v[0] for v in read_end_counts.keys()[0]]
+                outstr += [v[0] for v in list(read_end_counts.keys())[0]]
                 outstr += ['count']
                 writer.write(','.join(outstr) + '\n')
                 header = 1
 
-            for flags, count in read_end_counts.iteritems():
+            for flags, count in read_end_counts.items():
                 outstr = [cell_id, read_end]
                 outstr += [v[1] for v in flags]
                 outstr += [count]
@@ -126,8 +127,8 @@ def write_detailed_counts(counts, outfile, cell_id):
 
 def write_summary_counts(counts, outfile, cell_id):
     summary_counts = defaultdict(int)
-    for read_end, read_end_counts in counts.iteritems():
-        for flags, count in read_end_counts.iteritems():
+    for read_end, read_end_counts in counts.items():
+        for flags, count in read_end_counts.items():
             hit_orgs = [v[0] for v in flags if v[1] > 0]
 
             for org in hit_orgs:
@@ -139,7 +140,7 @@ def write_summary_counts(counts, outfile, cell_id):
             elif len(hit_orgs) == 0:
                 summary_counts['nohit'] += count
 
-    with helpers.getFileHandle(outfile, 'w') as writer:
+    with helpers.getFileHandle(outfile, 'wt') as writer:
         keys = sorted(summary_counts.keys())
         header = ['cell_id'] + ['fastqscreen_{}'.format(key) for key in keys]
         header = ','.join(header) + '\n'
@@ -155,7 +156,7 @@ def filter_reads(
 ):
     reader = fastqutils.PairedTaggedFastqReader(input_r1, input_r2)
 
-    with helpers.getFileHandle(output_r1, 'w') as writer_r1, helpers.getFileHandle(output_r2, 'w') as writer_r2:
+    with helpers.getFileHandle(output_r1, 'wt') as writer_r1, helpers.getFileHandle(output_r2, 'wt') as writer_r2:
         for read_1, read_2 in reader.filter_read_iterator(reference):
 
             read_1 = reader.add_tag_to_read_comment(read_1)
@@ -171,7 +172,7 @@ def filter_reads(
 def re_tag_reads(infile, outfile):
     reader = fastqutils.TaggedFastqReader(infile)
 
-    with helpers.getFileHandle(outfile, 'w') as writer:
+    with helpers.getFileHandle(outfile, 'wt') as writer:
 
         for read in reader.get_read_iterator():
             read = reader.add_tag_to_read_comment(read)

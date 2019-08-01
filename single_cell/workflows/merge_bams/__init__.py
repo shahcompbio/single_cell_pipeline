@@ -4,10 +4,9 @@ Created on Jul 11, 2017
 @author: dgrewal
 '''
 
-import pypeliner
 import pypeliner.managed as mgd
-from single_cell.utils import helpers
-import single_cell
+
+import pypeliner
 
 
 def create_merge_bams_workflow(
@@ -16,7 +15,6 @@ def create_merge_bams_workflow(
         regions,
         config,
 ):
-
     baseimage = config['docker']['single_cell_pipeline']
 
     merged_bams = dict([(region, merged_bams[region])

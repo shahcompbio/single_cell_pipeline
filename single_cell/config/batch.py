@@ -3,21 +3,18 @@ Created on Jun 6, 2018
 
 @author: dgrewal
 '''
-import single_cell
-import os
-import yaml
 import collections
+import os
 
-import pipeline_config
+import yaml
 
 
-class folded_unicode(unicode):
+class folded_unicode(str):
     pass
 
 
-class literal_unicode(unicode):
+class literal_unicode(str):
     pass
-
 
 
 def folded_unicode_representer(dumper, data):
@@ -34,7 +31,7 @@ yaml.add_representer(literal_unicode, literal_unicode_representer)
 
 def override_config(config, override):
     def update(d, u):
-        for k, v in u.iteritems():
+        for k, v in u.items():
             if isinstance(v, collections.Mapping):
                 d[k] = update(d.get(k, {}), v)
             else:
@@ -50,7 +47,6 @@ def override_config(config, override):
 
 
 def get_batch_params(override=None):
-
     pools = {
         "standard": {
             "tasks_per_node": 4,
@@ -110,7 +106,6 @@ def get_batch_params(override=None):
 
 
 def generate_autoscale_formula(tasks_per_node, dedicated):
-
     if dedicated:
         node_type = "TargetDedicatedNodes"
     else:
@@ -143,7 +138,6 @@ def generate_autoscale_formula(tasks_per_node, dedicated):
 
 
 def create_vm_commands():
-
     # GETSIZE AND MOUNT:
     # the disks are not guaranteed to appear under the same device name when starting a new
     # vm from a managed image. So we cannot be sure where the devices should be mounted,
@@ -207,7 +201,6 @@ def get_vm_image_id(disk_per_task, tasks_per_node):
 
 def get_pool_def(
         tasks_per_node, reference, pool_type, cpus_per_task, mem_per_task, dedicated, disk_per_task):
-
     autoscale_formula = generate_autoscale_formula(tasks_per_node, dedicated)
 
     vm_commands = create_vm_commands()
@@ -279,15 +272,16 @@ def get_compute_start_commands(imageid):
 
 
 def get_compute_finish_commands(imageid):
-
     if 'docker-production-v3-standard' in imageid:
         prefix = '/mnt/datadrive'
     else:
         prefix = '/datadrive'
 
     commands = (
-        'sg docker -c "docker run -v {0}:{0} -w {0}/$AZ_BATCH_TASK_WORKING_DIR continuumio/miniconda find . -xtype l -delete"\n'.format(prefix),
-        'sg docker -c "docker run -v {0}:{0} -w {0}/$AZ_BATCH_TASK_WORKING_DIR continuumio/miniconda find . -xtype f -delete"\n'.format(prefix)
+        'sg docker -c "docker run -v {0}:{0} -w {0}/$AZ_BATCH_TASK_WORKING_DIR continuumio/miniconda find . -xtype l -delete"\n'.format(
+            prefix),
+        'sg docker -c "docker run -v {0}:{0} -w {0}/$AZ_BATCH_TASK_WORKING_DIR continuumio/miniconda find . -xtype f -delete"\n'.format(
+            prefix)
     )
     commands = ''.join(commands)
 
@@ -297,10 +291,9 @@ def get_compute_finish_commands(imageid):
 
 
 def get_all_pools(pool_config, reference):
-
     pooldefs = {}
 
-    for pooltype, poolinfo in pool_config.iteritems():
+    for pooltype, poolinfo in pool_config.items():
         tasks_per_node = poolinfo["tasks_per_node"]
         cpus_per_task = poolinfo["cpus_per_task"]
         mem_per_task = poolinfo["mem_per_task"]
