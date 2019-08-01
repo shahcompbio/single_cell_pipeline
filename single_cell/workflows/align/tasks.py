@@ -4,17 +4,16 @@ import logging
 import os
 import shutil
 
+from scripts import CollectMetrics
+from scripts import GenerateCNMatrix
+from scripts import RunTrimGalore
+from scripts import SummaryMetrics
 from single_cell.utils import bamutils
 from single_cell.utils import csvutils
 from single_cell.utils import gatkutils
 from single_cell.utils import helpers
 from single_cell.utils import picardutils
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotMetrics
-
-from scripts import CollectMetrics
-from scripts import GenerateCNMatrix
-from scripts import RunTrimGalore
-from scripts import SummaryMetrics
 
 
 class LibraryContaminationError(Exception):
@@ -51,14 +50,12 @@ def add_contamination_status(
         data, outfile, write_header=True
     )
 
-    try:
-        count_contaminated = data['is_contaminated'].value_counts()[True]
-
-        if strict_validation and (count_contaminated / len(data) > 0.2):
-            raise LibraryContaminationError("over 20% of cells are contaminated")
-    # if there are no contaminated cells
-    except KeyError:
-        pass
+    # get cells that are contaminated and have enopugh human reads
+    check_df = data.loc[data['is_contaminated'] == True]
+    check_df['perc_ref'] = data[reference] / data['total_reads']
+    check_df = check_df[check_df['perc_ref'] > ref_threshold]
+    if strict_validation and (len(check_df) / len(data) > 0.2):
+        raise LibraryContaminationError("over 20% of cells are contaminated")
 
 
 def merge_bams(inputs, output, output_index, containers):

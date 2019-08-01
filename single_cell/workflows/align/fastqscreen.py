@@ -128,8 +128,7 @@ def write_summary_counts(counts, outfile, cell_id):
 
     with helpers.getFileHandle(outfile, 'w') as writer:
         keys = sorted(summary_counts.keys())
-        keys = ['fastqscreen_{}'.format(key) for key in keys]
-        header = ['cell_id'] + keys
+        header = ['cell_id'] + ['fastqscreen_{}'.format(key) for key in keys]
         header = ','.join(header) + '\n'
         writer.write(header)
 
