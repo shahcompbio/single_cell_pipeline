@@ -205,7 +205,7 @@ def generate_meta_files(args):
 
     if alignment_dir and not annotation_only:
         alignment_files = get_output_files(alignment_dir, 'alignment', lib)
-        metadata['type'] = 'alignment'
+        metadata['type'] = 'align'
         helpers.generate_and_upload_metadata(
             args,
             alignment_dir,
