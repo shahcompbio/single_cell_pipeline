@@ -9,7 +9,7 @@ import os
 import numpy as np
 import pandas as pd
 import pysam
-
+import logging
 
 class ReadCounter(object):
     """
@@ -118,7 +118,13 @@ class ReadCounter(object):
         if pileupobj.mapping_quality < self.mapq_threshold:
             return True
 
-        fastqscreen_tags = pileupobj.get_tag('FS')
+        try:
+            fastqscreen_tags = pileupobj.get_tag('FS')
+        except KeyError:
+            logging.getLogger("read_counter").warn(
+                "couldn't get FS tag from bam"
+            )
+            fastqscreen_tags = None
         if fastqscreen_tags and self.reference:
             fastqscreen_tags = fastqscreen_tags.split(',')
             fastqscreen_tags = [val.split('_') for val in fastqscreen_tags]
