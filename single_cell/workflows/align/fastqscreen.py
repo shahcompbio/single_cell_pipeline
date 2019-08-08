@@ -48,12 +48,25 @@ def merge_fastq_screen_counts(
 
 
 def run_fastq_screen_paired_end(fastq_r1, fastq_r2, tempdir, params, docker_image=None):
-    basename = os.path.basename(fastq_r1)
-    basename = basename.split('.')[0]
+    def get_basename(filepath):
+        filepath_base = os.path.basename(filepath)
+
+        if filepath_base.endswith('.fastq.gz'):
+            filepath_base = filepath_base[:-len('.fastq.gz')]
+        elif filepath_base.endswith('.fq.gz'):
+            filepath_base = filepath_base[:-len('.fq.gz')]
+        elif filepath_base.endswith('.fastq'):
+            filepath_base = filepath_base[:-len('.fastq')]
+        elif filepath_base.endswith('.fq'):
+            filepath_base = filepath_base[:-len('.fq')]
+        else:
+            raise Exception('unknown file format. {}'.format(filepath))
+        return filepath_base
+
+    basename = get_basename(fastq_r1)
     tagged_fastq_r1 = os.path.join(tempdir, '{}.tagged.fastq.gz'.format(basename))
 
-    basename = os.path.basename(fastq_r2)
-    basename = basename.split('.')[0]
+    basename = get_basename(fastq_r2)
     tagged_fastq_r2 = os.path.join(tempdir, '{}.tagged.fastq.gz'.format(basename))
 
     # fastq screen fails if run on empty files
