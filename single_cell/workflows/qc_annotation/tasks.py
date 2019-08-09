@@ -41,7 +41,7 @@ def add_corrupt_tree_order(corrupt_tree, metrics, output):
         order = ordering.get(cellid, float('nan'))
         metrics.loc[metrics["cell_id"] == cellid, "order_corrupt_tree"] = order
 
-    csvutils.write_dataframe_to_csv_and_yaml(metrics, output, write_header=False)
+    csvutils.write_dataframe_to_csv_and_yaml(metrics, output, write_header=True)
 
 
 def annotate_metrics(
