@@ -22,7 +22,7 @@ There is another way to launch the pipeline with docker that requires some extra
 
 ### Build Azure Managed Image
 
-1. start a ubuntu 18.04 LTS. 
+1. start a ubuntu 18.04 LTS.
 2. Install docker on the machine. Please see [link](https://docs.docker.com/install/linux/docker-ce/ubuntu/) for details.
 3. Shut down the VM, expand the VM disk to desired size and restart the VM.
 4. download the reference data (reference genome, wig files etc) to `/refdata` directory on the VM.
