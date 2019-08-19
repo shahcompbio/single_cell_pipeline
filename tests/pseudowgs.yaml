@@ -1,0 +1,1491 @@
+normal_wgs:
+  SA1090:
+    A1234:
+      bam: scdnastagingstorage/testdata/pseudobulk/DAH370N_filtered.bam
+tumour_cells:
+  SA1090:
+    A1234:
+      SA1090_AAAATG-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAAATG-AAGTGC.bam
+      SA1090_AAAATG-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAAATG-AATTAT.bam
+      SA1090_AAAATG-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAAATG-AGTCTT.bam
+      SA1090_AAAATG-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAAATG-ATTATA.bam
+      SA1090_AAAATG-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAAATG-CATGGG.bam
+      SA1090_AAAATG-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAAATG-CCGGTG.bam
+      SA1090_AAAATG-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAAATG-GCCTAA.bam
+      SA1090_AAAATG-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAAATG-GCTGTA.bam
+      SA1090_AAAATG-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAAATG-GTAGCC.bam
+      SA1090_AAAATG-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAAATG-GTATAG.bam
+      SA1090_AAAATG-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAAATG-TATCGT.bam
+      SA1090_AAAATG-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAAATG-TCTGAG.bam
+      SA1090_AAAATG-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAAATG-TGACAT.bam
+      SA1090_AAACCT-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAACCT-AAGTGC.bam
+      SA1090_AAACCT-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAACCT-AATTAT.bam
+      SA1090_AAACCT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAACCT-AGTCTT.bam
+      SA1090_AAACCT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAACCT-ATTATA.bam
+      SA1090_AAACCT-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAACCT-CATGGG.bam
+      SA1090_AAACCT-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAACCT-CCGGTG.bam
+      SA1090_AAACCT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAACCT-GCCTAA.bam
+      SA1090_AAACCT-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAACCT-GCTGTA.bam
+      SA1090_AAACCT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAACCT-GTAGCC.bam
+      SA1090_AAACCT-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAACCT-GTATAG.bam
+      SA1090_AAACCT-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAACCT-TCTGAG.bam
+      SA1090_AAACCT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAACCT-TGACAT.bam
+      SA1090_AAGCTA-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAGCTA-AAGTGC.bam
+      SA1090_AAGCTA-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAGCTA-AATTAT.bam
+      SA1090_AAGCTA-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAGCTA-AGTCTT.bam
+      SA1090_AAGCTA-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAGCTA-ATTATA.bam
+      SA1090_AAGCTA-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAGCTA-CATGGG.bam
+      SA1090_AAGCTA-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAGCTA-CCGGTG.bam
+      SA1090_AAGCTA-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAGCTA-GCCTAA.bam
+      SA1090_AAGCTA-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAGCTA-GTAGCC.bam
+      SA1090_AAGCTA-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAGCTA-GTATAG.bam
+      SA1090_AAGCTA-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAGCTA-TATCGT.bam
+      SA1090_AAGCTA-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AAGCTA-TCTGAG.bam
+      SA1090_ACATCG-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ACATCG-AAGTGC.bam
+      SA1090_ACATCG-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ACATCG-AATTAT.bam
+      SA1090_ACATCG-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ACATCG-AGTCTT.bam
+      SA1090_ACATCG-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ACATCG-ATTATA.bam
+      SA1090_ACATCG-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ACATCG-CATGGG.bam
+      SA1090_ACATCG-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ACATCG-CCGGTG.bam
+      SA1090_ACATCG-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ACATCG-GCCTAA.bam
+      SA1090_ACATCG-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ACATCG-GTAGCC.bam
+      SA1090_ACATCG-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ACATCG-GTATAG.bam
+      SA1090_ACATCG-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ACATCG-TATCGT.bam
+      SA1090_ACATCG-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ACATCG-TCTGAG.bam
+      SA1090_ACATCG-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ACATCG-TGACAT.bam
+      SA1090_AGATGT-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGATGT-AATTAT.bam
+      SA1090_AGATGT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGATGT-ATTATA.bam
+      SA1090_AGATGT-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGATGT-CATGGG.bam
+      SA1090_AGATGT-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGATGT-CCAGCA.bam
+      SA1090_AGATGT-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGATGT-CCGGTG.bam
+      SA1090_AGATGT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGATGT-GCCTAA.bam
+      SA1090_AGATGT-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGATGT-GCTGTA.bam
+      SA1090_AGATGT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGATGT-GTAGCC.bam
+      SA1090_AGATGT-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGATGT-GTATAG.bam
+      SA1090_AGATGT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGATGT-TATCGT.bam
+      SA1090_AGATGT-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGATGT-TCTGAG.bam
+      SA1090_AGATGT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGATGT-TGACAT.bam
+      SA1090_AGCATC-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCATC-AAGTGC.bam
+      SA1090_AGCATC-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCATC-AATTAT.bam
+      SA1090_AGCATC-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCATC-AGTCTT.bam
+      SA1090_AGCATC-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCATC-ATTATA.bam
+      SA1090_AGCATC-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCATC-CCGGTG.bam
+      SA1090_AGCATC-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCATC-GCCTAA.bam
+      SA1090_AGCATC-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCATC-GTAGCC.bam
+      SA1090_AGCATC-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCATC-GTATAG.bam
+      SA1090_AGCATC-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCATC-TATCGT.bam
+      SA1090_AGCATC-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCATC-TCTGAG.bam
+      SA1090_AGCATC-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCATC-TGACAT.bam
+      SA1090_AGCGCT-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCGCT-AAGTGC.bam
+      SA1090_AGCGCT-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCGCT-AATTAT.bam
+      SA1090_AGCGCT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCGCT-AGTCTT.bam
+      SA1090_AGCGCT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCGCT-ATTATA.bam
+      SA1090_AGCGCT-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCGCT-CATGGG.bam
+      SA1090_AGCGCT-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCGCT-CCGGTG.bam
+      SA1090_AGCGCT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCGCT-GCCTAA.bam
+      SA1090_AGCGCT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCGCT-GTAGCC.bam
+      SA1090_AGCGCT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCGCT-TATCGT.bam
+      SA1090_AGCGCT-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCGCT-TCTGAG.bam
+      SA1090_AGCGCT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCGCT-TGACAT.bam
+      SA1090_AGCTAG-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCTAG-AAGTGC.bam
+      SA1090_AGCTAG-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCTAG-AATTAT.bam
+      SA1090_AGCTAG-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCTAG-ATTATA.bam
+      SA1090_AGCTAG-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCTAG-CATGGG.bam
+      SA1090_AGCTAG-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCTAG-CCGGTG.bam
+      SA1090_AGCTAG-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCTAG-GCCTAA.bam
+      SA1090_AGCTAG-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCTAG-GTAGCC.bam
+      SA1090_AGCTAG-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCTAG-GTATAG.bam
+      SA1090_AGCTAG-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCTAG-TATCGT.bam
+      SA1090_AGCTAG-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCTAG-TCTGAG.bam
+      SA1090_AGCTAG-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGCTAG-TGACAT.bam
+      SA1090_AGGAAT-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGGAAT-AAGTGC.bam
+      SA1090_AGGAAT-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGGAAT-AATTAT.bam
+      SA1090_AGGAAT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGGAAT-AGTCTT.bam
+      SA1090_AGGAAT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGGAAT-ATTATA.bam
+      SA1090_AGGAAT-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGGAAT-CATGGG.bam
+      SA1090_AGGAAT-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGGAAT-CCAGCA.bam
+      SA1090_AGGAAT-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGGAAT-CCGGTG.bam
+      SA1090_AGGAAT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGGAAT-GCCTAA.bam
+      SA1090_AGGAAT-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGGAAT-GCTGTA.bam
+      SA1090_AGGAAT-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGGAAT-GTATAG.bam
+      SA1090_AGGAAT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGGAAT-TATCGT.bam
+      SA1090_AGGAAT-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGGAAT-TCTGAG.bam
+      SA1090_AGGAAT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_AGGAAT-TGACAT.bam
+      SA1090_ATAGAT-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATAGAT-AAGTGC.bam
+      SA1090_ATAGAT-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATAGAT-AATTAT.bam
+      SA1090_ATAGAT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATAGAT-AGTCTT.bam
+      SA1090_ATAGAT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATAGAT-ATTATA.bam
+      SA1090_ATAGAT-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATAGAT-CATGGG.bam
+      SA1090_ATAGAT-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATAGAT-CCAGCA.bam
+      SA1090_ATAGAT-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATAGAT-CCGGTG.bam
+      SA1090_ATAGAT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATAGAT-GCCTAA.bam
+      SA1090_ATAGAT-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATAGAT-GCTGTA.bam
+      SA1090_ATAGAT-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATAGAT-GTATAG.bam
+      SA1090_ATAGAT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATAGAT-TGACAT.bam
+      SA1090_ATTCCG-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTCCG-AAGTGC.bam
+      SA1090_ATTCCG-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTCCG-AATTAT.bam
+      SA1090_ATTCCG-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTCCG-AGTCTT.bam
+      SA1090_ATTCCG-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTCCG-ATTATA.bam
+      SA1090_ATTCCG-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTCCG-CATGGG.bam
+      SA1090_ATTCCG-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTCCG-CCGGTG.bam
+      SA1090_ATTCCG-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTCCG-GCCTAA.bam
+      SA1090_ATTCCG-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTCCG-GCTGTA.bam
+      SA1090_ATTCCG-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTCCG-GTAGCC.bam
+      SA1090_ATTCCG-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTCCG-GTATAG.bam
+      SA1090_ATTCCG-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTCCG-TATCGT.bam
+      SA1090_ATTCCG-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTCCG-TCTGAG.bam
+      SA1090_ATTCCG-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTCCG-TGACAT.bam
+      SA1090_ATTGGC-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTGGC-AAGTGC.bam
+      SA1090_ATTGGC-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTGGC-AATTAT.bam
+      SA1090_ATTGGC-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTGGC-AGTCTT.bam
+      SA1090_ATTGGC-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTGGC-ATTATA.bam
+      SA1090_ATTGGC-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTGGC-CATGGG.bam
+      SA1090_ATTGGC-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTGGC-CCGGTG.bam
+      SA1090_ATTGGC-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTGGC-GCCTAA.bam
+      SA1090_ATTGGC-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTGGC-GTAGCC.bam
+      SA1090_ATTGGC-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTGGC-GTATAG.bam
+      SA1090_ATTGGC-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTGGC-TATCGT.bam
+      SA1090_ATTGGC-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTGGC-TCTGAG.bam
+      SA1090_ATTGGC-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_ATTGGC-TGACAT.bam
+      SA1090_CAAGTT-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAAGTT-AATTAT.bam
+      SA1090_CAAGTT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAAGTT-AGTCTT.bam
+      SA1090_CAAGTT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAAGTT-ATTATA.bam
+      SA1090_CAAGTT-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAAGTT-CATGGG.bam
+      SA1090_CAAGTT-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAAGTT-CCGGTG.bam
+      SA1090_CAAGTT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAAGTT-GCCTAA.bam
+      SA1090_CAAGTT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAAGTT-GTAGCC.bam
+      SA1090_CAAGTT-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAAGTT-GTATAG.bam
+      SA1090_CAAGTT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAAGTT-TATCGT.bam
+      SA1090_CAAGTT-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAAGTT-TCTGAG.bam
+      SA1090_CAAGTT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAAGTT-TGACAT.bam
+      SA1090_CAGGCC-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAGGCC-AGTCTT.bam
+      SA1090_CAGGCC-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAGGCC-ATTATA.bam
+      SA1090_CAGGCC-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAGGCC-CCAGCA.bam
+      SA1090_CAGGCC-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAGGCC-CCGGTG.bam
+      SA1090_CAGGCC-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAGGCC-GCCTAA.bam
+      SA1090_CAGGCC-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAGGCC-GCTGTA.bam
+      SA1090_CAGGCC-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAGGCC-GTAGCC.bam
+      SA1090_CAGGCC-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAGGCC-TATCGT.bam
+      SA1090_CAGGCC-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAGGCC-TCTGAG.bam
+      SA1090_CAGGCC-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CAGGCC-TGACAT.bam
+      SA1090_CATTCA-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CATTCA-AAGTGC.bam
+      SA1090_CATTCA-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CATTCA-AATTAT.bam
+      SA1090_CATTCA-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CATTCA-AGTCTT.bam
+      SA1090_CATTCA-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CATTCA-ATTATA.bam
+      SA1090_CATTCA-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CATTCA-CATGGG.bam
+      SA1090_CATTCA-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CATTCA-CCGGTG.bam
+      SA1090_CATTCA-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CATTCA-GCCTAA.bam
+      SA1090_CATTCA-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CATTCA-GTAGCC.bam
+      SA1090_CATTCA-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CATTCA-TATCGT.bam
+      SA1090_CATTCA-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CATTCA-TCTGAG.bam
+      SA1090_CATTCA-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CATTCA-TGACAT.bam
+      SA1090_CCTATT-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTATT-AAGTGC.bam
+      SA1090_CCTATT-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTATT-AATTAT.bam
+      SA1090_CCTATT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTATT-AGTCTT.bam
+      SA1090_CCTATT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTATT-ATTATA.bam
+      SA1090_CCTATT-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTATT-CATGGG.bam
+      SA1090_CCTATT-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTATT-CCAGCA.bam
+      SA1090_CCTATT-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTATT-CCGGTG.bam
+      SA1090_CCTATT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTATT-GCCTAA.bam
+      SA1090_CCTATT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTATT-GTAGCC.bam
+      SA1090_CCTATT-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTATT-GTATAG.bam
+      SA1090_CCTATT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTATT-TATCGT.bam
+      SA1090_CCTATT-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTATT-TCTGAG.bam
+      SA1090_CCTATT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTATT-TGACAT.bam
+      SA1090_CCTTGC-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTTGC-AAGTGC.bam
+      SA1090_CCTTGC-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTTGC-AATTAT.bam
+      SA1090_CCTTGC-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTTGC-AGTCTT.bam
+      SA1090_CCTTGC-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTTGC-CATGGG.bam
+      SA1090_CCTTGC-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTTGC-GCCTAA.bam
+      SA1090_CCTTGC-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTTGC-GTAGCC.bam
+      SA1090_CCTTGC-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTTGC-GTATAG.bam
+      SA1090_CCTTGC-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTTGC-TATCGT.bam
+      SA1090_CCTTGC-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTTGC-TCTGAG.bam
+      SA1090_CCTTGC-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CCTTGC-TGACAT.bam
+      SA1090_CGAAAC-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGAAAC-AAGTGC.bam
+      SA1090_CGAAAC-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGAAAC-AATTAT.bam
+      SA1090_CGAAAC-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGAAAC-AGTCTT.bam
+      SA1090_CGAAAC-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGAAAC-ATTATA.bam
+      SA1090_CGAAAC-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGAAAC-CATGGG.bam
+      SA1090_CGAAAC-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGAAAC-CCAGCA.bam
+      SA1090_CGAAAC-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGAAAC-CCGGTG.bam
+      SA1090_CGAAAC-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGAAAC-GCCTAA.bam
+      SA1090_CGAAAC-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGAAAC-GCTGTA.bam
+      SA1090_CGAAAC-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGAAAC-GTAGCC.bam
+      SA1090_CGAAAC-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGAAAC-GTATAG.bam
+      SA1090_CGAAAC-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGAAAC-TATCGT.bam
+      SA1090_CGAAAC-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGAAAC-TCTGAG.bam
+      SA1090_CGAAAC-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGAAAC-TGACAT.bam
+      SA1090_CGATTA-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGATTA-AAGTGC.bam
+      SA1090_CGATTA-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGATTA-AATTAT.bam
+      SA1090_CGATTA-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGATTA-AGTCTT.bam
+      SA1090_CGATTA-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGATTA-ATTATA.bam
+      SA1090_CGATTA-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGATTA-CATGGG.bam
+      SA1090_CGATTA-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGATTA-CCGGTG.bam
+      SA1090_CGATTA-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGATTA-GCCTAA.bam
+      SA1090_CGATTA-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGATTA-GTAGCC.bam
+      SA1090_CGATTA-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGATTA-TATCGT.bam
+      SA1090_CGATTA-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGATTA-TCTGAG.bam
+      SA1090_CGATTA-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGATTA-TGACAT.bam
+      SA1090_CGCCTG-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGCCTG-AAGTGC.bam
+      SA1090_CGCCTG-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGCCTG-AATTAT.bam
+      SA1090_CGCCTG-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGCCTG-AGTCTT.bam
+      SA1090_CGCCTG-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGCCTG-ATTATA.bam
+      SA1090_CGCCTG-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGCCTG-CCAGCA.bam
+      SA1090_CGCCTG-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGCCTG-CCGGTG.bam
+      SA1090_CGCCTG-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGCCTG-GCCTAA.bam
+      SA1090_CGCCTG-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGCCTG-GCTGTA.bam
+      SA1090_CGCCTG-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGCCTG-GTAGCC.bam
+      SA1090_CGCCTG-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGCCTG-GTATAG.bam
+      SA1090_CGCCTG-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGCCTG-TATCGT.bam
+      SA1090_CGCCTG-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGCCTG-TGACAT.bam
+      SA1090_CGGCCT-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGGCCT-AAGTGC.bam
+      SA1090_CGGCCT-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGGCCT-AATTAT.bam
+      SA1090_CGGCCT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGGCCT-AGTCTT.bam
+      SA1090_CGGCCT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGGCCT-ATTATA.bam
+      SA1090_CGGCCT-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGGCCT-CATGGG.bam
+      SA1090_CGGCCT-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGGCCT-CCGGTG.bam
+      SA1090_CGGCCT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGGCCT-GCCTAA.bam
+      SA1090_CGGCCT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGGCCT-GTAGCC.bam
+      SA1090_CGGCCT-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGGCCT-GTATAG.bam
+      SA1090_CGGCCT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGGCCT-TATCGT.bam
+      SA1090_CGGCCT-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGGCCT-TCTGAG.bam
+      SA1090_CGGCCT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGGCCT-TGACAT.bam
+      SA1090_CGTACG-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTACG-AAGTGC.bam
+      SA1090_CGTACG-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTACG-AATTAT.bam
+      SA1090_CGTACG-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTACG-AGTCTT.bam
+      SA1090_CGTACG-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTACG-ATTATA.bam
+      SA1090_CGTACG-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTACG-CATGGG.bam
+      SA1090_CGTACG-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTACG-CCAGCA.bam
+      SA1090_CGTACG-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTACG-CCGGTG.bam
+      SA1090_CGTACG-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTACG-GCTGTA.bam
+      SA1090_CGTACG-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTACG-GTAGCC.bam
+      SA1090_CGTACG-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTACG-GTATAG.bam
+      SA1090_CGTACG-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTACG-TATCGT.bam
+      SA1090_CGTACG-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTACG-TCTGAG.bam
+      SA1090_CGTACG-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTACG-TGACAT.bam
+      SA1090_CGTGAT-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTGAT-AATTAT.bam
+      SA1090_CGTGAT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTGAT-AGTCTT.bam
+      SA1090_CGTGAT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTGAT-ATTATA.bam
+      SA1090_CGTGAT-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTGAT-CATGGG.bam
+      SA1090_CGTGAT-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTGAT-CCGGTG.bam
+      SA1090_CGTGAT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTGAT-GCCTAA.bam
+      SA1090_CGTGAT-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTGAT-GCTGTA.bam
+      SA1090_CGTGAT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTGAT-GTAGCC.bam
+      SA1090_CGTGAT-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTGAT-GTATAG.bam
+      SA1090_CGTGAT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTGAT-TATCGT.bam
+      SA1090_CGTGAT-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTGAT-TCTGAG.bam
+      SA1090_CGTGAT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CGTGAT-TGACAT.bam
+      SA1090_CTAAGG-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTAAGG-AAGTGC.bam
+      SA1090_CTAAGG-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTAAGG-AATTAT.bam
+      SA1090_CTAAGG-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTAAGG-AGTCTT.bam
+      SA1090_CTAAGG-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTAAGG-ATTATA.bam
+      SA1090_CTAAGG-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTAAGG-CCAGCA.bam
+      SA1090_CTAAGG-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTAAGG-GCCTAA.bam
+      SA1090_CTAAGG-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTAAGG-GTAGCC.bam
+      SA1090_CTAAGG-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTAAGG-GTATAG.bam
+      SA1090_CTAAGG-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTAAGG-TATCGT.bam
+      SA1090_CTAAGG-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTAAGG-TGACAT.bam
+      SA1090_CTATCT-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTATCT-AAGTGC.bam
+      SA1090_CTATCT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTATCT-AGTCTT.bam
+      SA1090_CTATCT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTATCT-ATTATA.bam
+      SA1090_CTATCT-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTATCT-CCAGCA.bam
+      SA1090_CTATCT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTATCT-GCCTAA.bam
+      SA1090_CTATCT-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTATCT-GCTGTA.bam
+      SA1090_CTATCT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTATCT-GTAGCC.bam
+      SA1090_CTATCT-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTATCT-GTATAG.bam
+      SA1090_CTATCT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTATCT-TATCGT.bam
+      SA1090_CTATCT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTATCT-TGACAT.bam
+      SA1090_CTGATC-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGATC-AAGTGC.bam
+      SA1090_CTGATC-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGATC-AATTAT.bam
+      SA1090_CTGATC-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGATC-AGTCTT.bam
+      SA1090_CTGATC-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGATC-ATTATA.bam
+      SA1090_CTGATC-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGATC-CATGGG.bam
+      SA1090_CTGATC-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGATC-CCGGTG.bam
+      SA1090_CTGATC-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGATC-GCCTAA.bam
+      SA1090_CTGATC-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGATC-GCTGTA.bam
+      SA1090_CTGATC-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGATC-GTAGCC.bam
+      SA1090_CTGATC-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGATC-GTATAG.bam
+      SA1090_CTGATC-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGATC-TATCGT.bam
+      SA1090_CTGATC-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGATC-TCTGAG.bam
+      SA1090_CTGGGT-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGGGT-AAGTGC.bam
+      SA1090_CTGGGT-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGGGT-AATTAT.bam
+      SA1090_CTGGGT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGGGT-AGTCTT.bam
+      SA1090_CTGGGT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGGGT-ATTATA.bam
+      SA1090_CTGGGT-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGGGT-CATGGG.bam
+      SA1090_CTGGGT-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGGGT-CCGGTG.bam
+      SA1090_CTGGGT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGGGT-GCCTAA.bam
+      SA1090_CTGGGT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGGGT-GTAGCC.bam
+      SA1090_CTGGGT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGGGT-TATCGT.bam
+      SA1090_CTGGGT-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGGGT-TCTGAG.bam
+      SA1090_CTGGGT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTGGGT-TGACAT.bam
+      SA1090_CTTCGA-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTCGA-AAGTGC.bam
+      SA1090_CTTCGA-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTCGA-AGTCTT.bam
+      SA1090_CTTCGA-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTCGA-ATTATA.bam
+      SA1090_CTTCGA-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTCGA-CCAGCA.bam
+      SA1090_CTTCGA-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTCGA-GCCTAA.bam
+      SA1090_CTTCGA-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTCGA-GCTGTA.bam
+      SA1090_CTTCGA-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTCGA-GTATAG.bam
+      SA1090_CTTCGA-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTCGA-TATCGT.bam
+      SA1090_CTTCGA-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTCGA-TGACAT.bam
+      SA1090_CTTTTG-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTTTG-AAGTGC.bam
+      SA1090_CTTTTG-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTTTG-AATTAT.bam
+      SA1090_CTTTTG-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTTTG-AGTCTT.bam
+      SA1090_CTTTTG-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTTTG-ATTATA.bam
+      SA1090_CTTTTG-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTTTG-CATGGG.bam
+      SA1090_CTTTTG-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTTTG-CCGGTG.bam
+      SA1090_CTTTTG-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTTTG-GCCTAA.bam
+      SA1090_CTTTTG-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTTTG-GTAGCC.bam
+      SA1090_CTTTTG-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTTTG-GTATAG.bam
+      SA1090_CTTTTG-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTTTG-TATCGT.bam
+      SA1090_CTTTTG-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTTTG-TCTGAG.bam
+      SA1090_CTTTTG-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_CTTTTG-TGACAT.bam
+      SA1090_GATCTG-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATCTG-AAGTGC.bam
+      SA1090_GATCTG-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATCTG-AGTCTT.bam
+      SA1090_GATCTG-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATCTG-ATTATA.bam
+      SA1090_GATCTG-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATCTG-CCAGCA.bam
+      SA1090_GATCTG-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATCTG-GCCTAA.bam
+      SA1090_GATCTG-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATCTG-GTAGCC.bam
+      SA1090_GATCTG-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATCTG-GTATAG.bam
+      SA1090_GATCTG-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATCTG-TATCGT.bam
+      SA1090_GATCTG-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATCTG-TGACAT.bam
+      SA1090_GATGCT-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATGCT-AAGTGC.bam
+      SA1090_GATGCT-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATGCT-AATTAT.bam
+      SA1090_GATGCT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATGCT-AGTCTT.bam
+      SA1090_GATGCT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATGCT-ATTATA.bam
+      SA1090_GATGCT-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATGCT-CATGGG.bam
+      SA1090_GATGCT-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATGCT-CCAGCA.bam
+      SA1090_GATGCT-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATGCT-CCGGTG.bam
+      SA1090_GATGCT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATGCT-GCCTAA.bam
+      SA1090_GATGCT-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATGCT-GCTGTA.bam
+      SA1090_GATGCT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATGCT-GTAGCC.bam
+      SA1090_GATGCT-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATGCT-GTATAG.bam
+      SA1090_GATGCT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATGCT-TATCGT.bam
+      SA1090_GATGCT-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATGCT-TCTGAG.bam
+      SA1090_GATGCT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GATGCT-TGACAT.bam
+      SA1090_GCATTT-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCATTT-AAGTGC.bam
+      SA1090_GCATTT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCATTT-AGTCTT.bam
+      SA1090_GCATTT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCATTT-ATTATA.bam
+      SA1090_GCATTT-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCATTT-CCAGCA.bam
+      SA1090_GCATTT-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCATTT-GCTGTA.bam
+      SA1090_GCATTT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCATTT-GTAGCC.bam
+      SA1090_GCATTT-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCATTT-GTATAG.bam
+      SA1090_GCATTT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCATTT-TATCGT.bam
+      SA1090_GCATTT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCATTT-TGACAT.bam
+      SA1090_GCCATG-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCATG-AAGTGC.bam
+      SA1090_GCCATG-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCATG-AGTCTT.bam
+      SA1090_GCCATG-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCATG-ATTATA.bam
+      SA1090_GCCATG-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCATG-CCAGCA.bam
+      SA1090_GCCATG-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCATG-GCCTAA.bam
+      SA1090_GCCATG-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCATG-GCTGTA.bam
+      SA1090_GCCATG-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCATG-GTATAG.bam
+      SA1090_GCCATG-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCATG-TATCGT.bam
+      SA1090_GCCATG-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCATG-TGACAT.bam
+      SA1090_GCCGGT-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCGGT-AAGTGC.bam
+      SA1090_GCCGGT-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCGGT-AATTAT.bam
+      SA1090_GCCGGT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCGGT-AGTCTT.bam
+      SA1090_GCCGGT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCGGT-ATTATA.bam
+      SA1090_GCCGGT-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCGGT-CATGGG.bam
+      SA1090_GCCGGT-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCGGT-CCGGTG.bam
+      SA1090_GCCGGT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCGGT-GCCTAA.bam
+      SA1090_GCCGGT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCGGT-GTAGCC.bam
+      SA1090_GCCGGT-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCGGT-GTATAG.bam
+      SA1090_GCCGGT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCGGT-TATCGT.bam
+      SA1090_GCCGGT-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCGGT-TCTGAG.bam
+      SA1090_GCCGGT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCCGGT-TGACAT.bam
+      SA1090_GCGGAC-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGGAC-AAGTGC.bam
+      SA1090_GCGGAC-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGGAC-AATTAT.bam
+      SA1090_GCGGAC-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGGAC-AGTCTT.bam
+      SA1090_GCGGAC-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGGAC-ATTATA.bam
+      SA1090_GCGGAC-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGGAC-CATGGG.bam
+      SA1090_GCGGAC-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGGAC-CCAGCA.bam
+      SA1090_GCGGAC-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGGAC-CCGGTG.bam
+      SA1090_GCGGAC-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGGAC-GCCTAA.bam
+      SA1090_GCGGAC-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGGAC-GTAGCC.bam
+      SA1090_GCGGAC-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGGAC-GTATAG.bam
+      SA1090_GCGGAC-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGGAC-TATCGT.bam
+      SA1090_GCGGAC-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGGAC-TCTGAG.bam
+      SA1090_GCGGAC-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGGAC-TGACAT.bam
+      SA1090_GCGTGG-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGTGG-AAGTGC.bam
+      SA1090_GCGTGG-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGTGG-AATTAT.bam
+      SA1090_GCGTGG-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGTGG-AGTCTT.bam
+      SA1090_GCGTGG-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGTGG-ATTATA.bam
+      SA1090_GCGTGG-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGTGG-CATGGG.bam
+      SA1090_GCGTGG-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGTGG-CCGGTG.bam
+      SA1090_GCGTGG-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGTGG-GCCTAA.bam
+      SA1090_GCGTGG-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGTGG-GTAGCC.bam
+      SA1090_GCGTGG-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGTGG-TATCGT.bam
+      SA1090_GCGTGG-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGTGG-TCTGAG.bam
+      SA1090_GCGTGG-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCGTGG-TGACAT.bam
+      SA1090_GCTCAT-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTCAT-AAGTGC.bam
+      SA1090_GCTCAT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTCAT-AGTCTT.bam
+      SA1090_GCTCAT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTCAT-ATTATA.bam
+      SA1090_GCTCAT-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTCAT-CCAGCA.bam
+      SA1090_GCTCAT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTCAT-GCCTAA.bam
+      SA1090_GCTCAT-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTCAT-GCTGTA.bam
+      SA1090_GCTCAT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTCAT-GTAGCC.bam
+      SA1090_GCTCAT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTCAT-TATCGT.bam
+      SA1090_GCTCAT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTCAT-TGACAT.bam
+      SA1090_GCTGTA-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTGTA-AAGTGC.bam
+      SA1090_GCTGTA-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTGTA-AATTAT.bam
+      SA1090_GCTGTA-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTGTA-AGTCTT.bam
+      SA1090_GCTGTA-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTGTA-ATTATA.bam
+      SA1090_GCTGTA-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTGTA-CATGGG.bam
+      SA1090_GCTGTA-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTGTA-CCGGTG.bam
+      SA1090_GCTGTA-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTGTA-GCCTAA.bam
+      SA1090_GCTGTA-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTGTA-GTAGCC.bam
+      SA1090_GCTGTA-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTGTA-TATCGT.bam
+      SA1090_GCTGTA-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTGTA-TCTGAG.bam
+      SA1090_GCTGTA-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GCTGTA-TGACAT.bam
+      SA1090_GGAACT-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAACT-AAGTGC.bam
+      SA1090_GGAACT-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAACT-AATTAT.bam
+      SA1090_GGAACT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAACT-AGTCTT.bam
+      SA1090_GGAACT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAACT-ATTATA.bam
+      SA1090_GGAACT-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAACT-CATGGG.bam
+      SA1090_GGAACT-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAACT-CCGGTG.bam
+      SA1090_GGAACT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAACT-GCCTAA.bam
+      SA1090_GGAACT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAACT-GTAGCC.bam
+      SA1090_GGAACT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAACT-TATCGT.bam
+      SA1090_GGAACT-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAACT-TCTGAG.bam
+      SA1090_GGAGAA-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAGAA-AAGTGC.bam
+      SA1090_GGAGAA-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAGAA-AGTCTT.bam
+      SA1090_GGAGAA-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAGAA-ATTATA.bam
+      SA1090_GGAGAA-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAGAA-CCAGCA.bam
+      SA1090_GGAGAA-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAGAA-GCCTAA.bam
+      SA1090_GGAGAA-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAGAA-GCTGTA.bam
+      SA1090_GGAGAA-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAGAA-GTAGCC.bam
+      SA1090_GGAGAA-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAGAA-GTATAG.bam
+      SA1090_GGAGAA-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAGAA-TATCGT.bam
+      SA1090_GGAGAA-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGAGAA-TGACAT.bam
+      SA1090_GGCCAC-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGCCAC-AAGTGC.bam
+      SA1090_GGCCAC-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGCCAC-AATTAT.bam
+      SA1090_GGCCAC-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGCCAC-AGTCTT.bam
+      SA1090_GGCCAC-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGCCAC-ATTATA.bam
+      SA1090_GGCCAC-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGCCAC-CATGGG.bam
+      SA1090_GGCCAC-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGCCAC-CCAGCA.bam
+      SA1090_GGCCAC-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGCCAC-CCGGTG.bam
+      SA1090_GGCCAC-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGCCAC-GCCTAA.bam
+      SA1090_GGCCAC-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGCCAC-GCTGTA.bam
+      SA1090_GGCCAC-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGCCAC-GTAGCC.bam
+      SA1090_GGCCAC-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGCCAC-GTATAG.bam
+      SA1090_GGCCAC-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGCCAC-TATCGT.bam
+      SA1090_GGCCAC-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGCCAC-TCTGAG.bam
+      SA1090_GGCCAC-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGCCAC-TGACAT.bam
+      SA1090_GGGGTT-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGGGTT-AAGTGC.bam
+      SA1090_GGGGTT-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGGGTT-AATTAT.bam
+      SA1090_GGGGTT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGGGTT-AGTCTT.bam
+      SA1090_GGGGTT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGGGTT-ATTATA.bam
+      SA1090_GGGGTT-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGGGTT-CATGGG.bam
+      SA1090_GGGGTT-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGGGTT-CCGGTG.bam
+      SA1090_GGGGTT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGGGTT-GCCTAA.bam
+      SA1090_GGGGTT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGGGTT-GTAGCC.bam
+      SA1090_GGGGTT-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGGGTT-GTATAG.bam
+      SA1090_GGGGTT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGGGTT-TATCGT.bam
+      SA1090_GGGGTT-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGGGTT-TCTGAG.bam
+      SA1090_GGTAGA-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTAGA-AAGTGC.bam
+      SA1090_GGTAGA-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTAGA-AATTAT.bam
+      SA1090_GGTAGA-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTAGA-ATTATA.bam
+      SA1090_GGTAGA-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTAGA-GCCTAA.bam
+      SA1090_GGTAGA-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTAGA-GCTGTA.bam
+      SA1090_GGTAGA-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTAGA-GTAGCC.bam
+      SA1090_GGTAGA-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTAGA-GTATAG.bam
+      SA1090_GGTAGA-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTAGA-TATCGT.bam
+      SA1090_GGTAGA-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTAGA-TCTGAG.bam
+      SA1090_GGTAGA-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTAGA-TGACAT.bam
+      SA1090_GGTTTC-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTTTC-AAGTGC.bam
+      SA1090_GGTTTC-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTTTC-AATTAT.bam
+      SA1090_GGTTTC-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTTTC-AGTCTT.bam
+      SA1090_GGTTTC-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTTTC-ATTATA.bam
+      SA1090_GGTTTC-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTTTC-CATGGG.bam
+      SA1090_GGTTTC-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTTTC-CCGGTG.bam
+      SA1090_GGTTTC-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTTTC-GCCTAA.bam
+      SA1090_GGTTTC-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTTTC-GTAGCC.bam
+      SA1090_GGTTTC-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTTTC-GTATAG.bam
+      SA1090_GGTTTC-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTTTC-TATCGT.bam
+      SA1090_GGTTTC-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GGTTTC-TCTGAG.bam
+      SA1090_GTATAG-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTATAG-AAGTGC.bam
+      SA1090_GTATAG-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTATAG-AATTAT.bam
+      SA1090_GTATAG-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTATAG-AGTCTT.bam
+      SA1090_GTATAG-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTATAG-ATTATA.bam
+      SA1090_GTATAG-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTATAG-CATGGG.bam
+      SA1090_GTATAG-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTATAG-CCGGTG.bam
+      SA1090_GTATAG-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTATAG-GCCTAA.bam
+      SA1090_GTATAG-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTATAG-GTAGCC.bam
+      SA1090_GTATAG-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTATAG-GTATAG.bam
+      SA1090_GTATAG-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTATAG-TATCGT.bam
+      SA1090_GTATAG-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTATAG-TCTGAG.bam
+      SA1090_GTATAG-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTATAG-TGACAT.bam
+      SA1090_GTTTGT-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTTTGT-AAGTGC.bam
+      SA1090_GTTTGT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTTTGT-AGTCTT.bam
+      SA1090_GTTTGT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTTTGT-ATTATA.bam
+      SA1090_GTTTGT-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTTTGT-CCAGCA.bam
+      SA1090_GTTTGT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTTTGT-GCCTAA.bam
+      SA1090_GTTTGT-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTTTGT-GCTGTA.bam
+      SA1090_GTTTGT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTTTGT-GTAGCC.bam
+      SA1090_GTTTGT-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTTTGT-GTATAG.bam
+      SA1090_GTTTGT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTTTGT-TATCGT.bam
+      SA1090_GTTTGT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_GTTTGT-TGACAT.bam
+      SA1090_TAAGGC-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAAGGC-AAGTGC.bam
+      SA1090_TAAGGC-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAAGGC-AATTAT.bam
+      SA1090_TAAGGC-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAAGGC-AGTCTT.bam
+      SA1090_TAAGGC-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAAGGC-ATTATA.bam
+      SA1090_TAAGGC-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAAGGC-CATGGG.bam
+      SA1090_TAAGGC-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAAGGC-CCGGTG.bam
+      SA1090_TAAGGC-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAAGGC-GCCTAA.bam
+      SA1090_TAAGGC-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAAGGC-GTAGCC.bam
+      SA1090_TAAGGC-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAAGGC-GTATAG.bam
+      SA1090_TAAGGC-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAAGGC-TATCGT.bam
+      SA1090_TAGTTG-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAGTTG-AAGTGC.bam
+      SA1090_TAGTTG-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAGTTG-AATTAT.bam
+      SA1090_TAGTTG-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAGTTG-AGTCTT.bam
+      SA1090_TAGTTG-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAGTTG-ATTATA.bam
+      SA1090_TAGTTG-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAGTTG-CATGGG.bam
+      SA1090_TAGTTG-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAGTTG-CCGGTG.bam
+      SA1090_TAGTTG-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAGTTG-GCCTAA.bam
+      SA1090_TAGTTG-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAGTTG-GTAGCC.bam
+      SA1090_TAGTTG-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAGTTG-TATCGT.bam
+      SA1090_TAGTTG-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAGTTG-TCTGAG.bam
+      SA1090_TAGTTG-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TAGTTG-TGACAT.bam
+      SA1090_TATATC-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TATATC-AAGTGC.bam
+      SA1090_TATATC-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TATATC-AATTAT.bam
+      SA1090_TATATC-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TATATC-AGTCTT.bam
+      SA1090_TATATC-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TATATC-ATTATA.bam
+      SA1090_TATATC-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TATATC-CATGGG.bam
+      SA1090_TATATC-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TATATC-CCAGCA.bam
+      SA1090_TATATC-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TATATC-CCGGTG.bam
+      SA1090_TATATC-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TATATC-GCCTAA.bam
+      SA1090_TATATC-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TATATC-GCTGTA.bam
+      SA1090_TATATC-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TATATC-GTAGCC.bam
+      SA1090_TATATC-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TATATC-GTATAG.bam
+      SA1090_TATATC-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TATATC-TATCGT.bam
+      SA1090_TATATC-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TATATC-TCTGAG.bam
+      SA1090_TATATC-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TATATC-TGACAT.bam
+      SA1090_TCAAGT-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCAAGT-AAGTGC.bam
+      SA1090_TCAAGT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCAAGT-AGTCTT.bam
+      SA1090_TCAAGT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCAAGT-ATTATA.bam
+      SA1090_TCAAGT-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCAAGT-CATGGG.bam
+      SA1090_TCAAGT-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCAAGT-CCGGTG.bam
+      SA1090_TCAAGT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCAAGT-GCCTAA.bam
+      SA1090_TCAAGT-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCAAGT-GCTGTA.bam
+      SA1090_TCAAGT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCAAGT-GTAGCC.bam
+      SA1090_TCAAGT-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCAAGT-GTATAG.bam
+      SA1090_TCAAGT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCAAGT-TATCGT.bam
+      SA1090_TCAAGT-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCAAGT-TCTGAG.bam
+      SA1090_TCAAGT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCAAGT-TGACAT.bam
+      SA1090_TCCGTC-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCCGTC-AAGTGC.bam
+      SA1090_TCCGTC-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCCGTC-AATTAT.bam
+      SA1090_TCCGTC-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCCGTC-AGTCTT.bam
+      SA1090_TCCGTC-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCCGTC-ATTATA.bam
+      SA1090_TCCGTC-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCCGTC-CCAGCA.bam
+      SA1090_TCCGTC-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCCGTC-CCGGTG.bam
+      SA1090_TCCGTC-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCCGTC-GCCTAA.bam
+      SA1090_TCCGTC-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCCGTC-GCTGTA.bam
+      SA1090_TCCGTC-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCCGTC-GTAGCC.bam
+      SA1090_TCCGTC-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCCGTC-GTATAG.bam
+      SA1090_TCCGTC-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCCGTC-TATCGT.bam
+      SA1090_TCCGTC-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCCGTC-TGACAT.bam
+      SA1090_TCGGGA-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCGGGA-AAGTGC.bam
+      SA1090_TCGGGA-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCGGGA-AATTAT.bam
+      SA1090_TCGGGA-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCGGGA-AGTCTT.bam
+      SA1090_TCGGGA-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCGGGA-CATGGG.bam
+      SA1090_TCGGGA-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCGGGA-CCAGCA.bam
+      SA1090_TCGGGA-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCGGGA-CCGGTG.bam
+      SA1090_TCGGGA-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCGGGA-GCCTAA.bam
+      SA1090_TCGGGA-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCGGGA-GTAGCC.bam
+      SA1090_TCGGGA-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCGGGA-GTATAG.bam
+      SA1090_TCGGGA-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCGGGA-TATCGT.bam
+      SA1090_TCGGGA-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCGGGA-TCTGAG.bam
+      SA1090_TCTTCT-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCTTCT-AAGTGC.bam
+      SA1090_TCTTCT-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCTTCT-AATTAT.bam
+      SA1090_TCTTCT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCTTCT-AGTCTT.bam
+      SA1090_TCTTCT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCTTCT-ATTATA.bam
+      SA1090_TCTTCT-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCTTCT-CATGGG.bam
+      SA1090_TCTTCT-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCTTCT-CCAGCA.bam
+      SA1090_TCTTCT-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCTTCT-CCGGTG.bam
+      SA1090_TCTTCT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCTTCT-GCCTAA.bam
+      SA1090_TCTTCT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCTTCT-GTAGCC.bam
+      SA1090_TCTTCT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCTTCT-TATCGT.bam
+      SA1090_TCTTCT-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCTTCT-TCTGAG.bam
+      SA1090_TCTTCT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TCTTCT-TGACAT.bam
+      SA1090_TGAGTG-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGAGTG-AAGTGC.bam
+      SA1090_TGAGTG-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGAGTG-AATTAT.bam
+      SA1090_TGAGTG-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGAGTG-AGTCTT.bam
+      SA1090_TGAGTG-ATGGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGAGTG-ATGGCA.bam
+      SA1090_TGAGTG-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGAGTG-ATTATA.bam
+      SA1090_TGAGTG-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGAGTG-CATGGG.bam
+      SA1090_TGAGTG-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGAGTG-CCAGCA.bam
+      SA1090_TGAGTG-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGAGTG-CCGGTG.bam
+      SA1090_TGAGTG-CCTTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGAGTG-CCTTGC.bam
+      SA1090_TGAGTG-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGAGTG-GCCTAA.bam
+      SA1090_TGAGTG-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGAGTG-GCTGTA.bam
+      SA1090_TGAGTG-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGAGTG-GTAGCC.bam
+      SA1090_TGAGTG-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGAGTG-GTATAG.bam
+      SA1090_TGAGTG-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGAGTG-TATCGT.bam
+      SA1090_TGAGTG-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGAGTG-TCTGAG.bam
+      SA1090_TGAGTG-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGAGTG-TGACAT.bam
+      SA1090_TGCCGA-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCCGA-AAGTGC.bam
+      SA1090_TGCCGA-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCCGA-AATTAT.bam
+      SA1090_TGCCGA-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCCGA-AGTCTT.bam
+      SA1090_TGCCGA-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCCGA-ATTATA.bam
+      SA1090_TGCCGA-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCCGA-CATGGG.bam
+      SA1090_TGCCGA-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCCGA-CCAGCA.bam
+      SA1090_TGCCGA-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCCGA-CCGGTG.bam
+      SA1090_TGCCGA-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCCGA-GCCTAA.bam
+      SA1090_TGCCGA-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCCGA-GCTGTA.bam
+      SA1090_TGCCGA-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCCGA-GTAGCC.bam
+      SA1090_TGCCGA-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCCGA-GTATAG.bam
+      SA1090_TGCCGA-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCCGA-TATCGT.bam
+      SA1090_TGCCGA-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCCGA-TGACAT.bam
+      SA1090_TGCTTT-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCTTT-AATTAT.bam
+      SA1090_TGCTTT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCTTT-AGTCTT.bam
+      SA1090_TGCTTT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCTTT-ATTATA.bam
+      SA1090_TGCTTT-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCTTT-CATGGG.bam
+      SA1090_TGCTTT-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCTTT-CCAGCA.bam
+      SA1090_TGCTTT-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCTTT-CCGGTG.bam
+      SA1090_TGCTTT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCTTT-GCCTAA.bam
+      SA1090_TGCTTT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCTTT-GTAGCC.bam
+      SA1090_TGCTTT-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCTTT-GTATAG.bam
+      SA1090_TGCTTT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCTTT-TATCGT.bam
+      SA1090_TGCTTT-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCTTT-TCTGAG.bam
+      SA1090_TGCTTT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGCTTT-TGACAT.bam
+      SA1090_TGGAGC-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGGAGC-AAGTGC.bam
+      SA1090_TGGAGC-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGGAGC-AGTCTT.bam
+      SA1090_TGGAGC-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGGAGC-ATTATA.bam
+      SA1090_TGGAGC-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGGAGC-CCAGCA.bam
+      SA1090_TGGAGC-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGGAGC-GCCTAA.bam
+      SA1090_TGGAGC-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGGAGC-GCTGTA.bam
+      SA1090_TGGAGC-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGGAGC-GTAGCC.bam
+      SA1090_TGGAGC-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGGAGC-GTATAG.bam
+      SA1090_TGGAGC-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGGAGC-TATCGT.bam
+      SA1090_TGGAGC-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGGAGC-TGACAT.bam
+      SA1090_TGTGCC-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTGCC-AAGTGC.bam
+      SA1090_TGTGCC-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTGCC-AATTAT.bam
+      SA1090_TGTGCC-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTGCC-AGTCTT.bam
+      SA1090_TGTGCC-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTGCC-ATTATA.bam
+      SA1090_TGTGCC-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTGCC-CATGGG.bam
+      SA1090_TGTGCC-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTGCC-CCAGCA.bam
+      SA1090_TGTGCC-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTGCC-CCGGTG.bam
+      SA1090_TGTGCC-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTGCC-GCCTAA.bam
+      SA1090_TGTGCC-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTGCC-GCTGTA.bam
+      SA1090_TGTGCC-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTGCC-GTAGCC.bam
+      SA1090_TGTGCC-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTGCC-GTATAG.bam
+      SA1090_TGTGCC-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTGCC-TATCGT.bam
+      SA1090_TGTGCC-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTGCC-TGACAT.bam
+      SA1090_TGTTGG-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTTGG-AAGTGC.bam
+      SA1090_TGTTGG-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTTGG-AATTAT.bam
+      SA1090_TGTTGG-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTTGG-AGTCTT.bam
+      SA1090_TGTTGG-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTTGG-ATTATA.bam
+      SA1090_TGTTGG-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTTGG-CATGGG.bam
+      SA1090_TGTTGG-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTTGG-CCGGTG.bam
+      SA1090_TGTTGG-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTTGG-GCCTAA.bam
+      SA1090_TGTTGG-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTTGG-GTAGCC.bam
+      SA1090_TGTTGG-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTTGG-TATCGT.bam
+      SA1090_TGTTGG-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTTGG-TCTGAG.bam
+      SA1090_TGTTGG-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TGTTGG-TGACAT.bam
+      SA1090_TTATTC-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTATTC-AAGTGC.bam
+      SA1090_TTATTC-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTATTC-AGTCTT.bam
+      SA1090_TTATTC-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTATTC-ATTATA.bam
+      SA1090_TTATTC-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTATTC-CCAGCA.bam
+      SA1090_TTATTC-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTATTC-GCCTAA.bam
+      SA1090_TTATTC-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTATTC-GCTGTA.bam
+      SA1090_TTATTC-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTATTC-GTAGCC.bam
+      SA1090_TTATTC-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTATTC-GTATAG.bam
+      SA1090_TTATTC-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTATTC-TATCGT.bam
+      SA1090_TTATTC-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTATTC-TGACAT.bam
+      SA1090_TTCGAA-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCGAA-AAGTGC.bam
+      SA1090_TTCGAA-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCGAA-AATTAT.bam
+      SA1090_TTCGAA-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCGAA-AGTCTT.bam
+      SA1090_TTCGAA-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCGAA-ATTATA.bam
+      SA1090_TTCGAA-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCGAA-CATGGG.bam
+      SA1090_TTCGAA-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCGAA-CCAGCA.bam
+      SA1090_TTCGAA-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCGAA-CCGGTG.bam
+      SA1090_TTCGAA-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCGAA-GCCTAA.bam
+      SA1090_TTCGAA-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCGAA-GTAGCC.bam
+      SA1090_TTCGAA-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCGAA-GTATAG.bam
+      SA1090_TTCGAA-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCGAA-TATCGT.bam
+      SA1090_TTCGAA-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCGAA-TCTGAG.bam
+      SA1090_TTCTCG-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCTCG-AAGTGC.bam
+      SA1090_TTCTCG-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCTCG-AGTCTT.bam
+      SA1090_TTCTCG-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCTCG-ATTATA.bam
+      SA1090_TTCTCG-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCTCG-CCAGCA.bam
+      SA1090_TTCTCG-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCTCG-CCGGTG.bam
+      SA1090_TTCTCG-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCTCG-GCCTAA.bam
+      SA1090_TTCTCG-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCTCG-GCTGTA.bam
+      SA1090_TTCTCG-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCTCG-GTAGCC.bam
+      SA1090_TTCTCG-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCTCG-GTATAG.bam
+      SA1090_TTCTCG-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTCTCG-TGACAT.bam
+      SA1090_TTGACT-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGACT-AATTAT.bam
+      SA1090_TTGACT-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGACT-AGTCTT.bam
+      SA1090_TTGACT-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGACT-ATTATA.bam
+      SA1090_TTGACT-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGACT-CATGGG.bam
+      SA1090_TTGACT-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGACT-CCAGCA.bam
+      SA1090_TTGACT-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGACT-CCGGTG.bam
+      SA1090_TTGACT-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGACT-GCCTAA.bam
+      SA1090_TTGACT-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGACT-GCTGTA.bam
+      SA1090_TTGACT-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGACT-GTAGCC.bam
+      SA1090_TTGACT-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGACT-GTATAG.bam
+      SA1090_TTGACT-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGACT-TATCGT.bam
+      SA1090_TTGACT-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGACT-TCTGAG.bam
+      SA1090_TTGACT-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGACT-TGACAT.bam
+      SA1090_TTGCGG-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGCGG-AAGTGC.bam
+      SA1090_TTGCGG-AATTAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGCGG-AATTAT.bam
+      SA1090_TTGCGG-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGCGG-AGTCTT.bam
+      SA1090_TTGCGG-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGCGG-ATTATA.bam
+      SA1090_TTGCGG-CATGGG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGCGG-CATGGG.bam
+      SA1090_TTGCGG-CCGGTG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGCGG-CCGGTG.bam
+      SA1090_TTGCGG-CCTTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGCGG-CCTTGC.bam
+      SA1090_TTGCGG-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGCGG-GCCTAA.bam
+      SA1090_TTGCGG-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGCGG-GTAGCC.bam
+      SA1090_TTGCGG-TCTGAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTGCGG-TCTGAG.bam
+      SA1090_TTTCAC-AAGTGC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTTCAC-AAGTGC.bam
+      SA1090_TTTCAC-AGTCTT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTTCAC-AGTCTT.bam
+      SA1090_TTTCAC-ATTATA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTTCAC-ATTATA.bam
+      SA1090_TTTCAC-CCAGCA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTTCAC-CCAGCA.bam
+      SA1090_TTTCAC-GCCTAA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTTCAC-GCCTAA.bam
+      SA1090_TTTCAC-GCTGTA:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTTCAC-GCTGTA.bam
+      SA1090_TTTCAC-GTAGCC:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTTCAC-GTAGCC.bam
+      SA1090_TTTCAC-GTATAG:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTTCAC-GTATAG.bam
+      SA1090_TTTCAC-TATCGT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTTCAC-TATCGT.bam
+      SA1090_TTTCAC-TGACAT:
+        bam: scdnastagingstorage/testdata/pseudobulk/SA1090_TTTCAC-TGACAT.bam
