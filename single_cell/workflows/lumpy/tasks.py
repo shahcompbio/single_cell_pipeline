@@ -3,7 +3,7 @@ import pysam
 import pypeliner
 import single_cell
 import single_cell.utils.helpers as helpers
-import generate_histogram
+from single_cell.workflows.lumpy import generate_histogram
 import yaml
 
 def process_bam(
