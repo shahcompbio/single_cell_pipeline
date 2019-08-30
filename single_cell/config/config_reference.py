@@ -3,18 +3,18 @@ from single_cell.utils import helpers
 def containers():
     version = helpers.get_version()
     docker_images = {
-        'bwa': 'scp/bwa:v0.0.1', 'samtools': 'scp/samtools:v0.0.2',
-        'python_base': 'scp/python_base:v0.0.1', 'picard': 'scp/picard:v0.0.1',
+        'bwa': 'scp/bwa:v0.0.2', 'samtools': 'scp/samtools:v0.0.3',
+        'python_base': 'scp/python_base:v0.1.0', 'picard': 'scp/picard:v0.0.2',
         'single_cell_pipeline': 'scp/single_cell_pipeline:v{}'.format(version),
-        'gatk': 'scp/gatk:v0.0.1', 'fastqc': 'scp/fastqc:v0.0.1',
-        'hmmcopy': 'scp/hmmcopy:v0.0.2', 'aneufinder': 'scp/aneufinder:v0.0.1',
-        'strelka': 'scp/strelka:v0.0.1', 'mutationseq': 'scp/mutationseq:v0.0.2',
-        'vcftools': 'scp/vcftools:v0.0.1', 'snpeff': 'scp/vcftools:v0.0.1',
+        'gatk': 'scp/gatk:v0.0.1', 'fastqc': 'scp/fastqc:v0.0.2',
+        'hmmcopy': 'scp/hmmcopy:v0.0.3', 'aneufinder': 'scp/aneufinder:v0.0.1',
+        'strelka': 'scp/strelka:v0.0.2', 'mutationseq': 'scp/mutationseq:v0.0.2',
+        'vcftools': 'scp/vcftools:v0.0.2', 'snpeff': 'scp/vcftools:v0.0.2',
         'titan': 'scp/titan:v0.0.1', 'remixt': 'scp/remixt:v{}'.format(version),
-        'destruct': 'scp/destruct:v{}'.format(version), 'trimgalore': 'scp/trimgalore:v0.0.1',
-        'lumpy': 'scp/lumpy:v0.0.2', 'cell_cycle_classifier': 'scp/cell_cycle_classifier:v0.0.1',
-        'biobloom': 'scp/biobloom:v0.0.2', 'corrupt_tree': 'scp/corrupt_tree:v0.0.1',
-        'fastq_screen': 'scp/fastq_screen:v0.0.1'
+        'destruct': 'scp/destruct:v{}'.format(version), 'trimgalore': 'scp/trimgalore:v0.0.2',
+        'lumpy': 'scp/lumpy:v0.0.3', 'cell_cycle_classifier': 'scp/cell_cycle_classifier:v0.0.1',
+        'biobloom': 'scp/biobloom:v0.0.2', 'corrupt_tree': 'scp/corrupt_tree:v0.0.2',
+        'fastq_screen': 'scp/fastq_screen:v0.0.2'
     }
 
     singularity = {}
