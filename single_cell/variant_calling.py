@@ -304,24 +304,11 @@ def create_variant_calling_workflow(
         }
     )
 
-    workflow.subworkflow(
-        name='count_alleles',
-        func=create_snv_allele_counts_for_vcf_targets_workflow,
-        ctx=ctx,
-        args=(
-            mgd.InputFile('tumour_cells.bam', 'cell_id', extensions=['.bai'], fnames=tumour_cell_bams),
-            mgd.TempInputFile('all.snv.vcf.gz'),
-            mgd.TempOutputFile('snv_counts.h5'),
-            config['memory'],
-        ),
-    )
-
     workflow.transform(
         name='build_results_file',
         ctx=dict(mem=config['memory']['high'], **ctx),
         func="biowrappers.components.io.hdf5.tasks.concatenate_tables",
         args=([
-                  mgd.TempInputFile('snv_counts.h5'),
                   mgd.TempInputFile('snv_annotations.h5'),
                   mgd.TempInputFile('museq.h5'),
                   mgd.TempInputFile('strelka_snv.h5'),
