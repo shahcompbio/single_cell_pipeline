@@ -24,7 +24,7 @@ before_install:
 install:
 - conda install -q python=$TRAVIS_PYTHON_VERSION conda-build anaconda-client setuptools
   nose numpy cython
-- conda build conda/$PACKAGENAME
+- conda build --py 2.7 --py 3.7 conda/$PACKAGENAME
 - conda install --use-local $PACKAGENAME
 script:
 - python -c "import single_cell"
