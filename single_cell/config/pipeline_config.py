@@ -30,7 +30,7 @@ def override_config(config, override):
 
 def get_config_params(override=None):
     input_params = {
-        "cluster": "azure", "aligner": "bwa-mem",
+        "cluster": "azure", "aligner": "bwa-mem", "refdir": None,
         "reference": "grch37", "smoothing_function": "modal",
         "bin_size": 500000, "copynumber_bin_size": 1000,
         'memory': {'high': 16, 'med': 6, 'low': 2}
@@ -46,11 +46,8 @@ def write_config(params, filepath):
         yaml.safe_dump(params, outputfile, default_flow_style=False)
 
 
-def get_hmmcopy_params(cluster, reference, binsize, smoothing_function):
-    if cluster == "azure":
-        referencedata = config_reference.reference_data_azure(reference)
-    else:
-        referencedata = config_reference.reference_data_shahlab(reference)
+def get_hmmcopy_params(reference_dir, reference, binsize, smoothing_function):
+    referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
     docker_containers = config_reference.containers()['docker']
     docker_containers = {
@@ -92,13 +89,9 @@ def get_hmmcopy_params(cluster, reference, binsize, smoothing_function):
     return {"hmmcopy": params}
 
 
-def get_align_params(cluster, reference, aligner):
-    if cluster == "azure":
-        referencedata = config_reference.reference_data_azure(reference)
-        refdata_callback = config_reference.reference_data_azure
-    else:
-        referencedata = config_reference.reference_data_shahlab(reference)
-        refdata_callback = config_reference.reference_data_shahlab
+def get_align_params(reference_dir, reference, aligner):
+    referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
+    refdata_callback = config_reference.get_cluster_reference_data
 
     docker_containers = config_reference.containers()['docker']
     docker_containers = {
@@ -131,9 +124,9 @@ def get_align_params(cluster, reference, aligner):
             'filter_contaminated_reads': False,
             'aligner': 'bwa',
             'genomes': [
-                {'name': 'grch37', 'path': refdata_callback('grch37')['ref_genome']},
-                {'name': 'mm10', 'path': refdata_callback('mm10')['ref_genome']},
-                {'name': 'salmon', 'path': refdata_callback('GCF_002021735')['ref_genome']},
+                {'name': 'grch37', 'path': refdata_callback(reference_dir, 'grch37')['ref_genome']},
+                {'name': 'mm10', 'path': refdata_callback(reference_dir, 'mm10')['ref_genome']},
+                {'name': 'salmon', 'path': refdata_callback(reference_dir, 'GCF_002021735')['ref_genome']},
             ]
         }
     }
@@ -141,11 +134,8 @@ def get_align_params(cluster, reference, aligner):
     return {"alignment": params}
 
 
-def get_annotation_params(cluster, reference):
-    if cluster == "azure":
-        referencedata = config_reference.reference_data_azure(reference)
-    else:
-        referencedata = config_reference.reference_data_shahlab(reference)
+def get_annotation_params(reference_dir, reference):
+    referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
     docker_containers = config_reference.containers()['docker']
     docker_containers = {
@@ -181,11 +171,8 @@ def get_annotation_params(cluster, reference):
     return {"annotation": params}
 
 
-def get_aneufinder_params(cluster, reference):
-    if cluster == "azure":
-        referencedata = config_reference.reference_data_azure(reference)
-    else:
-        referencedata = config_reference.reference_data_shahlab(reference)
+def get_aneufinder_params(reference_dir, reference):
+    referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
     docker_containers = config_reference.containers()['docker']
     params = {
@@ -201,12 +188,12 @@ def get_aneufinder_params(cluster, reference):
     return {'aneufinder': params}
 
 
-def get_merge_bams_params(cluster, reference):
-    if cluster == "azure":
-        referencedata = config_reference.reference_data_azure(reference)
+def get_merge_bams_params(reference_dir, reference, cluster):
+    referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
+
+    if cluster in ['azure', 'aws']:
         one_split_job = True
     else:
-        referencedata = config_reference.reference_data_shahlab(reference)
         one_split_job = False
 
     docker_containers = config_reference.containers()['docker']
@@ -225,11 +212,8 @@ def get_merge_bams_params(cluster, reference):
     return {'merge_bams': params}
 
 
-def get_split_bam_params(cluster, reference):
-    if cluster == "azure":
-        referencedata = config_reference.reference_data_azure(reference)
-    else:
-        referencedata = config_reference.reference_data_shahlab(reference)
+def get_split_bam_params(reference_dir, reference):
+    referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
     docker_containers = config_reference.containers()['docker']
 
@@ -249,11 +233,8 @@ def get_split_bam_params(cluster, reference):
     return {'split_bam': params}
 
 
-def get_germline_calling_params(cluster, reference):
-    if cluster == "azure":
-        referencedata = config_reference.reference_data_azure(reference)
-    else:
-        referencedata = config_reference.reference_data_shahlab(reference)
+def get_germline_calling_params(reference_dir, reference):
+    referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
     docker_containers = config_reference.containers()['docker']
 
@@ -282,11 +263,8 @@ def get_germline_calling_params(cluster, reference):
     return {'germline_calling': params}
 
 
-def get_variant_calling_params(cluster, reference):
-    if cluster == "azure":
-        referencedata = config_reference.reference_data_azure(reference)
-    else:
-        referencedata = config_reference.reference_data_shahlab(reference)
+def get_variant_calling_params(reference_dir, reference):
+    referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
     docker_containers = config_reference.containers()['docker']
 
@@ -358,11 +336,8 @@ def get_variant_calling_params(cluster, reference):
     return {'variant_calling': params}
 
 
-def get_copy_number_calling_params(cluster, reference, binsize):
-    if cluster == "azure":
-        referencedata = config_reference.reference_data_azure(reference)
-    else:
-        referencedata = config_reference.reference_data_shahlab(reference)
+def get_copy_number_calling_params(reference_dir, reference, binsize):
+    referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
     docker_containers = config_reference.containers()['docker']
 
@@ -393,11 +368,8 @@ def get_copy_number_calling_params(cluster, reference, binsize):
     return {'copy_number_calling': params}
 
 
-def get_infer_haps_params(cluster, reference):
-    if cluster == "azure":
-        referencedata = config_reference.reference_data_azure(reference)
-    else:
-        referencedata = config_reference.reference_data_shahlab(reference)
+def get_infer_haps_params(reference_dir, reference):
+    referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
     docker_containers = config_reference.containers()['docker']
 
@@ -418,11 +390,8 @@ def get_infer_haps_params(cluster, reference):
     return {'infer_haps': params}
 
 
-def get_breakpoint_params(cluster, reference):
-    if cluster == "azure":
-        referencedata = config_reference.reference_data_azure(reference)
-    else:
-        referencedata = config_reference.reference_data_shahlab(reference)
+def get_breakpoint_params(reference_dir, reference):
+    referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
     docker_containers = config_reference.containers()['docker']
 
@@ -459,43 +428,46 @@ def get_multi_sample_params():
 
 def get_singlecell_pipeline_config(config_params, override=None):
     reference = config_params["reference"]
+    reference_dir = config_params['refdir']
     cluster = config_params["cluster"]
+    if not reference_dir:
+        reference_dir = config_reference.get_reference_dir(cluster)
 
     params = {}
 
     params.update(
         get_hmmcopy_params(
-            cluster, reference, config_params["bin_size"],
+            reference_dir, reference, config_params["bin_size"],
             config_params["smoothing_function"]
         )
     )
 
     params.update(
         get_align_params(
-            cluster, reference,
+            reference_dir, reference,
             config_params['aligner'],
 
         )
     )
 
-    params.update(get_annotation_params(cluster, reference))
+    params.update(get_annotation_params(reference_dir, reference))
 
-    params.update(get_aneufinder_params(cluster, reference))
+    params.update(get_aneufinder_params(reference_dir, reference))
 
-    params.update(get_merge_bams_params(cluster, reference))
+    params.update(get_merge_bams_params(reference_dir, reference, cluster))
 
-    params.update(get_split_bam_params(cluster, reference))
+    params.update(get_split_bam_params(reference_dir, reference))
 
-    params.update(get_germline_calling_params(cluster, reference))
+    params.update(get_germline_calling_params(reference_dir, reference))
 
-    params.update(get_variant_calling_params(cluster, reference))
+    params.update(get_variant_calling_params(reference_dir, reference))
 
-    params.update(get_copy_number_calling_params(cluster, reference,
+    params.update(get_copy_number_calling_params(reference_dir, reference,
                                                  config_params['copynumber_bin_size']))
 
-    params.update(get_infer_haps_params(cluster, reference))
+    params.update(get_infer_haps_params(reference_dir, reference))
 
-    params.update(get_breakpoint_params(cluster, reference))
+    params.update(get_breakpoint_params(reference_dir, reference))
 
     params.update(get_multi_sample_params())
 
