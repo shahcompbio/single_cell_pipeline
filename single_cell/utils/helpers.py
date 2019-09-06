@@ -41,7 +41,7 @@ def generate_and_upload_metadata(args, root_dir, filepaths, metadata):
         local_path, filepaths=filepaths, metadata=metadata, root_dir=root_dir
     )
 
-    storageutils.upload_blob(meta_yaml, local_path, storage=args['storage'])
+    storageutils.upload_blob(meta_yaml, local_path, storage=args.get('storage'))
 
 
 def add_extensions(filepaths):
