@@ -4,6 +4,8 @@ For a detailed guide see [INSTALL](docs/INSTALL)
 
 For azure documentation see [azure](docs/azure)
 
+For LSF + singularity documentation see [Singularity](docs/singularity/singularity.md)
+
 [Changelog](CHANGELOG.md)
 
 ## Setup and installation
@@ -117,46 +119,12 @@ single_cell qc \
 --input_yaml inputs/SC-1234/bams.yaml \
 --tmpdir temp/SC-1234/tmp \
 --pipelinedir pipeline/SC-1234  \
---out_dir results/SC-1234/results \
+--alignment_dir results/SC-1234/results/alignment \
+--hmmcopy_dir results/SC-1234/results/hmmcopy \
+--annotation_dir results/SC-1234/results/annotation \
  --library_id A123123 \
  ...
 ```
-
-
-
-
-
-### Input
-The pipeline accepts a yaml file as input. The yaml file contains the input paths and metadata for each cell, the format for each cell is as follows:
-```
-SA12345-A12345-R01-C01:
-  bam: /path/to/aligned/SA12345-A12345-R01-C01.bam # path to the bam file, align mode will write a bam file to this path
-  column: 01 # column number of the well on chip
-  condition: A # condition during experiment. will be renamed to experimental_condition in output
-  img_col: 10 # column number of the well on chip image
-  index_i5: i5-INDEX
-  index_i7: i7-INDEX
-  pick_met: CELLCALL # describes whether cell is dividing, dead etc. will be renamed in output to cell_call
-  primer_i5: ACTACTATT
-  primer_i7: AGTAGTACT
-  row: 01 # row number of the well on chip
-  sample_type: C # sample type (flagged by wet lab team)
-```
-The yaml file for the align step should work as well
-
-
-### Run 
-
-```
-single_cell hmmcopy \
---input_yaml inputs/SC-1234/bams.yaml \
---tmpdir temp/SC-1234/tmp \
---pipelinedir pipeline/SC-1234  \
---out_dir results/SC-1234/results \
- --library_id A123123 \
- ...
-```
-
 
 
 ## 3. Copyclone
