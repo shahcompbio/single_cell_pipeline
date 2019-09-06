@@ -186,6 +186,10 @@ def organism_filter(
         detailed_metrics, summary_metrics, tempdir, cell_id, params,
         reference, docker_image=None, filter_contaminated_reads=False,
 ):
+    # fastq screen tries to skip if files from old runs are available
+    if os.path.exists(tempdir):
+        shutil.rmtree(tempdir)
+
     helpers.makedirs(tempdir)
 
     tagged_fastq_r1, tagged_fastq_r2 = run_fastq_screen_paired_end(
