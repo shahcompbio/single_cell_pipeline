@@ -5,6 +5,7 @@ import pandas as pd
 import remixt
 from .scripts import merge_wigs
 from single_cell.utils import csvutils
+from pandas.api.types import CategoricalDtype
 
 
 def merge_overlapping_seqdata(outfile, infiles, chromosomes):
@@ -104,9 +105,9 @@ def concat_tumour_alleles(input_csvs, output_filename, chromosomes):
         cell_data = pd.read_csv(input_filename, sep='\t', header=None,
                                 names=['chromosome', 'coord', 'ref', 'ref_counts', 'alt', 'alt_counts'])
         cell_data = cell_data.drop(['ref', 'alt'], axis=1)
-        cell_data['chromosome'] = cell_data['chromosome'].astype('category', categories=chromosomes)
+        cell_data['chromosome'] = cell_data['chromosome'].astype(CategoricalDtype(categories=chromosomes))
         cell_data['cell_id'] = cell_id
-        cell_data['cell_id'] = cell_data['cell_id'].astype('category', categories=input_csvs.keys())
+        cell_data['cell_id'] = cell_data['cell_id'].astype(CategoricalDtype(categories=input_csvs.keys()))
 
         store.append('/allele_counts', cell_data, data_columns=['cell_id', 'chromosome'])
 
