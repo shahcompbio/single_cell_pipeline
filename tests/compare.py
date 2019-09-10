@@ -10,13 +10,27 @@ from single_cell.utils import csvutils
 
 
 def exact_compare_cols(data, reference, column_name):
-    assert data.index.equals(reference.index)
+    data_index = set(data.index)
+    reference_index = set(reference.index)
+
+    assert data_index == reference_index
+
+    index_order = sorted(data_index)
+    data = data.reindex(index_order)
+    reference = data.reindex(index_order)
 
     assert data[column_name].equals(reference[column_name])
 
 
 def approx_compare_cols(data, reference, column_name, eps=0.001):
-    assert data.index.equals(reference.index)
+    data_index = set(data.index)
+    reference_index = set(reference.index)
+
+    assert data_index == reference_index
+
+    index_order = sorted(data_index)
+    data = data.reindex(index_order)
+    reference = data.reindex(index_order)
 
     diff = data[column_name] - reference[column_name]
 
