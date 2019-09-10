@@ -6,6 +6,7 @@ import pandas as pd
 import vcf
 
 import pypeliner
+from pandas.api.types import CategoricalDtype
 
 NUCLEOTIDES = ('A', 'C', 'G', 'T')
 
@@ -103,9 +104,9 @@ def annotate_normal_genotype(vcf_filename, results_filename, chromosomes):
                 index=range(num_rows, num_rows + len(genotype_table)),
                 columns=['chrom', 'coord', 'ref', 'alt', 'is_het'])
 
-            df['chrom'] = df['chrom'].astype('category', categories=chromosomes)
-            df['ref'] = df['ref'].astype('category', categories=nucleotides)
-            df['alt'] = df['alt'].astype('category', categories=nucleotides)
+            df['chrom'] = df['chrom'].astype(CategoricalDtype(categories=chromosomes))
+            df['ref'] = df['ref'].astype(CategoricalDtype(categories=nucleotides))
+            df['alt'] = df['alt'].astype(CategoricalDtype(categories=nucleotides))
 
             hdf_store.append(table_name, df)
 
