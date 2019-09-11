@@ -2,7 +2,7 @@
 
 REGISTRY=$1
 
-sed -i "s/{container_registry}/$1/g" dockerfile
+sed -i "s/{container_registry}/$1/g" docker/single_cell_pipeline/dockerfile
 
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
 
