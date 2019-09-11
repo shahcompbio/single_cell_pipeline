@@ -1,5 +1,5 @@
 # build on top of out base image
-FROM scdnaprod.azurecr.io/singlecellpipeline/python_singlecell_qc:v0.1.0
+FROM {container_registry}/singlecellpipeline/python_singlecell_qc:v0.1.0
 
 # Copy the current directory contents into the container at /app
 ADD . /app
