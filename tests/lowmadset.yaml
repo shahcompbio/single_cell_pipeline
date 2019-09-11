@@ -1,21 +1,3 @@
-SA501X8XB01694-A90696C-R12-C62:
-  bam: {storageaccount}/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA501X8XB01694-A90696C-R12-C62.bam
-  column: 62
-  condition: A
-  fastqs:
-    CB643ANXX_3:
-      fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_TAGCTT-GGAACT_1.fastq.gz
-      fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_TAGCTT-GGAACT_2.fastq.gz
-      sequencing_center: UBCBRC
-      sequencing_instrument: N550
-  img_col: 11
-  index_i5: i5-12
-  index_i7: i7-62
-  pick_met: C11
-  primer_i5: AACCGGTT
-  primer_i7: ACGTACGT
-  row: 12
-  sample_type: 'null'
 SA501X8XB01694-A90696C-R70-C42:
   bam: {storageaccount}/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA501X8XB01694-A90696C-R70-C42.bam
   column: 42
@@ -124,24 +106,6 @@ SA501X8XB01694-A90696C-R70-C47:
   primer_i7: ACGTACGT
   row: 70
   sample_type: 'null'
-SA501X8XB01694-A90696C-R70-C48:
-  bam: {storageaccount}/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA501X8XB01694-A90696C-R70-C48.bam
-  column: 48
-  condition: A
-  fastqs:
-    CB643ANXX_3:
-      fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_GTTTCG-CTTCGA_1.fastq.gz
-      fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_GTTTCG-CTTCGA_2.fastq.gz
-      sequencing_center: UBCBRC
-      sequencing_instrument: N550
-  img_col: 25
-  index_i5: i5-70
-  index_i7: i7-48
-  pick_met: C11
-  primer_i5: AACCGGTT
-  primer_i7: ACGTACGT
-  row: 70
-  sample_type: 'null'
 SA501X8XB01694-A90696C-R70-C49:
   bam: {storageaccount}/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA501X8XB01694-A90696C-R70-C49.bam
   column: 49
@@ -156,24 +120,6 @@ SA501X8XB01694-A90696C-R70-C49:
   index_i5: i5-70
   index_i7: i7-49
   pick_met: C12
-  primer_i5: AACCGGTT
-  primer_i7: ACGTACGT
-  row: 70
-  sample_type: 'null'
-SA501X8XB01694-A90696C-R70-C50:
-  bam: {storageaccount}/testdata/single_cell_indexing/SC-TEST/grch37/bwa-aln/SA501X8XB01694-A90696C-R70-C50.bam
-  column: 50
-  condition: A
-  fastqs:
-    CB643ANXX_3:
-      fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_GATCAG-CTTCGA_1.fastq.gz
-      fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_GATCAG-CTTCGA_2.fastq.gz
-      sequencing_center: UBCBRC
-      sequencing_instrument: N550
-  img_col: 23
-  index_i5: i5-70
-  index_i7: i7-50
-  pick_met: C11
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
   row: 70
