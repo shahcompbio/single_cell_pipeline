@@ -40,6 +40,26 @@ def download_blob(blob_path, tempdir):
     return outpath
 
 
+def generate_yaml_from_template(template, output, accountname):
+    with open(template, 'rt') as templ_file:
+        with open(output, 'wt') as out_yaml:
+            for line in templ_file:
+                line = line.format(storageaccount=accountname)
+                out_yaml.write(line)
+
+
+def generate_inputs(primary_yaml, lowmad_yaml, accountname):
+    filedir = os.path.dirname(__file__)
+    template_primary = os.path.join(filedir, 'testset.yaml')
+    template_lowmad = os.path.join(filedir, 'lowmadset.yaml')
+
+    if primary_yaml:
+        generate_yaml_from_template(template_primary, primary_yaml, accountname)
+
+    if lowmad_yaml:
+        generate_yaml_from_template(template_lowmad, lowmad_yaml, accountname)
+
+
 def compare_output(reads, metrics, ref_reads, ref_metrics, tempdir):
     reads = download_blob(reads, tempdir)
     metrics = download_blob(metrics, tempdir)
@@ -59,6 +79,22 @@ def parse_args():
     container_yaml.set_defaults(which='container_yaml')
     container_yaml.add_argument('output',
                                 help='specify path to the output file')
+
+    inputs = subparsers.add_parser("generate_inputs")
+    inputs.set_defaults(which='inputs')
+    inputs.add_argument(
+        '--qc_primary_yaml',
+        help='specify path to the output file'
+    )
+    inputs.add_argument(
+        '--qc_lowmad_yaml',
+        help='specify path to the output file'
+    )
+    inputs.add_argument(
+        '--storage_account',
+        required=True,
+        help='specify path to the output file'
+    )
 
     compare = subparsers.add_parser('compare')
     compare.set_defaults(which='compare')
@@ -92,6 +128,9 @@ def parse_args():
 def main(args):
     if args['which'] == 'container_yaml':
         generate_container_yaml(args['output'])
+
+    elif args['which'] == 'inputs':
+        generate_inputs(args['qc_primary_yaml'], args['qc_lowmad_yaml'], args['storage_account'])
 
     elif args['which'] == 'compare':
         compare_output(
