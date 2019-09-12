@@ -1,5 +1,20 @@
 # Change Log
 
+### v0.4.0
+
+#### Changes:
+* pipeline now runs on python3. python2 is not supported anymore
+* pandas call for converting to categoricals
+* refactor config generation
+* added docs for LSF and singularity
+* updated type from alignment to align in metadata
+* library level snv counting removed from variant calling
+
+#### bugs: 
+* check fastq screen output directory for files from older runs and delete them
+* fixed error raised when uploading meta yaml where storage is not specified
+* readcounter: can handle non tagged bams now
+* fastqscreen: can handle fastq files with multiple periods in name
 
 ### v0.3.1
 
