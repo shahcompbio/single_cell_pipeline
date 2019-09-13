@@ -163,7 +163,7 @@ def get_cells_other_species_df(df):
 
     cells_other_species_df = df[df["total_reads"] >= 250000]
     if cells_other_species_df.empty:
-        return None, None
+        return pd.DataFrame(), pd.DataFrame()
 
     unmapped_df = cells_other_species_df.apply(get_fraction_unmapped, axis=1)
     cells_other_species = \
