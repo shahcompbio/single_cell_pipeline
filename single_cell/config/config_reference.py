@@ -27,7 +27,7 @@ def containers():
         'lumpy': 'singlecellpipeline/lumpy:v0.0.3',
         'cell_cycle_classifier': 'singlecellpipeline/cell_cycle_classifier:v0.0.1',
         'biobloom': 'singlecellpipeline/biobloom:v0.0.2',
-        'corrupt_tree': 'singlecellpipeline/corrupt_tree:v0.0.2',
+        'corrupt_tree': 'singlecellpipeline/corrupt_tree:v0.0.1',
         'fastq_screen': 'singlecellpipeline/fastq_screen:v0.0.2'
     }
 
