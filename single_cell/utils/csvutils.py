@@ -26,6 +26,7 @@ def get_dtypes_from_df(df, na_rep='NA'):
         "int64": "int",
         "float64": "float",
         "object": "str",
+        "category": "str",
     }
 
     typeinfo = {}
@@ -392,7 +393,7 @@ def concatenate_csv_files_quick_lowmem(inputfiles, output, write_header=True):
     csvoutput.concatenate_files(inputfiles)
 
 
-def prep_csv_files(filepath, outputfile):
+def prep_csv_files(filepath, outputfile, header=False):
     """
     generate header less csv files
     :param filepath:
@@ -410,7 +411,10 @@ def prep_csv_files(filepath, outputfile):
         sep=csvinput.sep, dtypes=csvinput.dtypes
     )
 
-    csvoutput.write_headerless_csv(filepath)
+    if header:
+        csvoutput.write_csv_with_header(filepath)
+    else:
+        csvoutput.write_headerless_csv(filepath)
 
 
 def finalize_csv(infile, outfile):

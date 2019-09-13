@@ -2,10 +2,9 @@ import os
 
 import pypeliner
 import pypeliner.managed as mgd
-from single_cell.utils import helpers
-
 from single_cell import infer_haps
 from single_cell import variant_calling
+from single_cell.utils import helpers
 
 
 def load_cell_data(yamldata, key):
@@ -154,10 +153,16 @@ def get_file_paths(root_dir, pipeline_type):
     if pipeline_type == 'variant_calling':
         data = {
             'museq_vcfs': os.path.join(root_dir, '{sample_id}_{library_id}_museq.vcf.gz'),
-            'strelka_snvs': os.path.join(root_dir, '{sample_id}_{library_id}_strelka_snv.vcf.gz'),
+            'snv_counts': os.path.join(root_dir, '{sample_id}_{library_id}_snv_allele_counts.csv.gz'),
+            'cosmic_csv': os.path.join(root_dir, '{sample_id}_{library_id}_snv_cosmic_status.csv.gz'),
+            'dbsnp_csv': os.path.join(root_dir, '{sample_id}_{library_id}_snv_dbsnp_status.csv.gz'),
+            'mappability_csv': os.path.join(root_dir, '{sample_id}_{library_id}_snv_mappability.csv.gz'),
+            'snpeff_csv': os.path.join(root_dir, '{sample_id}_{library_id}_snv_snpeff.csv.gz'),
+            'museq_csv': os.path.join(root_dir, '{sample_id}_{library_id}_snv_museq.csv.gz'),
+            'strelka_csv': os.path.join(root_dir, '{sample_id}_{library_id}_snv_strelka.csv.gz'),
+            'trinuc_csv': os.path.join(root_dir, '{sample_id}_{library_id}_snv_trinuc.csv.gz'),
             'strelka_indels': os.path.join(root_dir, '{sample_id}_{library_id}_strelka_indel.vcf.gz'),
-            'snv_annotations': os.path.join(root_dir, '{sample_id}_{library_id}_snv_annotations.h5'),
-            'snv_counts': os.path.join(root_dir, '{sample_id}_{library_id}_snv_counts.h5'),
+            'strelka_snvs': os.path.join(root_dir, '{sample_id}_{library_id}_strelka_snv.vcf.gz'),
         }
     elif pipeline_type == 'haps_calling':
         data = {
@@ -244,9 +249,21 @@ def create_multi_sample_workflow(
                                template=varcall_files['strelka_snvs']),
                 mgd.OutputFile('strelka_indel.vcf', 'sample_id', 'library_id', axes_origin=[],
                                template=varcall_files['strelka_indels']),
-                mgd.OutputFile('snv_annotations.h5', 'sample_id', 'library_id', axes_origin=[],
-                               template=varcall_files['snv_annotations']),
-                mgd.OutputFile('snv_counts.h5', 'sample_id', 'library_id', axes_origin=[],
+                mgd.OutputFile('museq_snv.csv.gz', 'sample_id', 'library_id', axes_origin=[],
+                               template=varcall_files['museq_csv']),
+                mgd.OutputFile('strelka_snv.csv.gz', 'sample_id', 'library_id', axes_origin=[],
+                               template=varcall_files['strelka_csv']),
+                mgd.OutputFile('cosmic.csv.gz', 'sample_id', 'library_id', axes_origin=[],
+                               template=varcall_files['cosmic_csv']),
+                mgd.OutputFile('dbsnp.csv.gz', 'sample_id', 'library_id', axes_origin=[],
+                               template=varcall_files['dbsnp_csv']),
+                mgd.OutputFile('mappability.csv.gz', 'sample_id', 'library_id', axes_origin=[],
+                               template=varcall_files['mappability_csv']),
+                mgd.OutputFile('snpeff.csv.gz', 'sample_id', 'library_id', axes_origin=[],
+                               template=varcall_files['snpeff_csv']),
+                mgd.OutputFile('trinuc.csv.gz', 'sample_id', 'library_id', axes_origin=[],
+                               template=varcall_files['trinuc_csv']),
+                mgd.OutputFile('snv_counts.csv.gz', 'sample_id', 'library_id', axes_origin=[],
                                template=varcall_files['snv_counts']),
             )
         )

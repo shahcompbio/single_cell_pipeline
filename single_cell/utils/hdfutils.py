@@ -5,6 +5,7 @@ Created on May 9, 2018
 '''
 import pandas as pd
 from single_cell.utils import helpers
+from single_cell.utils import csvutils
 import logging
 import gc
 from biowrappers.components.io.hdf5 import tasks as biowrappers_hdf5
@@ -261,3 +262,11 @@ def annotate_store_with_dict(infile, annotation_data, output, tables=None):
 
     if not isinstance(input, pd.HDFStore):
         input_store.close()
+
+
+def convert_hdf_to_csv(h5_input, outputs):
+
+    with pd.HDFStore(h5_input) as h5_data:
+        for tablename, outfile in outputs.items():
+            df = h5_data[tablename]
+            csvutils.write_dataframe_to_csv_and_yaml(df, outfile, write_header=True)
