@@ -1,5 +1,13 @@
 # Change Log
 
+### v0.4.1
+#### Changes:
+* variant calling: switch h5 output to csv
+* containers: picard and hmmcopy containers now use base R container
+
+#### bugs:
+* fixed error in QC generation on low quality datasets.
+
 ### v0.4.0
 
 #### Changes:
