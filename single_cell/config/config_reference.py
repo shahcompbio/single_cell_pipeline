@@ -7,19 +7,27 @@ def containers():
     version = helpers.get_version()
 
     docker_images = {
-        'bwa': 'singlecellpipeline/bwa:v0.0.2', 'samtools': 'singlecellpipeline/samtools:v0.0.3',
-        'python_base': 'singlecellpipeline/python_base:v0.1.0', 'picard': 'singlecellpipeline/picard:v0.0.2',
+        'bwa': 'singlecellpipeline/bwa:v0.0.2',
+        'samtools': 'singlecellpipeline/samtools:v0.0.3',
+        'python_base': 'singlecellpipeline/python_base:v0.1.0',
+        'picard': 'singlecellpipeline/picard:v0.0.3',
         'single_cell_pipeline': 'singlecellpipeline/single_cell_pipeline:v{}'.format(version),
-        'gatk': 'singlecellpipeline/gatk:v0.0.1', 'fastqc': 'singlecellpipeline/fastqc:v0.0.2',
-        'hmmcopy': 'singlecellpipeline/hmmcopy:v0.0.3', 'aneufinder': 'singlecellpipeline/aneufinder:v0.0.1',
-        'strelka': 'singlecellpipeline/strelka:v0.0.3', 'mutationseq': 'singlecellpipeline/mutationseq:v0.0.3',
-        'vcftools': 'singlecellpipeline/vcftools:v0.0.2', 'snpeff': 'singlecellpipeline/vcftools:v0.0.2',
-        'titan': 'singlecellpipeline/titan:v0.0.1', 'remixt': 'singlecellpipeline/remixt:v{}'.format(version),
+        'gatk': 'singlecellpipeline/gatk:v0.0.1',
+        'fastqc': 'singlecellpipeline/fastqc:v0.0.2',
+        'hmmcopy': 'singlecellpipeline/hmmcopy:v0.0.4',
+        'aneufinder': 'singlecellpipeline/aneufinder:v0.0.1',
+        'strelka': 'singlecellpipeline/strelka:v0.0.3',
+        'mutationseq': 'singlecellpipeline/mutationseq:v0.0.3',
+        'vcftools': 'singlecellpipeline/vcftools:v0.0.2',
+        'snpeff': 'singlecellpipeline/vcftools:v0.0.2',
+        'titan': 'singlecellpipeline/titan:v0.0.1',
+        'remixt': 'singlecellpipeline/remixt:v{}'.format(version),
         'destruct': 'singlecellpipeline/destruct:v{}'.format(version),
         'trimgalore': 'singlecellpipeline/trimgalore:v0.0.2',
         'lumpy': 'singlecellpipeline/lumpy:v0.0.3',
         'cell_cycle_classifier': 'singlecellpipeline/cell_cycle_classifier:v0.0.1',
-        'biobloom': 'singlecellpipeline/biobloom:v0.0.2', 'corrupt_tree': 'singlecellpipeline/corrupt_tree:v0.0.2',
+        'biobloom': 'singlecellpipeline/biobloom:v0.0.2',
+        'corrupt_tree': 'singlecellpipeline/corrupt_tree:v0.0.2',
         'fastq_screen': 'singlecellpipeline/fastq_screen:v0.0.2'
     }
 
