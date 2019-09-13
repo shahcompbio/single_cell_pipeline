@@ -67,12 +67,24 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
         func="biowrappers.components.io.hdf5.tasks.concatenate_tables",
         args=(
             mgd.TempInputFile('counts.h5', 'cell_id'),
-            mgd.OutputFile(out_file),
+            mgd.TempOutputFile('merged_counts.h5'),
         ),
         kwargs={
             'in_memory': False,
         },
     )
+
+    workflow.transform(
+        name='convert_h5_to_csv',
+        func='single_cell.utils.hdfutils.convert_hdf_to_csv',
+        args=(
+            mgd.TempInputFile('merged_counts.h5'),
+            {
+                '/snv_allele_counts': mgd.OutputFile(out_file, extensions=['.yaml']),
+            }
+        )
+    )
+
 
     return workflow
 
@@ -171,7 +183,13 @@ def create_variant_calling_workflow(
         museq_vcf,
         strelka_snv_vcf,
         strelka_indel_vcf,
-        snv_h5,
+        museq_csv,
+        strelka_snv_csv,
+        cosmic_csv,
+        dbsnp_csv,
+        mappability_csv,
+        snpeff_csv,
+        trinuc_csv,
         config,
         raw_data_dir,
 ):
@@ -233,33 +251,6 @@ def create_variant_calling_workflow(
         kwargs={"chromosomes": config["chromosomes"]}
     )
 
-    workflow.transform(
-        name='convert_museq_to_hdf5',
-        func="biowrappers.components.io.vcf.tasks.convert_vcf_to_hdf5",
-        ctx=dict(mem=2, **ctx),
-        args=(
-            mgd.InputFile(museq_vcf),
-            mgd.TempOutputFile('museq.h5'),
-            '/museq/vcf/',
-        ),
-        kwargs={
-            'score_callback': museq_callback,
-        }
-    )
-
-    workflow.transform(
-        name='convert_strelka_to_hdf5',
-        func="biowrappers.components.io.vcf.tasks.convert_vcf_to_hdf5",
-        ctx=dict(mem=2, **ctx),
-        args=(
-            mgd.InputFile(strelka_snv_vcf),
-            mgd.TempOutputFile('strelka_snv.h5'),
-            '/strelka/vcf/',
-        ),
-        kwargs={
-            'score_callback': strelka_snv_callback,
-        }
-    )
 
     workflow.transform(
         name='merge_snvs',
@@ -305,20 +296,64 @@ def create_variant_calling_workflow(
     )
 
     workflow.transform(
-        name='build_results_file',
-        ctx=dict(mem=config['memory']['high'], **ctx),
-        func="biowrappers.components.io.hdf5.tasks.concatenate_tables",
-        args=([
-                  mgd.TempInputFile('snv_annotations.h5'),
-                  mgd.TempInputFile('museq.h5'),
-                  mgd.TempInputFile('strelka_snv.h5'),
-              ],
-              pypeliner.managed.OutputFile(snv_h5),
+        name='convert_museq_to_csv',
+        func="biowrappers.components.io.vcf.tasks.convert_vcf_to_csv",
+        ctx=dict(mem=2, **ctx),
+        args=(
+            mgd.InputFile(museq_vcf),
+            mgd.TempOutputFile('museq.csv'),
         ),
         kwargs={
-            'drop_duplicates': True,
-            'in_memory': False,
+            'score_callback': museq_callback,
         }
+    )
+
+    workflow.transform(
+        name='prep_museq_csv',
+        func='single_cell.utils.csvutils.prep_csv_files',
+        args=(
+            mgd.TempInputFile('museq.csv'),
+            mgd.OutputFile(museq_csv, extensions=['.yaml'])
+        ),
+        kwargs={'header': True}
+    )
+
+    workflow.transform(
+        name='convert_strelka_to_csv',
+        func="biowrappers.components.io.vcf.tasks.convert_vcf_to_csv",
+        ctx=dict(mem=2, **ctx),
+        args=(
+            mgd.InputFile(strelka_snv_vcf),
+            mgd.TempOutputFile('strelka_snv.csv'),
+        ),
+        kwargs={
+            'score_callback': strelka_snv_callback,
+        }
+    )
+
+    workflow.transform(
+        name='prep_strelka_csv',
+        func='single_cell.utils.csvutils.prep_csv_files',
+        args=(
+            mgd.TempInputFile('strelka_snv.csv'),
+            mgd.OutputFile(strelka_snv_csv, extensions=['.yaml'])
+        ),
+        kwargs={'header': True}
+    )
+
+    workflow.transform(
+        name='convert_h5_to_csv',
+        func='single_cell.utils.hdfutils.convert_hdf_to_csv',
+        args=(
+            mgd.TempInputFile('snv_annotations.h5'),
+            {
+                '/snv/cosmic_status': mgd.OutputFile(cosmic_csv, extensions=['.yaml']),
+                '/snv/dbsnp_status': mgd.OutputFile(dbsnp_csv, extensions=['.yaml']),
+                '/snv/mappability': mgd.OutputFile(mappability_csv, extensions=['.yaml']),
+                '/snv/snpeff': mgd.OutputFile(snpeff_csv, extensions=['.yaml']),
+                '/snv/tri_nucleotide_context': mgd.OutputFile(trinuc_csv, extensions=['.yaml']),
+            }
+        )
     )
 
     return workflow
@@ -332,8 +367,6 @@ def variant_counting_workflow(args):
     bam_files, bai_files = helpers.get_bams(args['input_yaml'])
     vcfs = args['input_vcfs']
     results_file = os.path.join(args['out_dir'], 'results', 'variant_counting', 'counts.h5')
-
-    cellids = helpers.get_samples(args['input_yaml'])
 
     return create_variant_counting_workflow(vcfs, bam_files, results_file, meta_yaml, config)
 
@@ -397,15 +430,29 @@ def variant_counting_pipeline(args):
 
 def variant_calling_multi_sample_workflow(
         config, normal_wgs_bam, tumour_cell_bams, varcall_dir,
-        museq_vcf, strelka_snvs, strelka_indels, snv_annotations, snv_counts
+        museq_vcf, strelka_snvs, strelka_indels, museq_csv, strelka_csv,
+        cosmic_csv, dbsnp_csv, mappability_csv, snpeff_csv, trinuc_csv,
+        snv_counts
 ):
     keys = [(sample_id, library_id) for (sample_id, library_id, _) in list(tumour_cell_bams.keys())]
     keys = sorted(set(keys))
 
     museq_vcf = dict([(key, museq_vcf(*key)) for key in keys])
+
     strelka_snvs = dict([(key, strelka_snvs(*key)) for key in keys])
     strelka_indels = dict([(key, strelka_indels(*key)) for key in keys])
-    snv_annotations = dict([(key, snv_annotations(*key)) for key in keys])
+
+
+    museq_csv = dict([(key, museq_csv(*key)) for key in keys])
+    strelka_csv = dict([(key, strelka_csv(*key)) for key in keys])
+
+    cosmic_csv = dict([(key, cosmic_csv(*key)) for key in keys])
+    dbsnp_csv = dict([(key, dbsnp_csv(*key)) for key in keys])
+    mappability_csv = dict([(key, mappability_csv(*key)) for key in keys])
+    snpeff_csv = dict([(key, snpeff_csv(*key)) for key in keys])
+    trinuc_csv = dict([(key, trinuc_csv(*key)) for key in keys])
+
+
     snv_counts = dict([(key, snv_counts(*key)) for key in keys])
 
     variant_calling_raw_data_template = os.path.join(
@@ -510,7 +557,23 @@ def variant_calling_multi_sample_workflow(
                            fnames=strelka_snvs),
             mgd.OutputFile('strelka_indel.vcf', 'sample_id', 'library_id', extensions=['.tbi', '.csi'],
                            fnames=strelka_indels),
-            mgd.OutputFile('snv_annotations.h5', 'sample_id', 'library_id', fnames=snv_annotations),
+
+            mgd.OutputFile('museq.csv.gz', 'sample_id', 'library_id', extensions=['.yaml'],
+                           fnames=museq_csv),
+            mgd.OutputFile('strelka.csv.gz', 'sample_id', 'library_id', extensions=['.yaml'],
+                           fnames=strelka_csv),
+
+            mgd.OutputFile('cosmic.csv.gz', 'sample_id', 'library_id', extensions=['.yaml'],
+                           fnames=cosmic_csv),
+            mgd.OutputFile('dbsnp.csv.gz', 'sample_id', 'library_id', extensions=['.yaml'],
+                           fnames=dbsnp_csv),
+            mgd.OutputFile('mappability.csv.gz', 'sample_id', 'library_id', extensions=['.yaml'],
+                           fnames=mappability_csv),
+            mgd.OutputFile('snpeff.csv.gz', 'sample_id', 'library_id', extensions=['.yaml'],
+                           fnames=snpeff_csv),
+            mgd.OutputFile('trinuc.csv.gz', 'sample_id', 'library_id', extensions=['.yaml'],
+                           fnames=trinuc_csv),
+
             config['variant_calling'],
             mgd.Template(variant_calling_raw_data_template, 'sample_id', 'library_id'),
         ),
@@ -555,7 +618,7 @@ def variant_calling_multi_sample_workflow(
             ],
             mgd.InputFile('tumour_all_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai'],
                           fnames=tumour_cell_bams),
-            mgd.OutputFile('snv_counts.h5', 'sample_id', 'library_id', fnames=snv_counts),
+            mgd.OutputFile('snv_counts.csv.gz', 'sample_id', 'library_id', fnames=snv_counts),
             config['variant_calling'],
         ),
     )
