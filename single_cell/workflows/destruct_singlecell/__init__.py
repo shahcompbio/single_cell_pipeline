@@ -192,6 +192,7 @@ def create_destruct_workflow(
     workflow.subworkflow(
         name='destruct',
         func="destruct.workflow.create_destruct_fastq_workflow",
+        ctx={'disk': 200},
         args=(
             {
                 normal_sample_id: mgd.InputFile(normal_reads_1),
