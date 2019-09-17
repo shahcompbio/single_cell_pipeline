@@ -7,6 +7,8 @@
 
 #### bugs:
 * fixed error in QC generation on low quality datasets.
+* destruct needs more disk
+* metadata: code didn't upload when storage is set to local.
 
 ### v0.4.0
 
