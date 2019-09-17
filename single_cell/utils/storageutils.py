@@ -1,5 +1,5 @@
 import os
-
+import shutil
 from pypeliner.contrib.azure import blobclient
 
 
@@ -61,7 +61,7 @@ def upload_aws_blob(blob_path, local_path):
 
 def download_blob(blob_path, local_path, storage=None):
     if not storage:
-        return
+        shutil.move(blob_path, local_path)
     elif storage == 'azureblob':
         download_azure_blob(blob_path, local_path)
     elif storage == 'awss3':
@@ -72,7 +72,7 @@ def download_blob(blob_path, local_path, storage=None):
 
 def upload_blob(blob_path, local_path, storage=None):
     if not storage:
-        return
+        shutil.move(local_path, blob_path)
     elif storage == 'azureblob':
         upload_azure_blob(blob_path, local_path)
     elif storage == 'awss3':
