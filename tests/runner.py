@@ -7,6 +7,7 @@ from single_cell.utils import storageutils
 
 import compare
 
+import integrity
 
 def generate_container_yaml(filepath):
     data = {
@@ -70,6 +71,8 @@ def compare_output(reads, metrics, ref_reads, ref_metrics, tempdir):
     compare.compare_reads(ref_reads, reads)
 
 
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
 
@@ -119,6 +122,17 @@ def parse_args():
         help='specify path to the output dir'
     )
 
+    integrity = subparsers.add_parser('integrity')
+    integrity.set_defaults(which='integrity')
+    integrity.add_argument(
+        '--prefix',
+        help='specify blob prefix to download'
+    )
+    integrity.add_argument(
+        '--tempdir',
+        help='specify path to the output dir'
+    )
+
     args = parser.parse_args()
 
     args = vars(args)
@@ -138,6 +152,8 @@ def main(args):
             args['ref_reads'], args['ref_metrics'],
             args['tempdir']
         )
+    elif args['which'] == 'integrity':
+        integrity.integrity_check(args['prefix'], args['tempdir'])
 
 
 if __name__ == '__main__':
