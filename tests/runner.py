@@ -7,8 +7,6 @@ from single_cell.utils import storageutils
 
 import compare
 
-import integrity
-
 def generate_container_yaml(filepath):
     data = {
         'docker': {
@@ -153,6 +151,7 @@ def main(args):
             args['tempdir']
         )
     elif args['which'] == 'integrity':
+        import integrity
         integrity.integrity_check(args['prefix'], args['tempdir'])
 
 
