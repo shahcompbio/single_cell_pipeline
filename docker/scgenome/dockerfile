@@ -1,0 +1,19 @@
+# build on top of out base image
+FROM {container_registry}/singlecellpipeline/python_singlecell_qc:v0.1.0
+
+# Copy the current directory contents into the container at /app
+ADD . /app
+
+# Install any needed packages specified in requirements.txt
+RUN rm -rf /opt/conda/lib/python2.7/site-packages/pypeliner* /opt/conda/lib/python2.7/site-packages/single_cell_pipeline* /opt/conda/lib/python2.7/site-packages/biowrappers*
+RUN pip install git+https://github.com/shahcompbio/pypeliner.git@master
+RUN pip install git+https://github.com/shahcompbio/scgenome.git@master
+RUN cd /app && python setup.py install 
+# Make port 80 available to the world outside this container
+EXPOSE 80
+
+# Define environment variable
+ENV NAME scgenome
+
+# Run app.py when the container launches
+CMD ["python"]
