@@ -138,13 +138,15 @@ def run_hmmcopy(
 
     hmmcopy_outdir = os.path.join(hmmcopy_tempdir, str(0))
     csvutils.prep_csv_files(
-        os.path.join(hmmcopy_outdir, "reads.csv"), corrected_reads_filename
+        os.path.join(hmmcopy_outdir, "reads.csv"), corrected_reads_filename,
+        dtypes={'start': 'int', 'end': 'int'}
     )
     csvutils.prep_csv_files(
         os.path.join(hmmcopy_outdir, "params.csv"), parameters_filename
     )
     csvutils.prep_csv_files(
-        os.path.join(hmmcopy_outdir, "segs.csv"), segments_filename
+        os.path.join(hmmcopy_outdir, "segs.csv"), segments_filename,
+        dtypes={'start': 'int', 'end': 'int'}
     )
     csvutils.prep_csv_files(
         os.path.join(hmmcopy_outdir, "metrics.csv"), metrics_filename
