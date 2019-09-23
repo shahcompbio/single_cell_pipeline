@@ -180,6 +180,8 @@ class CsvInput(object):
             )
         except pd.errors.EmptyDataError:
             data = pd.DataFrame(columns=self.columns)
+            for column_name, dtype in dtypes.items():
+                data[column_name] = data[column_name].astype(dtype)
 
         if chunksize:
             return return_gen(data)
