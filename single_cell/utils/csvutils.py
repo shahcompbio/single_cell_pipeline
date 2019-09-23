@@ -43,7 +43,7 @@ def get_dtypes_from_df(df, na_rep='NA'):
 
 
 class CsvInput(object):
-    def __init__(self, filepath, na_rep='NA'):
+    def __init__(self, filepath, na_rep='NA', dtypes=None):
         """
         csv file and all related metadata
         :param filepath: path to csv
@@ -61,6 +61,9 @@ class CsvInput(object):
             metadata = self.generate_metadata()
 
         self.header, self.sep, self.dtypes, self.columns = metadata
+
+        if dtypes:
+            self.dtypes.update(dtypes)
 
     @property
     def yaml_file(self):
@@ -395,7 +398,7 @@ def concatenate_csv_files_quick_lowmem(inputfiles, output, write_header=True):
     csvoutput.concatenate_files(inputfiles)
 
 
-def prep_csv_files(filepath, outputfile, header=False):
+def prep_csv_files(filepath, outputfile, header=False, dtypes=None):
     """
     generate header less csv files
     :param filepath:
@@ -403,7 +406,7 @@ def prep_csv_files(filepath, outputfile, header=False):
     :param outputfile:
     :type outputfile:
     """
-    csvinput = CsvInput(filepath)
+    csvinput = CsvInput(filepath, dtypes=dtypes)
 
     if csvinput.header is None:
         raise CsvInputError("cannot prep csv file with no header")
