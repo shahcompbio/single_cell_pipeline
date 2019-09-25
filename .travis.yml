@@ -15,14 +15,10 @@ before_install:
 - conda update --yes -q conda
 - conda config --set always_yes true
 - conda config --set anaconda_upload no
-- conda config --add channels 'bioconda'
-- conda config --add channels 'r'
-- conda config --add channels 'conda-forge'
-- conda config --add channels https://conda.anaconda.org/shahcompbio
 install:
 - conda install -q python=$TRAVIS_PYTHON_VERSION conda-build anaconda-client setuptools
   nose numpy cython
-- conda build --py 2.7 --py 3.7 conda/$PACKAGENAME
+- conda build conda/$PACKAGENAME -c shahcompbio -c r -c conda-forge -c bioconda
 - conda install --use-local $PACKAGENAME
 script:
 - python -c "import single_cell"
