@@ -201,7 +201,7 @@ def get_vm_image_id(disk_per_task, tasks_per_node):
 
 def get_pool_def(
         tasks_per_node, reference, pool_type, cpus_per_task, mem_per_task, dedicated, disk_per_task):
-    autoscale_formula = generate_autoscale_formula(tasks_per_node, dedicated)
+    # autoscale_formula = generate_autoscale_formula(tasks_per_node, dedicated)
 
     vm_commands = create_vm_commands()
 
@@ -211,7 +211,7 @@ def get_pool_def(
     task_start_commands = get_compute_start_commands(vm_image)
     task_finish_commands = get_compute_finish_commands(vm_image)
 
-    poolname = "singlecell{}{}_v3".format(reference, pool_type)
+    poolname = "singlecell{}{}_v4".format(reference, pool_type)
 
     pooldata = {
         "pool_vm_size": get_vm_size_azure(cpus_per_task, mem_per_task, tasks_per_node),
@@ -225,7 +225,7 @@ def get_pool_def(
         'node_os_sku': node_sku,
         'data_disk_sizes': None,
         'max_tasks_per_node': tasks_per_node,
-        'auto_scale_formula': autoscale_formula,
+        # 'auto_scale_formula': autoscale_formula,
         'create_vm_commands': vm_commands,
         'start_resources': None,
         'compute_start_commands': task_start_commands,
