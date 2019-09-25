@@ -4,8 +4,9 @@ Created on Jul 6, 2017
 @author: dgrewal
 '''
 
-import pypeliner
 import pypeliner.managed as mgd
+
+import pypeliner
 
 
 def bam_metrics_workflow(
@@ -59,50 +60,27 @@ def bam_metrics_workflow(
     )
 
     workflow.transform(
-        name='get_duplication_metrics',
+        name='get_duplication_wgs_flagstat_metrics',
         axes=('cell_id',),
-        func="single_cell.utils.picardutils.bam_markdups",
+        func="single_cell.workflows.align.tasks.picard_wgs_dup",
         args=(
             mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename),
             mgd.TempOutputFile("temp_markdup_bam.bam", 'cell_id'),
             mgd.OutputFile('markdups_metrics', 'cell_id', fnames=markdups_metrics_percell),
             mgd.TempSpace('tempdir_markdups', 'cell_id'),
-        ),
-        kwargs={'docker_image': config['docker']['picard']}
-    )
-
-    workflow.transform(
-        name='get_flagstat_metrics',
-        axes=('cell_id',),
-        func="single_cell.utils.bamutils.bam_flagstat",
-        args=(
-            mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename),
-            mgd.OutputFile('flagstat_metrics_percell', 'cell_id', fnames=flagstat_metrics_percell),
-        ),
-        kwargs={'docker_image': config['docker']['samtools']}
-    )
-
-    workflow.transform(
-        name='bam_collect_wgs_metrics',
-        ctx={'mem': config['memory']['med'], 'ncpus': 1},
-        func="single_cell.utils.picardutils.bam_collect_wgs_metrics",
-        axes=('cell_id',),
-        args=(
-            mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename),
             ref_genome,
             mgd.OutputFile('wgs_metrics_percell', 'cell_id', fnames=wgs_metrics_percell),
             config['picard_wgs_params'],
-            mgd.TempSpace('wgs_tempdir', 'cell_id'),
         ),
         kwargs={
-            'docker_image': config['docker']['picard']
+            'picard_docker': config['docker']['picard'],
         }
     )
 
     workflow.transform(
-        name='bam_collect_gc_metrics',
+        name='bam_collect_gc_insert_metrics',
         ctx={'mem': config['memory']['med'], 'ncpus': 1},
-        func="single_cell.utils.picardutils.bam_collect_gc_metrics",
+        func="single_cell.workflows.align.tasks.picard_insert_gc_flagstat",
         axes=('cell_id',),
         args=(
             mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename),
@@ -111,26 +89,13 @@ def bam_metrics_workflow(
             mgd.OutputFile('gc_metrics_summary_percell', 'cell_id', fnames=gc_metrics_summary_percell),
             mgd.OutputFile('gc_metrics_pdf_percell', 'cell_id', fnames=gc_metrics_pdf_percell),
             mgd.TempSpace('gc_tempdir', 'cell_id'),
-        ),
-        kwargs={
-            'docker_image': config['docker']['picard']
-        }
-    )
-
-    workflow.transform(
-        name='bam_collect_insert_metrics',
-        ctx={'mem': config['memory']['med'], 'ncpus': 1},
-        func="single_cell.utils.picardutils.bam_collect_insert_metrics",
-        axes=('cell_id',),
-        args=(
-            mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename),
-            mgd.InputFile('flagstat_metrics_percell', 'cell_id', fnames=flagstat_metrics_percell),
+            mgd.OutputFile('flagstat_metrics_percell', 'cell_id', fnames=flagstat_metrics_percell),
             mgd.OutputFile('insert_metrics_percell', 'cell_id', fnames=insert_metrics_percell),
             mgd.OutputFile('insert_metrics_pdf_percell', 'cell_id', fnames=insert_metrics_pdf_percell),
-            mgd.TempSpace('insert_tempdir', 'cell_id'),
         ),
         kwargs={
-            'docker_image': config['docker']['picard']
+            'picard_docker': config['docker']['picard'],
+            'samtools_docker': config['docker']['samtools']
         }
     )
 
@@ -238,48 +203,13 @@ def create_alignment_workflow(
         value=centerinfo)
 
     workflow.transform(
-        name='run_fastq_screen',
-        ctx={'mem': 7, 'ncpus': 1, 'docker_image': baseimage},
-        axes=('cell_id', 'lane',),
-        func="single_cell.workflows.align.fastqscreen.organism_filter",
-        args=(
-            mgd.InputFile('fastq_1', 'cell_id', 'lane', fnames=fastq_1_filename),
-            mgd.InputFile('fastq_2', 'cell_id', 'lane', fnames=fastq_2_filename),
-            mgd.TempOutputFile('fastq_r1_matching_reads.fastq.gz', 'cell_id', 'lane'),
-            mgd.TempOutputFile('fastq_r2_matching_reads.fastq.gz', 'cell_id', 'lane'),
-            mgd.TempOutputFile('organism_detailed_count_per_lane.csv', 'cell_id', 'lane'),
-            mgd.TempOutputFile('organism_summary_count_per_lane.csv', 'cell_id', 'lane'),
-            mgd.TempSpace("tempdir_organism_filter", 'cell_id', 'lane'),
-            mgd.InputInstance('cell_id'),
-            config['fastq_screen_params'],
-            config['ref_type']
-        ),
-        kwargs={
-            'docker_image': config['docker']['fastq_screen'],
-            'filter_contaminated_reads': config['fastq_screen_params']['filter_contaminated_reads']
-        }
-    )
-
-    workflow.transform(
-        name='merge_fastq_screen_metrics',
-        ctx={'mem': 7, 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.workflows.align.fastqscreen.merge_fastq_screen_counts",
-        args=(
-            mgd.TempInputFile('organism_detailed_count_per_lane.csv', 'cell_id', 'lane'),
-            mgd.TempInputFile('organism_summary_count_per_lane.csv', 'cell_id', 'lane'),
-            mgd.OutputFile(detailed_fastqscreen_metrics, extensions=['.yaml']),
-            mgd.TempOutputFile('organism_summary_count_per_cell.csv'),
-        )
-    )
-
-    workflow.transform(
         name='align_reads',
         ctx={'mem': 7, 'ncpus': 1, 'docker_image': baseimage},
         axes=('cell_id', 'lane',),
         func="single_cell.workflows.align.tasks.align_pe",
         args=(
-            mgd.TempInputFile('fastq_r1_matching_reads.fastq.gz', 'cell_id', 'lane'),
-            mgd.TempInputFile('fastq_r2_matching_reads.fastq.gz', 'cell_id', 'lane'),
+            mgd.InputFile('fastq_1', 'cell_id', 'lane', fnames=fastq_1_filename),
+            mgd.InputFile('fastq_2', 'cell_id', 'lane', fnames=fastq_2_filename),
             mgd.TempOutputFile(
                 'aligned_per_cell_per_lane.sorted.bam', 'cell_id', 'lane'),
             mgd.TempOutputFile('fastqc_reports.tar.gz', 'cell_id', 'lane'),
@@ -296,70 +226,38 @@ def create_alignment_workflow(
             config['docker'],
             config['adapter'],
             config['adapter2'],
+            mgd.TempOutputFile('organism_detailed_count_per_lane.csv', 'cell_id', 'lane'),
+            mgd.TempOutputFile('organism_summary_count_per_lane.csv', 'cell_id', 'lane'),
             config['fastq_screen_params'],
+        )
+    )
+
+    workflow.transform(
+        name='merge_fastq_screen_metrics',
+        ctx={'mem': 7, 'ncpus': 1, 'docker_image': baseimage},
+        func="single_cell.workflows.align.fastqscreen.merge_fastq_screen_counts",
+        args=(
+            mgd.TempInputFile('organism_detailed_count_per_lane.csv', 'cell_id', 'lane'),
+            mgd.TempInputFile('organism_summary_count_per_lane.csv', 'cell_id', 'lane'),
+            mgd.OutputFile(detailed_fastqscreen_metrics, extensions=['.yaml']),
+            mgd.TempOutputFile('organism_summary_count_per_cell.csv'),
         )
     )
 
     workflow.transform(
         name='merge_bams',
         ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.workflows.align.tasks.merge_bams",
+        func="single_cell.workflows.align.tasks.merge_postprocess_bams",
         axes=('cell_id',),
         args=(
             mgd.TempInputFile(
                 'aligned_per_cell_per_lane.sorted.bam',
                 'cell_id',
                 'lane'),
-            mgd.TempOutputFile('merged_lanes.bam', 'cell_id'),
-            mgd.TempOutputFile('merged_lanes.bam.bai', 'cell_id'),
-            config['docker']
-        )
-    )
-
-    if realign:
-        workflow.transform(
-            name='realignment',
-            axes=('chrom',),
-            ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-            func="single_cell.workflows.align.tasks.realign",
-            args=(
-                mgd.TempInputFile('merged_lanes.bam', 'cell_id'),
-                mgd.TempInputFile('merged_lanes.bam.bai', 'cell_id'),
-                mgd.TempOutputFile('realigned.bam', 'chrom', 'cell_id'),
-                mgd.TempSpace('realignment_temp', 'chrom'),
-                config,
-                mgd.InputInstance('chrom')
-            )
-        )
-
-        workflow.transform(
-            name='merge_realignment',
-            ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-            axes=('cell_id',),
-            func="single_cell.workflows.align.tasks.merge_realignment",
-            args=(
-                mgd.TempInputFile('realigned.bam', 'chrom', 'cell_id'),
-                mgd.TempOutputFile('merged_realign.bam', 'cell_id'),
-                config,
-                mgd.InputInstance('cell_id')
-            )
-        )
-
-    final_bam = mgd.TempInputFile('merged_lanes.bam', 'cell_id')
-    if realign:
-        final_bam = mgd.TempInputFile('merged_realign.bam', 'cell_id')
-
-    workflow.transform(
-        name='postprocess_bam',
-        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        axes=('cell_id',),
-        func="single_cell.workflows.align.tasks.postprocess_bam",
-        args=(
-            final_bam,
             mgd.OutputFile('sorted_markdups', 'cell_id', fnames=bam_filename, extensions=['.bai']),
             mgd.TempSpace('tempdir', 'cell_id'),
-            config['docker'],
-        ),
+            config['docker']
+        )
     )
 
     workflow.subworkflow(

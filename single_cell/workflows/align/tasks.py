@@ -2,11 +2,10 @@ from __future__ import division
 
 import logging
 import os
-import shutil
 
+import single_cell.workflows.align.fastqscreen as fastqscreen
 from single_cell.utils import bamutils
 from single_cell.utils import csvutils
-from single_cell.utils import gatkutils
 from single_cell.utils import helpers
 from single_cell.utils import picardutils
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotMetrics
@@ -59,57 +58,22 @@ def add_contamination_status(
         raise LibraryContaminationError("over 20% of cells are contaminated")
 
 
-def merge_bams(inputs, output, output_index, containers):
-    picardutils.merge_bams(inputs, output, docker_image=containers['picard'])
-    bamutils.bam_index(output, output_index, docker_image=containers['samtools'])
+def merge_postprocess_bams(inputs, output, tempdir, containers):
+    helpers.makedirs(tempdir)
+    merged_out = os.path.join(tempdir, 'merged_lanes.bam')
 
+    picardutils.merge_bams(inputs, merged_out, docker_image=containers['picard'])
+    bamutils.bam_index(merged_out, merged_out + '.bai', docker_image=containers['samtools'])
 
-def merge_realignment(input_filenames, output_filename,
-                      config, input_cell_id):
-    merge_filenames = []
-    for (_, cell_id), filename in input_filenames.items():
-        if input_cell_id != cell_id:
-            continue
-        merge_filenames.append(filename)
+    sorted_bam = os.path.join(tempdir, 'sorted.bam')
+    picardutils.bam_sort(merged_out, sorted_bam, tempdir,
+                         docker_image=containers['picard'])
 
-    merge_bams(merge_filenames, output_filename, output_filename + ".bai")
+    markdups_metrics = os.path.join(tempdir, 'markdups_metrics.txt')
+    picardutils.bam_markdups(sorted_bam, output, markdups_metrics, tempdir,
+                             docker_image=containers['picard'])
 
-
-def realign(input_bams, input_bais, output_bams, tempdir, config, interval):
-    container_ctx = helpers.get_container_ctx(config['containers'], 'samtools', docker_only=True)
-
-    # make the dir
-    if not os.path.exists(tempdir):
-        os.makedirs(tempdir)
-
-    # symlink inputs to tempdir, inputs have same filename but they should be
-    # different for mapping file nwayout to work
-    # realign
-    new_inputs = {}
-    for key, bamfile in input_bams.items():
-        new_bam = os.path.join(tempdir, key + '.bam')
-        new_bai = os.path.join(tempdir, key + '.bam.bai')
-
-        shutil.copy(bamfile, new_bam)
-        shutil.copy(bamfile + '.bai', new_bai)
-        new_inputs[key] = new_bam
-
-    # save intervals file in tempdir
-    targets = os.path.join(tempdir, 'realn_positions.intervals')
-    gatkutils.generate_targets(input_bams, config, targets, interval, **container_ctx)
-
-    # run gatk realigner
-    gatkutils.gatk_realigner(new_inputs, config, targets, interval, tempdir, **container_ctx)
-
-    # copy generated files in temp dir to the specified output paths
-    for key in input_bams.keys():
-        realigned_bam = os.path.join(tempdir, key + '_indel_realigned.bam')
-        realigned_bai = os.path.join(tempdir, key + '_indel_realigned.bai')
-        output_bam_filename = output_bams[key]
-        output_bai_filename = output_bam_filename + '.bai'
-
-        shutil.move(realigned_bam, output_bam_filename)
-        shutil.move(realigned_bai, output_bai_filename)
+    bamutils.bam_index(output, output + '.bai', docker_image=containers['samtools'])
 
 
 def run_fastqc(fastq1, fastq2, reports, tempdir, containers):
@@ -192,47 +156,46 @@ def align_pe_with_bwa(
 def align_pe(
         fastq1, fastq2, output, reports, metrics, tempdir, reference,
         trim, centre, sample_info, cell_id, lane_id, library_id, aligner,
-        containers, adapter, adapter2, fastqscreen_params
+        containers, adapter, adapter2,
+        fastqscreen_detailed_metrics, fastqscreen_summary_metrics,
+        fastqscreen_params
 ):
+    fastqscreen_tempdir = os.path.join(tempdir, 'fastq_screen')
+    helpers.makedirs(fastqscreen_tempdir)
+
+    filtered_fastq_r1 = os.path.join(fastqscreen_tempdir, "fastq_r1.fastq.gz")
+    filtered_fastq_r2 = os.path.join(fastqscreen_tempdir, "fastq_r2.fastq.gz")
+
+    fastqscreen.organism_filter(
+        fastq1, fastq2, filtered_fastq_r1, filtered_fastq_r2,
+        fastqscreen_detailed_metrics, fastqscreen_summary_metrics,
+        fastqscreen_tempdir, cell_id, fastqscreen_params,
+        reference, docker_image=containers['fastq_screen'],
+        filter_contaminated_reads=fastqscreen_params['filter_contaminated_reads'],
+    )
+
     readgroup = get_readgroup(
         lane_id, cell_id, library_id, centre, sample_info
     )
 
-    run_fastqc(fastq1, fastq2, reports, tempdir, containers)
+    run_fastqc(filtered_fastq_r1, filtered_fastq_r2, reports, tempdir, containers)
 
     aln_temp = os.path.join(tempdir, "temp_alignments.bam")
 
     if aligner == "bwa-aln" and trim:
-        fastq1, fastq2 = trim_fastqs(
-            fastq1, fastq2, cell_id, tempdir,
+        filtered_fastq_r1, filtered_fastq_r2 = trim_fastqs(
+            filtered_fastq_r1, filtered_fastq_r2, cell_id, tempdir,
             adapter, adapter2, containers['trimgalore']
         )
 
     align_pe_with_bwa(
-        fastq1, fastq2, aln_temp, reference, readgroup,
+        filtered_fastq_r1, filtered_fastq_r2, aln_temp, reference, readgroup,
         tempdir, containers, aligner=aligner
     )
 
     picardutils.bam_sort(aln_temp, output, tempdir, docker_image=containers['picard'])
 
     bamutils.bam_flagstat(output, metrics, docker_image=containers['samtools'])
-
-
-def postprocess_bam(infile, outfile, tempdir, containers):
-    outfile_index = outfile + '.bai'
-
-    if not os.path.exists(tempdir):
-        helpers.makedirs(tempdir)
-
-    sorted_bam = os.path.join(tempdir, 'sorted.bam')
-    picardutils.bam_sort(infile, sorted_bam, tempdir,
-                         docker_image=containers['picard'])
-
-    markdups_metrics = os.path.join(tempdir, 'markdups_metrics.txt')
-    picardutils.bam_markdups(sorted_bam, outfile, markdups_metrics, tempdir,
-                             docker_image=containers['picard'])
-
-    bamutils.bam_index(outfile, outfile_index, docker_image=containers['samtools'])
 
 
 def run_trimgalore(seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt, tempdir,
@@ -331,3 +294,69 @@ def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
         collmet.main()
 
     csvutils.concatenate_csv(sample_outputs, merged_metrics)
+
+
+def picard_wgs_dup(
+        input_bam, markdups_bam, markdups_metrics, tempdir,
+        ref_genome, wgs_metrics, picard_wgs_params,
+        picard_docker=None
+
+):
+    tempdir_markdups = os.path.join(tempdir, 'markdups')
+    helpers.makedirs(tempdir_markdups)
+
+    picardutils.bam_markdups(
+        input_bam,
+        markdups_bam,
+        markdups_metrics,
+        tempdir_markdups,
+        docker_image=picard_docker
+    )
+
+    tempdir_wgs = os.path.join(tempdir, 'wgs')
+    helpers.makedirs(tempdir_wgs)
+
+    picardutils.bam_collect_wgs_metrics(
+        input_bam,
+        ref_genome,
+        wgs_metrics,
+        picard_wgs_params,
+        tempdir_wgs,
+        docker_image=picard_docker
+    )
+
+
+def picard_insert_gc_flagstat(
+        input_bam, ref_genome, gc_metrics, gc_metrics_summary, gc_metrics_pdf,
+        tempdir, flagstat_metrics, insert_metrics, insert_pdf, picard_docker=None,
+        samtools_docker=None
+):
+    bamutils.bam_flagstat(
+        input_bam,
+        flagstat_metrics,
+        docker_image=samtools_docker
+    )
+
+    gc_tempdir = os.path.join(tempdir, 'gc')
+    helpers.makedirs(gc_tempdir)
+
+    picardutils.bam_collect_gc_metrics(
+        input_bam,
+        ref_genome,
+        gc_metrics,
+        gc_metrics_summary,
+        gc_metrics_pdf,
+        gc_tempdir,
+        docker_image=picard_docker
+    )
+
+    insert_tempdir = os.path.join(tempdir, 'insert')
+    helpers.makedirs(insert_tempdir)
+    picardutils.bam_collect_insert_metrics(
+        input_bam,
+        flagstat_metrics,
+        insert_metrics,
+        insert_pdf,
+        insert_tempdir,
+        docker_image=picard_docker
+    )
