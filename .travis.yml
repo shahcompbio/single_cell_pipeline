@@ -2,16 +2,16 @@
 if: tag IS present
 language: python
 python:
-- 2.7
+- 3.7
 env:
   matrix:
   - PACKAGENAME=single_cell_pipeline
 before_install:
 - echo $TEST
-- wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+- wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
 - chmod +x miniconda.sh
 - "./miniconda.sh -b"
-- export PATH=$HOME/miniconda2/bin:$PATH
+- export PATH=$HOME/miniconda3/bin:$PATH
 - conda update --yes -q conda
 - conda config --set always_yes true
 - conda config --set anaconda_upload no
