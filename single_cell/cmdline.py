@@ -61,9 +61,9 @@ def add_global_args(parser, dont_add_input_yaml=False):
                             required=True,
                             help='''yaml file with fastq files, output bams and cell metadata''')
 
-    # parser.add_argument("--out_dir",
-    #                     required=True,
-    #                     help='''Path to output directory.''')
+    parser.add_argument("--out_dir",
+                        required=True,
+                        help='''Path to output directory.''')
 
     config_args = parser.add_mutually_exclusive_group()
 
@@ -93,52 +93,27 @@ def parse_args():
     # ===========
     # align
     # ===========
-    qc = add_global_args(subparsers.add_parser("qc"))
-    qc.set_defaults(which='qc')
-
-    qc.add_argument('--realign',
-                    action='store_true',
-                    help='''will run local realignment on all cells in batch mode''')
-
-    qc.add_argument("--library_id",
-                    required=True,
-                    help='''Library id.''')
-
-    qc.add_argument("--alignment_output",
-                    help='''run alignment workflow''')
-
-    qc.add_argument("--hmmcopy_output",
-                    help='''run hmmcopy''')
-
-    qc.add_argument("--annotation_output",
-                    help='''run annotation workflow''')
-
-    qc.add_argument("--no_corrupt_tree",
-                    default=False,
-                    action="store_true",
-                    help='''dont run corrupt tree, only applies to --annotation''')
-
-    qc.add_argument("--annotation_only",
-                    default=False,
-                    action="store_true",
-                    help='''only run annotation''')
-
-
-    # ===========
-    # copyclone
-    # ===========
-    copyclone = add_global_args(subparsers.add_parser("copyclone"))
-    copyclone.set_defaults(which='copyclone')
-    copyclone.add_argument("--library_id",
+    alignment = add_global_args(subparsers.add_parser("alignment"))
+    alignment.set_defaults(which='alignment')
+    alignment.add_argument("--library_id",
                            required=True,
                            help='''Library id.''')
 
     # ===========
-    # aneufinder
+    # hmmcopy
     # ===========
-    aneufinder = add_global_args(subparsers.add_parser("aneufinder"))
-    aneufinder.set_defaults(which='aneufinder')
-    aneufinder.add_argument("--library_id",
+    hmmcopy = add_global_args(subparsers.add_parser("hmmcopy"))
+    hmmcopy.set_defaults(which='hmmcopy')
+    hmmcopy.add_argument("--library_id",
+                         required=True,
+                         help='''Library id.''')
+
+    # ===========
+    # annotation
+    # ===========
+    annotation = add_global_args(subparsers.add_parser("annotation"))
+    annotation.set_defaults(which='annotation')
+    annotation.add_argument("--library_id",
                             required=True,
                             help='''Library id.''')
 
@@ -196,13 +171,6 @@ def parse_args():
                             help='''code assumes input is tumour, set this flag to to override''')
 
     # ===========
-    # germline
-    # ===========
-    germline_calling = add_global_args(
-        subparsers.add_parser("germline_calling"))
-    germline_calling.set_defaults(which='germline_calling')
-
-    # ===========
     # destruct
     # ===========
     breakpoint_calling = add_global_args(
@@ -217,45 +185,6 @@ def parse_args():
                                     action='store_true',
                                     default=False,
                                     help='''run lumpy''')
-
-    # ======================================
-    # count variants from multiple samples
-    # ======================================
-    variant_counting = add_global_args(
-        subparsers.add_parser("variant_counting"))
-    variant_counting.set_defaults(which='variant_counting')
-
-    variant_counting.add_argument("--input_vcfs",
-                                  required=True,
-                                  help='''vcf files''',
-                                  nargs='+')
-
-    # ======================================
-    # bulk analysis from multiple samples
-    # ======================================
-    multi_sample_pseudo_bulk = add_global_args(
-        subparsers.add_parser("multi_sample_pseudo_bulk"))
-    multi_sample_pseudo_bulk.set_defaults(which='multi_sample_pseudo_bulk')
-
-    multi_sample_pseudo_bulk.add_argument(
-        "--destruct_output",
-        help='''add destruct to list of analyses'''
-    )
-
-    multi_sample_pseudo_bulk.add_argument(
-        "--lumpy_output",
-        help='''add lumpy to list of analyses'''
-    )
-
-    multi_sample_pseudo_bulk.add_argument(
-        "--haps_output",
-        help='''add infer_haps to list of analyses'''
-    )
-
-    multi_sample_pseudo_bulk.add_argument(
-        "--variants_output",
-        help='''add variant calling to list of analyses'''
-    )
 
     # ======================================
     # generates pipeline and batch configs
@@ -292,30 +221,6 @@ def parse_args():
     clean_sentinels.add_argument("--pipelinedir",
                                  required=True,
                                  help='''path to the pipeline dir''')
-
-    # ============================
-    # generate LTM tree
-    # ============================
-    ltm = add_global_args(subparsers.add_parser("ltm"), dont_add_input_yaml=True)
-    ltm.set_defaults(which='ltm')
-
-    ltm.add_argument("--input_csv",
-                     required=True,
-                     help='''csv file with alignment and hmmcopy results for each timepoint''')
-
-    ltm.add_argument("--root_id",
-                     help='''ID of the cell to use as root of the tree. Default: first SA928 cell''',
-                     default=None)
-
-    ltm.add_argument('--number_of_jobs',
-                     help='''Number of jobs to submit for distance calculation for scaled method.''',
-                     default=10,
-                     type=int)
-
-    ltm.add_argument('--ploidy',
-                     help='''Ploidy to use for analysis.''',
-                     default=0,
-                     type=int)
 
     args = vars(parser.parse_args())
 
