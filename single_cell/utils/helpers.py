@@ -19,6 +19,8 @@ import single_cell
 import yaml
 from single_cell.utils import storageutils
 
+from single_cell.utils import inpututils
+
 import pypeliner
 
 
@@ -183,40 +185,6 @@ def get_file_format(filepath):
         )
         return "csv"
 
-
-def load_yaml_section(data, section_name):
-    if data.get(section_name):
-        assert len(data[section_name]) == 1
-        section_id = data[section_name].keys()[0]
-        section_data = data[section_name][section_id]
-        if 'bam' in section_data:
-            section_data = section_data['bam']
-        else:
-            section_data = {cell_id: bamdata['bam'] for cell_id, bamdata in section_data.items()}
-    else:
-        section_id = None
-        section_data = None
-    return section_id, section_data
-
-
-def load_pseudowgs_input(inputs_file):
-    data = load_yaml(inputs_file)
-
-    normal_wgs_id, normal_wgs = load_yaml_section(data, 'normal_wgs')
-    tumour_wgs_id, tumour_wgs = load_yaml_section(data, 'tumour_wgs')
-
-    tumour_cells_id, tumour_cells = load_yaml_section(data, 'tumour_cells')
-    normal_cells_id, normal_cells = load_yaml_section(data, 'normal_cells')
-
-    parsed_data = dict(
-        tumour_wgs_id=tumour_wgs_id, tumour_wgs=tumour_wgs,
-        normal_wgs_id=normal_wgs_id, normal_wgs=normal_wgs,
-        tumour_cells_id=tumour_cells_id, tumour_cells=tumour_cells,
-        normal_cells_id=normal_cells_id, normal_cells=normal_cells)
-
-    return parsed_data
-
-
 def get_coltype_reference():
     coltypes = {
         'estimated_library_size': 'int', 'total_mapped_reads': 'int',
@@ -253,36 +221,6 @@ def get_coltype_reference():
 def resolve_template(regions, template, format_key):
     outputs = {v: template.format(**{format_key: v}) for v in regions}
     return outputs
-
-
-def get_fastq_files(input_yaml):
-    data = load_yaml(input_yaml)
-
-    items = {}
-    for cell_id, cell_data in data.items():
-        items[cell_id] = {}
-        for lane, laneinfo in cell_data["fastqs"].items():
-            items[cell_id][lane] = {}
-            items[cell_id][lane]['fastq_1'] = format_file_yaml(laneinfo['fastq_1'])
-            items[cell_id][lane]['fastq_2'] = format_file_yaml(laneinfo['fastq_2'])
-    return items
-
-
-def format_file_yaml(filepath):
-    ext = os.path.splitext(filepath)
-
-    if ext[1] == ".gz":
-        ext = os.path.splitext(ext[0])
-
-    mapping = {'.bam': 'bam', '.pdf': 'PDF',
-               '.fastq': 'fastq', '.h5': 'H5',
-               '.tar': 'tar', '.fq': 'fastq'}
-
-    filetype = mapping.get(ext[1], None)
-    if not filetype:
-        filetype = "unknown"
-
-    return {'filename': filepath, 'type': filetype}
 
 
 def get_container_ctx(container_config, image_name, docker_only=False):
@@ -457,15 +395,6 @@ def run_cmd(cmd, output=None):
         stdout.close()
 
 
-def load_yaml(path):
-    try:
-        with open(path) as infile:
-            data = yaml.safe_load(infile)
-
-    except IOError:
-        raise Exception(
-            'Unable to open file: {0}'.format(path))
-    return data
 
 
 def symlink(actual_file, symlink):
@@ -475,119 +404,6 @@ def symlink(actual_file, symlink):
 
 def copy_file(infile, output):
     shutil.copy(infile, output)
-
-
-def get_fastqs(fastqs_file):
-    data = load_yaml(fastqs_file)
-
-    for cell in data.keys():
-        assert "fastqs" in data[
-            cell], "couldnt extract fastq file paths from yaml input for cell: {}".format(cell)
-
-    fastq_1_filenames = dict()
-    fastq_2_filenames = dict()
-    for cell in data.keys():
-        fastqs = data[cell]["fastqs"]
-
-        for lane, paths in fastqs.items():
-            fastq_1_filenames[(cell, lane)] = paths["fastq_1"]
-            fastq_2_filenames[(cell, lane)] = paths["fastq_2"]
-
-    return fastq_1_filenames, fastq_2_filenames
-
-
-def get_trim_info(fastqs_file):
-    data = load_yaml(fastqs_file)
-
-    for cell in data.keys():
-        assert "fastqs" in data[
-            cell], "couldnt extract fastq file paths from yaml input for cell: {}".format(cell)
-
-    seqinfo = dict()
-    for cell in data.keys():
-        fastqs = data[cell]["fastqs"]
-
-        for lane, paths in fastqs.items():
-            if 'trim' in paths:
-                seqinfo[(cell, lane)] = paths["trim"]
-            elif 'sequencing_instrument' in paths:
-                DeprecationWarning("sequencing instrument value is deprecated "
-                                   "and will be removed with v0.2.8")
-                if paths["sequencing_instrument"] == "N550":
-                    trim = False
-                else:
-                    trim = True
-                seqinfo[(cell, lane)] = trim
-            else:
-                raise Exception(
-                    "trim flag missing in cell: {}".format(cell))
-
-    return seqinfo
-
-
-def get_center_info(fastqs_file):
-    data = load_yaml(fastqs_file)
-
-    for cell in data.keys():
-        assert "fastqs" in data[
-            cell], "couldnt extract fastq file paths from yaml input for cell: {}".format(cell)
-
-    seqinfo = dict()
-    for cell in data.keys():
-        fastqs = data[cell]["fastqs"]
-
-        for lane, paths in fastqs.items():
-
-            if "sequencing_center" not in paths:
-                raise Exception(
-                    "sequencing_center key missing in cell: {}".format(cell))
-            seqinfo[(cell, lane)] = paths["sequencing_center"]
-
-    return seqinfo
-
-
-def get_sample_info(fastqs_file):
-    """
-    load yaml and remove some extra info to reduce size
-    """
-
-    data = load_yaml(fastqs_file)
-
-    cells = data.keys()
-
-    for cell in cells:
-        data[cell]["cell_call"] = data[cell]["pick_met"]
-        data[cell]["experimental_condition"] = data[cell]["condition"]
-        if "fastqs" in data[cell]:
-            del data[cell]["fastqs"]
-        del data[cell]["bam"]
-        del data[cell]["pick_met"]
-        del data[cell]["condition"]
-
-    return data
-
-
-def get_samples(fastqs_file):
-    data = load_yaml(fastqs_file)
-
-    return list(data.keys())
-
-
-def get_bams(fastqs_file):
-    data = load_yaml(fastqs_file)
-
-    for cell in data.keys():
-        assert "bam" in data[
-            cell], "couldnt extract bam file paths from yaml input for cell: {}".format(cell)
-
-    bam_filenames = {cell: data[cell]["bam"] for cell in data.keys()}
-    bai_filenames = {cell: data[cell]["bam"] + ".bai" for cell in data.keys()}
-
-    return bam_filenames, bai_filenames
-
-
-def load_config(args):
-    return load_yaml(args["config_file"])
 
 
 def makedirs(directory, isfile=False):
