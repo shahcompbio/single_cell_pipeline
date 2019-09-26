@@ -211,6 +211,7 @@ def generate_meta_files(args):
             alignment_dir,
             alignment_files.values(),
             metadata,
+            input_yaml=args['input_yaml']
         )
 
     if hmmcopy_dir and not annotation_only:
@@ -221,6 +222,7 @@ def generate_meta_files(args):
             hmmcopy_dir,
             hmmcopy_files.values(),
             metadata,
+            input_yaml=args['input_yaml']
         )
 
     if annotation_dir:
@@ -231,6 +233,7 @@ def generate_meta_files(args):
             annotation_dir,
             annotation_files.values(),
             metadata,
+            input_yaml=args['input_yaml']
         )
 
 
