@@ -22,13 +22,20 @@ from single_cell.utils import storageutils
 import pypeliner
 
 
-def generate_and_upload_metadata(args, root_dir, filepaths, metadata):
+def generate_and_upload_metadata(args, root_dir, filepaths, metadata, input_yaml=None):
     meta_yaml = os.path.join(root_dir, 'metadata.yaml')
+
     command = ' '.join(sys.argv[0:])
     version = get_version()
 
     metadata['command'] = command
     metadata['version'] = version
+
+    if input_yaml:
+        input_yaml_blob = os.path.join(root_dir, 'input.yaml')
+        filepaths.append(input_yaml_blob)
+        storageutils.upload_blob(input_yaml_blob, input_yaml, storage=args.get('storage'))
+        metadata['input_yaml'] = 'input.yaml'
 
     run_type = metadata['type']
 

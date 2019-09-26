@@ -86,6 +86,7 @@ def generate_meta_files(normal_sample_id, normal_libraries, tumour_cell_bams, ar
             destruct_dir,
             filepaths,
             metadata,
+            input_yaml=args['input_yaml']
         )
 
     if lumpy_dir:
@@ -98,6 +99,7 @@ def generate_meta_files(normal_sample_id, normal_libraries, tumour_cell_bams, ar
             lumpy_dir,
             filepaths,
             metadata,
+            input_yaml=args['input_yaml']
         )
 
     if haps_dir:
@@ -110,6 +112,7 @@ def generate_meta_files(normal_sample_id, normal_libraries, tumour_cell_bams, ar
             haps_dir,
             filepaths,
             metadata,
+            input_yaml=args['input_yaml']
         )
 
     if varcall_dir:
@@ -122,6 +125,7 @@ def generate_meta_files(normal_sample_id, normal_libraries, tumour_cell_bams, ar
             varcall_dir,
             filepaths,
             metadata,
+            input_yaml=args['input_yaml']
         )
 
 
