@@ -25,6 +25,8 @@ import pypeliner
 def generate_and_upload_metadata(args, root_dir, filepaths, metadata, input_yaml=None):
     meta_yaml = os.path.join(root_dir, 'metadata.yaml')
 
+    filepaths = list(filepaths)
+
     command = ' '.join(sys.argv[0:])
     version = get_version()
 
