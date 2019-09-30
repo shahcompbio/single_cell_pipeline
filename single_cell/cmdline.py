@@ -116,30 +116,22 @@ def parse_args():
     annotation.add_argument("--library_id",
                             required=True,
                             help='''Library id.''')
+    annotation.add_argument("--no_corrupt_tree",
+                    default=False,
+                    action="store_true",
+                    help='''dont run corrupt tree, only applies to --annotation''')
 
     # ===========
     # merge bams
     # ===========
-    merge_bams = add_global_args(subparsers.add_parser("merge_bams"))
-    merge_bams.set_defaults(which='merge_bams')
+    merge_bams = add_global_args(subparsers.add_parser("merge_cell_bams"))
+    merge_bams.set_defaults(which='merge_cell_bams')
 
     # ===========
     # split bam
     # ===========
-    split_bam = add_global_args(
-        subparsers.add_parser("split_bam"),
-        dont_add_input_yaml=True)
-    split_bam.set_defaults(which='split_bam')
-
-    split_bam.add_argument("--split_bam_template",
-                           action=parseRegionTemplate,
-                           required=True,
-                           help='''template for saving the bams split by region,
-                           use {} as place holder for genomic region''')
-
-    split_bam.add_argument("--wgs_bam",
-                           required=True,
-                           help='''path to the whole genome bam file''')
+    split_bam = add_global_args(subparsers.add_parser("split_wgs_bam"))
+    split_bam.set_defaults(which='split_wgs_bam')
 
     # ================
     # variant calling
@@ -147,16 +139,6 @@ def parse_args():
     variant_calling = add_global_args(subparsers.add_parser("variant_calling"))
     variant_calling.set_defaults(which='variant_calling')
 
-    # ===========
-    # titan, remixt
-    # ===========
-    copy_number_calling = add_global_args(
-        subparsers.add_parser("copy_number_calling"))
-    copy_number_calling.set_defaults(which='copy_number_calling')
-
-    copy_number_calling.add_argument("--clone_id",
-                                     required=True,
-                                     help='''ID to identify the results''')
 
     # ===========
     # haplotype blocks
@@ -165,10 +147,6 @@ def parse_args():
         subparsers.add_parser("infer_haps"))
     infer_haps.set_defaults(which='infer_haps')
 
-    infer_haps.add_argument("--normal",
-                            default=False,
-                            action='store_true',
-                            help='''code assumes input is tumour, set this flag to to override''')
 
     # ===========
     # destruct

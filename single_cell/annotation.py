@@ -1,4 +1,3 @@
-
 '''
 Created on Feb 19, 2018
 
@@ -7,40 +6,36 @@ Created on Feb 19, 2018
 import os
 import re
 
+import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import helpers
 from single_cell.utils import inpututils
-from single_cell.workflows import align, hmmcopy, qc_annotation
-
-import pypeliner
+from single_cell.workflows import qc_annotation
 
 
 def annotation_workflow(args):
     config = inpututils.load_config(args)
 
-    bam_files, _ = inpututils.get_bams(args['input_yaml'])
+    annotation_infiles = inpututils.load_yaml(args['input_yaml'])
 
     lib = args["library_id"]
 
     workflow = pypeliner.workflow.Workflow()
 
-    annotation_dir = args["annotation_output"]
+    annotation_dir = args["out_dir"]
 
-    annotation_files = get_output_files(annotation_dir, 'annotation', lib)
-
-    alignment_files = get_output_files(alignment_dir, 'alignment', lib)
-    hmmcopy_files = get_output_files(hmmcopy_dir, 'hmmcopy', lib)
+    annotation_files = get_output_files(annotation_dir, lib)
 
     workflow.subworkflow(
         name='annotation_workflow',
         ctx={'docker_image': config['annotation']['docker']['single_cell_pipeline']},
         func=qc_annotation.create_qc_annotation_workflow,
         args=(
-            mgd.InputFile(hmmcopy_files['metrics_csvs']),
-            mgd.InputFile(hmmcopy_files['reads_csvs']),
-            mgd.InputFile(alignment_files['alignment_metrics_csv']),
-            mgd.InputFile(alignment_files['gc_metrics_csv']),
-            mgd.InputFile(hmmcopy_files['segs_pdf']),
+            mgd.InputFile(annotation_infiles['hmmcopy_metrics']),
+            mgd.InputFile(annotation_infiles['hmmcopy_reads']),
+            mgd.InputFile(annotation_infiles['alignment_metrics']),
+            mgd.InputFile(annotation_infiles['gc_metrics']),
+            mgd.InputFile(annotation_infiles['segs_pdf_tar']),
             mgd.OutputFile(annotation_files['merged_metrics_csvs']),
             mgd.OutputFile(annotation_files['qc_report']),
             mgd.OutputFile(annotation_files['corrupt_tree_newick']),

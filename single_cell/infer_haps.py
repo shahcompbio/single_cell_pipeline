@@ -8,7 +8,7 @@ import os
 
 import pypeliner
 import pypeliner.managed as mgd
-from single_cell.utils import helpers
+from single_cell.utils import inpututils
 
 
 def infer_haps(
@@ -16,7 +16,7 @@ def infer_haps(
         haplotypes_filename,
         allele_counts_filename,
         config,
-        normal=False,
+        from_tumour=False,
 ):
     baseimage = {'docker_image': config['docker']['single_cell_pipeline']}
 
@@ -82,10 +82,10 @@ def infer_haps(
         value=chromosomes,
     )
 
-    if normal:
-        func = 'remixt.analysis.haplotype.infer_snp_genotype_from_normal'
-    else:
+    if from_tumour:
         func = 'remixt.analysis.haplotype.infer_snp_genotype_from_tumour'
+    else:
+        func = 'remixt.analysis.haplotype.infer_snp_genotype_from_normal'
 
     workflow.transform(
         name='infer_snp_genotype',
@@ -228,36 +228,26 @@ def extract_allele_readcounts(
 
 
 def infer_haps_workflow(args):
-    config = helpers.load_config(args)
+    config = inpututils.load_config(args)
     config = config['infer_haps']
     baseimage = config['docker']['single_cell_pipeline']
 
-    ctx = dict(mem_retry_increment=2, disk_retry_increment=50, ncpus=1, baseimage=baseimage)
+    ctx = dict(mem_retry_increment=2, disk_retry_increment=50, ncpus=1, docker_image=baseimage)
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     haps_dir = os.path.join(args["out_dir"], "infer_haps")
     haplotypes_filename = os.path.join(haps_dir, "results", "haplotypes.tsv")
-    allele_counts_filename = os.path.join(haps_dir, "results", "allele_counts.tsv")
 
-    data = helpers.load_pseudowgs_input(args['input_yaml'])
-    tumour_wgs = data['tumour_wgs']
-    normal_wgs = data['normal_wgs']
-    tumour_cells = data['tumour_cells']
-    normal_cells = data['normal_cells']
+    normal_data, tumour_cells = inpututils.load_haps_input(args['input_yaml'])
 
-    if args['normal']:
-        bam_file = normal_cells if normal_cells else normal_wgs
-    else:
-        bam_file = tumour_cells if tumour_cells else tumour_wgs
-
-    if isinstance(bam_file, dict):
+    if isinstance(normal_data, dict):
         workflow.setobj(
             obj=mgd.OutputChunks('cell_id'),
-            value=list(bam_file.keys()),
+            value=list(normal_data.keys()),
         )
-        bam_file = mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_file, extensions=['.bai'])
+        bam_file = mgd.InputFile('normal.bam', 'cell_id', fnames=normal_data, extensions=['.bai'])
     else:
-        bam_file = mgd.InputFile(bam_file, extensions=['.bai'])
+        bam_file = mgd.InputFile(normal_data, extensions=['.bai'])
 
     workflow.subworkflow(
         name='infer_haps',
@@ -265,10 +255,21 @@ def infer_haps_workflow(args):
         args=(
             bam_file,
             mgd.OutputFile(haplotypes_filename),
-            mgd.OutputFile(allele_counts_filename),
+            mgd.TempOutputFile("allele_counts.csv"),
             config,
         ),
-        kwargs={'normal': args['normal']},
+    )
+
+    workflow.subworkflow(
+        name='extract_allele_readcounts',
+        func=extract_allele_readcounts,
+        args=(
+            mgd.InputFile(haplotypes_filename),
+            mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai'],
+                          fnames=tumour_cells),
+            mgd.TempInputFile("allele_counts.csv"),
+            config['infer_haps'],
+        ),
     )
 
     return workflow
