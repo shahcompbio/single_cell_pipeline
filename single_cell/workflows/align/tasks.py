@@ -4,6 +4,7 @@ import logging
 import os
 
 import single_cell.workflows.align.fastqscreen as fastqscreen
+from single_cell.workflows.align.dtypes import dtypes
 from single_cell.utils import bamutils
 from single_cell.utils import csvutils
 from single_cell.utils import helpers
@@ -47,7 +48,7 @@ def add_contamination_status(
         data.loc[perc_alt > alt_threshold, 'is_contaminated'] = True
 
     csvutils.write_dataframe_to_csv_and_yaml(
-        data, outfile, write_header=True
+        data, outfile, write_header=True, dtypes=dtypes()
     )
 
     # get cells that are contaminated and have enopugh human reads
@@ -274,7 +275,7 @@ def collect_gc(infiles, outfile, tempdir):
                                   'gcbias')
         gen_gc.main()
 
-    csvutils.concatenate_csv(tempouts, outfile)
+    csvutils.concatenate_csv(tempouts, outfile, dtypes=dtypes())
 
 
 def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
@@ -293,7 +294,7 @@ def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
                                  mkdup, outfile, sample)
         collmet.main()
 
-    csvutils.concatenate_csv(sample_outputs, merged_metrics)
+    csvutils.concatenate_csv(sample_outputs, merged_metrics, dtypes=dtypes())
 
 
 def picard_wgs_dup(

@@ -1,20 +1,21 @@
+import gzip
 import logging
 import os
 import shutil
-import gzip
-
 
 import pandas as pd
 import yaml
-
 from single_cell.utils import helpers
+from single_cell.workflows.align.dtypes import dtypes
 
 
 class CsvParseError(Exception):
     pass
 
+
 class CsvInputError(Exception):
     pass
+
 
 class CsvWriterError(Exception):
     pass
@@ -257,7 +258,6 @@ class CsvOutput(object):
 
         self.columns = list(df.columns.values)
         self.dtypes = get_dtypes_from_df(df)
-
         self.__write_yaml()
 
     def write_csv_data(self, reader, writer):
@@ -276,7 +276,6 @@ class CsvOutput(object):
         else:
             for line in reader:
                 writer.write(line)
-
 
     def concatenate_files(self, infiles):
         header = self.header_line if self.header else None
@@ -325,7 +324,7 @@ def annotate_csv(infile, annotation_data, outfile, on="cell_id", write_header=Tr
     output.write_df(metrics_df)
 
 
-def concatenate_csv(in_filenames, out_filename, key_column=None, write_header=True):
+def concatenate_csv(in_filenames, out_filename, key_column=None, write_header=True, dtypes=None):
     if not isinstance(in_filenames, dict):
         in_filenames = dict(enumerate(in_filenames))
 
@@ -346,7 +345,11 @@ def concatenate_csv(in_filenames, out_filename, key_column=None, write_header=Tr
         data.append(df)
     data = pd.concat(data, ignore_index=True)
 
-    csvoutput = CsvOutput(out_filename, header=write_header, sep=sep)
+    df_dtypes = data.dtypes.to_dict()
+    if dtypes:
+        df_dtypes = {k:dtypes[k] if k in dtypes else v for k,v in df_dtypes.items()}
+
+    csvoutput = CsvOutput(out_filename, header=write_header, sep=sep, dtypes=df_dtypes)
     csvoutput.write_df(data)
 
 
@@ -383,17 +386,21 @@ def extrapolate_types_from_yaml_files(csv_files):
     return header, sep, cols, merged_dtypes
 
 
-def concatenate_csv_files_quick_lowmem(inputfiles, output, write_header=True):
+def concatenate_csv_files_quick_lowmem(inputfiles, output, write_header=True, dtypes=None):
     if isinstance(inputfiles, dict):
         inputfiles = inputfiles.values()
 
-    header, sep, cols, dtypes = extrapolate_types_from_yaml_files(inputfiles)
+    header, sep, cols, input_dtypes = extrapolate_types_from_yaml_files(inputfiles)
 
     if header:
         raise CsvInputError("Attempting to concatenate files with header.")
 
+    for col, type in input_dtypes.items():
+        if col in dtypes:
+            assert dtypes[col] == type
+
     csvoutput = CsvOutput(
-        output, header=write_header, sep=sep, columns=cols, dtypes=dtypes
+        output, header=write_header, sep=sep, columns=cols, dtypes=data_dtypes
     )
     csvoutput.concatenate_files(inputfiles)
 
@@ -410,6 +417,10 @@ def prep_csv_files(filepath, outputfile, header=False, dtypes=None):
 
     if csvinput.header is None:
         raise CsvInputError("cannot prep csv file with no header")
+
+    for col, type in csvinput.dtypes.items():
+        if col in dtypes:
+            assert dtypes[col] == type
 
     csvoutput = CsvOutput(
         outputfile, header=False, columns=csvinput.columns,
@@ -428,6 +439,10 @@ def finalize_csv(infile, outfile):
     if csvinput.header:
         raise CsvInputError("cannot finalize file with header")
 
+    for col, type in csvinput.dtypes.items():
+        if col in dtypes:
+            assert dtypes[col] == type
+
     csvoutput = CsvOutput(
         outfile, header=True, columns=csvinput.columns,
         sep=csvinput.sep, dtypes=csvinput.dtypes
@@ -435,7 +450,7 @@ def finalize_csv(infile, outfile):
     csvoutput.write_csv_with_header(infile)
 
 
-def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', suffixes=None, write_header=True):
+def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', suffixes=None, write_header=True, dtypes=None):
     if isinstance(in_filenames, dict):
         in_filenames = in_filenames.values()
 
@@ -454,7 +469,11 @@ def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', suffixes=None, 
     data = merge_frames(data, how, on, suffixes=suffixes)
     data = data.fillna(nan_val)
 
-    csvoutput = CsvOutput(out_filename, header=write_header, sep=sep)
+    df_dtypes = data.dtypes.to_dict()
+    if dtypes:
+        df_dtypes = {k:dtypes[k] if k in dtypes else v for k,v in df_dtypes.items()}
+
+    csvoutput = CsvOutput(out_filename, header=write_header, sep=sep, dtypes=df_dtypes)
     csvoutput.write_df(data)
 
 
@@ -501,9 +520,14 @@ def read_csv_and_yaml(infile, chunksize=None):
     return CsvInput(infile).read_csv(chunksize=chunksize)
 
 
-def write_dataframe_to_csv_and_yaml(df, outfile, write_header=False, sep=','):
-    csvoutput = CsvOutput(outfile, header=write_header, sep=sep)
+def write_dataframe_to_csv_and_yaml(df, outfile, write_header=False, sep=',', dtypes=None):
+    df_dtypes = df.dtypes.to_dict()
+    if dtypes:
+        df_dtypes = {k:dtypes[k] if k in dtypes else v for k,v in df_dtypes.items()}
+
+    csvoutput = CsvOutput(outfile, header=write_header, sep=sep, dtypes=df_dtypes)
     csvoutput.write_df(df)
+
 
 def get_metadata(infile):
     csvinput = CsvInput(infile)
