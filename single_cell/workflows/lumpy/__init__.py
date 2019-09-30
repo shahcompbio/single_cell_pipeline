@@ -139,7 +139,7 @@ def lumpy_preprocess_cells(
     return workflow
 
 
-def create_lumpy_workflow(
+def lumpy_calling_workflow(
         config,
         normal_disc_reads, normal_split_reads, normal_histogram, normal_mean_stdev,
         tumour_disc_reads, tumour_split_reads, tumour_histogram, tumour_mean_stdev,
@@ -194,7 +194,7 @@ def create_lumpy_workflow(
     return workflow
 
 
-def lumpy_multi_sample_workflow(
+def create_lumpy_workflow(
         config, normal_bam, tumour_cell_bams,
         lumpy_breakpoints_csv, lumpy_breakpoints_evidence,
         lumpy_breakpoints_bed
@@ -203,25 +203,9 @@ def lumpy_multi_sample_workflow(
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     workflow.setobj(
-        obj=mgd.OutputChunks('sample_id', 'library_id', 'cell_id'),
+        obj=mgd.OutputChunks('cell_id'),
         value=list(tumour_cell_bams.keys()),
     )
-
-    keys = [(sample_id, library_id) for (sample_id, library_id, _) in list(tumour_cell_bams.keys())]
-    keys = sorted(set(keys))
-
-    lumpy_breakpoints_csv = dict([(key, lumpy_breakpoints_csv(*key))
-                                  for key in keys])
-    lumpy_breakpoints_evidence = dict([(key, lumpy_breakpoints_evidence(*key))
-                                       for key in keys])
-    lumpy_breakpoints_bed = dict([(key, lumpy_breakpoints_bed(*key))
-                                  for key in keys])
-
-    workflow.set_filenames('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', fnames=tumour_cell_bams)
-    workflow.set_filenames('lumpy_breakpoints.csv.gz', 'sample_id', 'library_id', fnames=lumpy_breakpoints_csv)
-    workflow.set_filenames('lumpy_breakpoints_evidence.csv.gz', 'sample_id', 'library_id',
-                           fnames=lumpy_breakpoints_evidence)
-    workflow.set_filenames('lumpy_breakpoints.bed', 'sample_id', 'library_id', fnames=lumpy_breakpoints_bed)
 
     workflow.subworkflow(
         name='normal_preprocess_lumpy',
@@ -240,41 +224,35 @@ def lumpy_multi_sample_workflow(
     workflow.subworkflow(
         name='tumour_preprocess_lumpy',
         func='single_cell.workflows.lumpy.lumpy_preprocess_workflow',
-        axes=('sample_id', 'library_id'),
         ctx={'docker_image': config['docker']['single_cell_pipeline']},
         args=(
-            mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai']),
+            mgd.InputFile('tumour_cells.bam','cell_id', extensions=['.bai']),
             config,
-            mgd.TempOutputFile('tumour.discordants.sorted.bam', 'sample_id', 'library_id'),
-            mgd.TempOutputFile('tumour.splitters.sorted.bam', 'sample_id', 'library_id'),
-            mgd.TempOutputFile('hist_tumour_formatted.csv', 'sample_id', 'library_id'),
-            mgd.TempOutputFile('tumour_mean_stdev.yaml', 'sample_id', 'library_id')
+            mgd.TempOutputFile('tumour.discordants.sorted.bam'),
+            mgd.TempOutputFile('tumour.splitters.sorted.bam'),
+            mgd.TempOutputFile('hist_tumour_formatted.csv'),
+            mgd.TempOutputFile('tumour_mean_stdev.yaml')
         ),
     )
 
     workflow.subworkflow(
         name='lumpy',
         ctx={'docker_image': config['docker']['single_cell_pipeline']},
-        axes=('sample_id', 'library_id'),
-        func="single_cell.workflows.lumpy.create_lumpy_workflow",
+        func="single_cell.workflows.lumpy.lumpy_calling_workflow",
         args=(
             config,
             mgd.TempInputFile('normal.discordants.sorted.bam'),
             mgd.TempInputFile('normal.splitters.sorted.bam'),
             mgd.TempInputFile('hist_normal_formatted.csv'),
             mgd.TempInputFile('normal_mean_stdev.yaml'),
-            mgd.TempInputFile('tumour.discordants.sorted.bam', 'sample_id', 'library_id'),
-            mgd.TempInputFile('tumour.splitters.sorted.bam', 'sample_id', 'library_id'),
-            mgd.TempInputFile('hist_tumour_formatted.csv', 'sample_id', 'library_id'),
-            mgd.TempInputFile('tumour_mean_stdev.yaml', 'sample_id', 'library_id'),
-            mgd.OutputFile('lumpy_breakpoints.bed', 'sample_id', 'library_id'),
-            mgd.OutputFile('lumpy_breakpoints.csv.gz', 'sample_id', 'library_id'),
-            mgd.OutputFile('lumpy_breakpoints_evidence.csv.gz', 'sample_id', 'library_id'),
+            mgd.TempInputFile('tumour.discordants.sorted.bam'),
+            mgd.TempInputFile('tumour.splitters.sorted.bam'),
+            mgd.TempInputFile('hist_tumour_formatted.csv'),
+            mgd.TempInputFile('tumour_mean_stdev.yaml'),
+            mgd.OutputFile(lumpy_breakpoints_bed),
+            mgd.OutputFile(lumpy_breakpoints_csv),
+            mgd.OutputFile(lumpy_breakpoints_evidence),
         ),
-        kwargs={
-            'sample_id': mgd.InputInstance('sample_id'),
-            'library_id': mgd.InputInstance('library_id')
-        }
     )
 
     return workflow

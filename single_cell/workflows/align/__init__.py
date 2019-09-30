@@ -4,9 +4,8 @@ Created on Jul 6, 2017
 @author: dgrewal
 '''
 
-import pypeliner.managed as mgd
-
 import pypeliner
+import pypeliner.managed as mgd
 
 
 def bam_metrics_workflow(
@@ -169,7 +168,6 @@ def create_alignment_workflow(
         cell_ids,
         metrics_tar,
         library_id,
-        realign=False
 ):
     baseimage = config['docker']['single_cell_pipeline']
 

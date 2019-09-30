@@ -19,10 +19,17 @@ import single_cell
 import yaml
 from single_cell.utils import storageutils
 
-from single_cell.utils import inpututils
-
 import pypeliner
 
+
+def resolve_template(filepath, ids):
+    filepaths = []
+    for id_keys in ids:
+        try:
+            filepaths.append(filepath.format(**id_keys))
+        except KeyError:
+            filepaths.append(filepath)
+    return filepaths
 
 def generate_and_upload_metadata(args, root_dir, filepaths, metadata, input_yaml=None):
     meta_yaml = os.path.join(root_dir, 'metadata.yaml')

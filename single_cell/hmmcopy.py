@@ -26,7 +26,7 @@ def hmmcopy_workflow(args):
 
     hmmcopy_dir = args["out_dir"]
 
-    hmmcopy_files = get_output_files(hmmcopy_dir, 'hmmcopy', lib)
+    hmmcopy_files = get_output_files(hmmcopy_dir, lib)
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),

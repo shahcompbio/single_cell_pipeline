@@ -32,7 +32,7 @@ def alignment_workflow(args):
     workflow = pypeliner.workflow.Workflow()
 
     alignment_dir = args["out_dir"]
-    alignment_files = get_output_files(alignment_dir, 'alignment', lib)
+    alignment_files = get_output_files(alignment_dir, lib)
 
     fastq1_files, fastq2_files = inpututils.get_fastqs(args['input_yaml'])
     triminfo = inpututils.get_trim_info(args['input_yaml'])
@@ -64,7 +64,6 @@ def alignment_workflow(args):
             mgd.OutputFile(alignment_files['alignment_metrics_tar']),
             lib,
         ),
-        kwargs={'realign': args['realign']}
     )
 
     return workflow
@@ -94,7 +93,7 @@ def generate_meta_files(args):
     )
 
 
-def qc_pipeline(args):
+def alignment_pipeline(args):
     pyp = pypeliner.app.Pypeline(config=args)
 
     workflow = alignment_workflow(args)

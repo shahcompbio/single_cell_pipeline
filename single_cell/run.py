@@ -38,10 +38,10 @@ def main():
     if args["which"] == "annotation":
         annotation_pipeline(args)
 
-    if args["which"] == "merge_bams":
+    if args["which"] == "merge_cell_bams":
         merge_bams_pipeline(args)
 
-    if args["which"] == "split_bam":
+    if args["which"] == "split_wgs_bam":
         split_bam_pipeline(args)
 
     if args["which"] == "variant_calling":

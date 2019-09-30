@@ -1,8 +1,87 @@
 import yaml
 
 
+def load_split_wgs_input(input_yaml):
+    yamldata = load_yaml(input_yaml)
+
+    wgs_bams = yamldata['normal']
+
+    sample_id = list(wgs_bams.keys())
+    assert len(sample_id) == 1
+    sample_id = sample_id[0]
+
+    wgs_bams = wgs_bams[sample_id]
+
+    library_id = list(wgs_bams.keys())
+    assert len(library_id) == 1
+    library_id = library_id[0]
+
+    wgs_bams = wgs_bams[library_id]
+
+    return sample_id, library_id, wgs_bams['bam']
+
+
+def load_merge_cell_bams(input_yaml):
+    yamldata = load_yaml(input_yaml)
+
+    cell_bams = yamldata['cell_bams']
+
+    sample_id = list(cell_bams.keys())
+    assert len(sample_id) == 1
+    sample_id = sample_id[0]
+
+    cell_bams = cell_bams[sample_id]
+
+    library_id = list(cell_bams.keys())
+    assert len(library_id) == 1
+    library_id = library_id[0]
+
+    cell_bams = cell_bams[library_id]
+
+    cell_bams = {cell_id: cell_bams[cell_id]['bam'] for cell_id in cell_bams}
+
+    return sample_id, library_id, cell_bams
+
+
+def load_haps_input(input_yaml):
+    yamldata = load_yaml(input_yaml)
+
+    normal = yamldata['normal']
+
+
+    if 'bam' in normal:
+        normal = normal['bam']
+    else:
+        normal = {v: normal[v]['bam'] for v in normal}
+
+    tumours = yamldata['tumour']
+
+    tumours = {v: tumours[v]['bam'] for v in tumours}
+
+    return normal, tumours
+
+
+def load_breakpoint_calling_input(input_yaml):
+    return load_haps_input(input_yaml)
+
+
 def load_config(args):
     return load_yaml(args["config_file"])
+
+
+def load_variant_calling_input(input_yaml):
+    yamldata = load_yaml(input_yaml)
+
+    normals = yamldata['normal']
+
+    tumours = yamldata['tumour']
+
+    normals = {v: normals[v]['bam'] for v in normals}
+    tumours = {v: tumours[v]['bam'] for v in tumours}
+
+    assert normals.keys() == tumours.keys()
+
+    return normals, tumours
 
 
 def load_yaml_section(data, section_name):
