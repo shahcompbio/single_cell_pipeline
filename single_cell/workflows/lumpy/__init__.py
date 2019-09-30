@@ -226,7 +226,7 @@ def create_lumpy_workflow(
         func='single_cell.workflows.lumpy.lumpy_preprocess_workflow',
         ctx={'docker_image': config['docker']['single_cell_pipeline']},
         args=(
-            mgd.InputFile('tumour_cells.bam','cell_id', extensions=['.bai']),
+            mgd.InputFile('tumour_cells.bam','cell_id', extensions=['.bai'], fnames=tumour_cell_bams),
             config,
             mgd.TempOutputFile('tumour.discordants.sorted.bam'),
             mgd.TempOutputFile('tumour.splitters.sorted.bam'),
