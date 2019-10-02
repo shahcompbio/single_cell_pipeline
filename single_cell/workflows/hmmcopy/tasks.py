@@ -16,6 +16,7 @@ from single_cell.utils.singlecell_copynumber_plot_utils import GenHmmPlots
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotKernelDensity
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotMetrics
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotPcolor
+from single_cell.workflows.hmmcopy.dtypes import dtypes
 
 import pypeliner
 from .scripts import ConvertCSVToSEG
@@ -139,30 +140,35 @@ def run_hmmcopy(
     hmmcopy_outdir = os.path.join(hmmcopy_tempdir, str(0))
     csvutils.prep_csv_files(
         os.path.join(hmmcopy_outdir, "reads.csv"), corrected_reads_filename,
-        dtypes={'start': 'int', 'end': 'int'}
+        dtypes=dtypes()['reads']
     )
     csvutils.prep_csv_files(
         os.path.join(hmmcopy_outdir, "params.csv"), parameters_filename
     )
     csvutils.prep_csv_files(
         os.path.join(hmmcopy_outdir, "segs.csv"), segments_filename,
-        dtypes={'start': 'int', 'end': 'int'}
+        dtypes=dtypes()['segs']
     )
     csvutils.prep_csv_files(
-        os.path.join(hmmcopy_outdir, "metrics.csv"), metrics_filename
+        os.path.join(hmmcopy_outdir, "metrics.csv"), metrics_filename,
+        dtypes=dtypes()['metrics']
     )
 
     helpers.make_tarfile(hmmcopy_tar, hmmcopy_tempdir)
 
 
-def concatenate_csv(inputs, output, low_memory=False):
+def concatenate_csv(inputs, output, data_type, low_memory=False):
+    ref_dtypes = None
+    if data_type:
+        ref_dtypes = dtypes()[data_type]
+
     if low_memory:
         csvutils.concatenate_csv_files_quick_lowmem(
-            inputs, output
+            inputs, output, dtypes=ref_dtypes
         )
     else:
         csvutils.concatenate_csv(
-            inputs, output
+            inputs, output, dtypes=ref_dtypes
         )
 
 
@@ -222,7 +228,7 @@ def get_mappability_col(reads, annotated_reads):
     alldata = pd.concat(alldata)
 
     csvutils.write_dataframe_to_csv_and_yaml(
-        alldata, annotated_reads, write_header=True
+        alldata, annotated_reads, write_header=True, dtypes=dtypes()['reads']
     )
 
 
@@ -242,7 +248,7 @@ def add_clustering_order(
     else:
         sample_info = order
 
-    csvutils.annotate_csv(metrics, sample_info, output)
+    csvutils.annotate_csv(metrics, sample_info, output, dtypes=dtypes()['metrics'])
 
 
 def group_cells_by_row(cells, metrics, sort_by_col=False):
@@ -413,4 +419,4 @@ def add_quality(hmmcopy_metrics, alignment_metrics, multipliers, output, trainin
             intermediate_output,
             predictions)
 
-        csvutils.prep_csv_files(intermediate_output, output)
+        csvutils.prep_csv_files(intermediate_output, output, dtypes=dtypes()['metrics'])

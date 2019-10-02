@@ -307,7 +307,7 @@ class CsvOutput(object):
         self.__write_yaml()
 
 
-def annotate_csv(infile, annotation_data, outfile, on="cell_id", write_header=True):
+def annotate_csv(infile, annotation_data, outfile, on="cell_id", write_header=True, dtypes=None):
     csvinput = CsvInput(infile)
 
     metrics_df = csvinput.read_csv()
@@ -320,7 +320,11 @@ def annotate_csv(infile, annotation_data, outfile, on="cell_id", write_header=Tr
         for column, value in col_data.items():
             metrics_df.loc[metrics_df[on] == cell, column] = value
 
-    output = CsvOutput(outfile, sep=csvinput.sep, header=write_header)
+    df_dtypes = metrics_df.dtypes.to_dict()
+    if dtypes:
+        df_dtypes = {k: dtypes[k] if k in dtypes else v for k,v in df_dtypes.items()}
+
+    output = CsvOutput(outfile, sep=csvinput.sep, header=write_header, dtypes=df_dtypes)
     output.write_df(metrics_df)
 
 
@@ -354,7 +358,7 @@ def concatenate_csv(in_filenames, out_filename, key_column=None, write_header=Tr
 
 
 def extrapolate_types_from_yaml_files(csv_files):
-    precedence = ['str', 'float', 'int', 'bool', 'NA']
+    precedence = ['str', 'category', 'float', 'float64', 'int', 'int64', 'bool', 'NA']
 
     csv_metadata = [CsvInput(csv_file) for csv_file in csv_files]
 
@@ -400,7 +404,7 @@ def concatenate_csv_files_quick_lowmem(inputfiles, output, write_header=True, dt
             assert dtypes[col] == type
 
     csvoutput = CsvOutput(
-        output, header=write_header, sep=sep, columns=cols, dtypes=data_dtypes
+        output, header=write_header, sep=sep, columns=cols, dtypes=input_dtypes
     )
     csvoutput.concatenate_files(inputfiles)
 
@@ -419,7 +423,7 @@ def prep_csv_files(filepath, outputfile, header=False, dtypes=None):
         raise CsvInputError("cannot prep csv file with no header")
 
     for col, type in csvinput.dtypes.items():
-        if col in dtypes:
+        if dtypes and col in dtypes:
             assert dtypes[col] == type
 
     csvoutput = CsvOutput(
