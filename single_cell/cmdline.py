@@ -164,6 +164,20 @@ def parse_args():
                                     default=False,
                                     help='''run lumpy''')
 
+    # ================
+    # variant counting
+    # ================
+    variant_counting = add_global_args(
+        subparsers.add_parser("variant_counting"))
+    variant_counting.set_defaults(which='variant_counting')
+
+    # ================
+    # genoptyping
+    # ================
+    genotyping = add_global_args(
+        subparsers.add_parser("genotyping"))
+    genotyping.set_defaults(which='genotyping')
+
     # ======================================
     # generates pipeline and batch configs
     # ======================================
