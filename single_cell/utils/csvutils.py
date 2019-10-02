@@ -400,7 +400,7 @@ def concatenate_csv_files_quick_lowmem(inputfiles, output, write_header=True, dt
         raise CsvInputError("Attempting to concatenate files with header.")
 
     for col, type in input_dtypes.items():
-        if col in dtypes:
+        if dtypes and col in dtypes:
             assert dtypes[col] == type
 
     csvoutput = CsvOutput(
@@ -437,14 +437,14 @@ def prep_csv_files(filepath, outputfile, header=False, dtypes=None):
         csvoutput.write_headerless_csv(filepath)
 
 
-def finalize_csv(infile, outfile):
+def finalize_csv(infile, outfile, dtypes=None):
     csvinput = CsvInput(infile)
 
     if csvinput.header:
         raise CsvInputError("cannot finalize file with header")
 
     for col, type in csvinput.dtypes.items():
-        if col in dtypes:
+        if dtypes and col in dtypes:
             assert dtypes[col] == type
 
     csvoutput = CsvOutput(

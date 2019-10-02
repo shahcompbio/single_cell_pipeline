@@ -1,8 +1,9 @@
 def dtypes():
-    cell_id = str
-    total_mapped_reads = int
-    library_id = str
-
+    metrics = {
+        'cell_id': 'category',
+        'total_mapped_reads': 'int64',
+        'library_id': 'category',
+    }
     dtypes = locals()
 
     return dtypes
