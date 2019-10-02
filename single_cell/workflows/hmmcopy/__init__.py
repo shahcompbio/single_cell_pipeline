@@ -57,6 +57,7 @@ def create_hmmcopy_workflow(
         args=(
             mgd.TempInputFile('reads.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
             mgd.TempOutputFile('reads_merged.csv.gz', extensions=['.yaml']),
+            'reads'
         ),
         kwargs={'low_memory': True}
     )
@@ -78,6 +79,7 @@ def create_hmmcopy_workflow(
         args=(
             mgd.TempInputFile('segs.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
             mgd.OutputFile(segs, extensions=['.yaml']),
+            'segs'
         ),
         kwargs={'low_memory': True}
     )
@@ -89,6 +91,7 @@ def create_hmmcopy_workflow(
         args=(
             mgd.TempInputFile('hmm_metrics.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
             mgd.TempOutputFile("hmm_metrics.csv.gz", extensions=['.yaml']),
+            'metrics'
         ),
     )
 
@@ -99,6 +102,7 @@ def create_hmmcopy_workflow(
         args=(
             mgd.TempInputFile('params.csv.gz', 'cell_id', axes_origin=[], extensions=['.yaml']),
             mgd.OutputFile(params, extensions=['.yaml']),
+            None
         ),
     )
 
