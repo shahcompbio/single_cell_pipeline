@@ -48,7 +48,6 @@ def load_haps_input(input_yaml):
 
     normal = yamldata['normal']
 
-
     if 'bam' in normal:
         normal = normal['bam']
     else:
@@ -82,6 +81,29 @@ def load_variant_calling_input(input_yaml):
     assert normals.keys() == tumours.keys()
 
     return normals, tumours
+
+
+def load_variant_counting_input(input_yaml):
+    yamldata = load_yaml(input_yaml)
+
+    vcf_files = yamldata['vcf_files']
+
+    strelka_vcf_data = {}
+    museq_vcf_data = {}
+    for sample, sampledata in vcf_files.items():
+        for library, library_data in sampledata.items():
+            strelka_vcf_data[(sample, library)] = library_data['strelka_snv_vcf']
+            museq_vcf_data[(sample, library)] = library_data['museq_vcf']
+
+    cells_data = yamldata['tumour_cells']
+
+    cells_data_out = {}
+    for sample, sampledata in cells_data.items():
+        for library, library_data in sampledata.items():
+            for cell, cell_data in library_data.items():
+                cells_data_out[(sample, library, cell)] = cell_data['bam']
+
+    return strelka_vcf_data, museq_vcf_data, cells_data_out
 
 
 def load_yaml_section(data, section_name):

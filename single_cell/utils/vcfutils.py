@@ -6,6 +6,9 @@ Created on Feb 27, 2018
 import logging
 import os
 
+import biowrappers.components.io.vcf.tasks as vcf_tasks
+from single_cell.utils import helpers
+
 
 def _get_header(infile):
     '''
@@ -65,3 +68,23 @@ def concatenate_vcf(infiles, outfile):
 
                 for l in f:
                     ofile.write(l)
+
+
+def merge_vcf(infiles, outfile, tempdir, docker_image=None):
+    vcf_files = []
+    for infile in infiles:
+        if isinstance(infile, str):
+            vcf_files.append(infile)
+        elif isinstance(infile, dict):
+            vcf_files.extend(list(infile.values()))
+        elif isinstance(infile, (list, tuple)):
+            vcf_files.extend(list(infile))
+        else:
+            raise Exception("unknown data type")
+
+    helpers.makedirs(tempdir)
+    temp_output = os.path.join(tempdir, 'merged.vcf')
+
+    vcf_tasks.merge_vcfs(vcf_files, temp_output)
+
+    vcf_tasks.finalise_vcf(temp_output, outfile, docker_config={'docker_image': docker_image})
