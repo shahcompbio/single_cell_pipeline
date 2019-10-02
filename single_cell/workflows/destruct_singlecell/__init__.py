@@ -387,11 +387,6 @@ def create_destruct_workflow(
             mgd.OutputFile(cell_counts_csv),
             mgd.TempSpace("raw_data_dir"),
         ),
-        kwargs={
-            'tumour_sample_id': mgd.Instance('sample_id'),
-            'tumour_library_id': mgd.Instance('library_id'),
-            'normal_sample_id': normal_sample_id,
-        },
     )
 
     return workflow
