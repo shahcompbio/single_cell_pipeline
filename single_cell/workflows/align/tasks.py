@@ -48,7 +48,7 @@ def add_contamination_status(
         data.loc[perc_alt > alt_threshold, 'is_contaminated'] = True
 
     csvutils.write_dataframe_to_csv_and_yaml(
-        data, outfile, write_header=True, dtypes=dtypes()
+        data, outfile, write_header=True, dtypes=dtypes()['metrics']
     )
 
     # get cells that are contaminated and have enopugh human reads
@@ -275,7 +275,7 @@ def collect_gc(infiles, outfile, tempdir):
                                   'gcbias')
         gen_gc.main()
 
-    csvutils.concatenate_csv(tempouts, outfile, dtypes=dtypes())
+    csvutils.concatenate_csv(tempouts, outfile, dtypes=dtypes()['metrics'])
 
 
 def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
@@ -294,7 +294,7 @@ def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
                                  mkdup, outfile, sample)
         collmet.main()
 
-    csvutils.concatenate_csv(sample_outputs, merged_metrics, dtypes=dtypes())
+    csvutils.concatenate_csv(sample_outputs, merged_metrics, dtypes=dtypes()['metrics'])
 
 
 def picard_wgs_dup(

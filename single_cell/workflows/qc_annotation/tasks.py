@@ -7,14 +7,15 @@ import os
 import shutil
 
 import pandas as pd
+import pypeliner
 from ete3 import Tree
-from .scripts import classify
-from .scripts import generate_qc
 from single_cell.utils import csvutils
 from single_cell.utils import helpers
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotPcolor
+from single_cell.workflows.qc_annotation.dtypes import dtypes
 
-import pypeliner
+from .scripts import classify
+from .scripts import generate_qc
 
 
 def add_corrupt_tree_order(corrupt_tree, metrics, output):
@@ -41,7 +42,9 @@ def add_corrupt_tree_order(corrupt_tree, metrics, output):
         order = ordering.get(cellid, float('nan'))
         metrics.loc[metrics["cell_id"] == cellid, "order_corrupt_tree"] = order
 
-    csvutils.write_dataframe_to_csv_and_yaml(metrics, output, write_header=True)
+    csvutils.write_dataframe_to_csv_and_yaml(
+        metrics, output, write_header=True, dtypes=dtypes()['metrics']
+    )
 
 
 def annotate_metrics(
@@ -58,7 +61,7 @@ def annotate_metrics(
         for colname, value in cellinfo.items():
             metrics.loc[metrics["cell_id"] == cellid, colname] = value
 
-    csvutils.write_dataframe_to_csv_and_yaml(metrics, output)
+    csvutils.write_dataframe_to_csv_and_yaml(metrics, output, dtypes=dtypes()['metrics'])
 
 
 def add_quality(hmmcopy_metrics, alignment_metrics, output, training_data, tempdir):
@@ -80,7 +83,7 @@ def add_quality(hmmcopy_metrics, alignment_metrics, output, training_data, tempd
         intermediate_output,
         predictions)
 
-    csvutils.prep_csv_files(intermediate_output, output)
+    csvutils.prep_csv_files(intermediate_output, output, dtypes=dtypes()['metrics'])
 
 
 def merge_metrics(hmmcopy_metrics, alignment_metrics, merged_output):
@@ -92,7 +95,8 @@ def merge_metrics(hmmcopy_metrics, alignment_metrics, merged_output):
         merged_output,
         'outer',
         ['cell_id'],
-        write_header=False
+        write_header=False,
+        dtypes=dtypes()['metrics']
     )
 
 
@@ -123,7 +127,7 @@ def cell_cycle_classifier(hmmcopy_reads, hmmcopy_metrics, alignment_metrics, out
 
     hmm_metrics_df = hmm_metrics_df.merge(cell_cycle_df, on=['cell_id'], how='outer')
 
-    csvutils.write_dataframe_to_csv_and_yaml(hmm_metrics_df, output)
+    csvutils.write_dataframe_to_csv_and_yaml(hmm_metrics_df, output, dtypes = dtypes()['metrics'])
 
 
 def filter_plot_tar(metrics, src_tar, pass_tar, fail_tar, tempdir, filters):
