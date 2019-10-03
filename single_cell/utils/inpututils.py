@@ -82,6 +82,13 @@ def load_variant_calling_input(input_yaml):
 
     return normals, tumours
 
+def load_germline_data(input_yaml):
+    yamldata = load_yaml(input_yaml)
+
+    normals = yamldata['normal']
+    normals = {v: normals[v]['bam'] for v in normals}
+
+    return normals
 
 def load_variant_counting_input(input_yaml):
     yamldata = load_yaml(input_yaml)
