@@ -113,39 +113,6 @@ def load_variant_counting_input(input_yaml):
     return strelka_vcf_data, museq_vcf_data, cells_data_out
 
 
-def load_yaml_section(data, section_name):
-    if data.get(section_name):
-        assert len(data[section_name]) == 1
-        section_id = data[section_name].keys()[0]
-        section_data = data[section_name][section_id]
-        if 'bam' in section_data:
-            section_data = section_data['bam']
-        else:
-            section_data = {cell_id: bamdata['bam'] for cell_id, bamdata in section_data.items()}
-    else:
-        section_id = None
-        section_data = None
-    return section_id, section_data
-
-
-def load_pseudowgs_input(inputs_file):
-    data = load_yaml(inputs_file)
-
-    normal_wgs_id, normal_wgs = load_yaml_section(data, 'normal_wgs')
-    tumour_wgs_id, tumour_wgs = load_yaml_section(data, 'tumour_wgs')
-
-    tumour_cells_id, tumour_cells = load_yaml_section(data, 'tumour_cells')
-    normal_cells_id, normal_cells = load_yaml_section(data, 'normal_cells')
-
-    parsed_data = dict(
-        tumour_wgs_id=tumour_wgs_id, tumour_wgs=tumour_wgs,
-        normal_wgs_id=normal_wgs_id, normal_wgs=normal_wgs,
-        tumour_cells_id=tumour_cells_id, tumour_cells=tumour_cells,
-        normal_cells_id=normal_cells_id, normal_cells=normal_cells)
-
-    return parsed_data
-
-
 def load_yaml(path):
     try:
         with open(path) as infile:
@@ -155,25 +122,6 @@ def load_yaml(path):
         raise Exception(
             'Unable to open file: {0}'.format(path))
     return data
-
-
-def get_fastqs(fastqs_file):
-    data = load_yaml(fastqs_file)
-
-    for cell in data.keys():
-        assert "fastqs" in data[
-            cell], "couldnt extract fastq file paths from yaml input for cell: {}".format(cell)
-
-    fastq_1_filenames = dict()
-    fastq_2_filenames = dict()
-    for cell in data.keys():
-        fastqs = data[cell]["fastqs"]
-
-        for lane, paths in fastqs.items():
-            fastq_1_filenames[(cell, lane)] = paths["fastq_1"]
-            fastq_2_filenames[(cell, lane)] = paths["fastq_2"]
-
-    return fastq_1_filenames, fastq_2_filenames
 
 
 def get_trim_info(fastqs_file):
@@ -265,42 +213,3 @@ def get_bams(fastqs_file):
 
     return bam_filenames, bai_filenames
 
-
-def load_cell_data(yamldata, key):
-    for sample_id, sample_data in yamldata[key].items():
-        for library_id, library_data in sample_data.items():
-            for cell_id, cell_data in library_data.items():
-                yield sample_id, library_id, cell_id, cell_data['bam']
-
-
-def load_tumour_data(yamldata):
-    sample_data = {}
-
-    for sample_id, library_id, cell_id, cell_bam in load_cell_data(yamldata, 'tumour_cells'):
-        sample_data[(sample_id, library_id, cell_id)] = cell_bam
-
-    return sample_data
-
-
-def load_normal_data(yamldata):
-    libraries = set()
-    if 'normal_wgs' in yamldata:
-        assert len(yamldata['normal_wgs'].keys()) == 1
-        sample_id = list(yamldata['normal_wgs'].keys())[0]
-        assert len(yamldata['normal_wgs'][sample_id].keys()) == 1
-        library_id = list(yamldata['normal_wgs'][sample_id].keys())[0]
-        libraries.add(library_id)
-        cell_bams = yamldata['normal_wgs'][sample_id][library_id]['bam']
-    else:
-        cell_bams = {}
-
-        if not len(yamldata['normal_cells'].keys()) == 1:
-            raise Exception("Pipeline does not support multiple normal samples")
-
-        for sample_id, library_id, cell_id, cell_bam in load_cell_data(yamldata, 'normal_cells'):
-            libraries.add(library_id)
-            if cell_id in cell_bams:
-                raise Exception("non unique cell id {} encountered".format(cell_id))
-            cell_bams[cell_id] = cell_bam
-
-    return sample_id, sorted(libraries), cell_bams
