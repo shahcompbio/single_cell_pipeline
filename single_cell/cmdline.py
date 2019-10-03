@@ -3,10 +3,10 @@ Created on Feb 19, 2018
 
 @author: dgrewal
 """
-import argparse
 import json
 import os
 
+import argparse
 import pypeliner
 from single_cell import __version__
 from single_cell.config import generate_batch_config
@@ -117,9 +117,9 @@ def parse_args():
                             required=True,
                             help='''Library id.''')
     annotation.add_argument("--no_corrupt_tree",
-                    default=False,
-                    action="store_true",
-                    help='''dont run corrupt tree, only applies to --annotation''')
+                            default=False,
+                            action="store_true",
+                            help='''dont run corrupt tree, only applies to --annotation''')
 
     # ===========
     # merge bams
@@ -139,6 +139,11 @@ def parse_args():
     variant_calling = add_global_args(subparsers.add_parser("variant_calling"))
     variant_calling.set_defaults(which='variant_calling')
 
+    # ================
+    # germline
+    # ================
+    germline_calling = add_global_args(subparsers.add_parser("germline_calling"))
+    germline_calling.set_defaults(which='germline_calling')
 
     # ===========
     # haplotype blocks
@@ -146,7 +151,6 @@ def parse_args():
     infer_haps = add_global_args(
         subparsers.add_parser("infer_haps"))
     infer_haps.set_defaults(which='infer_haps')
-
 
     # ===========
     # destruct

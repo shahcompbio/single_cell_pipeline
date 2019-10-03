@@ -13,6 +13,7 @@ from single_cell.merge_bams import merge_bams_pipeline
 from single_cell.split_bam import split_bam_pipeline
 from single_cell.variant_calling import variant_calling_pipeline
 from single_cell.variant_counting import variant_counting_pipeline
+from single_cell.germline_calling import germline_calling_pipeline
 
 
 def main():
@@ -47,6 +48,9 @@ def main():
 
     if args["which"] == "variant_calling":
         variant_calling_pipeline(args)
+
+    if args["which"] == "germline_calling":
+        germline_calling_pipeline(args)
 
     if args["which"] == "infer_haps":
         infer_haps_pipeline(args)
