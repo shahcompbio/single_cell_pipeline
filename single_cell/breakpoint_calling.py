@@ -54,7 +54,7 @@ def breakpoint_calling_workflow(args):
             args=(
                 normal_bam,
                 mgd.InputFile('tumour.bam', 'tumour_cell_id', fnames=tumour_cells),
-                config.get('destruct', {}),
+                config.get('destruct_config', {}),
                 config,
                 ref_data_directory,
                 mgd.OutputFile(breakpoints_filename, extensions=['.yaml']),
