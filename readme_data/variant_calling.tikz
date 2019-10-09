@@ -1,0 +1,78 @@
+\documentclass[class=minimal,border=2pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage{tikz}
+\usepackage{adjustbox}
+\usetikzlibrary{shapes.geometric, arrows, shadows, positioning, calc}
+\pagenumbering{gobble}
+
+\tikzset{multiple/.style = {double copy shadow={shadow xshift=1ex,shadow
+         yshift=-1.5ex,draw=black!30},fill=white,draw=black,thick,minimum height = 1cm,minimum
+           width=2cm},
+         ordinary/.style = {rectangle,draw,thick,minimum height = 1cm,minimum width=2cm}}
+
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=red!30]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=blue!30]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, text width=3cm, draw=black, fill=orange!30]
+\tikzstyle{pprocess} = [multiple, minimum width=3cm, minimum height=1cm, text centered, text width=3cm, draw=black, fill=orange!30]
+
+\tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!30]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+\begin{document}
+\begin{adjustbox}{margin=2cm}
+
+\begin{tikzpicture}[node distance=2cm]
+
+\node (normal_bams) [io, text width=3cm] {Normal Region Bams};
+\node (tumour_bams) [io, text width=3cm, xshift=6cm] {Tumour Region Bams};
+
+\node (museq) [process, below of=normal_bams] {museq};
+\draw[-latex] (normal_bams) -- coordinate (ab) (museq);
+\draw[-latex] (tumour_bams) -- coordinate (ab) (museq);
+
+\node (museq_vcf) [io, below of=museq, text width=1cm] {museq vcf};
+\draw[-latex] (museq) -- coordinate (ab) (museq_vcf);
+
+\node (museq_csv) [io, below of=museq, text width=1cm, xshift=-4cm] {museq csv};
+\draw[-latex] (museq) -- coordinate (ab) (museq_csv);
+
+
+\node (strelka) [process, below of=tumour_bams] {Strelka};
+\draw[-latex] (normal_bams) -- coordinate (ab) (strelka);
+\draw[-latex] (tumour_bams) -- coordinate (ab) (strelka);
+
+\node (strelka_snv_vcf) [io, below of=strelka, text width=1cm] {strelka snv vcf};
+\draw[-latex] (strelka) -- coordinate (ab) (strelka_snv_vcf);
+
+\node (strelka_indel_vcf) [io, below of=strelka, text width=1cm, xshift=3cm] {strelka indel vcf};
+\draw[-latex] (strelka) -- coordinate (ab) (strelka_indel_vcf);
+
+\node (strelka_snv_csv) [io, below of=strelka, text width=1cm, xshift=6cm] {strelka snv csv};
+\draw[-latex] (strelka) -| coordinate (ab) (strelka_snv_csv);
+
+\node (merge_snv) [decision, below of=museq, xshift=3cm, text width=1cm] {merge snv calls};
+\draw[-latex] (strelka) -- coordinate (ab) (merge_snv);
+\draw[-latex] (museq) -- coordinate (ab) (merge_snv);
+
+\node (annotate_snv) [process, below of=merge_snv] {Annotate snv calls};
+\draw[-latex] (merge_snv) -- coordinate (ab) (annotate_snv);
+
+\node (trinuc_csv) [io, below of=annotate_snv, text width=2cm] {trinucelotide csv};
+\draw[-latex] (annotate_snv) -- coordinate (ab) (trinuc_csv);
+
+\node (snpeff_csv) [io, below of=annotate_snv, text width=1cm, xshift=3cm] {snpeff csv};
+\draw[-latex] (annotate_snv) -- coordinate (ab) (snpeff_csv);
+
+\node (mapp_csv) [io, below of=annotate_snv, text width=2cm, xshift=6cm] {mappability csv};
+\draw[-latex] (annotate_snv) -| coordinate (ab) (mapp_csv);
+
+\node (dbsnp_csv) [io, below of=annotate_snv, text width=1cm, xshift=-3cm] {dbsnp csv};
+\draw[-latex] (annotate_snv) -- coordinate (ab) (dbsnp_csv);
+
+\node (cosmic_csv) [io, below of=annotate_snv, text width=1.5cm, xshift=-6cm] {Cosmic csv};
+\draw[-latex] (annotate_snv) -| coordinate (ab) (cosmic_csv);
+
+\end{tikzpicture}
+
+\end{adjustbox}
+\end{document}

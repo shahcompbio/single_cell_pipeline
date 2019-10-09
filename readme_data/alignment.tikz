@@ -1,0 +1,103 @@
+\documentclass[class=minimal,border=2pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, shadows, positioning, calc}
+\pagenumbering{gobble}
+
+\tikzset{multiple/.style = {double copy shadow={shadow xshift=1ex,shadow
+         yshift=-1.5ex,draw=black!30},fill=white,draw=black,thick,minimum height = 1cm,minimum
+           width=2cm},
+         ordinary/.style = {rectangle,draw,thick,minimum height = 1cm,minimum width=2cm}}
+
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=red!30]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=blue!30]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, text width=3cm, draw=black, fill=orange!30]
+\tikzstyle{pprocess} = [multiple, minimum width=3cm, minimum height=1cm, text centered, text width=3cm, draw=black, fill=orange!30]
+
+\tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!30]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+\begin{document}
+
+\begin{tikzpicture}[node distance=2cm]
+
+\node (in1) [io] {Input};
+
+\node (fastqc) [pprocess, below of=in1, xshift = 4cm] {FastQC};
+\node (fastq_trim) [pprocess, below of=in1] {Trim Galore};
+\node (run_bwa) [pprocess, below of=fastq_trim] {BWA};
+\node (picardtools_sort) [pprocess, below of=run_bwa] {Picardtools Sort};
+
+\node (realignment_targets) [process, below of=picardtools_sort] {GATK CreateRealignmentTargets};
+
+
+\node (picardtools_markdups) [pprocess, below of=picardtools_sort] {Picardtools MarkDuplicates};
+\node (samtools_flagstat) [pprocess, below of=picardtools_markdups, xshift = -4cm] {Samtools Flagstat};
+\node (picardtools_insertmetrics) [pprocess, below of=picardtools_markdups, xshift = -8cm] {Picardtools CollectInsertSizeMetrics};
+\node (picardtools_wgsmetrics) [pprocess, below of=picardtools_markdups, xshift = 4cm] {Picardtools WGSMetrics};
+\node (picardtools_gcmetrics) [pprocess, below of=picardtools_markdups, xshift = 8cm] {Picardtools GCMetrics};
+
+\node (collect_metrics) [process, below of=samtools_flagstat, xshift=4cm] {Collect Metrics};
+
+\node (plot_metrics) [process, below of=collect_metrics] {Plot Metrics};
+
+\draw[-latex] (in1.east) -| (fastqc.north);
+\draw[-latex] ([yshift=0.2 cm]in1.east) -| ([xshift=0.2 cm]fastqc.north);
+\draw[-latex] ([yshift=-0.2 cm]in1.east) -| ([xshift=-0.2 cm]fastqc.north);
+
+
+\draw[-latex] (in1) -- coordinate (ab) (fastq_trim);
+\draw (ab) -- ++(0.5,-0.3)coordinate[pos=.3](ab1) coordinate[pos=.6](ab2);
+\draw[-latex] (ab1) -- ($(fastq_trim.north east)!(ab1)!(fastq_trim.north west)$);
+\draw[-latex] (ab2) -- ($(fastq_trim.north west)!(ab2)!(fastq_trim.north east)$);
+
+
+\draw[-latex] (fastq_trim.south) -- (run_bwa.north);
+\draw[-latex] ([xshift=0.2 cm]fastq_trim.south) -- ([xshift=0.2 cm]run_bwa.north);
+\draw[-latex] ([xshift=-0.2 cm]fastq_trim.south) -- ([xshift=-0.2 cm]run_bwa.north);
+
+\draw[-latex] (run_bwa.south) -- (picardtools_sort.north);
+\draw[-latex] ([xshift=0.2 cm]run_bwa.south) -- ([xshift=0.2 cm]picardtools_sort.north);
+\draw[-latex] ([xshift=-0.2 cm]run_bwa.south) -- ([xshift=-0.2 cm]picardtools_sort.north);
+
+\draw[-latex] (picardtools_sort.south) -- (picardtools_markdups.north);
+\draw[-latex] ([xshift=0.2 cm]picardtools_sort.south) -- ([xshift=0.2 cm]picardtools_markdups.north);
+\draw[-latex] ([xshift=-0.2 cm]picardtools_sort.south) -- ([xshift=-0.2 cm]picardtools_markdups.north);
+
+\draw[-latex] ([yshift=-0.1 cm]picardtools_markdups.west) -| (samtools_flagstat.north);
+\draw[-latex] ([yshift=-0.2 cm]picardtools_markdups.west) -| ([xshift=0.1 cm]samtools_flagstat.north);
+\draw[-latex] ([yshift=-0.3 cm]picardtools_markdups.west) -| ([xshift=0.2 cm]samtools_flagstat.north);
+
+\draw[-latex] ([yshift=0.1 cm]picardtools_markdups.west) -| (picardtools_insertmetrics.north);
+\draw[-latex] ([yshift=0.2 cm]picardtools_markdups.west) -| ([xshift=-0.1 cm]picardtools_insertmetrics.north);
+\draw[-latex] ([yshift=0.3 cm]picardtools_markdups.west) -| ([xshift=-0.2 cm]picardtools_insertmetrics.north);
+
+\draw[-latex] ([yshift=-0.1 cm]picardtools_markdups.east) -| (picardtools_wgsmetrics.north);
+\draw[-latex] ([yshift=-0.2 cm]picardtools_markdups.east) -| ([xshift=-0.1 cm]picardtools_wgsmetrics.north);
+\draw[-latex] ([yshift=-0.3 cm]picardtools_markdups.east) -| ([xshift=-0.2 cm]picardtools_wgsmetrics.north);
+
+\draw[-latex] ([yshift=0.1 cm]picardtools_markdups.east) -| (picardtools_gcmetrics.north);
+\draw[-latex] ([yshift=0.2 cm]picardtools_markdups.east) -| ([xshift=0.1 cm]picardtools_gcmetrics.north);
+\draw[-latex] ([yshift=0.3 cm]picardtools_markdups.east) -| ([xshift=0.2 cm]picardtools_gcmetrics.north);
+
+\draw[-latex] (samtools_flagstat.south) |- ([yshift=0.1 cm]collect_metrics.west);
+\draw[-latex] ([xshift=0.1 cm]samtools_flagstat.south) |- ([yshift=0.2 cm]collect_metrics.west);
+\draw[-latex] ([xshift=0.2 cm]samtools_flagstat.south) |- ([yshift=0.3 cm]collect_metrics.west);
+
+\draw[-latex] (picardtools_insertmetrics.south) |- ([yshift=-0.1 cm]collect_metrics.west);
+\draw[-latex] ([xshift=-0.1 cm]picardtools_insertmetrics.south) |- ([yshift=-0.2 cm]collect_metrics.west);
+\draw[-latex] ([xshift=-0.2 cm]picardtools_insertmetrics.south) |- ([yshift=-0.3 cm]collect_metrics.west);
+
+\draw[-latex] (picardtools_wgsmetrics.south) |- ([yshift=0.1 cm]collect_metrics.east);
+\draw[-latex] ([xshift=-0.1 cm]picardtools_wgsmetrics.south) |- ([yshift=0.2 cm]collect_metrics.east);
+\draw[-latex] ([xshift=-0.2 cm]picardtools_wgsmetrics.south) |- ([yshift=0.3 cm]collect_metrics.east);
+
+\draw[-latex] (picardtools_gcmetrics.south) |- ([yshift=-0.1 cm]collect_metrics.east);
+\draw[-latex] ([xshift=0.1 cm]picardtools_gcmetrics.south) |- ([yshift=-0.2 cm]collect_metrics.east);
+\draw[-latex] ([xshift=0.2 cm]picardtools_gcmetrics.south) |- ([yshift=-0.3 cm]collect_metrics.east);
+
+\draw [arrow] (collect_metrics) -- (plot_metrics);
+
+\end{tikzpicture}
+
+\end{document}

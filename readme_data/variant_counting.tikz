@@ -1,0 +1,45 @@
+\documentclass[class=minimal,border=2pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage{tikz}
+\usepackage{adjustbox}
+\usetikzlibrary{shapes.geometric, arrows, shadows, positioning, calc}
+\pagenumbering{gobble}
+
+\tikzset{multiple/.style = {double copy shadow={shadow xshift=1ex,shadow
+         yshift=-1.5ex,draw=black!30},fill=white,draw=black,thick,minimum height = 1cm,minimum
+           width=2cm},
+         ordinary/.style = {rectangle,draw,thick,minimum height = 1cm,minimum width=2cm}}
+
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=red!30]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=blue!30]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, text width=3cm, draw=black, fill=orange!30]
+\tikzstyle{pprocess} = [multiple, minimum width=3cm, minimum height=1cm, text centered, text width=3cm, draw=black, fill=orange!30]
+
+\tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!30]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+\begin{document}
+\begin{adjustbox}{margin=2cm}
+
+\begin{tikzpicture}[node distance=2cm]
+
+\node (museq_vcf) [io, text width=1.5cm, xshift=4cm] {Museq vcf file};
+\node (strelka_vcf) [io, text width=1.5cm, xshift=8cm] {strelka vcf};
+
+\node (merge_snv) [decision, text width=1.5cm, below of=museq_vcf, xshift=2cm] {Merge calls};
+\draw[-latex] (museq_vcf) -- coordinate (ab) (merge_snv);
+\draw[-latex] (strelka_vcf) -- coordinate (ab) (merge_snv);
+
+\node (tumour_bams) [io, text width=2cm, below of=merge_snv, xshift=-4cm, yshift=-1cm] {Tumour Region Bams};
+
+\node (counting) [pprocess, text width=1.5cm, below of=merge_snv, yshift=-1cm] {Generate Count};
+\draw[-latex] (merge_snv) -- coordinate (ab) (counting);
+\draw[-latex] (tumour_bams) -- coordinate (ab) (counting);
+
+\node (counts) [io, text width=1.5cm, below of=counting] {Counts csv};
+\draw[-latex] (counting) -- coordinate (ab) (counts);
+
+\end{tikzpicture}
+
+\end{adjustbox}
+\end{document}

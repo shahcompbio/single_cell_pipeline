@@ -1,5 +1,48 @@
 # Change Log
 
+
+### v0.5.0: 
+CLI refactor
+
+#### added:
+1. germline calling mode
+
+#### Changes:
+1. refactored the CLI
+2. removed: 
+    a) QC and
+    b) multi_sample_pseudo_bulk
+3. added in commands for
+    a) alignment,
+    b) hmmcopy,
+    c) annotation,
+    d) merge_cell_bams,
+    e) split_normal,
+    f) variant_calling,
+    g) variant_counting (multi-sample)
+    h) germline_calling
+    i) infer_haps
+    j) breakpoint_calling
+4. add predefined dtypes to all workflows
+5. metadata yaml files are generated within the pipeline
+6. added a sentinel file with some provenance information as a teardown job
+
+#### removed:
+1. aneufinder
+2. copynumber_calling
+
+### v0.4.2
+#### added
+1. Enforced data dtypes in csvutils
+2. added input yaml to output and metadata.yaml
+3. jenkins: added output integrity check
+
+#### Changes
+1. removed autoscale
+2. fixes to travis builds, travis now builds with python3
+3. merged alignment tasks
+4. removed local indel realignment
+
 ### v0.4.1
 #### Changes:
 * variant calling: switch h5 output to csv

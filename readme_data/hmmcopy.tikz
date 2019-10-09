@@ -1,0 +1,73 @@
+\documentclass[class=minimal,border=2pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage{tikz}
+\usepackage{adjustbox}
+\usetikzlibrary{shapes.geometric, arrows, shadows, positioning, calc}
+\pagenumbering{gobble}
+
+\tikzset{multiple/.style = {double copy shadow={shadow xshift=1ex,shadow
+         yshift=-1.5ex,draw=black!30},fill=white,draw=black,thick,minimum height = 1cm,minimum
+           width=2cm},
+         ordinary/.style = {rectangle,draw,thick,minimum height = 1cm,minimum width=2cm}}
+
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=red!30]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=blue!30]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, text width=3cm, draw=black, fill=orange!30]
+\tikzstyle{pprocess} = [multiple, minimum width=3cm, minimum height=1cm, text centered, text width=3cm, draw=black, fill=orange!30]
+
+\tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!30]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+\begin{document}
+\begin{adjustbox}{margin=2cm}
+
+\begin{tikzpicture}[node distance=2cm]
+
+\node (in1) [io] {Input};
+
+\node (readcounter) [pprocess, below of=in1] {Readcounter};
+\draw[-latex] (in1) -- coordinate (ab) (readcounter);
+\draw (ab) -- ++(0.5,-0.3)coordinate[pos=.3](ab1) coordinate[pos=.6](ab2);
+\draw[-latex] (ab1) -- ($(readcounter.north east)!(ab1)!(readcounter.north west)$);
+\draw[-latex] (ab2) -- ($(readcounter.north west)!(ab2)!(readcounter.north east)$);
+
+\node (hmmcopy) [pprocess, below of=readcounter] {HMMCopy};
+\draw[-latex] (readcounter.south) -- (hmmcopy.north);
+\draw[-latex] ([xshift=0.2 cm]readcounter.south) -- ([xshift=0.2 cm]hmmcopy.north);
+\draw[-latex] ([xshift=-0.2 cm]readcounter.south) -- ([xshift=-0.2 cm]hmmcopy.north);
+
+\node (segs) [io, below of=hmmcopy, xshift = 3cm] {Segments};
+\draw[-latex] (hmmcopy) -- (segs.north);
+
+\node (params) [io, below of=hmmcopy, xshift = 7cm] {Params};
+\draw[-latex] (hmmcopy) -- (params.north);
+
+\node (reads) [io, below of=hmmcopy, xshift = -3cm] {Reads};
+\draw[-latex] (hmmcopy) -- (reads.north);
+
+\node (metrics) [io, below of=hmmcopy, xshift = -7cm] {Metrics};
+\draw[-latex] (hmmcopy) -- (metrics.north);
+
+\node (merge_metrics) [decision, below of=hmmcopy, yshift=-2cm] {Merge};
+\draw[-latex] (metrics.south) -- (merge_metrics);
+\draw[-latex] (params.south) -- (merge_metrics);
+\draw[-latex] (reads.south) -- (merge_metrics);
+\draw[-latex] (segs.south) -- (merge_metrics);
+
+\node (plot_metrics) [process, below of=merge_metrics,xshift=7cm] {Plot metrics};
+\draw[-latex] (merge_metrics) -- (plot_metrics.north);
+
+\node (plot_kernel) [process, below of=merge_metrics, xshift=3cm] {Plot kernel density};
+\draw[-latex] (merge_metrics) -- (plot_kernel.north);
+
+
+\node (plot_hmap) [process, below of=merge_metrics,xshift=-3cm] {Plot heatmap};
+\draw[-latex] (merge_metrics) -- (plot_hmap.north);
+
+\node (plot_hmm) [process, below of=merge_metrics,xshift=-7cm] {Plot hmmcopy};
+\draw[-latex] (merge_metrics) -- (plot_hmm.north);
+
+\end{tikzpicture}
+
+\end{adjustbox}
+\end{document}
