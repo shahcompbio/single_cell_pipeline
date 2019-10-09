@@ -8,56 +8,10 @@ For LSF + singularity documentation see [Singularity](docs/singularity/singulari
 
 [Changelog](CHANGELOG.md)
 
-## Setup and installation
 
-Set up conda with the required packages.
+## 1. Alignment
 
-First ensure you have the correct channels:
-
-```
-conda config --add channels https://conda.anaconda.org/dranew
-conda config --add channels https://conda.anaconda.org/aroth85
-conda config --add channels 'bioconda'
-conda config --add channels 'r'
-conda config --add channels 'conda-forge'
-
-```
-
-### From Source
-
-Then create an environment with the required packages:
-
-```
-conda create --name singlecellpipeline --file conda_packages.txt
-```
-
-Activate the environment:
-
-```
-source activate singlecellpipeline
-```
-
-Add the single cell pipeline into the current site packages:
-
-```
-python setup.py develop
-```
-
-Use develop mode to allow for modifying of the code during the debugging phase.
-Later versions will be released through conda.
-
-### From anaconda.org
-
-To install the latest production version from anaconda.org:
-
-```
-conda install single_cell_pipeline
-```
-
-## 1. QC
-
-![align](readme_data/align.png)
-![align](readme_data/hmmcopy.png)
+![align](readme_data/alignment.png)
 
 The single cell analysis pipeline runs on a list of pairs of fastq file (paired end) and performs the following steps:
 
@@ -71,24 +25,10 @@ Alignment:
 6. collect metrics from samtools flagstat, picardtools CollectInsertSizeMetrics, picardtools CollectWgsMetrics and picardtools CollectGcBiasMetrics
 7. generate QC plot
 
-
-Hmmcopy:
-
-1. generate read count wig files from the bam files
-2. perform  GC correction
-3. Run Hmmcopy to predict copynumber states
-4. generate segment and bias plots, kernel density plot and heatmaps 
-
-Annotation:
-1. Assign a quality score to each cell
-2. Assign cell state to each cell
-3. Generate a consolidated table with all metrics frim hmmcopy, alignment and from annotation
-
 ### Input
 The pipeline accepts a yaml file as input. The yaml file contains the input paths and metadata for each cell, the format for each cell is as follows:
 ```
 SA12345-A12345-R01-C01:
-  bam: /path/to/aligned/SA12345-A12345-R01-C01.bam # path to the bam file, align mode will write a bam file to this path
   column: 01 # column number of the well on chip
   condition: A # condition during experiment. will be renamed to experimental_condition in output
   fastqs:
@@ -112,22 +52,32 @@ SA12345-A12345-R01-C01:
   sample_type: C # sample type (flagged by wet lab team)
 ```
 
-### Run 
+### Run:
 
 ```
-single_cell qc \
---input_yaml inputs/SC-1234/bams.yaml \
+single_cell alignment \
+--input_yaml inputs/SC-1234/fastqs.yaml \
 --tmpdir temp/SC-1234/tmp \
 --pipelinedir pipeline/SC-1234  \
---alignment_dir results/SC-1234/results/alignment \
---hmmcopy_dir results/SC-1234/results/hmmcopy \
---annotation_dir results/SC-1234/results/annotation \
+--out_dir results/SC-1234/results/alignment \
+--bams_dir results/SC-1234/results/bams \
  --library_id A123123 \
  ...
 ```
 
 
-## 3. Copyclone
+## 2. HMMcopy
+
+![align](readme_data/hmmcopy.png)
+
+Hmmcopy:
+
+1. generate read count wig files from the bam files
+2. perform  GC correction
+3. Run Hmmcopy to predict copynumber states
+4. generate segment and bias plots, kernel density plot and heatmaps 
+
+
 ### Input
 The pipeline accepts a yaml file as input. The yaml file contains the input paths and metadata for each cell, the format for each cell is as follows:
 ```
@@ -145,85 +95,61 @@ SA12345-A12345-R01-C01:
   sample_type: C # sample type (flagged by wet lab team)
 ```
 
-
-### Run 
+### Run:
 
 ```
-single_cell copyclone \
+single_cell hmmcopy \
 --input_yaml inputs/SC-1234/bams.yaml \
 --tmpdir temp/SC-1234/tmp \
 --pipelinedir pipeline/SC-1234  \
---out_dir results/SC-1234/results \
+--out_dir results/SC-1234/results/hmmcopy \
  --library_id A123123 \
  ...
 ```
 
 
-## 4. Aneufinder
+
+## 3. Annotation
+![annotation](readme_data/annotation.png)
+
+Annotation:
+1. Assign a quality score to each cell
+2. Assign cell state to each cell
+3. Generate a consolidated table with all metrics frim hmmcopy, alignment and from annotation
+
 ### Input
 The pipeline accepts a yaml file as input. The yaml file contains the input paths and metadata for each cell, the format for each cell is as follows:
-```
-SA12345-A12345-R01-C01:
-  bam: /path/to/aligned/SA12345-A12345-R01-C01.bam # path to the bam file, align mode will write a bam file to this path
-  column: 01 # column number of the well on chip
-  condition: A # condition during experiment. will be renamed to experimental_condition in output
-  img_col: 10 # column number of the well on chip image
-  index_i5: i5-INDEX
-  index_i7: i7-INDEX
-  pick_met: CELLCALL # describes whether cell is dividing, dead etc. will be renamed in output to cell_call
-  primer_i5: ACTACTATT
-  primer_i7: AGTAGTACT
-  row: 01 # row number of the well on chip
-  sample_type: C # sample type (flagged by wet lab team)
-```
-The yaml file for the align step should work as well
 
+```
+hmmcopy_metrics: results/hmmcopy/A12345A_hmmcopy_metrics.csv.gz
+hmmcopy_reads: results/hmmcopy/A12345_reads.csv.gz
+alignment_metrics: results/alignment/A12345_alignment_metrics.csv.gz
+gc_metrics: results/alignment/A12345_gc_metrics.csv.gz
+segs_pdf_tar: results/hmmcopy/A12345_segs.tar.gz```
+```
 
 ### Run 
 
 ```
-single_cell aneufinder \
---input_yaml inputs/SC-1234/bams.yaml \
+single_cell annotation \
+--input_yaml inputs/SC-1234/annotation.yaml \
 --tmpdir temp/SC-1234/tmp \
 --pipelinedir pipeline/SC-1234  \
---out_dir results/SC-1234/results \
+--out_dir results/SC-1234/results/annotation \
  --library_id A123123 \
  ...
 ```
 
 
+## 4. merge cell bams
 
-## 5. merge bams
+![merge_cell_bams](readme_data/merge_cell_bams.png)
+
 The tumour needs to be simultaneously merged across cells and split by region. The input for this step is the per cell bam yaml and the template for the merged bams by region.
 
-#### Normal:
+### Input:
 ```
-normal_wgs:
-  SA123N:
-    bam: singlecelldatatest/testdata/pseudobulk/{region}.bam
-normal_cells:
-  SA123N:
-    SA123N-A12345-R04-C03:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
-    SA123N-A12345-R04-C05:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C05.bam
-    SA123N-A12345-R04-C07:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C07.bam
-    SA123N-A12345-R04-C09:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C09.bam
-    SA123N-A12345-R04-C10:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
-```
-Normal_cells are the inputs, results are stored at: singlecelldatatest/testdata/pseudobulk/*.bam
-
-#### Tumour:
-
-```
-tumour_wgs:
-  SA123X5:
-    bam: singlecelldatatest/testdata/pseudobulk/SA123X5/{region}.bam
-tumour_cells:
-  SA123X5:
+cell_bams:
     SA123X5-A12345-R04-C03:
       bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
     SA123X5-A12345-R04-C05:
@@ -236,11 +162,10 @@ tumour_cells:
       bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
 ```
 
-
+### Run:
 ```
-single_cell merge_bams \
---input_yaml inputs/SC-1234/bams.yaml \
---merged_bam_template temp/SC-1234/pseudo_wgs/TUMOUR_{region}.bam \
+single_cell merge_cell_bams \
+--input_yaml inputs/SC-1234/merge_cell_bams.yaml \
 --tmpdir temp/SC-1234/tmp \
 --pipelinedir pipeline/SC-1234  \
 --out_dir results/SC-1234/results \
@@ -248,275 +173,145 @@ single_cell merge_bams \
 ```
 
 
-## 6. split bams
+## 5. split bams
+
+![split_wgs_bam](readme_data/split_wgs_bam.png)
 
 The normal also needs to be split by region from an input data path to an output per region template.
+
+### Input:
 ```
-single_cell split_bam \
- --wgs_bam data/NORMAL.bam \
- --split_bam_template temp/SC-1234/pseudo_wgs/NORMAL_{region}.bam \
- --tmpdir temp/SC-1234/tmp \
- --pipelinedir pipeline/SC-1234 \
- --out_dir results/SC-1234/results \
+normal:
+  bam: scdnadev/testdata/pseudobulk/DAH370N_filtered.bam
+```
+
+###Run:
+```
+single_cell split_wgs_bam \
+ --input_yaml inputs/SC-1234/merge_cell_bams.yaml \
+--tmpdir temp/SC-1234/tmp \
+--pipelinedir pipeline/SC-1234  \
+--out_dir results/SC-1234/results \
+...
 ```
 
 
-## 7. Variant Calling
+## 6. Variant Calling
+![variant_calling](readme_data/variant_calling.png)
+
 
 Inputs are a WGS tumour bam file and a WGS normal bam file along with the tumour cells. The bam files are used for the variant calling. The pipeline also generates counts at the snvs for each cell.
-
-```
-tumour_wgs:
-  SA123X5:
-    bam: singlecelldatatest/testdata/pseudobulk/SA123X5/{region}.bam
-normal_wgs:
-  SA123N:
-    bam: singlecelldatatest/testdata/pseudobulk/SA123N/{region}.bam
-tumour_cells:
-  SA123X5:
-    SA123X5-A12345-R04-C03:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
-    SA123X5-A12345-R04-C05:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C05.bam
-    SA123X5-A12345-R04-C07:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C07.bam
-    SA123X5-A12345-R04-C09:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C09.bam
-    SA123X5-A12345-R04-C10:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
-```
-
 The variant calling takes in both the per cell bam yaml, using the per cell bams for variant allele counting, and the tumour and normal region templates for calling snvs in parallel by region.
+
+
+### Input:
+```
+normal:
+  1-1-10000000:
+    bam: split_wgs_bam/1-1-10000000_split_wgs.bam
+  1-100000001-110000000:
+    bam: split_wgs_bam/1-100000001-110000000_split_wgs.bam
+  1-10000001-20000000:
+    bam: split_wgs_bam/1-10000001-20000000_split_wgs.bam
+  ...
+tumour:
+  1-1-10000000:
+    bam: merge_cell_bams/1-1-10000000_split_wgs.bam
+  1-100000001-110000000:
+    bam: merge_cell_bams/1-100000001-110000000_split_wgs.bam
+  1-10000001-20000000:
+    bam: merge_cell_bams/1-10000001-20000000_split_wgs.bam
+  ...
+```
+
+
+###Run:
 ```
 single_cell variant_calling \
- --input_yaml inputs/SC-1234/bams.yaml \
- --tumour_template temp/SC-1234/pseudo_wgs/TUMOUR_{region}.bam \
- --normal_template temp/SC-1234/pseudo_wgs/NORMAL_{region}.bam \
- --tmpdir temp/SC-1234/tmp \
- --out_dir results/SC-1099/results \
- --pipelinedir pipeline/SC-1234 \
- ...
+ --input_yaml inputs/SC-1234/variant_calling.yaml \
+--tmpdir temp/SC-1234/tmp \
+--pipelinedir pipeline/SC-1234  \
+--out_dir results/SC-1234/results \
+...
 ```
 
 
-## 8. Copy Number Calling
-
-The copy number analysis takes in per cell bam yaml, with the ability to provide per cell bams for normal and tumour. If a WGS bam is used for normal that can be a single entry in the normal bam yaml.
-
-
-#### yaml file format with a normal bam that has been split by regions
-```
-normal_wgs:
-  SA123N:
-    bam: singlecelldatatest/testdata/pseudobulk/SA123N/{region}.bam
-tumour_cells:
-  SA123X5:
-    SA123X5-A12345-R04-C03:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
-    SA123X5-A12345-R04-C05:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C05.bam
-    SA123X5-A12345-R04-C07:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C07.bam
-    SA123X5-A12345-R04-C09:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C09.bam
-    SA123X5-A12345-R04-C10:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
-```
-
-#### yaml file format with a single normal bam
-```
-normal_wgs:
-  SA123N:
-    bam: singlecelldatatest/testdata/pseudobulk/SA123N.bam
-tumour_cells:
-  SA123X5:
-    SA123X5-A12345-R04-C03:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
-    SA123X5-A12345-R04-C05:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C05.bam
-    SA123X5-A12345-R04-C07:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C07.bam
-    SA123X5-A12345-R04-C09:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C09.bam
-    SA123X5-A12345-R04-C10:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
-```
-
-#### yaml file format with a cells for normal
-```
-normal_cells:
-  SA123N:
-    SA123N-A12345-R04-C03:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
-    SA123N-A12345-R04-C05:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C05.bam
-    SA123N-A12345-R04-C07:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C07.bam
-    SA123N-A12345-R04-C09:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C09.bam
-    SA123N-A12345-R04-C10:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
-tumour_cells:
-  SA123X5:
-    SA123X5-A12345-R04-C03:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
-    SA123X5-A12345-R04-C05:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C05.bam
-    SA123X5-A12345-R04-C07:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C07.bam
-    SA123X5-A12345-R04-C09:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C09.bam
-    SA123X5-A12345-R04-C10:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
-```
-
-
-Run:
-```
-single_cell copy_number_calling \
- --tumour_yaml inputs/SC-1234/bams.yaml \
- --normal_yaml inputs/SC-1234/normal.yaml \
- --clone_id 1 \
- --tmpdir temp/SC-1234/tmp \
- --pipelinedir pipeline/SC-1234 \
- --out_dir results/SC-1234/results
- ...
-```
-
-## 9. Germline Calling
-
-#### yaml file format with a normal bam that has been split by regions
-```
-normal_wgs:
-  SA123N:
-    bam: singlecelldatatest/testdata/pseudobulk/SA123N/{region}.bam
-tumour_cells:
-  SA123X5:
-    SA123X5-A12345-R04-C03:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
-    SA123X5-A12345-R04-C05:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C05.bam
-    SA123X5-A12345-R04-C07:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C07.bam
-    SA123X5-A12345-R04-C09:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C09.bam
-    SA123X5-A12345-R04-C10:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
-```
-
-#### yaml file format with a cells for normal
-```
-normal_cells:
-  SA123N:
-    SA123N-A12345-R04-C03:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
-    SA123N-A12345-R04-C05:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C05.bam
-    SA123N-A12345-R04-C07:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C07.bam
-    SA123N-A12345-R04-C09:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C09.bam
-    SA123N-A12345-R04-C10:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
-tumour_cells:
-  SA123X5:
-    SA123X5-A12345-R04-C03:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
-    SA123X5-A12345-R04-C05:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C05.bam
-    SA123X5-A12345-R04-C07:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C07.bam
-    SA123X5-A12345-R04-C09:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C09.bam
-    SA123X5-A12345-R04-C10:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
-```
-
-Run:
-```
-single_cell germline_calling \
- --input_yaml inputs/SC-1234/bams.yaml \
- --input_template temp/SC-1234/pseudo_wgs/INPUT_{region}.bam \
- --tmpdir temp/SC-1234/tmp \
- --pipelinedir pipeline/SC-1234 \
- --out_dir results/SC-1234/results
- ...
-```
-
-
-## 10. Breakpoint calling
-
-
-#### yaml file format with a single normal bam
-```
-normal_wgs:
-  SA123N:
-    bam: singlecelldatatest/testdata/pseudobulk/SA123N.bam
-tumour_cells:
-  SA123X5:
-    SA123X5-A12345-R04-C03:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
-    SA123X5-A12345-R04-C05:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C05.bam
-    SA123X5-A12345-R04-C07:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C07.bam
-    SA123X5-A12345-R04-C09:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C09.bam
-    SA123X5-A12345-R04-C10:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
-```
-
-#### yaml file format with a cells for normal
-```
-normal_cells:
-  SA123N:
-    SA123N-A12345-R04-C03:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
-    SA123N-A12345-R04-C05:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C05.bam
-    SA123N-A12345-R04-C07:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C07.bam
-    SA123N-A12345-R04-C09:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C09.bam
-    SA123N-A12345-R04-C10:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
-tumour_cells:
-  SA123X5:
-    SA123X5-A12345-R04-C03:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
-    SA123X5-A12345-R04-C05:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C05.bam
-    SA123X5-A12345-R04-C07:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C07.bam
-    SA123X5-A12345-R04-C09:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C09.bam
-    SA123X5-A12345-R04-C10:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
-```
+## 7. Breakpoint calling
+![breakpoint_calling](readme_data/breakpoint_calling.png)
 
 The breakpoint analysis takes in per cell bam yaml in addition to the unsplit matched normal bam filename.
+
+### Input:
+ 
+#### yaml file format with a single normal bam
+```
+normal_wgs:
+    bam: singlecelldatatest/testdata/pseudobulk/SA123N.bam
+tumour_cells:
+    SA123X5-A12345-R04-C03:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
+    SA123X5-A12345-R04-C05:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C05.bam
+    SA123X5-A12345-R04-C07:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C07.bam
+    SA123X5-A12345-R04-C09:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C09.bam
+    SA123X5-A12345-R04-C10:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
+```
+
+#### yaml file format with a cells for normal
+```
+normal_cells:
+    SA123N-A12345-R04-C03:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
+    SA123N-A12345-R04-C05:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C05.bam
+    SA123N-A12345-R04-C07:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C07.bam
+    SA123N-A12345-R04-C09:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C09.bam
+    SA123N-A12345-R04-C10:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
+tumour_cells:
+    SA123X5-A12345-R04-C03:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
+    SA123X5-A12345-R04-C05:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C05.bam
+    SA123X5-A12345-R04-C07:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C07.bam
+    SA123X5-A12345-R04-C09:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C09.bam
+    SA123X5-A12345-R04-C10:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
+```
+
+### Run:
+
 ```
 single_cell breakpoint_calling \
- --input_yaml inputs/SC-1234/bams.yaml \
- --matched_normal data/NORMAL.bam \
- --tmpdir temp/SC-1234/tmp \
- --pipelinedir pipeline/SC-1234 \
- --out_dir results/SC-1234/results
- ...
+ --input_yaml inputs/SC-1234/breakpoint_calling.yaml \
+--tmpdir temp/SC-1234/tmp \
+--pipelinedir pipeline/SC-1234  \
+--out_dir results/SC-1234/results \
+...
 ```
-Add `--destruct` to launch destruct and `--lumpy` to launch lumpy. If neither of these flags are set then the pipeline will run both by default. 
+
 NOTE: The input bam files for lumpy must be aligned with bwa mem. 
 
 
-##11. Multisample 
+## 8. Haplotype calling:
+![infer_haps](readme_data/infer_haps.png)
 
+The haplotype analysis takes in per cell bam yaml in addition to the unsplit matched normal bam filename.
+
+### Input:
+ 
 #### yaml file format with a single normal bam
 ```
 normal_wgs:
-  SA123N:
     bam: singlecelldatatest/testdata/pseudobulk/SA123N.bam
 tumour_cells:
-  SA123X5:
     SA123X5-A12345-R04-C03:
       bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
     SA123X5-A12345-R04-C05:
@@ -532,7 +327,6 @@ tumour_cells:
 #### yaml file format with a cells for normal
 ```
 normal_cells:
-  SA123N:
     SA123N-A12345-R04-C03:
       bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
     SA123N-A12345-R04-C05:
@@ -544,7 +338,6 @@ normal_cells:
     SA123N-A12345-R04-C10:
       bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
 tumour_cells:
-  SA123X5:
     SA123X5-A12345-R04-C03:
       bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
     SA123X5-A12345-R04-C05:
@@ -557,27 +350,58 @@ tumour_cells:
       bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
 ```
 
-This mode takes either a WGS normal or a set of cells as normal. The tumour must be a list of cells.
+### Run:
+
 ```
-single_cell breakpoint_calling \
- --input_yaml inputs/SC-1234/bams.yaml \
- --matched_normal data/NORMAL.bam \
- --tmpdir temp/SC-1234/tmp \
- --pipelinedir pipeline/SC-1234 \
- --out_dir results/SC-1234/results
- ...
+single_cell haplotype_calling \
+ --input_yaml inputs/SC-1234/haplotype_calling.yaml \
+--tmpdir temp/SC-1234/tmp \
+--pipelinedir pipeline/SC-1234  \
+--out_dir results/SC-1234/results \
+...
 ```
 
-Add `--call_destruct` to run destruct only
-Add `--call_lumpy` to run lumpy only (requires bwa mem input)
-Add `--call_haps` to run haplotype block calling only
-Add `--call_variants` to run variant calling only
-If none of these flags are set then the pipeline will run all of them by default. 
 
 
+## 9. Variant counting:
+![variant_counting](readme_data/variant_counting.png)
 
 
-## 12. Generate Config 
+### Input:
+
+```
+vcf_files:
+  SA123N:
+    A1234:
+      museq_vcf: vcfs/museq.vcf
+      strelka_snv_vcf: vcfs/strelka.vcf
+tumour_cells:
+  SA123N:
+    SA123N-A12345-R04-C03:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
+    SA123N-A12345-R04-C05:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C05.bam
+    SA123N-A12345-R04-C07:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C07.bam
+    SA123N-A12345-R04-C09:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C09.bam
+    SA123N-A12345-R04-C10:
+      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
+```
+
+### Run:
+
+```
+single_cell variant_counting \
+ --input_yaml inputs/SC-1234/variant_counting.yaml \
+--tmpdir temp/SC-1234/tmp \
+--pipelinedir pipeline/SC-1234  \
+--out_dir results/SC-1234/results \
+...
+```
+
+
+## 10. Generate Config 
 
 The pipeline auto generates a config file with the default parameters before every run. Some of the values in the config file can be updated by using the ``--config_override`` option.  ```generate_config``` option allows users to generate the config files. These configs can then be specified as input to the pipeline after making the required changes.
 ```
@@ -589,7 +413,7 @@ the pipeline config can be specified manually when running the pipeline with ```
 
 
 
-## 13. Clean Sentinels
+## 11. Clean Sentinels
 the pipeline will skip any successful tasks from previous runs when run again. The ``--rerun`` flag force run all tasks including the successful tasks from the previous runs while the ```clean_sentinels``` option provides a more fine grained control.
 
 ```
