@@ -1,0 +1,215 @@
+- description: during parameter searching, the set [1..6] that was chosen
+  dtype: int
+  name: multiplier
+- description: median of segment residuals from segment integer copy number states
+  dtype: float
+  name: MSRSI_non_integerness
+- description: median of bin residuals from segment integer copy number states
+  dtype: float
+  name: MBRSI_dispersion_non_integerness
+- description: median of bin residuals from segment median copy number values
+  dtype: float
+  name: MBRSM_dispersion
+- description: hmmcopy copy autocorrelation
+  dtype: float
+  name: autocorrelation_hmmcopy
+- description: nan
+  dtype: float
+  name: cv_hmmcopy
+- description: number of empty bins in hmmcopy
+  dtype: int
+  name: empty_bins_hmmcopy
+- description: median absolute deviation of hmmcopy copy
+  dtype: float
+  name: mad_hmmcopy
+- description: mean reads per hmmcopy bin
+  dtype: float
+  name: mean_hmmcopy_reads_per_bin
+- description: median reads per hmmcopy bin
+  dtype: float
+  name: median_hmmcopy_reads_per_bin
+- description: standard deviation value of reads in hmmcopy bins
+  dtype: float
+  name: std_hmmcopy_reads_per_bin
+- description: total mapped reads in all hmmcopy bins
+  dtype: int
+  name: total_mapped_reads_hmmcopy
+- description: summed halfiness penality score of the cell
+  dtype: float
+  name: total_halfiness
+- description: summed scaled halfiness penalty score of the cell
+  dtype: float
+  name: scaled_halfiness
+- description: mean value for all median absolute deviation scores for each state
+  dtype: float
+  name: mean_state_mads
+- description: variance value for all median absolute deviation scores for each state
+  dtype: float
+  name: mean_state_vars
+- description: median absolute deviation score of the neutral 2 copy state
+  dtype: float
+  name: mad_neutral_state
+- description: number of breakpoints, as indicated by state changes not at the ends
+    of chromosomes
+  dtype: int
+  name: breakpoints
+- description: mean hmmcopy copy value
+  dtype: float
+  name: mean_copy
+- description: the most commonly occuring state
+  dtype: int
+  name: state_mode
+- description: hmmcopy log likelihood for the cell
+  dtype: float
+  name: log_likelihood
+- description: the exact decimal value used to scale the copy number for segmentation
+  dtype: float
+  name: true_multiplier
+- description: label of the cell
+  dtype: str
+  name: cell_id
+- description: index sequence of the adaptor sequence
+  dtype: str
+  name: index_sequence
+- description: column of the cell on the nanowell chip
+  dtype: float
+  name: column
+- description: column of the cell from the perspective of the microscope
+  dtype: float
+  name: img_col
+- description: id of the i5 index adapter sequence
+  dtype: str
+  name: index_i5
+- description: type of the sample
+  dtype: str
+  name: sample_type
+- description: id of the i5 index primer sequence
+  dtype: str
+  name: primer_i7
+- description: experimental treatment of the cell, includes controls
+  dtype: str
+  name: experimental_condition
+- description: id of the i7 index adapter sequence
+  dtype: str
+  name: index_i7
+- description: living/dead classification of the cell based on staining usually, C1
+    == living, C2 == dead
+  dtype: str
+  name: cell_call
+- description: name of the sample
+  dtype: str
+  name: sample_id
+- description: id of the i5 index primer sequence
+  dtype: str
+  name: primer_i5
+- description: order of the cell in the hierarchical clustering tree
+  dtype: float
+  name: order
+- description: row of the cell on the nanowell chip
+  dtype: float
+  name: row
+- description: cell is predicted as in s-phase T/F
+  dtype: bool
+  name: is_s_phase
+- description: class probability the cell is in s-phase
+  dtype: float
+  name: is_s_phase_prob
+- description: random forest classifier proability score that cell is good
+  dtype: float
+  name: quality
+- description: scaled total number of mapped reads
+  dtype: str
+  name: estimated_library_size
+- description: total number of mapped reads
+  dtype: int
+  name: total_mapped_reads
+- description: nan
+  dtype: int
+  name: fastqscreen_grch37
+- description: number of duplicate reads
+  dtype: int
+  name: total_duplicate_reads
+- description: nan
+  dtype: int
+  name: fastqscreen_nohit
+- description: percentage of duplicate reads
+  dtype: float
+  name: percent_duplicate_reads
+- description: nan
+  dtype: int
+  name: fastqscreen_grch37_multihit
+- description: number of properly paired reads
+  dtype: int
+  name: total_properly_paired
+- description: mean insert size between paired reads
+  dtype: float
+  name: mean_insert_size
+- description: boolean, set to True if most reads belong to a different genome
+  dtype: bool
+  name: is_contaminated
+- description: percentage of genome covered by some read
+  dtype: float
+  name: coverage_breadth
+- description: number of unpaired duplicated reads
+  dtype: int
+  name: unpaired_duplicate_reads
+- description: number of unpaired mapped reads
+  dtype: int
+  name: unpaired_mapped_reads
+- description: number of unmapped reads
+  dtype: int
+  name: unmapped_reads
+- description: average reads per nucleotide position in the genome
+  dtype: float
+  name: coverage_depth
+- description: median insert size between paired reads
+  dtype: float
+  name: median_insert_size
+- description: nan
+  dtype: int
+  name: fastqscreen_salmon_multihit
+- description: total number of reads, regardless of mapping status
+  dtype: int
+  name: total_reads
+- description: standard deviation of the insert size between paired reads
+  dtype: float
+  name: standard_deviation_insert_size
+- description: number of mapped reads that were properly paired
+  dtype: int
+  name: paired_mapped_reads
+- description: nan
+  dtype: int
+  name: fastqscreen_salmon
+- description: number of paired reads that were also marked as duplicate
+  dtype: int
+  name: paired_duplicate_reads
+- description: nan
+  dtype: int
+  name: fastqscreen_mm10
+- description: nan
+  dtype: int
+  name: fastqscreen_mm10_multihit
+- description: nan
+  dtype: float
+  name: order_corrupt_tree
+- description: number of reads with no organism match
+  dtype: int
+  name: nohit
+- description: number of reads that were classified as salmon and something else
+  dtype: int
+  name: salmon_multihit
+- description: number of reads that were classified as human
+  dtype: int
+  name: grch37
+- description: number of reads that were classified as salmon
+  dtype: int
+  name: salmon
+- description: number of reads that were classified as human and something else
+  dtype: int
+  name: grch37_multihit
+- description: number of reads that were classified as mouse
+  dtype: int
+  name: mm10
+- description: number of reads classified as mouse and something else
+  dtype: int
+  name: mm10_multihit
