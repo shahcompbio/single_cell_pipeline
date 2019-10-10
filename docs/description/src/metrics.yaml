@@ -118,7 +118,7 @@
   dtype: float
   name: quality
 - description: scaled total number of mapped reads
-  dtype: str
+  dtype: int
   name: estimated_library_size
 - description: total number of mapped reads
   dtype: int
