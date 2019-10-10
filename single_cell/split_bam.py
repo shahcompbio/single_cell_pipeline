@@ -4,24 +4,29 @@ Created on Apr 6, 2018
 @author: dgrewal
 '''
 import os
+import sys
 
-import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import inpututils
-from single_cell.utils import helpers
 from single_cell.workflows import split_bams
+
+import pypeliner
 
 
 def split_bam_workflow(args):
-    workflow = pypeliner.workflow.Workflow()
     config = inpututils.load_config(args)
     config = config['split_bam']
 
-    _, _, bam_file = inpututils.load_split_wgs_input(args['input_yaml'])
+    bam_file = inpututils.load_split_wgs_input(args['input_yaml'])
 
     baseimage = config['docker']['single_cell_pipeline']
 
     split_bam_template = os.path.join(args['out_dir'], '{region}_split_wgs.bam')
+
+    meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
+
+    workflow = pypeliner.workflow.Workflow(ctx={'docker_image': baseimage})
 
     workflow.transform(
         name="get_regions",
@@ -38,7 +43,7 @@ def split_bam_workflow(args):
     workflow.subworkflow(
         name="split_normal",
         func=split_bams.create_split_workflow,
-        ctx={'mem': config['memory']['low'], 'ncpus': 1, 'docker_image': baseimage},
+        ctx={'mem': config['memory']['low'], 'ncpus': 1},
         args=(
             mgd.InputFile(bam_file),
             mgd.OutputFile(
@@ -50,30 +55,22 @@ def split_bam_workflow(args):
         ),
     )
 
+    workflow.transform(
+        name='generate_meta_files_results',
+        func='single_cell.utils.helpers.generate_and_upload_metadata',
+        args=(
+            sys.argv[0:],
+            args['out_dir'],
+            (mgd.TempInputObj('region'), split_bam_template, 'region'),
+            mgd.OutputFile(meta_yaml)
+        ),
+        kwargs={
+            'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
+            'input_yaml': mgd.OutputFile(input_yaml_blob),
+        }
+    )
+
     return workflow
-
-
-def generate_meta_files(args):
-    out_dir = args["out_dir"]
-
-    sample_id, library_id, bam_files = inpututils.load_split_wgs_input(args['input_yaml'])
-
-    metadata = dict(
-        library_id=library_id, sample_ids=sample_id,
-    )
-
-    # filepaths = helpers.resolve_template(os.path.join(args['out_dir'], '{region}.bam'), regions)
-    filepaths = []
-
-    metadata['type'] = 'merge_cell_bams'
-    helpers.generate_and_upload_metadata(
-        args,
-        out_dir,
-        [],
-        metadata,
-        input_yaml=args['input_yaml']
-    )
-
 
 
 def split_bam_pipeline(args):

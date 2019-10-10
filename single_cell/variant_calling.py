@@ -5,18 +5,19 @@ Created on Feb 22, 2018
 '''
 
 import os
+import sys
 
-import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import inpututils
 from single_cell.workflows import mutationseq
 from single_cell.workflows import strelka
 
+import pypeliner
+
 
 def get_file_paths(root_dir):
     data = {
         'museq_vcf': os.path.join(root_dir, 'museq.vcf.gz'),
-        'snv_count': os.path.join(root_dir, 'snv_allele_counts.csv.gz'),
         'cosmic_csv': os.path.join(root_dir, 'snv_cosmic_status.csv.gz'),
         'dbsnp_csv': os.path.join(root_dir, 'snv_dbsnp_status.csv.gz'),
         'mappability_csv': os.path.join(root_dir, 'snv_mappability.csv.gz'),
@@ -46,6 +47,9 @@ def variant_calling_workflow(args):
     normal_bams, tumour_bams = inpututils.load_variant_calling_input(args['input_yaml'])
 
     filepaths = get_file_paths(args['out_dir'])
+
+    meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
 
     basedocker = {'docker_image': config['docker']['single_cell_pipeline']}
     vcftools_docker = {'docker_image': config['docker']['vcftools']}
@@ -188,6 +192,21 @@ def variant_calling_workflow(args):
                 '/snv/tri_nucleotide_context': mgd.OutputFile(filepaths['trinuc_csv'], extensions=['.yaml']),
             }
         )
+    )
+
+    workflow.transform(
+        name='generate_meta_files_results',
+        func='single_cell.utils.helpers.generate_and_upload_metadata',
+        args=(
+            sys.argv[0:],
+            args['out_dir'],
+            list(filepaths.values()),
+            mgd.OutputFile(meta_yaml)
+        ),
+        kwargs={
+            'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
+            'input_yaml': mgd.OutputFile(input_yaml_blob),
+        }
     )
 
     return workflow

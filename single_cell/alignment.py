@@ -1,12 +1,12 @@
 import os
 import re
 
-import pypeliner
 import pypeliner.managed as mgd
-from single_cell.utils import helpers
 from single_cell.utils import inpututils
 from single_cell.workflows import align
 
+import pypeliner
+import sys
 
 def get_output_files(outdir, lib):
     data = {
@@ -22,21 +22,32 @@ def get_output_files(outdir, lib):
 
 def alignment_workflow(args):
     config = inpututils.load_config(args)
-
-    sampleinfo = inpututils.get_sample_info(args['input_yaml'])
-    cellids = inpututils.get_samples(args['input_yaml'])
-    bam_files, _ = inpututils.get_bams(args['input_yaml'])
+    config = config['alignment']
 
     lib = args["library_id"]
-
-    workflow = pypeliner.workflow.Workflow()
-
     alignment_dir = args["out_dir"]
-    alignment_files = get_output_files(alignment_dir, lib)
+    bams_dir = args["bams_dir"]
 
-    fastq1_files, fastq2_files = inpututils.get_fastqs(args['input_yaml'])
+    sampleinfo = inpututils.get_sample_info(args['input_yaml'])
     triminfo = inpututils.get_trim_info(args['input_yaml'])
     centerinfo = inpututils.get_center_info(args['input_yaml'])
+    cellids = inpututils.get_samples(args['input_yaml'])
+    fastq1_files, fastq2_files = inpututils.get_fastqs(args['input_yaml'])
+
+    samples = [re.split('[_-]', cell)[0] for cell in cellids]
+    samples = sorted(set(samples))
+
+    alignment_files = get_output_files(alignment_dir, lib)
+    alignment_meta = os.path.join(alignment_dir, 'metadata.yaml')
+
+    bam_files_template = os.path.join(bams_dir, '{cell_id}.bam')
+    bams_meta = os.path.join(bams_dir, 'metadata.yaml')
+
+    input_yaml_blob = os.path.join(alignment_dir, 'input.yaml')
+
+    workflow = pypeliner.workflow.Workflow(
+        ctx={'docker_image': config['docker']['single_cell_pipeline']}
+    )
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id', 'lane'),
@@ -45,18 +56,20 @@ def alignment_workflow(args):
 
     workflow.subworkflow(
         name='alignment_workflow',
-        ctx={'docker_image': config['alignment']['docker']['single_cell_pipeline']},
         func=align.create_alignment_workflow,
         args=(
             mgd.InputFile('fastq_1', 'cell_id', 'lane', fnames=fastq1_files, axes_origin=[]),
             mgd.InputFile('fastq_2', 'cell_id', 'lane', fnames=fastq2_files, axes_origin=[]),
-            mgd.OutputFile('bam_markdups', 'cell_id', fnames=bam_files, axes_origin=[], extensions=['.bai']),
+            mgd.OutputFile(
+                'bam_markdups', 'cell_id', template=bam_files_template,
+                axes_origin=[], extensions=['.bai']
+            ),
             mgd.OutputFile(alignment_files['alignment_metrics_csv']),
             mgd.OutputFile(alignment_files['gc_metrics_csv']),
             mgd.OutputFile(alignment_files['fastqc_metrics_csv']),
             mgd.OutputFile(alignment_files['plot_metrics_output']),
-            config['alignment']['ref_genome'],
-            config['alignment'],
+            config['ref_genome'],
+            config,
             triminfo,
             centerinfo,
             sampleinfo,
@@ -66,31 +79,43 @@ def alignment_workflow(args):
         ),
     )
 
-    return workflow
-
-
-def generate_meta_files(args):
-    alignment_dir = args["out_dir"]
-    lib = args["library_id"]
-
-    cellids = inpututils.get_samples(args['input_yaml'])
-
-    samples = [re.split('[_-]', cell)[0] for cell in cellids]
-    samples = sorted(set(samples))
-    metadata = {
-        'library_id': lib,
-        'sample_ids': samples,
-    }
-
-    alignment_files = get_output_files(alignment_dir, lib)
-    metadata['type'] = 'align'
-    helpers.generate_and_upload_metadata(
-        args,
-        alignment_dir,
-        alignment_files.values(),
-        metadata,
-        input_yaml=args['input_yaml']
+    workflow.transform(
+        name='generate_meta_files_results',
+        func='single_cell.utils.helpers.generate_and_upload_metadata',
+        args=(
+            sys.argv[0:],
+            alignment_dir,
+            list(alignment_files.values()),
+            mgd.OutputFile(alignment_meta)
+        ),
+        kwargs={
+            'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
+            'input_yaml': mgd.OutputFile(input_yaml_blob),
+            'metadata': {
+                'library_id': lib,
+                'sample_ids': samples,
+            }
+        }
     )
+
+    workflow.transform(
+        name='generate_meta_files_bams',
+        func='single_cell.utils.helpers.generate_and_upload_metadata',
+        args=(
+            sys.argv[0:],
+            bams_dir,
+            (mgd.InputChunks('cell_id'), bam_files_template, 'cell_id'),
+            mgd.OutputFile(bams_meta)
+        ),
+        kwargs={
+            'metadata': {
+                'library_id': lib,
+                'sample_ids': samples,
+            }
+        }
+    )
+
+    return workflow
 
 
 def alignment_pipeline(args):
@@ -99,5 +124,3 @@ def alignment_pipeline(args):
     workflow = alignment_workflow(args)
 
     pyp.run(workflow)
-
-    generate_meta_files(args)

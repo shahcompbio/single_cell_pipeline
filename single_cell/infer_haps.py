@@ -5,10 +5,12 @@ Created on Aug 29, 2018
 '''
 
 import os
+import sys
 
-import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import inpututils
+
+import pypeliner
 
 
 def infer_haps(
@@ -235,19 +237,27 @@ def infer_haps_workflow(args):
     ctx = dict(mem_retry_increment=2, disk_retry_increment=50, ncpus=1, docker_image=baseimage)
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
-    haps_dir = os.path.join(args["out_dir"], "infer_haps")
-    haplotypes_filename = os.path.join(haps_dir, "results", "haplotypes.tsv")
+    haplotypes_filename = os.path.join(args["out_dir"], "haplotypes.tsv")
+    allele_counts_filename = os.path.join(args["out_dir"], "allele_counts.tsv")
+
+    meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
 
     normal_data, tumour_cells = inpututils.load_haps_input(args['input_yaml'])
 
     if isinstance(normal_data, dict):
         workflow.setobj(
-            obj=mgd.OutputChunks('cell_id'),
+            obj=mgd.OutputChunks('normal_cell_id'),
             value=list(normal_data.keys()),
         )
-        bam_file = mgd.InputFile('normal.bam', 'cell_id', fnames=normal_data, extensions=['.bai'])
+        bam_file = mgd.InputFile('normal.bam', 'normal_cell_id', fnames=normal_data, extensions=['.bai'])
     else:
         bam_file = mgd.InputFile(normal_data, extensions=['.bai'])
+
+    workflow.setobj(
+        obj=mgd.OutputChunks('tumour_cell_id'),
+        value=list(tumour_cells.keys()),
+    )
 
     workflow.subworkflow(
         name='infer_haps',
@@ -265,11 +275,26 @@ def infer_haps_workflow(args):
         func=extract_allele_readcounts,
         args=(
             mgd.InputFile(haplotypes_filename),
-            mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai'],
-                          fnames=tumour_cells),
-            mgd.TempInputFile("allele_counts.csv"),
-            config['infer_haps'],
+            mgd.InputFile('tumour_cells.bam', 'tumour_cell_id', extensions=['.bai'],
+                          axes_origin=[], fnames=tumour_cells),
+            mgd.OutputFile(allele_counts_filename),
+            config,
         ),
+    )
+
+    workflow.transform(
+        name='generate_meta_files_results',
+        func='single_cell.utils.helpers.generate_and_upload_metadata',
+        args=(
+            sys.argv[0:],
+            args['out_dir'],
+            [haplotypes_filename, allele_counts_filename],
+            mgd.OutputFile(meta_yaml)
+        ),
+        kwargs={
+            'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
+            'input_yaml': mgd.OutputFile(input_yaml_blob),
+        }
     )
 
     return workflow

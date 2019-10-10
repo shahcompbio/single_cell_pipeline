@@ -4,13 +4,13 @@ Created on Feb 19, 2018
 @author: dgrewal
 '''
 import os
-import re
+import sys
 
-import pypeliner
 import pypeliner.managed as mgd
-from single_cell.utils import helpers
 from single_cell.utils import inpututils
 from single_cell.workflows import qc_annotation
+
+import pypeliner
 
 
 def annotation_workflow(args):
@@ -20,15 +20,18 @@ def annotation_workflow(args):
 
     lib = args["library_id"]
 
-    workflow = pypeliner.workflow.Workflow()
+    workflow = pypeliner.workflow.Workflow(
+        ctx={'docker_image': config['annotation']['docker']['single_cell_pipeline']},
+    )
 
     annotation_dir = args["out_dir"]
 
+    input_yaml_blob = os.path.join(annotation_dir, 'input.yaml')
     annotation_files = get_output_files(annotation_dir, lib)
+    annotation_meta = os.path.join(annotation_dir, 'metadata.yaml')
 
     workflow.subworkflow(
         name='annotation_workflow',
-        ctx={'docker_image': config['annotation']['docker']['single_cell_pipeline']},
         func=qc_annotation.create_qc_annotation_workflow,
         args=(
             mgd.InputFile(annotation_infiles['hmmcopy_metrics']),
@@ -54,6 +57,24 @@ def annotation_workflow(args):
         kwargs={'no_corrupt_tree': args['no_corrupt_tree']}
     )
 
+    workflow.transform(
+        name='generate_meta_files_results',
+        func='single_cell.utils.helpers.generate_and_upload_metadata',
+        args=(
+            sys.argv[0:],
+            annotation_dir,
+            list(annotation_files.values()),
+            mgd.OutputFile(annotation_meta)
+        ),
+        kwargs={
+            'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
+            'input_yaml': mgd.OutputFile(input_yaml_blob),
+            'metadata': {
+                'library_id': lib,
+            }
+        }
+    )
+
     return workflow
 
 
@@ -76,35 +97,9 @@ def get_output_files(outdir, lib):
     return data
 
 
-def generate_meta_files(args):
-    annotation_dir = args["out_dir"]
-    lib = args["library_id"]
-
-    cellids = inpututils.get_samples(args['input_yaml'])
-
-    samples = [re.split('[_-]', cell)[0] for cell in cellids]
-    samples = sorted(set(samples))
-    metadata = {
-        'library_id': lib,
-        'sample_ids': samples,
-    }
-
-    annotation_files = get_output_files(annotation_dir, lib)
-    metadata['type'] = 'annotation'
-    helpers.generate_and_upload_metadata(
-        args,
-        annotation_dir,
-        annotation_files.values(),
-        metadata,
-        input_yaml=args['input_yaml']
-    )
-
-
 def annotation_pipeline(args):
     pyp = pypeliner.app.Pypeline(config=args)
 
     workflow = annotation_workflow(args)
 
     pyp.run(workflow)
-
-    generate_meta_files(args)

@@ -98,6 +98,9 @@ def parse_args():
     alignment.add_argument("--library_id",
                            required=True,
                            help='''Library id.''')
+    alignment.add_argument("--bams_dir",
+                           required=True,
+                           help='''directory for bam storage''')
 
     # ===========
     # hmmcopy
@@ -158,15 +161,6 @@ def parse_args():
     breakpoint_calling = add_global_args(
         subparsers.add_parser("breakpoint_calling"))
     breakpoint_calling.set_defaults(which='breakpoint_calling')
-
-    breakpoint_calling.add_argument("--destruct",
-                                    action='store_true',
-                                    default=False,
-                                    help='''run destruct''')
-    breakpoint_calling.add_argument("--lumpy",
-                                    action='store_true',
-                                    default=False,
-                                    help='''run lumpy''')
 
     # ================
     # variant counting
