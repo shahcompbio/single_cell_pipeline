@@ -1,34 +1,34 @@
 
 def dtypes():
     reads = {
-        'chr': 'category',
+        'chr': 'str',
         'start': 'int64',
         'end': 'int64',
         'reads': 'int64',
         'gc': 'float64',
         'copy': 'float64',
         'state': 'int64',
-        'cell_id': 'category',
-        'sample_id': 'category',
-        'library_id': 'category',
+        'cell_id': 'str',
+        'sample_id': 'str',
+        'library_id': 'str',
     }
 
     segs = {
-        'chr': 'category',
+        'chr': 'str',
         'start': 'int64',
         'end': 'int64',
         'state': 'int64',
         'median': 'float64',
         'multiplier': 'int64',
-        'cell_id': 'category',
-        'sample_id': 'category',
-        'library_id': 'category',
+        'cell_id': 'str',
+        'sample_id': 'str',
+        'library_id': 'str',
     }
 
     metrics = {
-        'cell_id': 'category',
-        'sample_id': 'category',
-        'library_id': 'category',
+        'cell_id': 'str',
+        'sample_id': 'str',
+        'library_id': 'str',
         'multiplier': 'int64',
         'MSRSI_non_integerness': 'float64',
         'MBRSI_dispersion_non_integerness': 'float64',
@@ -53,13 +53,13 @@ def dtypes():
         'true_multiplier': 'float64',
         'column': 'int64',
         'img_col': 'int64',
-        'primer_i7': 'object',
-        'index_i5': 'object',
-        'sample_type': 'object',
-        'primer_i5': 'object',
-        'experimental_condition': 'category',
-        'cell_call': 'object',
-        'index_i7': 'object',
+        'primer_i7': 'str',
+        'index_i5': 'str',
+        'sample_type': 'str',
+        'primer_i5': 'str',
+        'experimental_condition': 'str',
+        'cell_call': 'str',
+        'index_i7': 'str',
         'order': 'int64',
         'row': 'int64'        
     }
