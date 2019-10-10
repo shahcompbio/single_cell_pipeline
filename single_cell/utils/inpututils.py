@@ -6,19 +6,7 @@ def load_split_wgs_input(input_yaml):
 
     wgs_bams = yamldata['normal']
 
-    sample_id = list(wgs_bams.keys())
-    assert len(sample_id) == 1
-    sample_id = sample_id[0]
-
-    wgs_bams = wgs_bams[sample_id]
-
-    library_id = list(wgs_bams.keys())
-    assert len(library_id) == 1
-    library_id = library_id[0]
-
-    wgs_bams = wgs_bams[library_id]
-
-    return sample_id, library_id, wgs_bams['bam']
+    return wgs_bams['bam']
 
 
 def load_merge_cell_bams(input_yaml):
@@ -26,21 +14,9 @@ def load_merge_cell_bams(input_yaml):
 
     cell_bams = yamldata['cell_bams']
 
-    sample_id = list(cell_bams.keys())
-    assert len(sample_id) == 1
-    sample_id = sample_id[0]
-
-    cell_bams = cell_bams[sample_id]
-
-    library_id = list(cell_bams.keys())
-    assert len(library_id) == 1
-    library_id = library_id[0]
-
-    cell_bams = cell_bams[library_id]
-
     cell_bams = {cell_id: cell_bams[cell_id]['bam'] for cell_id in cell_bams}
 
-    return sample_id, library_id, cell_bams
+    return cell_bams
 
 
 def load_haps_input(input_yaml):
@@ -82,6 +58,7 @@ def load_variant_calling_input(input_yaml):
 
     return normals, tumours
 
+
 def load_germline_data(input_yaml):
     yamldata = load_yaml(input_yaml)
 
@@ -89,6 +66,7 @@ def load_germline_data(input_yaml):
     normals = {v: normals[v]['bam'] for v in normals}
 
     return normals
+
 
 def load_variant_counting_input(input_yaml):
     yamldata = load_yaml(input_yaml)
@@ -209,7 +187,24 @@ def get_bams(fastqs_file):
             cell], "couldnt extract bam file paths from yaml input for cell: {}".format(cell)
 
     bam_filenames = {cell: data[cell]["bam"] for cell in data.keys()}
-    bai_filenames = {cell: data[cell]["bam"] + ".bai" for cell in data.keys()}
 
-    return bam_filenames, bai_filenames
+    return bam_filenames
 
+
+def get_fastqs(fastqs_file):
+    data = load_yaml(fastqs_file)
+
+    for cell in data.keys():
+        assert "fastqs" in data[
+            cell], "couldnt extract fastq file paths from yaml input for cell: {}".format(cell)
+
+    fastq_1_filenames = dict()
+    fastq_2_filenames = dict()
+    for cell in data.keys():
+        fastqs = data[cell]["fastqs"]
+
+        for lane, paths in fastqs.items():
+            fastq_1_filenames[(cell, lane)] = paths["fastq_1"]
+            fastq_2_filenames[(cell, lane)] = paths["fastq_2"]
+
+    return fastq_1_filenames, fastq_2_filenames

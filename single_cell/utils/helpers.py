@@ -8,58 +8,58 @@ import gzip
 import logging
 import multiprocessing
 import os
+import re
 import shutil
-import sys
 import tarfile
 from multiprocessing.pool import ThreadPool
 from subprocess import Popen, PIPE
 
 import pandas as pd
+import pypeliner
 import single_cell
 import yaml
-from single_cell.utils import storageutils
-
-import pypeliner
 
 
-def resolve_template(filepath, ids):
-    filepaths = []
-    for id_keys in ids:
-        try:
-            filepaths.append(filepath.format(**id_keys))
-        except KeyError:
-            filepaths.append(filepath)
-    return filepaths
+class InputException(Exception):
+    pass
 
-def generate_and_upload_metadata(args, root_dir, filepaths, metadata, input_yaml=None):
-    meta_yaml = os.path.join(root_dir, 'metadata.yaml')
+
+def generate_and_upload_metadata(
+        command, root_dir, filepaths, output,
+        input_yaml_data=None, input_yaml=None, metadata={}
+):
+    if not metadata:
+        metadata = {}
 
     filepaths = list(filepaths)
 
-    command = ' '.join(sys.argv[0:])
+    if len(filepaths) == 3 and re.match('.*\{.*\}.*', filepaths[1]):
+        filepaths = resolve_template(filepaths[0], filepaths[1], filepaths[2])
+        filepaths = list(filepaths.values())
+
+    command = ' '.join(command)
     version = get_version()
 
     metadata['command'] = command
     metadata['version'] = version
 
-    if input_yaml:
-        input_yaml_blob = os.path.join(root_dir, 'input.yaml')
-        filepaths.append(input_yaml_blob)
-        storageutils.upload_blob(input_yaml_blob, input_yaml, storage=args.get('storage'))
-        metadata['input_yaml'] = 'input.yaml'
+    if input_yaml_data:
+        if not input_yaml:
+            raise InputException("missing yaml file to write to")
+        with open(input_yaml, 'wt') as yaml_writer:
+            yaml.safe_dump(input_yaml_data, yaml_writer)
 
-    run_type = metadata['type']
+        if not input_yaml.startswith(root_dir) and root_dir in input_yaml:
+            input_yaml = input_yaml[input_yaml.index(root_dir):]
+            if input_yaml.endswith('.tmp'):
+                input_yaml = input_yaml[:-4]
 
-    local_path = os.path.join(
-        args['pipelinedir'],
-        '{}_metadata.yaml'.format(run_type)
-    )
+        metadata['input_yaml'] = os.path.relpath(input_yaml, root_dir)
+        filepaths.append(input_yaml)
 
     generate_meta_yaml_file(
-        local_path, filepaths=filepaths, metadata=metadata, root_dir=root_dir
+        output, filepaths=filepaths, metadata=metadata, root_dir=root_dir
     )
-
-    storageutils.upload_blob(meta_yaml, local_path, storage=args.get('storage'))
 
 
 def add_extensions(filepaths):
@@ -72,6 +72,8 @@ def add_extensions(filepaths):
         elif filepath.endswith('.vcf.gz'):
             paths_extensions.append(filepath + '.csi')
             paths_extensions.append(filepath + '.tbi')
+        elif filepath.endswith('.bam'):
+            paths_extensions.append(filepath + '.bai')
 
     return paths_extensions
 
@@ -191,6 +193,7 @@ def get_file_format(filepath):
             "Couldn't detect output format. extension {}".format(ext)
         )
         return "csv"
+
 
 def get_coltype_reference():
     coltypes = {
@@ -400,8 +403,6 @@ def run_cmd(cmd, output=None):
 
     if output:
         stdout.close()
-
-
 
 
 def symlink(actual_file, symlink):

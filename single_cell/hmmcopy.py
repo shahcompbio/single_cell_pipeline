@@ -4,59 +4,14 @@ Created on Feb 19, 2018
 @author: dgrewal
 '''
 import os
+import sys
 import re
 
-import pypeliner
 import pypeliner.managed as mgd
-from single_cell.utils import helpers
 from single_cell.utils import inpututils
 from single_cell.workflows import hmmcopy
 
-
-def hmmcopy_workflow(args):
-    config = inpututils.load_config(args)
-
-    sampleinfo = inpututils.get_sample_info(args['input_yaml'])
-    cellids = inpututils.get_samples(args['input_yaml'])
-    bam_files, _ = inpututils.get_bams(args['input_yaml'])
-
-    lib = args["library_id"]
-
-    workflow = pypeliner.workflow.Workflow()
-
-    hmmcopy_dir = args["out_dir"]
-
-    hmmcopy_files = get_output_files(hmmcopy_dir, lib)
-
-    workflow.setobj(
-        obj=mgd.OutputChunks('cell_id'),
-        value=list(bam_files.keys()),
-    )
-
-    workflow.subworkflow(
-        name='hmmcopy_workflow',
-        ctx={'docker_image': config['hmmcopy']['docker']['single_cell_pipeline']},
-        func=hmmcopy.create_hmmcopy_workflow,
-        args=(
-            mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files, extensions=['.bai']),
-            mgd.OutputFile(hmmcopy_files['reads_csvs']),
-            mgd.OutputFile(hmmcopy_files['segs_csvs']),
-            mgd.OutputFile(hmmcopy_files['metrics_csvs']),
-            mgd.OutputFile(hmmcopy_files['params_csvs']),
-            mgd.OutputFile(hmmcopy_files['igv_csvs']),
-            mgd.OutputFile(hmmcopy_files['segs_pdf']),
-            mgd.OutputFile(hmmcopy_files['bias_pdf']),
-            mgd.OutputFile(hmmcopy_files['heatmap_pdf']),
-            mgd.OutputFile(hmmcopy_files['metrics_pdf']),
-            mgd.OutputFile(hmmcopy_files['kernel_density_pdf']),
-            mgd.OutputFile(hmmcopy_files['hmmcopy_data_tar']),
-            cellids,
-            config['hmmcopy'],
-            sampleinfo
-        ),
-    )
-
-    return workflow
+import pypeliner
 
 
 def get_output_files(outdir, lib):
@@ -77,28 +32,76 @@ def get_output_files(outdir, lib):
     return data
 
 
-def generate_meta_files(args):
-    hmmcopy_dir = args["out_dir"]
-    lib = args["library_id"]
+def hmmcopy_workflow(args):
+    config = inpututils.load_config(args)
+    config = config['hmmcopy']
 
+    sampleinfo = inpututils.get_sample_info(args['input_yaml'])
     cellids = inpututils.get_samples(args['input_yaml'])
+    bam_files = inpututils.get_bams(args['input_yaml'])
 
     samples = [re.split('[_-]', cell)[0] for cell in cellids]
     samples = sorted(set(samples))
-    metadata = {
-        'library_id': lib,
-        'sample_ids': samples,
-    }
+
+    lib = args["library_id"]
+
+    workflow = pypeliner.workflow.Workflow(
+        ctx={'docker_image': config['docker']['single_cell_pipeline']},
+    )
+
+    hmmcopy_dir = args["out_dir"]
 
     hmmcopy_files = get_output_files(hmmcopy_dir, lib)
-    metadata['type'] = 'hmmcopy'
-    helpers.generate_and_upload_metadata(
-        args,
-        hmmcopy_dir,
-        hmmcopy_files.values(),
-        metadata,
-        input_yaml=args['input_yaml']
+    hmmcopy_meta = os.path.join(hmmcopy_dir, 'metadata.yaml')
+    input_yaml_blob = os.path.join(hmmcopy_dir, 'input.yaml')
+
+    workflow.setobj(
+        obj=mgd.OutputChunks('cell_id'),
+        value=list(bam_files.keys()),
     )
+
+    workflow.subworkflow(
+        name='hmmcopy_workflow',
+        func=hmmcopy.create_hmmcopy_workflow,
+        args=(
+            mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files, extensions=['.bai']),
+            mgd.OutputFile(hmmcopy_files['reads_csvs']),
+            mgd.OutputFile(hmmcopy_files['segs_csvs']),
+            mgd.OutputFile(hmmcopy_files['metrics_csvs']),
+            mgd.OutputFile(hmmcopy_files['params_csvs']),
+            mgd.OutputFile(hmmcopy_files['igv_csvs']),
+            mgd.OutputFile(hmmcopy_files['segs_pdf']),
+            mgd.OutputFile(hmmcopy_files['bias_pdf']),
+            mgd.OutputFile(hmmcopy_files['heatmap_pdf']),
+            mgd.OutputFile(hmmcopy_files['metrics_pdf']),
+            mgd.OutputFile(hmmcopy_files['kernel_density_pdf']),
+            mgd.OutputFile(hmmcopy_files['hmmcopy_data_tar']),
+            cellids,
+            config,
+            sampleinfo
+        ),
+    )
+
+    workflow.transform(
+        name='generate_meta_files_results',
+        func='single_cell.utils.helpers.generate_and_upload_metadata',
+        args=(
+            sys.argv[0:],
+            hmmcopy_dir,
+            list(hmmcopy_files.values()),
+            mgd.OutputFile(hmmcopy_meta)
+        ),
+        kwargs={
+            'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
+            'input_yaml': mgd.OutputFile(input_yaml_blob),
+            'metadata': {
+                'library_id': lib,
+                'sample_ids': samples,
+            }
+        }
+    )
+
+    return workflow
 
 
 def hmmcopy_pipeline(args):
@@ -107,5 +110,3 @@ def hmmcopy_pipeline(args):
     workflow = hmmcopy_workflow(args)
 
     pyp.run(workflow)
-
-    generate_meta_files(args)

@@ -4,12 +4,13 @@ Created on Feb 22, 2018
 @author: dgrewal
 '''
 import os
+import sys
 
-import pypeliner
 import pypeliner.managed as mgd
-from single_cell.utils import helpers
 from single_cell.utils import inpututils
 from single_cell.workflows import merge_bams
+
+import pypeliner
 
 
 def merge_bams_workflow(args):
@@ -23,9 +24,12 @@ def merge_bams_workflow(args):
            'docker_image': baseimage}
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
-    _, _, bam_files = inpututils.load_merge_cell_bams(args['input_yaml'])
+    bam_files = inpututils.load_merge_cell_bams(args['input_yaml'])
 
     merge_out_template = os.path.join(args['out_dir'], '{region}.bam')
+
+    meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
@@ -35,7 +39,7 @@ def merge_bams_workflow(args):
     workflow.transform(
         name="get_regions",
         func="single_cell.utils.pysamutils.get_regions_from_reference",
-        ret=pypeliner.managed.TempOutputObj('region'),
+        ret=pypeliner.managed.OutputChunks('region'),
         args=(
             config["ref_genome"],
             config["split_size"],
@@ -54,29 +58,22 @@ def merge_bams_workflow(args):
         )
     )
 
+    workflow.transform(
+        name='generate_meta_files_results',
+        func='single_cell.utils.helpers.generate_and_upload_metadata',
+        args=(
+            sys.argv[0:],
+            args['out_dir'],
+            (mgd.InputChunks('region'), merge_out_template, 'region'),
+            mgd.OutputFile(meta_yaml)
+        ),
+        kwargs={
+            'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
+            'input_yaml': mgd.OutputFile(input_yaml_blob),
+        }
+    )
+
     return workflow
-
-
-def generate_meta_files(args):
-    out_dir = args["out_dir"]
-
-    sample_id, library_id, bam_files = inpututils.load_merge_cell_bams(args['input_yaml'])
-
-    metadata = dict(
-        library_id=library_id, sample_ids=sample_id,
-    )
-
-    # filepaths = helpers.resolve_template(os.path.join(args['out_dir'], '{region}.bam'), regions)
-    filepaths = []
-
-    metadata['type'] = 'merge_cell_bams'
-    helpers.generate_and_upload_metadata(
-        args,
-        out_dir,
-        [],
-        metadata,
-        input_yaml=args['input_yaml']
-    )
 
 
 def merge_bams_pipeline(args):
@@ -86,4 +83,3 @@ def merge_bams_pipeline(args):
 
     pyp.run(workflow)
 
-    generate_meta_files(args)

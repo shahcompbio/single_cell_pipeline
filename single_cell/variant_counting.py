@@ -1,8 +1,10 @@
 import os
+import sys
 
-import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import inpututils
+
+import pypeliner
 
 
 def create_snv_allele_counts_for_vcf_targets_workflow(
@@ -86,6 +88,9 @@ def create_variant_counting_workflow(args):
 
     counts_output = os.path.join(args['out_dir'], "counts.csv.gz")
 
+    meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
+
     config = inpututils.load_config(args)
     config = config['variant_calling']
 
@@ -122,6 +127,21 @@ def create_variant_counting_workflow(args):
             mgd.OutputFile(counts_output),
             config['memory'],
         ),
+    )
+
+    workflow.transform(
+        name='generate_meta_files_results',
+        func='single_cell.utils.helpers.generate_and_upload_metadata',
+        args=(
+            sys.argv[0:],
+            args['out_dir'],
+            [counts_output],
+            mgd.OutputFile(meta_yaml)
+        ),
+        kwargs={
+            'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
+            'input_yaml': mgd.OutputFile(input_yaml_blob),
+        }
     )
 
     return workflow
