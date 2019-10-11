@@ -47,16 +47,11 @@ def generate_yaml_from_template(template, output, accountname):
                 out_yaml.write(line)
 
 
-def generate_inputs(primary_yaml, lowmad_yaml, accountname):
+def generate_inputs(template, output, accountname):
     filedir = os.path.dirname(__file__)
-    template_primary = os.path.join(filedir, 'testset_align_hmm.yaml')
-    template_lowmad = os.path.join(filedir, 'lowmadset_align_hmm.yaml')
+    template = os.path.join(filedir, template)
 
-    if primary_yaml:
-        generate_yaml_from_template(template_primary, primary_yaml, accountname)
-
-    if lowmad_yaml:
-        generate_yaml_from_template(template_lowmad, lowmad_yaml, accountname)
+    generate_yaml_from_template(template, output, accountname)
 
 
 def compare_output(reads, metrics, ref_reads, ref_metrics, tempdir):
@@ -82,11 +77,11 @@ def parse_args():
     inputs = subparsers.add_parser("generate_inputs")
     inputs.set_defaults(which='inputs')
     inputs.add_argument(
-        '--qc_primary_yaml',
+        '--template',
         help='specify path to the output file'
     )
     inputs.add_argument(
-        '--qc_lowmad_yaml',
+        '--output',
         help='specify path to the output file'
     )
     inputs.add_argument(
@@ -140,7 +135,7 @@ def main(args):
         generate_container_yaml(args['output'])
 
     elif args['which'] == 'inputs':
-        generate_inputs(args['qc_primary_yaml'], args['qc_lowmad_yaml'], args['storage_account'])
+        generate_inputs(args['template'], args['output'], args['storage_account'])
 
     elif args['which'] == 'compare':
         compare_output(
