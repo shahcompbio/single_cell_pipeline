@@ -400,6 +400,35 @@ single_cell variant_counting \
 ...
 ```
 
+## 10. Germline Calling:
+![germline_calling](readme_data/germline.png)
+
+
+### Input:
+
+```
+normal:
+  1-1-10000000:
+    bam: split_wgs_bam/1-1-10000000_split_wgs.bam
+  1-100000001-110000000:
+    bam: split_wgs_bam/1-100000001-110000000_split_wgs.bam
+  1-10000001-20000000:
+    bam: split_wgs_bam/1-10000001-20000000_split_wgs.bam
+  ...
+```
+
+### Run:
+
+```
+single_cell germline \
+ --input_yaml inputs/SC-1234/variant_counting.yaml \
+--tmpdir temp/SC-1234/tmp \
+--pipelinedir pipeline/SC-1234  \
+--out_dir results/SC-1234/results \
+...
+```
+
+
 
 ## 10. Generate Config 
 
