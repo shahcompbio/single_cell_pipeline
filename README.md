@@ -430,7 +430,7 @@ single_cell germline \
 
 
 
-## 10. Generate Config 
+## 11. Generate Config 
 
 The pipeline auto generates a config file with the default parameters before every run. Some of the values in the config file can be updated by using the ``--config_override`` option.  ```generate_config``` option allows users to generate the config files. These configs can then be specified as input to the pipeline after making the required changes.
 ```
@@ -442,7 +442,7 @@ the pipeline config can be specified manually when running the pipeline with ```
 
 
 
-## 11. Clean Sentinels
+## 12. Clean Sentinels
 the pipeline will skip any successful tasks from previous runs when run again. The ``--rerun`` flag force run all tasks including the successful tasks from the previous runs while the ```clean_sentinels``` option provides a more fine grained control.
 
 ```

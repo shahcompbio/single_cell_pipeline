@@ -28,14 +28,26 @@
 \node (samtools_germline) [process, below of=normal_bams] {Samtools Germline Calling};
 \draw[-latex] (normal_bams) -- coordinate (ab) (samtools_germline);
 
+\node (germline_out) [io, below of=normal_bams, text width=1.5cm, xshift=4cm] {Germline vcf};
+\draw[-latex] (samtools_germline) -- coordinate (ab) (germline_out);
+
 \node (mapp) [process, below of=samtools_germline] {Annotate Mappability};
 \draw[-latex] (samtools_germline) -- coordinate (ab) (mapp);
+
+\node (mapp_out) [io, below of=mapp, text width=2cm] {Mappability vcf};
+\draw[-latex] (mapp) -- coordinate (ab) (mapp_out);
 
 \node (geno) [process, below of=samtools_germline, xshift=4cm] {Annotate Genotype};
 \draw[-latex] (samtools_germline) -- coordinate (ab) (geno);
 
+\node (geno_out) [io, below of=geno, text width=2cm] {Genotype vcf};
+\draw[-latex] (geno) -- coordinate (ab) (geno_out);
+
 \node (snpeff) [process, below of=samtools_germline, xshift=-4cm] {Snpeff};
 \draw[-latex] (samtools_germline) -- coordinate (ab) (snpeff);
+
+\node (snpeff_out) [io, below of=snpeff, text width=1.5cm] {snpeff vcf};
+\draw[-latex] (snpeff) -- coordinate (ab) (snpeff_out);
 
 \end{tikzpicture}
 
