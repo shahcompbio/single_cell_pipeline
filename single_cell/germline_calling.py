@@ -102,7 +102,7 @@ def germline_calling_workflow(args):
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
-            varcalls_dir,
+            args['out_dir'],
             list(out_files.values()),
             mgd.OutputFile(varcalls_meta)
         ),
