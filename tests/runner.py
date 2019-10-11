@@ -49,8 +49,8 @@ def generate_yaml_from_template(template, output, accountname):
 
 def generate_inputs(primary_yaml, lowmad_yaml, accountname):
     filedir = os.path.dirname(__file__)
-    template_primary = os.path.join(filedir, 'testset.yaml')
-    template_lowmad = os.path.join(filedir, 'lowmadset.yaml')
+    template_primary = os.path.join(filedir, 'testset_align_hmm.yaml')
+    template_lowmad = os.path.join(filedir, 'lowmadset_align_hmm.yaml')
 
     if primary_yaml:
         generate_yaml_from_template(template_primary, primary_yaml, accountname)
@@ -67,8 +67,6 @@ def compare_output(reads, metrics, ref_reads, ref_metrics, tempdir):
 
     compare.compare_metrics(ref_metrics, metrics)
     compare.compare_reads(ref_reads, reads)
-
-
 
 
 def parse_args():
