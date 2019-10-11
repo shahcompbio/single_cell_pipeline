@@ -1,0 +1,14 @@
+- dtype: str
+  name: chr
+- dtype: int
+  name: start
+- dtype: int
+  name: end
+- dtype: int
+  name: state
+- dtype: float
+  name: median
+- dtype: int
+  name: multiplier
+- dtype: str
+  name: cell_id
