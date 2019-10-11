@@ -7,19 +7,18 @@ Created on Feb 22, 2018
 import os
 import sys
 
+import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import inpututils
 from single_cell.workflows import germline
 
-import pypeliner
-
 
 def get_output_files(outdir):
     data = {
-        'samtools_germline_vcf': os.path.join(outdir, 'raw', 'samtools_germline.vcf.gz'),
+        'samtools_germline_vcf': os.path.join(outdir, 'samtools_germline.vcf.gz'),
         'snpeff_vcf_filename': os.path.join(outdir, 'snpeff.vcf.gz'),
-        'normal_genotype_filename': os.path.join(outdir, 'raw', 'normal_genotype..vcf.gz'),
-        'mappability_filename': os.path.join(outdir, 'raw', 'mappability.csv.gz'),
+        'normal_genotype_filename': os.path.join(outdir, 'normal_genotype..vcf.gz'),
+        'mappability_filename': os.path.join(outdir, 'mappability.csv.gz'),
 
     }
 
@@ -36,13 +35,9 @@ def germline_calling_workflow(args):
 
     normal_bams = inpututils.load_germline_data(args['input_yaml'])
 
-    varcalls_dir = os.path.join(
-        args['out_dir'], 'germline_calling')
-
-    varcalls_meta = os.path.join(varcalls_dir, 'metadata.yaml')
-    input_yaml_blob = os.path.join(varcalls_dir, 'input.yaml')
-
-    out_files = get_output_files(varcalls_dir)
+    varcalls_meta = os.path.join(args['out_dir'], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
+    out_files = get_output_files(args['out_dir'])
 
     workflow = pypeliner.workflow.Workflow(
         ctx={'docker_image': config['docker']['single_cell_pipeline']}
