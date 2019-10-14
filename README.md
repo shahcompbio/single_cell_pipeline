@@ -8,6 +8,66 @@ For LSF + singularity documentation see [Singularity](docs/singularity/singulari
 
 [Changelog](CHANGELOG.md)
 
+## Introduction
+
+The single cell pipeline performs analysis of single cell sequencing data producing:
+- aligned bams
+- somatic copy number changes
+- qc metrics
+- SNVs, breakpoints and haplotype allele counts
+
+### CLI
+
+The above analyses are implemented as a series of subcommand.  Each subcommand takes as input an inputs yaml file
+describing both the location of input files and the metadata for those input files.  Subcommands also take as input
+a directory or directories in which results will be output.
+
+### Inputs
+
+Inputs are provided as an input yaml file, with formats specific to each subcommand described below.  Absolute paths
+are expected.
+
+### Results
+
+Results for each subcommand follow a similar structure.
+
+Each directory will contain .csv.gz, .pdf, .bam and other files produced for that set of results.  In addition,
+a `metadata.yaml` file at the root of each results directory will list of the files and provide metadata for the
+set of results contained within that directory.  The `metadata.yaml` file has 2 mandatory top level sections:
+`filenames` listing the files in the results relative to the root directory, and `meta` containing at a minimum the
+`type` of subcommand, the `version` of the single cell pipeline that produced the results, and which of the files in
+`filenames` is the input yaml.
+
+### CSV table format
+
+CSV tables are produced by many of the pipeline subcommands.  Per column type information is provide for each `.csv.gz`
+file as a `.csv.gz.yaml` file.  The yaml file has the following format:
+
+```
+columns:
+- dtype: str
+  name: column1
+- dtype: int
+  name: column2
+- dtype: bool
+  name: column3
+- dtype: float
+  name: column4
+header: true
+sep: ','
+```
+
+Accepted `dtype` values are `str`, `int`, `bool` and `float`.  Default separator is `,` but a single character can be provided
+in the `sep` field.  The presense of a header is indicated with the `header: true` or  `header: false`.
+
+The `.csv.gz.yaml` files are catalogued along with their `.csv.gz` files in the `metadata.yaml` file for results.
+
+### Conventions
+
+Shahlab operations uses a jira ticket to track runs of the single cell pipeline on new data.  The `SC-1234` that appears
+in results and input paths below is a placeholder for a jira ticket id.
+
+Cell ids follow the format `{sample_id}_{library_id}_R{row}_C{column}`, however this is not required by the pipeline.
 
 ## 1. Alignment
 
@@ -26,6 +86,7 @@ Alignment:
 7. generate QC plot
 
 ### Input
+
 The pipeline accepts a yaml file as input. The yaml file contains the input paths and metadata for each cell, the format for each cell is as follows:
 ```
 SA12345-A12345-R01-C01:
@@ -65,6 +126,68 @@ single_cell alignment \
  ...
 ```
 
+### Outputs
+
+The aligment pipeline produces two sets of results, Bams and Alignment stats.
+
+#### BAMs
+
+Bam files are named as `{CELL_ID}.bam` in the BAM results directory.
+
+The metadata file is structured as follows:
+
+```
+filenames:
+  {CELL_ID_1}.bam
+  {CELL_ID_2}.bam
+  ...
+meta:
+  type: cellbams
+  version: v0.0.0
+  library_id: LIBRARY_ID
+  sample_ids:
+    - SAMPLE_ID_1
+    - SAMPLE_ID_1
+  land_ids:
+    - LANE_ID_1
+    - LANE_ID_2
+  bams:
+    template: {cell_id}.bam
+    instances:
+      - cell_id: CELL_ID_1
+      - cell_id: CELL_ID_2
+```
+
+#### Alignment Stats
+
+The aligment pipeline produces a set of csv format tables and pdfs:
+
+  - alignment metrics: `{LIBRARY_ID}_alignment_metrics.csv.gz`
+  - gc metrics: `{LIBRARY_ID}_gc_metrics.csv.gz`
+  - fastqscreen metrics: `{LIBRARY_ID}_detailed_fastqscreen_metrics.csv.gz`
+  - alignment metrics plots: `{LIBRARY_ID}_alignment_metrics.pdf`
+  - alignment metrics tar: `{LIBRARY_ID}_alignment_metrics.tar.gz`
+
+The metadata file is structured as follows:
+
+```
+filenames:
+  {LIBRARY_ID}_{TABLE_1}.csv.gz
+  {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
+  ...
+meta:
+  type: alignment
+  version: v0.0.0
+  library_id: LIBRARY_ID
+  sample_ids:
+    - SAMPLE_ID_1
+    - SAMPLE_ID_1
+  land_ids:
+    - LANE_ID_1
+    - LANE_ID_2
+```
+
+The alignment metrics and gc metrics tables are described in detail TODO
 
 ## 2. HMMcopy
 
@@ -77,9 +200,10 @@ Hmmcopy:
 3. Run Hmmcopy to predict copynumber states
 4. generate segment and bias plots, kernel density plot and heatmaps 
 
-
 ### Input
+
 The pipeline accepts a yaml file as input. The yaml file contains the input paths and metadata for each cell, the format for each cell is as follows:
+
 ```
 SA12345-A12345-R01-C01:
   bam: /path/to/aligned/SA12345-A12345-R01-C01.bam # path to the bam file, align mode will write a bam file to this path
@@ -103,13 +227,50 @@ single_cell hmmcopy \
 --tmpdir temp/SC-1234/tmp \
 --pipelinedir pipeline/SC-1234  \
 --out_dir results/SC-1234/results/hmmcopy \
- --library_id A123123 \
+--library_id A123123 \
  ...
 ```
 
+### Outputs
 
+The hmmcopy pipeline produces HMMCopy results.
+
+#### HMMCopy results
+
+The output of hmmcopy is a set of tables and plots:
+
+  - reads table: `{LIBRARY_ID}_reads.csv.gz`
+  - segs table: `{LIBRARY_ID}_segments.csv.gz`
+  - params table: `{LIBRARY_ID}_params.csv.gz`
+  - metrics table: `{LIBRARY_ID}_hmmcopy_metrics.csv.gz`
+  - hmmcopy data tar: `{LIBRARY_ID}_hmmcopy_data.tar.gz`
+  - igv table: `{LIBRARY_ID}_igv_segments.seg`
+  - segs plots: `{LIBRARY_ID}_segs.tar.gz`
+  - bias plots: `{LIBRARY_ID}_bias.tar.gz`
+  - heatmap plots: `{LIBRARY_ID}_heatmap_by_ec.pdf`
+  - metrics plots: `{LIBRARY_ID}_hmmcopy_metrics.pdf`
+  - kernel density plots: `{LIBRARY_ID}_kernel_density.pdf`
+
+The metadata file is structured as follows:
+
+```
+filenames:
+  {LIBRARY_ID}_{TABLE_1}.csv.gz
+  {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
+  ...
+meta:
+  type: hmmcopy
+  version: v0.0.0
+  library_id: LIBRARY_ID
+  sample_ids:
+    - SAMPLE_ID_1
+    - SAMPLE_ID_1
+```
+
+The reads, segs, params, and metrics tables are described in detail TODO
 
 ## 3. Annotation
+
 ![annotation](readme_data/annotation.png)
 
 Annotation:
@@ -118,6 +279,7 @@ Annotation:
 3. Generate a consolidated table with all metrics frim hmmcopy, alignment and from annotation
 
 ### Input
+
 The pipeline accepts a yaml file as input. The yaml file contains the input paths and metadata for each cell, the format for each cell is as follows:
 
 ```
@@ -140,29 +302,69 @@ single_cell annotation \
  ...
 ```
 
+### Outputs
 
-## 4. merge cell bams
+The annotation pipeline produces a set of annotation results.
+
+#### Annotation results
+
+The output of annotation is a set of tables and plots:
+
+  - metrics table: `{LIBRARY_ID}_metrics.csv.gz`
+  - qc report: `{LIBRARY_ID}_QC_report.html`
+  - corrupt tree newick: `{LIBRARY_ID}_corrupt_tree.newick`
+  - consensus tree newick: `{LIBRARY_ID}_corrupt_tree_consensus.newick`
+  - phylo table: `{LIBRARY_ID}_phylo.csv`
+  - loci rank trees: `{LIBRARY_ID}_rank_loci_trees.csv`
+  - filtered data table: `{LIBRARY_ID}_filtered_data.csv`
+  - corrupt tree plot: `{LIBRARY_ID}_corrupt_tree.pdf`
+  - segs pass plots: `{LIBRARY_ID}_segs_pass.tar.gz`
+  - segs fail plots: `{LIBRARY_ID}_segs_fail.tar.gz`
+  - corrupt heatmat plot: `{LIBRARY_ID}_heatmap_corrupt_tree.pdf`
+  - heatmap filt plot: `{LIBRARY_ID}_heatmap_by_ec_filtered.pdf`
+
+The metadata file is structured as follows:
+
+```
+filenames:
+  {LIBRARY_ID}_{TABLE_1}.csv.gz
+  {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
+  ...
+meta:
+  type: annotation
+  version: v0.0.0
+  library_id: LIBRARY_ID
+  sample_ids:
+    - SAMPLE_ID_1
+    - SAMPLE_ID_1
+```
+
+The metrics table is described in detail TODO
+
+## 4. Split merge cell bams
 
 ![merge_cell_bams](readme_data/merge_cell_bams.png)
 
 The tumour needs to be simultaneously merged across cells and split by region. The input for this step is the per cell bam yaml and the template for the merged bams by region.
 
 ### Input:
+
 ```
 cell_bams:
-    SA123X5-A12345-R04-C03:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
-    SA123X5-A12345-R04-C05:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C05.bam
-    SA123X5-A12345-R04-C07:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C07.bam
-    SA123X5-A12345-R04-C09:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C09.bam
-    SA123X5-A12345-R04-C10:
-      bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
+  SA123X5-A12345-R04-C03:
+    bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C03.bam
+  SA123X5-A12345-R04-C05:
+    bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C05.bam
+  SA123X5-A12345-R04-C07:
+    bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C07.bam
+  SA123X5-A12345-R04-C09:
+    bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C09.bam
+  SA123X5-A12345-R04-C10:
+    bam: data/single_cell_indexing/bam/A12345/grch37/bwa-aln/SA123X5-A12345-R04-C10.bam
 ```
 
 ### Run:
+
 ```
 single_cell merge_cell_bams \
 --input_yaml inputs/SC-1234/merge_cell_bams.yaml \
@@ -172,8 +374,35 @@ single_cell merge_cell_bams \
  ...
 ```
 
+### Outputs
 
-## 5. split bams
+The split merge pipeline produces a set of bams split by region.
+
+#### Region BAMs
+
+Bam files are named as `{REGION_1}.bam` in the BAM results directory.
+
+The metadata file is structured as follows:
+
+```
+filenames:
+  {REGION_1}.bam
+  {REGION_2}.bam
+  ...
+meta:
+  type: regionbams
+  version: v0.0.0
+  cell_ids:
+    - CELL_ID_1
+    - CELL_ID_1
+  bams:
+    template: {region_id}.bam
+    instances:
+      - region_id: REGION_1
+      - region_id: REGION_2
+```
+
+## 5. Split bams
 
 ![split_wgs_bam](readme_data/split_wgs_bam.png)
 
@@ -185,7 +414,8 @@ normal:
   bam: scdnadev/testdata/pseudobulk/DAH370N_filtered.bam
 ```
 
-###Run:
+### Run:
+
 ```
 single_cell split_wgs_bam \
  --input_yaml inputs/SC-1234/merge_cell_bams.yaml \
@@ -195,10 +425,39 @@ single_cell split_wgs_bam \
 ...
 ```
 
+### Outputs
+
+The split pipeline produces a set of bams split by region.
+
+#### Region BAMs
+
+Bam files are named as `{REGION_1}.bam` in the BAM results directory.
+
+The metadata file is structured as follows:
+
+TODO: is this the same format as split cells?
+
+```
+filenames:
+  {REGION_1}.bam
+  {REGION_2}.bam
+  ...
+meta:
+  type: regionbams
+  version: v0.0.0
+  cell_ids:
+    - CELL_ID_1 TODO
+    - CELL_ID_1
+  bams:
+    template: {region_id}.bam
+    instances:
+      - region_id: REGION_1
+      - region_id: REGION_2
+```
 
 ## 6. Variant Calling
-![variant_calling](readme_data/variant_calling.png)
 
+![variant_calling](readme_data/variant_calling.png)
 
 Inputs are a WGS tumour bam file and a WGS normal bam file along with the tumour cells. The bam files are used for the variant calling. The pipeline also generates counts at the snvs for each cell.
 The variant calling takes in both the per cell bam yaml, using the per cell bams for variant allele counting, and the tumour and normal region templates for calling snvs in parallel by region.
@@ -224,8 +483,8 @@ tumour:
   ...
 ```
 
+### Run:
 
-###Run:
 ```
 single_cell variant_calling \
  --input_yaml inputs/SC-1234/variant_calling.yaml \
@@ -235,8 +494,8 @@ single_cell variant_calling \
 ...
 ```
 
-
 ## 7. Breakpoint calling
+
 ![breakpoint_calling](readme_data/breakpoint_calling.png)
 
 The breakpoint analysis takes in per cell bam yaml in addition to the unsplit matched normal bam filename.
@@ -261,6 +520,7 @@ tumour_cells:
 ```
 
 #### yaml file format with a cells for normal
+
 ```
 normal_cells:
     SA123N-A12345-R04-C03:
@@ -299,8 +559,8 @@ single_cell breakpoint_calling \
 
 NOTE: The input bam files for lumpy must be aligned with bwa mem. 
 
-
 ## 8. Haplotype calling:
+
 ![infer_haps](readme_data/infer_haps.png)
 
 The haplotype analysis takes in per cell bam yaml in addition to the unsplit matched normal bam filename.
@@ -361,11 +621,9 @@ single_cell haplotype_calling \
 ...
 ```
 
-
-
 ## 9. Variant counting:
-![variant_counting](readme_data/variant_counting.png)
 
+![variant_counting](readme_data/variant_counting.png)
 
 ### Input:
 
@@ -429,7 +687,6 @@ single_cell germline \
 ```
 
 
-
 ## 11. Generate Config 
 
 The pipeline auto generates a config file with the default parameters before every run. Some of the values in the config file can be updated by using the ``--config_override`` option.  ```generate_config``` option allows users to generate the config files. These configs can then be specified as input to the pipeline after making the required changes.
@@ -441,8 +698,8 @@ the pipeline config file contains all pipeline defaults and the batch config spe
 the pipeline config can be specified manually when running the pipeline with ```--config_file``` option and the batch config with ```--submit_config``` option.
 
 
-
 ## 12. Clean Sentinels
+
 the pipeline will skip any successful tasks from previous runs when run again. The ``--rerun`` flag force run all tasks including the successful tasks from the previous runs while the ```clean_sentinels``` option provides a more fine grained control.
 
 ```
@@ -460,7 +717,6 @@ running
 single_cell clean_sentinels --mode delete --pattern "*plot_heatmap*" --tmpdir temp/SC-1234/tmp/hmmcopy
 ```
 before launching the hmmcopy will rerun the heatmap plotting  and any tasks that haven't completed yet.
-
 
 ### Common options
 
