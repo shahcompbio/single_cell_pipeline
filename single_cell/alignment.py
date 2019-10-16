@@ -34,9 +34,6 @@ def alignment_workflow(args):
     cellids = inpututils.get_samples(args['input_yaml'])
     fastq1_files, fastq2_files = inpututils.get_fastqs(args['input_yaml'])
 
-    samples = [re.split('[_-]', cell)[0] for cell in cellids]
-    samples = sorted(set(samples))
-
     alignment_files = get_output_files(alignment_dir, lib)
     alignment_meta = os.path.join(alignment_dir, 'metadata.yaml')
 
@@ -96,8 +93,8 @@ def alignment_workflow(args):
             'input_yaml': mgd.OutputFile(input_yaml_blob),
             'metadata': {
                 'library_id': lib,
-                'cell_ids': samples,
-                'lane_ids': cells,
+                'cell_ids': cells,
+                'lane_ids': lanes,
                 'type': 'alignment'
             }
         }
