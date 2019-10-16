@@ -6,11 +6,10 @@ Created on Feb 22, 2018
 import os
 import sys
 
+import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import inpututils
 from single_cell.workflows import merge_bams
-
-import pypeliner
 
 
 def merge_bams_workflow(args):
@@ -64,12 +63,17 @@ def merge_bams_workflow(args):
         args=(
             sys.argv[0:],
             args['out_dir'],
-            (mgd.InputChunks('region'), merge_out_template, 'region'),
+            mgd.Template('bam_filenames', 'region', template=merge_out_template),
             mgd.OutputFile(meta_yaml)
         ),
         kwargs={
             'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
             'input_yaml': mgd.OutputFile(input_yaml_blob),
+            'template': (mgd.InputChunks('region'), merge_out_template, 'region'),
+            'metadata': {
+                'type': 'merge_bams',
+                'cell_ids': list(bam_files.keys())}
+
         }
     )
 
@@ -82,4 +86,3 @@ def merge_bams_pipeline(args):
     workflow = merge_bams_workflow(args)
 
     pyp.run(workflow)
-

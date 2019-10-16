@@ -71,6 +71,7 @@ def annotation_workflow(args):
             'input_yaml': mgd.OutputFile(input_yaml_blob),
             'metadata': {
                 'library_id': lib,
+                'type': 'annotation'
             }
         }
     )

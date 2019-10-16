@@ -96,7 +96,8 @@ def hmmcopy_workflow(args):
             'input_yaml': mgd.OutputFile(input_yaml_blob),
             'metadata': {
                 'library_id': lib,
-                'sample_ids': samples,
+                'cell_ids': list(bam_files.keys()),
+                'type': 'hmmcopy',
             }
         }
     )

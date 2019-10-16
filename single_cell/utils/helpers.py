@@ -25,23 +25,33 @@ class InputException(Exception):
 
 
 def generate_and_upload_metadata(
-        command, root_dir, filepaths, output,
-        input_yaml_data=None, input_yaml=None, metadata={}
+        command, root_dir, filepaths, output, template=None,
+        input_yaml_data=None, input_yaml=None, metadata={}, type=None
 ):
     if not metadata:
         metadata = {}
 
-    filepaths = list(filepaths)
+    if isinstance(filepaths, dict):
+        filepaths = filepaths.values()
 
-    if len(filepaths) == 3 and re.match('.*\{.*\}.*', filepaths[1]):
-        filepaths = resolve_template(filepaths[0], filepaths[1], filepaths[2])
-        filepaths = list(filepaths.values())
+    filepaths = list(filepaths)
 
     command = ' '.join(command)
     version = get_version()
 
     metadata['command'] = command
     metadata['version'] = version
+
+    if type:
+        metadata['type'] = type
+
+    if template:
+        assert len(template) == 3
+        assert re.match('.*\{.*\}.*', template[1])
+        metadata['bams'] = {}
+        metadata['bams']['template'] = template[1]
+        instances = [{template[2]:instance} for instance in template[0]]
+        metadata['bams']['instances'] = instances
 
     if input_yaml_data:
         if not input_yaml:
