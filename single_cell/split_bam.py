@@ -67,7 +67,7 @@ def split_bam_workflow(args):
         kwargs={
             'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
             'input_yaml': mgd.OutputFile(input_yaml_blob),
-            'metadata': {'type': 'split_wgs_bam'},
+            'metadata': {'type': 'regionbams'},
             'template': (mgd.TempInputObj('region'), split_bam_template, 'region'),
         }
     )
