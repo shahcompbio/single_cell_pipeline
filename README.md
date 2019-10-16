@@ -399,7 +399,7 @@ filenames:
 meta:
   command: 'single_cell merge_cell_bams ...'
   input_yaml: input.yaml
-  type: regionbams
+  type: pseudowgs_regionbams
   version: v0.0.0
   cell_ids:
     - CELL_ID_1
@@ -454,7 +454,7 @@ filenames:
 meta:
   command: 'single_cell split_wgs_bam ...'
   input_yaml: input.yaml
-  type: regionbams
+  type: wgs_regionbams
   version: v0.0.0
   bams:
     template: {region}.bam

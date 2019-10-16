@@ -71,7 +71,7 @@ def merge_bams_workflow(args):
             'input_yaml': mgd.OutputFile(input_yaml_blob),
             'template': (mgd.InputChunks('region'), merge_out_template, 'region'),
             'metadata': {
-                'type': 'regionbams',
+                'type': 'pseudowgs_regionbams',
                 'cell_ids': list(bam_files.keys())}
 
         }
