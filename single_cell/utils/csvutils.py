@@ -25,6 +25,7 @@ def get_dtypes_from_df(df, na_rep='NA'):
     pandas_to_std_types = {
         "bool": "bool",
         "int64": "int",
+        "Int64": "int",
         "float64": "float",
         "object": "str",
         "category": "str",
@@ -358,7 +359,7 @@ def concatenate_csv(in_filenames, out_filename, key_column=None, write_header=Tr
 
 
 def extrapolate_types_from_yaml_files(csv_files):
-    precedence = ['str', 'category', 'float', 'float64', 'int', 'int64', 'bool', 'NA']
+    precedence = ['str', 'category', 'float', 'float64', 'int', 'int64', 'Int64', 'bool', 'NA']
 
     csv_metadata = [CsvInput(csv_file) for csv_file in csv_files]
 
