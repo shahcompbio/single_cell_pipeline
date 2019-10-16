@@ -43,6 +43,9 @@ def alignment_workflow(args):
     bam_files_template = os.path.join(bams_dir, '{cell_id}.bam')
     bams_meta = os.path.join(bams_dir, 'metadata.yaml')
 
+    lanes = sorted(set([v[1] for v in fastq1_files.keys()]))
+    cells = sorted(set([v[0] for v in fastq1_files.keys()]))
+
     input_yaml_blob = os.path.join(alignment_dir, 'input.yaml')
 
     workflow = pypeliner.workflow.Workflow(
@@ -93,7 +96,9 @@ def alignment_workflow(args):
             'input_yaml': mgd.OutputFile(input_yaml_blob),
             'metadata': {
                 'library_id': lib,
-                'sample_ids': samples,
+                'cell_ids': samples,
+                'lane_ids': cells,
+                'type': 'alignment'
             }
         }
     )
@@ -104,14 +109,17 @@ def alignment_workflow(args):
         args=(
             sys.argv[0:],
             bams_dir,
-            (mgd.InputChunks('cell_id'), bam_files_template, 'cell_id'),
+            mgd.Template('aligned.bam', 'cell_id', template=bam_files_template),
             mgd.OutputFile(bams_meta)
         ),
         kwargs={
             'metadata': {
                 'library_id': lib,
-                'sample_ids': samples,
-            }
+                'cell_ids': cells,
+                'lane_ids': lanes,
+                'type': 'cellbams'
+            },
+            'template': (mgd.InputChunks('cell_id'), bam_files_template, 'cell_id'),
         }
     )
 

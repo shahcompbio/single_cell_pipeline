@@ -7,12 +7,11 @@ Created on Feb 22, 2018
 import os
 import sys
 
+import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import inpututils
 from single_cell.workflows import mutationseq
 from single_cell.workflows import strelka
-
-import pypeliner
 
 
 def get_file_paths(root_dir):
@@ -206,6 +205,7 @@ def variant_calling_workflow(args):
         kwargs={
             'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
             'input_yaml': mgd.OutputFile(input_yaml_blob),
+            'metadata': {'type': 'variant_calling'}
         }
     )
 
