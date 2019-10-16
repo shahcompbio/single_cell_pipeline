@@ -166,8 +166,8 @@ def parse_args():
     # variant counting
     # ================
     variant_counting = add_global_args(
-        subparsers.add_parser("variant_counting"))
-    variant_counting.set_defaults(which='variant_counting')
+        subparsers.add_parser("snv_genotyping"))
+    variant_counting.set_defaults(which='snv_genotyping')
 
     # ================
     # genoptyping

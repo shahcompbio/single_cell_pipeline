@@ -139,16 +139,18 @@ The metadata file is structured as follows:
 ```
 filenames:
   {CELL_ID_1}.bam
+  {CELL_ID_1}.bam.bai
   {CELL_ID_2}.bam
+  {CELL_ID_2}.bam.bai
   ...
 meta:
   type: cellbams
   version: v0.0.0
   library_id: LIBRARY_ID
-  sample_ids:
-    - SAMPLE_ID_1
-    - SAMPLE_ID_1
-  land_ids:
+  cell_ids:
+    - CELL_ID_1
+    - CELL_ID_1
+  lane_ids:
     - LANE_ID_1
     - LANE_ID_2
   bams:
@@ -174,15 +176,19 @@ The metadata file is structured as follows:
 filenames:
   {LIBRARY_ID}_{TABLE_1}.csv.gz
   {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
+  input.yaml
   ...
+
 meta:
+  cell_ids:
+    - CELL_ID_1
+    - CELL_ID_2
+  command: 'single_cell alignment ...'
+  input_yaml: input.yaml
   type: alignment
   version: v0.0.0
   library_id: LIBRARY_ID
-  sample_ids:
-    - SAMPLE_ID_1
-    - SAMPLE_ID_1
-  land_ids:
+  lane_ids:
     - LANE_ID_1
     - LANE_ID_2
 ```
@@ -259,12 +265,14 @@ filenames:
   {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
   ...
 meta:
+  command: 'single_cell hmmcopy ...'
+  input_yaml: input.yaml
   type: hmmcopy
   version: v0.0.0
   library_id: LIBRARY_ID
-  sample_ids:
-    - SAMPLE_ID_1
-    - SAMPLE_ID_1
+  cell_ids:
+    - CELL_ID_1
+    - CELL_ID_1
 ```
 
 The reads, segs, params, and metrics tables are described in detail TODO
@@ -331,12 +339,11 @@ filenames:
   {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
   ...
 meta:
+  command: 'single_cell annotation ...'
+  input_yaml: input.yaml
   type: annotation
   version: v0.0.0
   library_id: LIBRARY_ID
-  sample_ids:
-    - SAMPLE_ID_1
-    - SAMPLE_ID_1
 ```
 
 The metrics table is described in detail TODO
@@ -390,16 +397,18 @@ filenames:
   {REGION_2}.bam
   ...
 meta:
+  command: 'single_cell merge_cell_bams ...'
+  input_yaml: input.yaml
   type: regionbams
   version: v0.0.0
   cell_ids:
     - CELL_ID_1
     - CELL_ID_1
   bams:
-    template: {region_id}.bam
+    template: {region}.bam
     instances:
-      - region_id: REGION_1
-      - region_id: REGION_2
+      - region: REGION_1
+      - region: REGION_2
 ```
 
 ## 5. Split bams
@@ -443,16 +452,15 @@ filenames:
   {REGION_2}.bam
   ...
 meta:
+  command: 'single_cell split_wgs_bam ...'
+  input_yaml: input.yaml
   type: regionbams
   version: v0.0.0
-  cell_ids:
-    - CELL_ID_1 TODO
-    - CELL_ID_1
   bams:
-    template: {region_id}.bam
+    template: {region}.bam
     instances:
-      - region_id: REGION_1
-      - region_id: REGION_2
+      - region: REGION_1
+      - region: REGION_2
 ```
 
 ## 6. Variant Calling
@@ -493,6 +501,24 @@ single_cell variant_calling \
 --out_dir results/SC-1234/results \
 ...
 ```
+
+### Outputs
+
+The metadata file is structured as follows:
+
+```
+filenames:
+  {LIBRARY_ID}_{TABLE_1}.csv.gz
+  {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
+  ...
+meta:
+  command: 'single_cell variant_calling ...'
+  input_yaml: input.yaml
+  type: variant_calling
+  version: v0.0.0
+```
+
+
 
 ## 7. Breakpoint calling
 
@@ -559,6 +585,23 @@ single_cell breakpoint_calling \
 
 NOTE: The input bam files for lumpy must be aligned with bwa mem. 
 
+### Outputs
+
+The metadata file is structured as follows:
+
+```
+filenames:
+  {LIBRARY_ID}_{TABLE_1}.csv.gz
+  {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
+  ...
+meta:
+  command: 'single_cell breakpoint_calling ...'
+  input_yaml: input.yaml
+  type: breakpoint_calling
+  version: v0.0.0
+```
+
+
 ## 8. Haplotype calling:
 
 ![infer_haps](readme_data/infer_haps.png)
@@ -621,7 +664,25 @@ single_cell haplotype_calling \
 ...
 ```
 
-## 9. Variant counting:
+
+### Outputs
+
+The metadata file is structured as follows:
+
+```
+filenames:
+  {LIBRARY_ID}_{TABLE_1}.csv.gz
+  {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
+  ...
+meta:
+  command: 'single_cell infer_haps ...'
+  input_yaml: input.yaml
+  type: infer_haps
+  version: v0.0.0
+```
+
+
+## 9. SNV genotyping:
 
 ![variant_counting](readme_data/variant_counting.png)
 
@@ -650,13 +711,30 @@ tumour_cells:
 ### Run:
 
 ```
-single_cell variant_counting \
- --input_yaml inputs/SC-1234/variant_counting.yaml \
+single_cell snv_genotyping \
+ --input_yaml inputs/SC-1234/snv_genotyping.yaml \
 --tmpdir temp/SC-1234/tmp \
 --pipelinedir pipeline/SC-1234  \
 --out_dir results/SC-1234/results \
 ...
 ```
+
+### Outputs
+
+The metadata file is structured as follows:
+
+```
+filenames:
+  {LIBRARY_ID}_{TABLE_1}.csv.gz
+  {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
+  ...
+meta:
+  command: 'single_cell snv_genotyping ...'
+  input_yaml: input.yaml
+  type: snv_genotyping
+  version: v0.0.0
+```
+
 
 ## 10. Germline Calling:
 ![germline_calling](readme_data/germline.png)
@@ -685,6 +763,23 @@ single_cell germline \
 --out_dir results/SC-1234/results \
 ...
 ```
+
+### Outputs
+
+The metadata file is structured as follows:
+
+```
+filenames:
+  {LIBRARY_ID}_{TABLE_1}.csv.gz
+  {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
+  ...
+meta:
+  command: 'single_cell germline_calling ...'
+  input_yaml: input.yaml
+  type: germline_calling
+  version: v0.0.0
+```
+
 
 
 ## 11. Generate Config 

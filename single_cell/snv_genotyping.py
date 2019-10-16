@@ -148,7 +148,7 @@ def create_variant_counting_workflow(args):
     return workflow
 
 
-def variant_counting_pipeline(args):
+def snv_genotyping_pipeline(args):
     pyp = pypeliner.app.Pypeline(config=args)
 
     workflow = create_variant_counting_workflow(args)
