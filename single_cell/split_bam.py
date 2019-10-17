@@ -21,7 +21,7 @@ def split_bam_workflow(args):
 
     baseimage = config['docker']['single_cell_pipeline']
 
-    split_bam_template = os.path.join(args['out_dir'], '{region}_split_wgs.bam')
+    split_bam_template = os.path.join(args['out_dir'], '{region}.bam')
 
     meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
     input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
