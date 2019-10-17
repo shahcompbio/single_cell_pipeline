@@ -9,6 +9,9 @@ from single_cell.utils import helpers
 
 import pypeliner
 
+from single_cell.utils import fastqutils
+
+
 
 def destruct_bamdisc_and_numreads(
         destruct_config, normal_bam_file, stats,
@@ -56,6 +59,21 @@ def destruct_bamdisc_and_numreads(
     numreads_r2 = get_read_count(reads_2)
 
     return max(numreads_r1, numreads_r2)
+
+
+def merge_fastqs(inputs, output):
+    read_counter = 0
+    with helpers.getFileHandle(output, 'wt') as merged:
+        for infile in inputs:
+            reader = fastqutils.FastqReader(infile)
+            for read in reader.get_read_iterator():
+                read[0] = '@' + str(int(read_counter)) + '/' + read[0].split('/')[1]
+
+            read_counter += 1
+
+            for line in read:
+                merged.write(line)
+
 
 
 def merge_read_counts(readcounts):

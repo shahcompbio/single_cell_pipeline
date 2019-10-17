@@ -37,38 +37,11 @@ def process_cells_destruct(
     )
 
     workflow.transform(
-        name='merge_read_counts',
-        ret=mgd.TempOutputObj("readcounts"),
-        func="single_cell.workflows.destruct_singlecell.tasks.merge_read_counts",
-        ctx={'io': 1, 'mem': 8},
-        args=(
-            mgd.TempInputObj('numreads', 'cell_id'),
-        )
-    )
-
-    workflow.transform(
-        name='reindex_reads',
-        func="single_cell.workflows.destruct_singlecell.tasks.re_index_reads_both",
-        ctx={'io': 1, 'mem': 8},
-        axes=('cell_id',),
-        args=(
-            mgd.TempInputFile('cell_reads_1.fastq.gz', 'cell_id'),
-            mgd.TempOutputFile('cell_reads_1_reindex.fastq.gz', 'cell_id'),
-            mgd.TempInputFile('cell_reads_2.fastq.gz', 'cell_id'),
-            mgd.TempOutputFile('cell_reads_2_reindex.fastq.gz', 'cell_id'),
-            mgd.InputInstance('cell_id'),
-            cells,
-            mgd.TempInputObj('readcounts'),
-        ),
-        kwargs={'tag': tag}
-    )
-
-    workflow.transform(
         name='merge_reads_r1',
         ctx={'io': 1, 'mem': 8, 'disk': 100},
-        func="single_cell.workflows.destruct_singlecell.tasks.merge_cell_fastqs",
+        func="single_cell.workflows.destruct_singlecell.tasks.merge_fastqs",
         args=(
-            mgd.TempInputFile('cell_reads_1_reindex.fastq.gz', 'cell_id'),
+            mgd.TempInputFile('cell_reads_1.fastq.gz', 'cell_id'),
             mgd.OutputFile(reads_1),
         ),
     )
@@ -76,9 +49,9 @@ def process_cells_destruct(
     workflow.transform(
         name='merge_reads_r2',
         ctx={'io': 1, 'mem': 8, 'disk': 100},
-        func="single_cell.workflows.destruct_singlecell.tasks.merge_cell_fastqs",
+        func="single_cell.workflows.destruct_singlecell.tasks.merge_fastqs",
         args=(
-            mgd.TempInputFile('cell_reads_2_reindex.fastq.gz', 'cell_id'),
+            mgd.TempInputFile('cell_reads_2.fastq.gz', 'cell_id'),
             mgd.OutputFile(reads_2),
         ),
     )
