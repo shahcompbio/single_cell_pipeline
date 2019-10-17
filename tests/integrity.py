@@ -56,7 +56,7 @@ dtypes_check = {
         'order': 'float64',
         'experimental_condition': 'object',
         'quality': 'float64',
-        'is_s_phase': 'boolean',
+        'is_s_phase': 'bool',
     },
     'gc_metrics': {
     },

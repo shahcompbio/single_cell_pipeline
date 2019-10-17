@@ -6,7 +6,6 @@ import shutil
 import pandas as pd
 import yaml
 from single_cell.utils import helpers
-from single_cell.workflows.align.dtypes import dtypes
 
 
 class CsvParseError(Exception):
@@ -21,15 +20,34 @@ class CsvWriterError(Exception):
     pass
 
 
-def get_dtypes_from_df(df, na_rep='NA'):
-    pandas_to_std_types = {
+class CsvTypeMismatch(Exception):
+    def __init__(self, column, expected_dtype, dtype):
+        self.column = column
+        self.dtype = dtype
+        self.expected_dtype = expected_dtype
+
+    def __str__(self):
+        message = 'mismatching types for col {}. types were {} and {}'
+        message = message.format(self.column, self.expected_dtype, self.dtype)
+        return message
+
+
+def pandas_to_std_types():
+    return {
         "bool": "bool",
         "int64": "int",
+        "int": "int",
         "Int64": "int",
         "float64": "float",
+        "float": "float",
         "object": "str",
+        "str": "str",
         "category": "str",
     }
+
+
+def get_dtypes_from_df(df, na_rep='NA'):
+    type_converter = pandas_to_std_types()
 
     typeinfo = {}
     for column, dtype in df.dtypes.items():
@@ -39,7 +57,7 @@ def get_dtypes_from_df(df, na_rep='NA'):
             if df.empty:
                 typeinfo[column] = na_rep
             else:
-                typeinfo[column] = pandas_to_std_types[str(dtype)]
+                typeinfo[column] = type_converter[str(dtype)]
 
     return typeinfo
 
@@ -235,11 +253,12 @@ class CsvOutput(object):
             return None
 
     def __write_yaml(self):
+        type_converter = pandas_to_std_types()
 
         yamldata = {'header': self.header, 'sep': self.sep, 'columns': []}
 
         for column in self.columns:
-            data = {'name': column, 'dtype': self.dtypes[column]}
+            data = {'name': column, 'dtype': type_converter[self.dtypes[column]]}
             yamldata['columns'].append(data)
 
         with helpers.getFileHandle(self.yaml_file, 'wt') as f:
@@ -323,7 +342,7 @@ def annotate_csv(infile, annotation_data, outfile, on="cell_id", write_header=Tr
 
     df_dtypes = metrics_df.dtypes.to_dict()
     if dtypes:
-        df_dtypes = {k: dtypes[k] if k in dtypes else v for k,v in df_dtypes.items()}
+        df_dtypes = {k: dtypes[k] if k in dtypes else v for k, v in df_dtypes.items()}
 
     output = CsvOutput(outfile, sep=csvinput.sep, header=write_header, dtypes=df_dtypes)
     output.write_df(metrics_df)
@@ -352,7 +371,7 @@ def concatenate_csv(in_filenames, out_filename, key_column=None, write_header=Tr
 
     df_dtypes = data.dtypes.to_dict()
     if dtypes:
-        df_dtypes = {k:dtypes[k] if k in dtypes else v for k,v in df_dtypes.items()}
+        df_dtypes = {k: dtypes[k] if k in dtypes else v for k, v in df_dtypes.items()}
 
     csvoutput = CsvOutput(out_filename, header=write_header, sep=sep, dtypes=df_dtypes)
     csvoutput.write_df(data)
@@ -392,6 +411,8 @@ def extrapolate_types_from_yaml_files(csv_files):
 
 
 def concatenate_csv_files_quick_lowmem(inputfiles, output, write_header=True, dtypes=None):
+    type_converter = pandas_to_std_types()
+
     if isinstance(inputfiles, dict):
         inputfiles = inputfiles.values()
 
@@ -402,7 +423,10 @@ def concatenate_csv_files_quick_lowmem(inputfiles, output, write_header=True, dt
 
     for col, type in input_dtypes.items():
         if dtypes and col in dtypes:
-            assert dtypes[col] == type
+            expected_dtype = type_converter[dtypes[col]]
+            type = type_converter[type]
+            if not expected_dtype == type:
+                raise CsvTypeMismatch(col, expected_dtype, type)
 
     csvoutput = CsvOutput(
         output, header=write_header, sep=sep, columns=cols, dtypes=input_dtypes
@@ -418,6 +442,8 @@ def prep_csv_files(filepath, outputfile, header=False, dtypes=None):
     :param outputfile:
     :type outputfile:
     """
+    type_converter = pandas_to_std_types()
+
     csvinput = CsvInput(filepath, dtypes=dtypes)
 
     if csvinput.header is None:
@@ -425,7 +451,10 @@ def prep_csv_files(filepath, outputfile, header=False, dtypes=None):
 
     for col, type in csvinput.dtypes.items():
         if dtypes and col in dtypes:
-            assert dtypes[col] == type
+            expected_dtype = type_converter[dtypes[col]]
+            type = type_converter[type]
+            if not expected_dtype == type:
+                raise CsvTypeMismatch(col, expected_dtype, type)
 
     csvoutput = CsvOutput(
         outputfile, header=False, columns=csvinput.columns,
@@ -439,6 +468,8 @@ def prep_csv_files(filepath, outputfile, header=False, dtypes=None):
 
 
 def finalize_csv(infile, outfile, dtypes=None):
+    type_converter = pandas_to_std_types()
+
     csvinput = CsvInput(infile)
 
     if csvinput.header:
@@ -446,7 +477,10 @@ def finalize_csv(infile, outfile, dtypes=None):
 
     for col, type in csvinput.dtypes.items():
         if dtypes and col in dtypes:
-            assert dtypes[col] == type
+            expected_dtype = type_converter[dtypes[col]]
+            type = type_converter[type]
+            if not expected_dtype == type:
+                raise CsvTypeMismatch(col, expected_dtype, type)
 
     csvoutput = CsvOutput(
         outfile, header=True, columns=csvinput.columns,
@@ -476,7 +510,7 @@ def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', suffixes=None, 
 
     df_dtypes = data.dtypes.to_dict()
     if dtypes:
-        df_dtypes = {k:dtypes[k] if k in dtypes else v for k,v in df_dtypes.items()}
+        df_dtypes = {k: dtypes[k] if k in dtypes else v for k, v in df_dtypes.items()}
 
     csvoutput = CsvOutput(out_filename, header=write_header, sep=sep, dtypes=df_dtypes)
     csvoutput.write_df(data)
@@ -528,7 +562,7 @@ def read_csv_and_yaml(infile, chunksize=None):
 def write_dataframe_to_csv_and_yaml(df, outfile, write_header=False, sep=',', dtypes=None):
     df_dtypes = df.dtypes.to_dict()
     if dtypes:
-        df_dtypes = {k:dtypes[k] if k in dtypes else v for k,v in df_dtypes.items()}
+        df_dtypes = {k: dtypes[k] if k in dtypes else v for k, v in df_dtypes.items()}
 
     csvoutput = CsvOutput(outfile, header=write_header, sep=sep, dtypes=df_dtypes)
     csvoutput.write_df(df)
