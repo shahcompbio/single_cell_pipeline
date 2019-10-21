@@ -6,7 +6,7 @@ Created on Jul 6, 2017
 
 import pypeliner
 import pypeliner.managed as mgd
-
+from single_cell.workflows.align.dtypes import dtypes
 
 def bam_metrics_workflow(
         bam_filename,
@@ -51,6 +51,7 @@ def bam_metrics_workflow(
                                        for cellid in cell_ids])
 
     baseimage = config['docker']['single_cell_pipeline']
+    workflow = pypeliner.workflow.Workflow(ctx={'docker_image': baseimage})
     workflow = pypeliner.workflow.Workflow(ctx={'docker_image': baseimage})
 
     workflow.setobj(
@@ -132,6 +133,7 @@ def bam_metrics_workflow(
             sample_info,
             mgd.TempOutputFile('alignment_metrics_annotated.csv.gz', extensions=['.yaml']),
         ),
+        kwargs={'dtypes': dtypes()['metrics']}
     )
 
     workflow.transform(
@@ -147,6 +149,7 @@ def bam_metrics_workflow(
             'outer',
             ['cell_id'],
         ),
+        kwargs={'dtypes': dtypes()['metrics']}
     )
 
     return workflow

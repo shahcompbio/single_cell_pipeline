@@ -4,12 +4,12 @@ import logging
 import os
 
 import single_cell.workflows.align.fastqscreen as fastqscreen
-from single_cell.workflows.align.dtypes import dtypes
 from single_cell.utils import bamutils
 from single_cell.utils import csvutils
 from single_cell.utils import helpers
 from single_cell.utils import picardutils
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotMetrics
+from single_cell.workflows.align.dtypes import dtypes
 
 from .scripts import CollectMetrics
 from .scripts import GenerateCNMatrix
@@ -46,6 +46,9 @@ def add_contamination_status(
     for altcol in alts:
         perc_alt = data[altcol] / data['total_reads']
         data.loc[perc_alt > alt_threshold, 'is_contaminated'] = True
+
+    col_type = dtypes()['metrics']['is_contaminated']
+    data['is_contaminated'] = data['is_contaminated'].astype(col_type)
 
     csvutils.write_dataframe_to_csv_and_yaml(
         data, outfile, write_header=True, dtypes=dtypes()['metrics']
