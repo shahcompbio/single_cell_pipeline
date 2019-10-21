@@ -46,6 +46,21 @@ def pandas_to_std_types():
     }
 
 
+def cast_dataframe(df, dtypes):
+    for column_name in df.columns.values:
+        dtype = dtypes[column_name]
+
+        if str(dtype) == 'bool' and df[column_name].isnull().any():
+            raise Exception('NaN found in bool column:{}'.format(column_name))
+
+        if 'float' in str(dtype):
+            df[column_name] = df[column_name].replace('NA', float('nan'))
+
+        df[column_name] = df[column_name].astype(dtype)
+
+    return df
+
+
 def get_dtypes_from_df(df, na_rep='NA'):
     type_converter = pandas_to_std_types()
 
@@ -203,8 +218,7 @@ class CsvInput(object):
             )
         except pd.errors.EmptyDataError:
             data = pd.DataFrame(columns=self.columns)
-            for column_name, dtype in dtypes.items():
-                data[column_name] = data[column_name].astype(dtype)
+            data = cast_dataframe(data, dtypes)
 
         if chunksize:
             return return_gen(data)
@@ -277,7 +291,22 @@ class CsvOutput(object):
         )
 
         self.columns = list(df.columns.values)
-        self.dtypes = get_dtypes_from_df(df)
+
+        df_dtypes = get_dtypes_from_df(df)
+
+        if not self.dtypes:
+            self.dtypes = df_dtypes
+
+        type_converter = pandas_to_std_types()
+        for col, dtype in df_dtypes.items():
+            try:
+                expected_dtype = type_converter[self.dtypes[col]]
+            except:
+                raise Exception(self.dtypes, df_dtypes)
+            dtype = type_converter[dtype]
+            if not expected_dtype == dtype:
+                raise CsvTypeMismatch(col, expected_dtype, dtype)
+
         self.__write_yaml()
 
     def write_csv_data(self, reader, writer):
@@ -340,9 +369,13 @@ def annotate_csv(infile, annotation_data, outfile, on="cell_id", write_header=Tr
         for column, value in col_data.items():
             metrics_df.loc[metrics_df[on] == cell, column] = value
 
+    metrics_df = cast_dataframe(metrics_df, dtypes)
+
     df_dtypes = metrics_df.dtypes.to_dict()
     if dtypes:
-        df_dtypes = {k: dtypes[k] if k in dtypes else v for k, v in df_dtypes.items()}
+        df_dtypes = {k: dtypes[k] if k in dtypes else str(v) for k, v in df_dtypes.items()}
+    else:
+        df_dtypes = {k: str(v) for k, v in df_dtypes.items()}
 
     output = CsvOutput(outfile, sep=csvinput.sep, header=write_header, dtypes=df_dtypes)
     output.write_df(metrics_df)
@@ -371,7 +404,9 @@ def concatenate_csv(in_filenames, out_filename, key_column=None, write_header=Tr
 
     df_dtypes = data.dtypes.to_dict()
     if dtypes:
-        df_dtypes = {k: dtypes[k] if k in dtypes else v for k, v in df_dtypes.items()}
+        df_dtypes = {k: dtypes[k] if k in dtypes else str(v) for k, v in df_dtypes.items()}
+    else:
+        df_dtypes = {k: str(v) for k, v in df_dtypes.items()}
 
     csvoutput = CsvOutput(out_filename, header=write_header, sep=sep, dtypes=df_dtypes)
     csvoutput.write_df(data)
@@ -510,7 +545,11 @@ def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', suffixes=None, 
 
     df_dtypes = data.dtypes.to_dict()
     if dtypes:
-        df_dtypes = {k: dtypes[k] if k in dtypes else v for k, v in df_dtypes.items()}
+        df_dtypes = {k: dtypes[k] if k in dtypes else str(v) for k, v in df_dtypes.items()}
+    else:
+        df_dtypes = {k: str(v) for k, v in df_dtypes.items()}
+
+    data = cast_dataframe(data, df_dtypes)
 
     csvoutput = CsvOutput(out_filename, header=write_header, sep=sep, dtypes=df_dtypes)
     csvoutput.write_df(data)
@@ -562,7 +601,9 @@ def read_csv_and_yaml(infile, chunksize=None):
 def write_dataframe_to_csv_and_yaml(df, outfile, write_header=False, sep=',', dtypes=None):
     df_dtypes = df.dtypes.to_dict()
     if dtypes:
-        df_dtypes = {k: dtypes[k] if k in dtypes else v for k, v in df_dtypes.items()}
+        df_dtypes = {k: dtypes[k] if k in dtypes else str(v) for k, v in df_dtypes.items()}
+    else:
+        df_dtypes = {k: str(v) for k, v in df_dtypes.items()}
 
     csvoutput = CsvOutput(outfile, header=write_header, sep=sep, dtypes=df_dtypes)
     csvoutput.write_df(df)

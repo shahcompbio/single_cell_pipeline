@@ -35,7 +35,7 @@ def dtypes():
         'fastqscreen_mm10': 'Int64',
         'fastqscreen_nohit': 'Int64',
         'fastqscreen_mm10_multihit': 'Int64',
-        'is_contaminated': 'str'
+        'is_contaminated': 'bool'
     }
     dtypes = locals()
 

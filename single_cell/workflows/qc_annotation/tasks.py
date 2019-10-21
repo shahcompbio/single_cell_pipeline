@@ -42,6 +42,9 @@ def add_corrupt_tree_order(corrupt_tree, metrics, output):
         order = ordering.get(cellid, float('nan'))
         metrics.loc[metrics["cell_id"] == cellid, "order_corrupt_tree"] = order
 
+    col_dtype = dtypes()['metrics']['order_corrupt_tree']
+    metrics['order_corrupt_tree'] = metrics['order_corrupt_tree'].astype(col_dtype)
+
     csvutils.write_dataframe_to_csv_and_yaml(
         metrics, output, write_header=True, dtypes=dtypes()['metrics']
     )
@@ -123,11 +126,17 @@ def cell_cycle_classifier(hmmcopy_reads, hmmcopy_metrics, alignment_metrics, out
 
     cell_cycle_df = pd.read_csv(temp_output)
 
+    cols_cell_cycle = cell_cycle_df.columns.values
+
     hmm_metrics_df = csvutils.read_csv_and_yaml(hmmcopy_metrics)
 
     hmm_metrics_df = hmm_metrics_df.merge(cell_cycle_df, on=['cell_id'], how='outer')
 
-    csvutils.write_dataframe_to_csv_and_yaml(hmm_metrics_df, output, dtypes = dtypes()['metrics'])
+    out_dtypes = dtypes()['metrics']
+    for colname in cols_cell_cycle:
+        hmm_metrics_df[colname] = hmm_metrics_df[colname].astype(out_dtypes[colname])
+
+    csvutils.write_dataframe_to_csv_and_yaml(hmm_metrics_df, output, dtypes=out_dtypes)
 
 
 def filter_plot_tar(metrics, src_tar, pass_tar, fail_tar, tempdir, filters):
