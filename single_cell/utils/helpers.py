@@ -33,24 +33,22 @@ def generate_and_upload_metadata(
 
     if isinstance(filepaths, dict):
         filepaths = filepaths.values()
-
     filepaths = list(filepaths)
 
-    command = ' '.join(command)
-    version = get_version()
-
-    metadata['command'] = command
-    metadata['version'] = version
+    metadata['command'] = ' '.join(command)
+    metadata['version'] = get_version()
 
     if type:
         metadata['type'] = type
 
     if template:
         assert len(template) == 3
-        assert re.match('.*\{.*\}.*', template[1])
+        instances, template_path, instance_key = template
+        assert re.match('.*\{.*\}.*', template_path)
+        template_path = os.path.relpath(template_path, root_dir)
         metadata['bams'] = {}
-        metadata['bams']['template'] = template[1]
-        instances = [{template[2]:instance} for instance in template[0]]
+        metadata['bams']['template'] = template_path
+        instances = [{instance_key:instance} for instance in instances]
         metadata['bams']['instances'] = instances
 
     if input_yaml_data:
