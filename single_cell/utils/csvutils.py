@@ -53,8 +53,7 @@ def cast_dataframe(df, dtypes):
         if str(dtype) == 'bool' and df[column_name].isnull().any():
             raise Exception('NaN found in bool column:{}'.format(column_name))
 
-        if 'float' in str(dtype):
-            df[column_name] = df[column_name].replace('NA', float('nan'))
+        df[column_name] = df[column_name].replace('NA', float('nan'))
 
         df[column_name] = df[column_name].astype(dtype)
 
@@ -407,6 +406,8 @@ def concatenate_csv(in_filenames, out_filename, key_column=None, write_header=Tr
         df_dtypes = {k: dtypes[k] if k in dtypes else str(v) for k, v in df_dtypes.items()}
     else:
         df_dtypes = {k: str(v) for k, v in df_dtypes.items()}
+
+    data = cast_dataframe(df, df_dtypes)
 
     csvoutput = CsvOutput(out_filename, header=write_header, sep=sep, dtypes=df_dtypes)
     csvoutput.write_df(data)
