@@ -52,7 +52,6 @@ def bam_metrics_workflow(
 
     baseimage = config['docker']['single_cell_pipeline']
     workflow = pypeliner.workflow.Workflow(ctx={'docker_image': baseimage})
-    workflow = pypeliner.workflow.Workflow(ctx={'docker_image': baseimage})
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),

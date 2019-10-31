@@ -46,6 +46,15 @@ def pandas_to_std_types():
     }
 
 
+def std_to_pandas_types():
+    return {
+        "bool": "bool",
+        "int": "Int64",
+        "float": "float64",
+        "str": "str",
+    }
+
+
 def cast_dataframe(df, dtypes):
     for column_name in df.columns.values:
         dtype = dtypes[column_name]
@@ -53,7 +62,9 @@ def cast_dataframe(df, dtypes):
         if str(dtype) == 'bool' and df[column_name].isnull().any():
             raise Exception('NaN found in bool column:{}'.format(column_name))
 
-        df[column_name] = df[column_name].replace('NA', float('nan'))
+        if 'NA' in df[column_name]:
+            if 'float' in str(dtype).lower() or 'int' in str(dtype).lower():
+                df[column_name] = df[column_name].replace('NA', float('nan'))
 
         df[column_name] = df[column_name].astype(dtype)
 
@@ -209,6 +220,9 @@ class CsvInput(object):
         dtypes = {k: v for k, v in self.dtypes.items() if v != "NA"}
         # if header exists then use first line (0) as header
         header = 0 if self.header else None
+
+        std_to_pandas = std_to_pandas_types()
+        dtypes = {k: std_to_pandas[v] for k, v in self.dtypes.items()}
 
         try:
             data = pd.read_csv(
@@ -407,7 +421,7 @@ def concatenate_csv(in_filenames, out_filename, key_column=None, write_header=Tr
     else:
         df_dtypes = {k: str(v) for k, v in df_dtypes.items()}
 
-    data = cast_dataframe(df, df_dtypes)
+    data = cast_dataframe(data, df_dtypes)
 
     csvoutput = CsvOutput(out_filename, header=write_header, sep=sep, dtypes=df_dtypes)
     csvoutput.write_df(data)
@@ -542,7 +556,6 @@ def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', suffixes=None, 
         assert sep == csvinput.sep
 
     data = merge_frames(data, how, on, suffixes=suffixes)
-    data = data.fillna(nan_val)
 
     df_dtypes = data.dtypes.to_dict()
     if dtypes:
@@ -552,7 +565,7 @@ def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', suffixes=None, 
 
     data = cast_dataframe(data, df_dtypes)
 
-    csvoutput = CsvOutput(out_filename, header=write_header, sep=sep, dtypes=df_dtypes)
+    csvoutput = CsvOutput(out_filename, header=write_header, sep=sep, dtypes=df_dtypes, na_rep=nan_val)
     csvoutput.write_df(data)
 
 

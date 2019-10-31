@@ -285,6 +285,7 @@ def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
                     wgs_metrics, tempdir, merged_metrics):
     helpers.makedirs(tempdir)
     sample_outputs = []
+
     for sample in flagstat_metrics.keys():
         flgstat = flagstat_metrics[sample]
         mkdup = markdups_metrics[sample]
