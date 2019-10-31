@@ -1,6 +1,11 @@
 # Change Log
 
 
+### v0.5.1:
+
+#### bugs:
+1. issues with NA handling in csvutils
+
 ### v0.5.0: 
 CLI refactor
 
