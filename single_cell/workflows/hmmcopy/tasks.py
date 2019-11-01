@@ -180,6 +180,9 @@ def get_hierarchical_clustering_order(
             reads_filename, chunksize=chunksize):
         chunk["bin"] = list(zip(chunk.chr, chunk.start, chunk.end))
 
+        # for some reason pivot doesnt like an Int64 state col
+        chunk['state'] = chunk['state'].astype('float')
+
         chunk = chunk.pivot(index='cell_id', columns='bin', values='state')
 
         data.append(chunk)

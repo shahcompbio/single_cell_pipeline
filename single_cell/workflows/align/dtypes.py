@@ -15,7 +15,7 @@ def dtypes():
         'total_properly_paired': 'Int64',
         'coverage_breadth': 'float64',
         'coverage_depth': 'float64',
-        'median_insert_size': 'Int64',
+        'median_insert_size': 'float64',
         'mean_insert_size': 'float64',
         'standard_deviation_insert_size': 'float64',
         'cell_call': 'str',

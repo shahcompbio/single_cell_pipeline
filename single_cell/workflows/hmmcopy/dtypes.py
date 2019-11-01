@@ -37,7 +37,7 @@ def dtypes():
         'empty_bins_hmmcopy': 'Int64',
         'mad_hmmcopy': 'float64',
         'mean_hmmcopy_reads_per_bin': 'float64',
-        'median_hmmcopy_reads_per_bin': 'Int64',
+        'median_hmmcopy_reads_per_bin': 'float64',
         'std_hmmcopy_reads_per_bin': 'float64',
         'total_mapped_reads_hmmcopy': 'Int64',
         'total_halfiness': 'float64',
