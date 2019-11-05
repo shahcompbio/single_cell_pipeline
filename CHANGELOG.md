@@ -1,10 +1,26 @@
 # Change Log
 
+### v0.5.1:
+
+#### Changes:
+1. alignment for all lanes is run in a single job
+
+#### bugs:
+1. removed redundant replace ? by 0 in plotting
+2. annotation works when sample_info is none
+
+
+#### bugs:
+1. issues with NA handling in csvutils
+2. all median cols are float now
+
+
 
 ### v0.5.1:
 
 #### bugs:
 1. issues with NA handling in csvutils
+2. all median cols are float now
 
 ### v0.5.0: 
 CLI refactor
