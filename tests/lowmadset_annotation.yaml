@@ -1,5 +1,5 @@
-hmmcopy_metrics: scdnastagingstorage/output/qc/primary/hmmcopy/A1234_hmmcopy_metrics.csv.gz
-hmmcopy_reads: scdnastagingstorage/output/qc/primary/hmmcopy/A1234_reads.csv.gz
-alignment_metrics: scdnastagingstorage/output/qc/primary/alignment/A1234_alignment_metrics.csv.gz
-gc_metrics: scdnastagingstorage/output/qc/primary/alignment/A1234_gc_metrics.csv.gz
-segs_pdf_tar: scdnastagingstorage/output/qc/primary/hmmcopy/A1234_segs.tar.gz
+hmmcopy_metrics: {storageaccount}/output/qc/lowmad/hmmcopy/A1234_hmmcopy_metrics.csv.gz
+hmmcopy_reads: {storageaccount}/output/qc/lowmad/hmmcopy/A1234_reads.csv.gz
+alignment_metrics: {storageaccount}/output/qc/lowmad/alignment/A1234_alignment_metrics.csv.gz
+gc_metrics: {storageaccount}/output/qc/lowmad/alignment/A1234_gc_metrics.csv.gz
+segs_pdf_tar: {storageaccount}/output/qc/lowmad/hmmcopy/A1234_segs.tar.gz
