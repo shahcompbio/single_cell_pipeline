@@ -164,13 +164,13 @@ def create_alignment_workflow(
         plot_metrics,
         ref_genome,
         config,
-        triminfo,
-        centerinfo,
+        laneinfo,
         sample_info,
         cell_ids,
         metrics_tar,
         library_id,
 ):
+
     baseimage = config['docker']['single_cell_pipeline']
 
     bam_filename = dict([(cellid, bam_filename[cellid])
@@ -195,39 +195,31 @@ def create_alignment_workflow(
     )
 
     workflow.setobj(
-        obj=mgd.TempOutputObj('trim', 'cell_id', 'lane', axes_origin=[]),
-        value=triminfo)
-
-    workflow.setobj(
-        obj=mgd.TempOutputObj('center', 'cell_id', 'lane', axes_origin=[]),
-        value=centerinfo)
+        obj=mgd.TempOutputObj('laneinfo', 'cell_id', 'lane', axes_origin=[]),
+        value=laneinfo)
 
     workflow.transform(
         name='align_reads',
         ctx={'mem': 7, 'ncpus': 1, 'docker_image': baseimage},
-        axes=('cell_id', 'lane',),
-        func="single_cell.workflows.align.tasks.align_pe",
+        axes=('cell_id',),
+        func="single_cell.workflows.align.align_tasks.align_lanes",
         args=(
-            mgd.InputFile('fastq_1', 'cell_id', 'lane', fnames=fastq_1_filename),
-            mgd.InputFile('fastq_2', 'cell_id', 'lane', fnames=fastq_2_filename),
-            mgd.TempOutputFile(
-                'aligned_per_cell_per_lane.sorted.bam', 'cell_id', 'lane'),
-            mgd.TempOutputFile('fastqc_reports.tar.gz', 'cell_id', 'lane'),
-            mgd.TempOutputFile('flagstat_metrics.txt', 'cell_id', 'lane'),
-            mgd.TempSpace('alignment_temp', 'cell_id', 'lane'),
+            mgd.InputFile('fastq_1', 'cell_id', 'lane', fnames=fastq_1_filename, axes_origin=[]),
+            mgd.InputFile('fastq_2', 'cell_id', 'lane', fnames=fastq_2_filename, axes_origin=[]),
+            mgd.OutputFile('sorted_markdups', 'cell_id', fnames=bam_filename, extensions=['.bai']),
+            mgd.TempOutputFile('fastqc_reports.tar.gz', 'cell_id'),
+            mgd.TempSpace('alignment_temp', 'cell_id'),
             ref_genome,
-            mgd.TempInputObj('trim', 'cell_id', 'lane'),
-            mgd.TempInputObj('center', 'cell_id', 'lane'),
+            mgd.TempInputObj('laneinfo', 'cell_id', 'lane', axes_origin=[]),
             mgd.TempInputObj('sampleinfo', 'cell_id'),
             mgd.InputInstance('cell_id'),
-            mgd.InputInstance('lane'),
             library_id,
             config['aligner'],
             config['docker'],
             config['adapter'],
             config['adapter2'],
-            mgd.TempOutputFile('organism_detailed_count_per_lane.csv', 'cell_id', 'lane'),
-            mgd.TempOutputFile('organism_summary_count_per_lane.csv', 'cell_id', 'lane'),
+            mgd.TempOutputFile('organism_detailed_count_per_cell.csv', 'cell_id'),
+            mgd.TempOutputFile('organism_summary_count_per_cell.csv', 'cell_id'),
             config['fastq_screen_params'],
         )
     )
@@ -237,26 +229,10 @@ def create_alignment_workflow(
         ctx={'mem': 7, 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.workflows.align.fastqscreen.merge_fastq_screen_counts",
         args=(
-            mgd.TempInputFile('organism_detailed_count_per_lane.csv', 'cell_id', 'lane'),
-            mgd.TempInputFile('organism_summary_count_per_lane.csv', 'cell_id', 'lane'),
+            mgd.TempInputFile('organism_detailed_count_per_cell.csv', 'cell_id'),
+            mgd.TempInputFile('organism_summary_count_per_cell.csv', 'cell_id'),
             mgd.OutputFile(detailed_fastqscreen_metrics, extensions=['.yaml']),
             mgd.TempOutputFile('organism_summary_count_per_cell.csv'),
-        )
-    )
-
-    workflow.transform(
-        name='merge_bams',
-        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.workflows.align.tasks.merge_postprocess_bams",
-        axes=('cell_id',),
-        args=(
-            mgd.TempInputFile(
-                'aligned_per_cell_per_lane.sorted.bam',
-                'cell_id',
-                'lane'),
-            mgd.OutputFile('sorted_markdups', 'cell_id', fnames=bam_filename, extensions=['.bai']),
-            mgd.TempSpace('tempdir', 'cell_id'),
-            config['docker']
         )
     )
 
@@ -316,8 +292,7 @@ def create_alignment_workflow(
         func="single_cell.utils.helpers.tar_files",
         args=(
             [
-                mgd.TempInputFile('fastqc_reports.tar.gz', 'cell_id', 'lane'),
-                mgd.TempInputFile('flagstat_metrics.txt', 'cell_id', 'lane'),
+                mgd.TempInputFile('fastqc_reports.tar.gz', 'cell_id'),
                 mgd.TempInputFile('markdups_metrics.txt', 'cell_id'),
                 mgd.TempInputFile('flagstat_metrics.txt', 'cell_id'),
                 mgd.TempInputFile('wgs_metrics.txt', 'cell_id'),

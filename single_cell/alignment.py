@@ -29,8 +29,8 @@ def alignment_workflow(args):
     bams_dir = args["bams_dir"]
 
     sampleinfo = inpututils.get_sample_info(args['input_yaml'])
-    triminfo = inpututils.get_trim_info(args['input_yaml'])
-    centerinfo = inpututils.get_center_info(args['input_yaml'])
+    laneinfo = inpututils.get_lane_info(args['input_yaml'])
+
     cellids = inpututils.get_samples(args['input_yaml'])
     fastq1_files, fastq2_files = inpututils.get_fastqs(args['input_yaml'])
 
@@ -70,8 +70,7 @@ def alignment_workflow(args):
             mgd.OutputFile(alignment_files['plot_metrics_output']),
             config['ref_genome'],
             config,
-            triminfo,
-            centerinfo,
+            laneinfo,
             sampleinfo,
             cellids,
             mgd.OutputFile(alignment_files['alignment_metrics_tar']),

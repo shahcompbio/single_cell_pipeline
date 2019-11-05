@@ -102,7 +102,7 @@ def load_yaml(path):
     return data
 
 
-def get_trim_info(fastqs_file):
+def get_lane_info(fastqs_file):
     data = load_yaml(fastqs_file)
 
     for cell in data.keys():
@@ -123,31 +123,15 @@ def get_trim_info(fastqs_file):
                     trim = False
                 else:
                     trim = True
-                seqinfo[(cell, lane)] = trim
+                seqinfo[(cell, lane)] = {'trim': trim}
             else:
                 raise Exception(
                     "trim flag missing in cell: {}".format(cell))
 
-    return seqinfo
-
-
-def get_center_info(fastqs_file):
-    data = load_yaml(fastqs_file)
-
-    for cell in data.keys():
-        assert "fastqs" in data[
-            cell], "couldnt extract fastq file paths from yaml input for cell: {}".format(cell)
-
-    seqinfo = dict()
-    for cell in data.keys():
-        fastqs = data[cell]["fastqs"]
-
-        for lane, paths in fastqs.items():
-
             if "sequencing_center" not in paths:
                 raise Exception(
                     "sequencing_center key missing in cell: {}".format(cell))
-            seqinfo[(cell, lane)] = paths["sequencing_center"]
+            seqinfo[(cell, lane)]['center'] = paths["sequencing_center"]
 
     return seqinfo
 
