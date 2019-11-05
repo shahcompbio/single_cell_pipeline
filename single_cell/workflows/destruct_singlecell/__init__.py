@@ -124,7 +124,7 @@ def destruct_preprocess_workflow(
         )
 
         workflow.subworkflow(
-            name='process_normal_cells',
+            name='process_individual_cells',
             func=process_cells_destruct,
             args=(
                 mgd.TempInputObj("destruct_config"),
