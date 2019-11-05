@@ -245,14 +245,15 @@ def add_clustering_order(
         reads, chromosomes=chromosomes
     )
 
-    if sample_info:
-        for cell_id, order in order.items():
-            sample_info[cell_id]['order'] = order
-    else:
-        sample_info = order
+    if not sample_info:
+        sample_info = {}
+
+    for cell_id, order in order.items():
+        if cell_id not in sample_info:
+            sample_info[cell_id] = {}
+        sample_info[cell_id]['order'] = order
 
     csvutils.annotate_csv(metrics, sample_info, output, dtypes=dtypes()['metrics'])
-
 
 def group_cells_by_row(cells, metrics, sort_by_col=False):
     metricsdata = pd.read_csv(metrics, compression='gzip')
@@ -345,7 +346,7 @@ def sort_bins(bins, chromosomes):
     bins = bins.drop_duplicates()
 
     if not chromosomes:
-        chromosomes = map(str, range(1, 23)) + ['X', 'Y']
+        chromosomes = list(map(str, range(1, 23))) + ['X', 'Y']
 
     bins["chr"] = pd.Categorical(bins["chr"], chromosomes)
 
