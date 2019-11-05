@@ -118,9 +118,6 @@ def load_data(hmmcopy_filename, alignment_filename,
     return data
 
 def classify(model, data):
-    ##TODO: remove this with v0.2.3, also handled in collect_metrics
-    # picardtools sometimes reports missing as ?
-    data = data.replace('?', 0)
     predictions = model.predict_proba(data)
 
     index_good_proba = np.where(model.classes_ == 1)
