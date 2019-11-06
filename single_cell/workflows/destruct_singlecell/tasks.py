@@ -64,7 +64,8 @@ def destruct_bamdisc_and_numreads(
 def merge_fastqs(inputs, output):
     read_counter = 0
     with helpers.getFileHandle(output, 'wt') as merged:
-        for infile in inputs:
+        for cellid in inputs:
+            infile = inputs[cellid]
             reader = fastqutils.FastqReader(infile)
             for read in reader.get_read_iterator():
                 read[0] = '@' + str(int(read_counter)) + '/' + read[0].split('/')[1]

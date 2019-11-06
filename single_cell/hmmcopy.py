@@ -40,9 +40,6 @@ def hmmcopy_workflow(args):
     cellids = inpututils.get_samples(args['input_yaml'])
     bam_files = inpututils.get_bams(args['input_yaml'])
 
-    samples = [re.split('[_-]', cell)[0] for cell in cellids]
-    samples = sorted(set(samples))
-
     lib = args["library_id"]
 
     workflow = pypeliner.workflow.Workflow(
