@@ -8,7 +8,8 @@
 #### bugs:
 1. removed redundant replace ? by 0 in plotting
 2. annotation works when sample_info is none
-
+3. fixed paths for annotation low mad yaml in tests
+4. updated dtypes in integrity tests
 
 #### bugs:
 1. issues with NA handling in csvutils
