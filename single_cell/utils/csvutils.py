@@ -43,6 +43,7 @@ def pandas_to_std_types():
         "object": "str",
         "str": "str",
         "category": "str",
+        "NA": "NA"
     }
 
 
