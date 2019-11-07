@@ -69,11 +69,10 @@ def merge_fastqs(inputs, output):
             reader = fastqutils.FastqReader(infile)
             for read in reader.get_read_iterator():
                 read[0] = '@' + str(int(read_counter)) + '/' + read[0].split('/')[1]
+                for line in read:
+                    merged.write(line)
+                read_counter += 1
 
-            read_counter += 1
-
-            for line in read:
-                merged.write(line)
 
 
 
