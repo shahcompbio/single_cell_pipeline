@@ -23,7 +23,6 @@ def process_cells_destruct(
         func="single_cell.workflows.destruct_singlecell.tasks.destruct_bamdisc_and_numreads",
         axes=('cell_id',),
         ctx={'io': 1, 'mem': 8},
-        ret=mgd.TempOutputObj("numreads", "cell_id"),
         args=(
             destruct_config,
             mgd.InputFile('bam', 'cell_id', fnames=cell_bam_files),
