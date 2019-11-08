@@ -150,7 +150,8 @@ def get_sample_info(fastqs_file):
         data[cell]["experimental_condition"] = data[cell]["condition"]
         if "fastqs" in data[cell]:
             del data[cell]["fastqs"]
-        del data[cell]["bam"]
+        if "bam" in data[cell]:
+            del data[cell]["bam"]
         del data[cell]["pick_met"]
         del data[cell]["condition"]
 
