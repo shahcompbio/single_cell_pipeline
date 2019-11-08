@@ -1,9 +1,10 @@
 # Change Log
 
-### v0.5.1:
+### v0.5.2:
 
 #### Changes:
 1. alignment for all lanes is run in a single job
+2. optimized destruct fastq reindexing
 
 #### bugs:
 1. removed redundant replace ? by 0 in plotting
