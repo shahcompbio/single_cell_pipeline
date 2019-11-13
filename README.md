@@ -18,7 +18,7 @@ The single cell pipeline performs analysis of single cell sequencing data produc
 
 ### CLI
 
-The above analyses are implemented as a series of subcommand.  Each subcommand takes as input an inputs yaml file
+The above analyses are implemented as a series of subcommands.  Each subcommand takes as input an inputs yaml file
 describing both the location of input files and the metadata for those input files.  Subcommands also take as input
 a directory or directories in which results will be output.
 
