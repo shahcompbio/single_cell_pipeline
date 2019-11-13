@@ -29,7 +29,7 @@ sns.set(context='talk',
 def encode_as_base64(filepath):
     with open(filepath, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read())
-    return encoded_string
+    return encoded_string.decode("utf-8")
 
 
 def load_reference(infile):
