@@ -186,8 +186,28 @@ def lumpy_calling_workflow(
         func='single_cell.workflows.lumpy.parse_lumpy_to_csv.parse_lumpy',
         args=(
             mgd.InputFile(lumpy_bed),
-            mgd.OutputFile(lumpy_calls),
-            mgd.OutputFile(lumpy_evidence),
+            mgd.TempOutputFile('lumpy_calls.csv'),
+            mgd.TempOutputFile('lumpy_evidence.csv'),
+        ),
+    )
+
+    workflow.transform(
+        name='prep_lumpy_calls',
+        ctx={'mem': 8, 'ncpus': 1},
+        func="single_cell.utils.csvutils.prep_csv_files",
+        args=(
+            mgd.TempInputFile('lumpy_calls.csv'),
+            mgd.OutputFile(lumpy_calls, extensions=['.yaml']),
+        ),
+    )
+
+    workflow.transform(
+        name='prep_lumpy_evidence',
+        ctx={'mem': 8, 'ncpus': 1},
+        func="single_cell.utils.csvutils.prep_csv_files",
+        args=(
+            mgd.TempInputFile('lumpy_evidence.csv'),
+            mgd.OutputFile(lumpy_evidence, extensions=['.yaml']),
         ),
     )
 
@@ -250,8 +270,8 @@ def create_lumpy_workflow(
             mgd.TempInputFile('hist_tumour_formatted.csv'),
             mgd.TempInputFile('tumour_mean_stdev.yaml'),
             mgd.OutputFile(lumpy_breakpoints_bed),
-            mgd.OutputFile(lumpy_breakpoints_csv),
-            mgd.OutputFile(lumpy_breakpoints_evidence),
+            mgd.OutputFile(lumpy_breakpoints_csv, extensions=['.yaml']),
+            mgd.OutputFile(lumpy_breakpoints_evidence, extensions=['.yaml']),
         ),
     )
 
