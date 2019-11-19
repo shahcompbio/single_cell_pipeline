@@ -404,7 +404,7 @@ def get_breakpoint_params(reference_dir, reference):
             'gtf_filename': referencedata['destruct_gtf_file'],
         },
         'docker': {
-            'single_cell_pipeline': docker_containers['destruct'],
+            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
             'destruct': docker_containers['destruct'],
             'lumpy': docker_containers['lumpy'],
             'samtools': docker_containers['samtools'],
