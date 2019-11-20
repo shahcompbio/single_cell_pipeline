@@ -48,8 +48,6 @@ def merge_fastq_screen_counts(
     else:
         df = pd.DataFrame(columns - ["cell_id",  "fastqscreen_nohit"])
 
-
-
     update_cols = [v for v in df.columns.values if v != 'cell_id']
 
     for colname in update_cols:
