@@ -27,7 +27,7 @@ def merge_fastq_screen_counts(
     if len(detailed_data) > 0:
         df = pd.concat(detailed_data)
     else:
-        df = pd.DataFrame(columns = ["cell_id"," readend","human","mouse","count"])
+        df = pd.DataFrame(columns=["cell_id", "readend", "human", "mouse", "count"])
     index_cols = [v for v in df.columns.values if v != "count"]
 
     df['count'] = df.groupby(index_cols)['count'].transform('sum')
