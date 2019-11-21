@@ -308,7 +308,6 @@ class GenHmmPlots(object):
         return color_reference
 
     def plot_segments(self, pdfout, remove_y=False):
-
         sns.set(context='talk',
                 style='ticks',
                 font='Helvetica',
@@ -342,7 +341,6 @@ class GenHmmPlots(object):
         segments = self.read_segments()
         params = self.read_params()
         metrics = self.read_metrics()
-
         annotations = self.get_annotations(metrics)
         self.add_annotations(fig, annotations)
 
@@ -355,9 +353,7 @@ class GenHmmPlots(object):
         # we pass None if we don't have data
         cols = reads["state"].replace(cmap)
         cols = cols[~reads['copy'].isnull()]
-
         df = reads[np.isfinite(reads['copy'])]
-
         if not df.empty:
             plt.scatter(
                 df['plot_coord'],
@@ -366,7 +362,6 @@ class GenHmmPlots(object):
                 edgecolors='none',
                 s=scatter_size,
                 rasterized=True)
-
         if segments is not None:
             x, y = utl.get_segment_start_end(segments, remove_y)
             plt.plot(x, y, color='black', linewidth=linewidth)
@@ -389,22 +384,18 @@ class GenHmmPlots(object):
 
         # make ylim a multiple of tick_step
         ylim = int((ylim + tick_step) / tick_step) * tick_step
-
         ax.set_ylim((0, ylim))
 
         ax.set_yticks(np.arange(0, ylim, tick_step))
 
         sns.despine(offset=10, trim=True)
         ax.tick_params(axis='x', which='minor', pad=9.1)
-
         ax1 = plt.subplot(gs[0, 1], sharey=ax)
         ax1.set_ylim((0, ylim))
 
         sns.despine(offset=10)
-
         ax1.yaxis.set_visible(False)
         ax1.spines['left'].set_visible(False)
-
         if not df.empty:
             self.plot_dist(
                 ax1,
@@ -465,18 +456,20 @@ class GenHmmPlots(object):
 
             x = np.arange(0, np.nanmax(np.array(reads["copy"])), 0.01)
             mu = params[
-                (params["parameter"] == "mus") & (
-                        params["state"] == state)]["final"].iloc[0]
+                (params["parameter"] == "mu") & (
+                        params["state"] == state) & (
+                            params["is_final"] == True)]["value"].iloc[0]
             lmbda = params[
-                (params["parameter"] == "lambdas") & (
-                        params["state"] == state)]["final"].iloc[0]
+                (params["parameter"] == "lambda") & (
+                        params["state"] == state) & (
+                            params["is_final"] == True)]["value"].iloc[0]
             nu = params[
-                (params["parameter"] == "nus") & (
-                        params["state"] == state)]["final"].iloc[0]
+                (params["parameter"] == "nu") & (
+                        params["state"] == state) & (
+                            params["is_final"] == True)]["value"].iloc[0]
 
             y = utl.t_dist_pdf(x, mu, lmbda, nu)
             x = x * scale
-
             if vertical:
                 plt.plot(y, x, color, linewidth=0.5, linestyle='--')
                 fig.set_xlim(0, 4)
@@ -491,7 +484,6 @@ class GenHmmPlots(object):
 
         self.plot_segments(self.segs_pdf)
         self.plot_bias(self.bias_pdf)
-
 
 if __name__ == '__main__':
     args = parse_args()

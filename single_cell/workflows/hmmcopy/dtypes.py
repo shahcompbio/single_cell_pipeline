@@ -24,6 +24,16 @@ def dtypes():
         'library_id': 'str',
     }
 
+    params = {
+        'iteration': 'Int64',
+        'is_final': 'bool',
+        'state':'Int64',
+        'parameter': 'str',
+        'cell_id':'str',
+        'value':'Float64',
+
+    }
+
     metrics = {
         'cell_id': 'str',
         'sample_id': 'str',
