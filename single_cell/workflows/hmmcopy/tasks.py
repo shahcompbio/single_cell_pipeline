@@ -90,7 +90,7 @@ def run_hmmcopy_script(corrected_reads, tempdir, cell_id, hmmparams, docker_imag
     cmd.append('--param_g=' + str(hmmparams['g']))
     cmd.append('--param_s=' + str(hmmparams['s']))
     cmd.append('--param_multiplier=' + multipliers)
-
+    
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
 
 
@@ -138,17 +138,22 @@ def run_hmmcopy(
     )
 
     hmmcopy_outdir = os.path.join(hmmcopy_tempdir, str(0))
+    
     csvutils.prep_csv_files(
         os.path.join(hmmcopy_outdir, "reads.csv"), corrected_reads_filename,
         dtypes=dtypes()['reads']
     )
+    
     csvutils.prep_csv_files(
-        os.path.join(hmmcopy_outdir, "params.csv"), parameters_filename
+        os.path.join(hmmcopy_outdir, "params.csv"), parameters_filename,
+        dtypes=dtypes()['params']
     )
+ 
     csvutils.prep_csv_files(
         os.path.join(hmmcopy_outdir, "segs.csv"), segments_filename,
         dtypes=dtypes()['segs']
     )
+    
     csvutils.prep_csv_files(
         os.path.join(hmmcopy_outdir, "metrics.csv"), metrics_filename,
         dtypes=dtypes()['metrics']
@@ -319,6 +324,7 @@ def create_igv_seg(merged_segs, merged_hmm_metrics,
 def plot_hmmcopy(reads, segments, params, metrics, ref_genome, segs_out,
                  bias_out, cell_id, num_states=7,
                  annotation_cols=None, sample_info=None, max_cn=None):
+    
     if not annotation_cols:
         annotation_cols = ['cell_call', 'experimental_condition', 'sample_type',
                            'mad_neutral_state', 'MSRSI_non_integerness',
