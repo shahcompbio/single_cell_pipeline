@@ -23,9 +23,19 @@ def t_dist_pdf(x, mu, lmbda, nu):
     return p
 
 
+def read_fai(fai_filename):
+    chrom_info = pd.read_csv(
+        fai_filename, sep='\t', header=None,
+        names=['chrom', 'length', 'V3', 'V4', 'V5'],
+        usecols=['chrom', 'length'],
+        dtype={'chrom': str, 'length': int})
+    return chrom_info
+
+
 def read_chromosome_lengths(ref_genome):
+    # TODO: human genome specific
     chromosomes = [str(a) for a in range(1, 23)] + ['X'] + ['Y']
-    chrom_info = pd.read_csv(ref_genome + '.fai', sep='\t', header=None, names=['chrom', 'length', 'V3', 'V4', 'V5'])
+    chrom_info = read_fai(ref_genome + '.fai')
     chrom_info = chrom_info[chrom_info['chrom'].isin(chromosomes)]
     chrom_length = chrom_info.set_index('chrom')['length']
     return chrom_length
