@@ -206,11 +206,8 @@ class CsvInput(object):
             return header, sep, dtypes, columns
 
     def __verify_data(self, df):
-        if not self.header:
-            df.columns = self.columns
-        else:
-            if not list(df.columns.values) == self.columns:
-                raise CsvParseError("metadata mismatch in {}".format(self.filepath))
+        if not list(df.columns.values) == self.columns:
+            raise CsvParseError("metadata mismatch in {}".format(self.filepath))
 
     def read_csv(self, chunksize=None):
         def return_gen(df_iterator):
@@ -221,6 +218,7 @@ class CsvInput(object):
         dtypes = {k: v for k, v in self.dtypes.items() if v != "NA"}
         # if header exists then use first line (0) as header
         header = 0 if self.header else None
+        names = None if self.header else self.columns
 
         std_to_pandas = std_to_pandas_types()
         dtypes = {k: std_to_pandas[v] for k, v in self.dtypes.items()}
@@ -228,8 +226,7 @@ class CsvInput(object):
         try:
             data = pd.read_csv(
                 self.filepath, compression=self.compression, chunksize=chunksize,
-                sep=self.sep, header=header, dtype=dtypes
-            )
+                sep=self.sep, header=header, names=names, dtype=dtypes)
         except pd.errors.EmptyDataError:
             data = pd.DataFrame(columns=self.columns)
             data = cast_dataframe(data, dtypes)
