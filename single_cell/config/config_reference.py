@@ -14,7 +14,7 @@ def containers():
         'single_cell_pipeline': 'singlecellpipeline/single_cell_pipeline:v{}'.format(version),
         'gatk': 'singlecellpipeline/gatk:v0.0.1',
         'fastqc': 'singlecellpipeline/fastqc:v0.0.2',
-        'hmmcopy': 'singlecellpipeline/hmmcopy:v0.0.4',
+        'hmmcopy': 'singlecellpipeline/hmmcopy:v0.0.5',
         'aneufinder': 'singlecellpipeline/aneufinder:v0.0.1',
         'strelka': 'singlecellpipeline/strelka:v0.0.3',
         'mutationseq': 'singlecellpipeline/mutationseq:v0.0.3',
