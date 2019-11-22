@@ -1,6 +1,7 @@
 from __future__ import division
 
 import os
+import logging
 
 from single_cell.utils import bamutils
 from single_cell.utils import csvutils
@@ -56,7 +57,7 @@ def add_contamination_status(
     check_df['perc_ref'] = data[reference] / data['total_reads']
     check_df = check_df[check_df['perc_ref'] > ref_threshold]
     if strict_validation and (len(check_df) / len(data) > 0.2):
-        raise LibraryContaminationError("over 20% of cells are contaminated")
+        logging.error("over 20% of cells are contaminated")
 
 
 def plot_metrics(metrics, output, plot_title, gc_matrix, gc_content):
