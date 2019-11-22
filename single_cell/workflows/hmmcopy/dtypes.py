@@ -30,8 +30,7 @@ def dtypes():
         'state':'Int64',
         'parameter': 'str',
         'cell_id':'str',
-        'value':'Float64',
-
+        'value':'float64',
     }
 
     metrics = {
