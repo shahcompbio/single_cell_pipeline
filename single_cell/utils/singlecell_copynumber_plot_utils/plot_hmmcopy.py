@@ -455,18 +455,18 @@ class GenHmmPlots(object):
                             color=color, vertical=vertical)
 
             x = np.arange(0, np.nanmax(np.array(reads["copy"])), 0.01)
+            final_iter = params['iteration'].max()
             mu = params[
-                (params["parameter"] == "mu") & (
-                        params["state"] == state) & (
-                            params["is_final"] == True)]["value"].iloc[0]
+                (params["parameter"] == "mus") &
+                (params["state"] == state) &
+                (params["iteration"] == final_iter)]["value"].iloc[0]
             lmbda = params[
-                (params["parameter"] == "lambda") & (
-                        params["state"] == state) & (
-                            params["is_final"] == True)]["value"].iloc[0]
+                (params["parameter"] == "lambdas") &
+                (params["state"] == state) &
+                (params["iteration"] == final_iter)]["value"].iloc[0]
             nu = params[
-                (params["parameter"] == "nu") & (
-                        params["state"] == state) & (
-                            params["is_final"] == True)]["value"].iloc[0]
+                (params["parameter"] == "nus") &
+                (params["state"] == state)]["value"].iloc[0]
 
             y = utl.t_dist_pdf(x, mu, lmbda, nu)
             x = x * scale
