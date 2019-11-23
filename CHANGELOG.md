@@ -1,5 +1,17 @@
 # Change Log
 
+### v0.5.3:
+
+#### bugs:
+1. fixed base64 encode issue for images in qc reports
+2. issue deleting non-existant bam key
+3. missing .gz.csv.yaml extensions for lumpy files
+4. fixed container for lumpy
+5. pd.concat on empy set of dataframes fixed
+6. plotting bugs in hmmcopy
+7. pandas loading issues related to dtypes specified but not names
+8. use new hmmcopy script, better params format
+
 ### v0.5.2:
 
 #### Changes:
@@ -15,8 +27,6 @@
 #### bugs:
 1. issues with NA handling in csvutils
 2. all median cols are float now
-
-
 
 ### v0.5.1:
 
