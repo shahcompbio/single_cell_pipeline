@@ -310,12 +310,9 @@ class CsvOutput(object):
 
         type_converter = pandas_to_std_types()
         for col, dtype in df_dtypes.items():
-            try:
-                expected_dtype = type_converter[self.dtypes[col]]
-            except:
-                raise Exception(self.dtypes, df_dtypes)
+            expected_dtype = type_converter[self.dtypes[col]]
             dtype = type_converter[dtype]
-            if not expected_dtype == dtype:
+            if not dtype == 'NA' and not expected_dtype == dtype:
                 raise CsvTypeMismatch(col, expected_dtype, dtype)
 
         self.__write_yaml()
