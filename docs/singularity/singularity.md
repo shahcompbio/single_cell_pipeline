@@ -10,7 +10,7 @@
     this can be done through ssh keys on the cluster. We don't support ssh keys with a passphrase at the moment.
 3. access to dockerhub on all nodes
     ```
-    singularity pull docker://docker.io/singlecellpipeline/single_cell_pipeline:v0.4.0
+    singularity pull docker://docker.io/singlecellpipeline/single_cell_pipeline:v0.5.4
     ```
 
 ### Download the reference data 
@@ -73,14 +73,15 @@ write the following to the a file:
 ```
 export PATH=/common/juno/OS7/10.1/linux3.10-glibc2.17-x86_64/bin:$PATH
 
-single_cell qc --input_yaml /path/to/input.yaml --library_id A97318A --maxjobs 100 \
+single_cell alignment --input_yaml /path/to/input.yaml --library_id A97318A --maxjobs 100 \
 --sentinel_only  --context_config context.yaml --loglevel DEBUG \
---alignment_output results/alignment --hmmcopy_output results/hmmcopy \
---annotation_output results/annotation --tmpdir temp/temp/QC \
---pipelinedir temp/pipeline/QC  --submit lsf \
+--out_dir results/alignment --bams_dir results/alignment_bams \
+--tmpdir temp/temp/QC --pipelinedir temp/pipeline/QC  --submit lsf \
 --nativespec ' -n {ncpus} -W {walltime} -R "rusage[mem={mem}]span[ptile={ncpus}]select[type==CentOS7]"' \
 --config_override '{"refdir": "/path/to/reference/data/dir"}' 
 ```
+
+Please refer to [doc](../../README.md) for detailed instructions for running all single cell sub commands.
 
 launch the pipeline:
 
