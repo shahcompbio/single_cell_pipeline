@@ -3,7 +3,7 @@
 1. clone the single cell pipeline repo.
 	```
 	export GIT_SSL_NO_VERIFY=1
-	git clone https://dgrewal@svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git
+	git clone https://github.com/shahcompbio/single_cell_pipeline.git
 	```
 2. install miniconda
 	```
