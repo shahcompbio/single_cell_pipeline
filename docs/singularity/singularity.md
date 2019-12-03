@@ -1,13 +1,17 @@
 # single cell pipeline on a  cluster 
 
-NOTE: the following steps require singularity and access to dockerhub from the compute nodes.
+#### Requirements:
 
-
-#### input yaml
-
-```
-singularity pull docker://docker.io/singlecellpipeline/single_cell_pipeline:v0.4.0
-```
+1. singularity install on head node and all compute nodes
+2. System should allow ssh into localhost without any passphrase or other issues on head node and all compute nodes. The following command should work on all nodes
+   ```
+   ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null localhost
+   ```
+    this can be done through ssh keys on the cluster. We don't support ssh keys with a passphrase at the moment.
+3. access to dockerhub on all nodes
+    ```
+    singularity pull docker://docker.io/singlecellpipeline/single_cell_pipeline:v0.4.0
+    ```
 
 ### Download the reference data 
 
@@ -59,6 +63,8 @@ context:
       walltime_retry_increment: '48:00'
 
 ```
+Please update the local_cache and the mounts directories before you run. The `\commom` mount will mount the required LSF paths in singularity to give job submission access to the pipeline. If the LSF executables are located at a different location, please provide that path in the config.
+
 
 ### launch the pipeline
 
