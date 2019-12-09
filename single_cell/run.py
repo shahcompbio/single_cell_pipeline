@@ -9,6 +9,7 @@ from single_cell.docker_run import run_with_docker
 from single_cell.generate_config import generate_config
 from single_cell.hmmcopy import hmmcopy_pipeline
 from single_cell.infer_haps import infer_haps_pipeline
+from single_cell.infer_haps import count_haps_pipeline
 from single_cell.merge_bams import merge_bams_pipeline
 from single_cell.split_bam import split_bam_pipeline
 from single_cell.variant_calling import variant_calling_pipeline
@@ -54,6 +55,9 @@ def main():
 
     if args["which"] == "infer_haps":
         infer_haps_pipeline(args)
+
+    if args["which"] == "count_haps":
+        count_haps_pipeline(args)
 
     if args["which"] == "breakpoint_calling":
         breakpoint_calling_pipeline(args)
