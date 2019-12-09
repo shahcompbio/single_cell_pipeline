@@ -156,6 +156,13 @@ def parse_args():
     infer_haps.set_defaults(which='infer_haps')
 
     # ===========
+    # haplotype counts
+    # ===========
+    count_haps = add_global_args(
+        subparsers.add_parser("count_haps"))
+    count_haps.set_defaults(which='count_haps')
+
+    # ===========
     # destruct
     # ===========
     breakpoint_calling = add_global_args(
