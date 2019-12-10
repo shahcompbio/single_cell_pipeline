@@ -45,7 +45,20 @@ def load_count_haps_input(input_yaml):
 
 
 def load_breakpoint_calling_input(input_yaml):
-    return load_haps_input(input_yaml)
+    yamldata = load_yaml(input_yaml)
+
+    normal = yamldata['normal']
+
+    if 'bam' in normal:
+        normal = normal['bam']
+    else:
+        normal = {v: normal[v]['bam'] for v in normal}
+
+    tumours = yamldata['tumour']
+
+    tumours = {v: tumours[v]['bam'] for v in tumours}
+
+    return normal, tumours
 
 
 def load_config(args):
