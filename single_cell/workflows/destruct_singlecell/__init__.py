@@ -3,35 +3,63 @@ import pypeliner.managed as mgd
 
 
 def process_cells_destruct(
-        destruct_config, cell_bam_files,
+        destruct_config, config, cell_bam_files,
         reads_1, reads_2, sample_1, sample_2, stats,
         tag=False
 ):
+
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1, }
 
-    cells = list(cell_bam_files.keys())
-
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
+
+    if isinstance(cell_bam_files, str):
+        workflow.commandline(
+            name='bamdisc_normal',
+            # func="single_cell.workflows.destruct_singlecell.tasks.destruct_bamdisc_and_numreads",
+            ctx={'io': 1, 'mem': 8, 'disk': 200, 'docker_image': config['docker']['destruct']},
+            args=(
+                'destruct_bamdiscordantfastq',
+                '-r',
+                '-c', destruct_config['bam_max_soft_clipped'],
+                '-f', destruct_config['bam_max_fragment_length'],
+                '-b', mgd.InputFile(cell_bam_files),
+                '-s', mgd.OutputFile(stats),
+                '--fastq1', mgd.OutputFile(reads_1),
+                '--fastq2', mgd.OutputFile(reads_2),
+                '-t', mgd.TempSpace('bamdisc_cell_tempspace'),
+                '-n', destruct_config['num_read_samples'],
+                '--sample1', mgd.OutputFile(sample_1),
+                '--sample2', mgd.OutputFile(sample_2),
+            )
+        )
+
+        return workflow
+
+    cells = list(cell_bam_files.keys())
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
         value=cells,
     )
 
-    workflow.transform(
+    workflow.commandline(
         name='bamdisc_and_numreads_cell',
-        func="single_cell.workflows.destruct_singlecell.tasks.destruct_bamdisc_and_numreads",
+        # func="single_cell.workflows.destruct_singlecell.tasks.destruct_bamdisc_and_numreads",
         axes=('cell_id',),
-        ctx={'io': 1, 'mem': 8},
+        ctx={'io': 1, 'mem': 8, 'docker_image': config['docker']['destruct']},
         args=(
-            destruct_config,
-            mgd.InputFile('bam', 'cell_id', fnames=cell_bam_files),
-            mgd.TempOutputFile('cell_stats', 'cell_id'),
-            mgd.TempOutputFile('cell_reads_1.fastq.gz', 'cell_id'),
-            mgd.TempOutputFile('cell_reads_2.fastq.gz', 'cell_id'),
-            mgd.TempOutputFile('cell_sample_1.fastq.gz', 'cell_id'),
-            mgd.TempOutputFile('cell_sample_2.fastq.gz', 'cell_id'),
-            mgd.TempSpace('bamdisc_cell_tempspace', 'cell_id'),
+            'destruct_bamdiscordantfastq',
+            '-r',
+            '-c', destruct_config['bam_max_soft_clipped'],
+            '-f', destruct_config['bam_max_fragment_length'],
+            '-b', mgd.InputFile('bam', 'cell_id', fnames=cell_bam_files),
+            '-s', mgd.TempOutputFile('cell_stats', 'cell_id'),
+            '--fastq1', mgd.TempOutputFile('cell_reads_1.fastq.gz', 'cell_id'),
+            '--fastq2', mgd.TempOutputFile('cell_reads_2.fastq.gz', 'cell_id'),
+            '-t', mgd.TempSpace('bamdisc_cell_tempspace', 'cell_id'),
+            '-n', destruct_config['num_read_samples'],
+            '--sample1', mgd.TempOutputFile('cell_sample_1.fastq.gz', 'cell_id'),
+            '--sample2', mgd.TempOutputFile('cell_sample_2.fastq.gz', 'cell_id'),
         ),
     )
 
@@ -85,7 +113,7 @@ def destruct_preprocess_workflow(
         normal_bam_files, normal_stats,
         normal_reads_1, normal_reads_2,
         normal_sample_1, normal_sample_2,
-        ref_data_directory, destruct_config,
+        ref_data_directory, destruct_config, config,
         tag=False
 ):
     workflow = pypeliner.workflow.Workflow()
@@ -93,6 +121,7 @@ def destruct_preprocess_workflow(
     workflow.transform(
         name="get_destruct_config",
         func="destruct.defaultconfig.get_config",
+        ctx={'docker_image': config['docker']['destruct'], 'disk': 200},
         ret=mgd.TempOutputObj("destruct_config"),
         args=(
             ref_data_directory,
@@ -101,20 +130,19 @@ def destruct_preprocess_workflow(
     )
 
     if isinstance(normal_bam_files, str):
-        workflow.transform(
-            name='bamdisc_normal',
-            func="single_cell.workflows.destruct_singlecell.tasks.destruct_bamdisc_and_numreads",
-            ctx={'io': 1, 'mem': 8, 'disk': 200},
+        workflow.subworkflow(
+            name='process_individual_cells',
+            func=process_cells_destruct,
             args=(
                 mgd.TempInputObj("destruct_config"),
+                config,
                 mgd.InputFile(normal_bam_files),
-                mgd.OutputFile(normal_stats),
                 mgd.OutputFile(normal_reads_1),
                 mgd.OutputFile(normal_reads_2),
                 mgd.OutputFile(normal_sample_1),
                 mgd.OutputFile(normal_sample_2),
-                mgd.TempSpace('bamdisc_normal_tempspace'),
-            )
+                mgd.OutputFile(normal_stats),
+            ),
         )
     else:
         workflow.setobj(
@@ -127,6 +155,7 @@ def destruct_preprocess_workflow(
             func=process_cells_destruct,
             args=(
                 mgd.TempInputObj("destruct_config"),
+                config,
                 mgd.InputFile('bam', 'normal_cell_id', fnames=normal_bam_files),
                 mgd.OutputFile(normal_reads_1),
                 mgd.OutputFile(normal_reads_2),
@@ -143,7 +172,7 @@ def destruct_preprocess_workflow(
 def destruct_workflow(
         normal_stats, normal_reads_1, normal_reads_2, normal_sample_1, normal_sample_2,
         tumour_stats, tumour_reads_1, tumour_reads_2, tumour_sample_1, tumour_sample_2,
-        destruct_config, ref_data_directory, breakpoints_filename,
+        destruct_config, config, ref_data_directory, breakpoints_filename,
         breakpoints_library_filename, cell_counts_filename, raw_data_directory,
         normal_sample_id='normal', tumour_sample_id='tumour',
         tumour_library_id='tumour'
@@ -154,6 +183,7 @@ def destruct_workflow(
     workflow.transform(
         name="get_destruct_config",
         func="destruct.defaultconfig.get_config",
+        ctx={'docker_image': config['docker']['destruct']},
         ret=mgd.TempOutputObj("destruct_config"),
         args=(
             ref_data_directory,
@@ -164,7 +194,7 @@ def destruct_workflow(
     workflow.subworkflow(
         name='destruct',
         func="destruct.workflow.create_destruct_fastq_workflow",
-        ctx={'disk': 200},
+        ctx={'docker_image': config['docker']['destruct'], 'disk': 200},
         args=(
             {
                 normal_sample_id: mgd.InputFile(normal_reads_1),
@@ -199,7 +229,7 @@ def destruct_workflow(
 
     workflow.transform(
         name='filter_annotate_breakpoints',
-        ctx={'mem': 8},
+        ctx={'docker_image': config['docker']['destruct'], 'mem': 8},
         func="biowrappers.components.breakpoint_calling.destruct.tasks.filter_annotate_breakpoints",
         args=(
             pypeliner.managed.TempInputFile('breakpoint_table'),
@@ -299,7 +329,7 @@ def create_destruct_workflow(
         destruct_ref_data_dir, breakpoints_csv, breakpoints_library_csv,
         cell_counts_csv, normal_sample_id='normal',
 ):
-    ctx = {'docker_image': config['docker']['destruct']}
+    ctx = {'docker_image': config['docker']['single_cell_pipeline']}
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     workflow.setobj(
@@ -319,6 +349,7 @@ def create_destruct_workflow(
             mgd.TempOutputFile('normal_sample_2.fastq.gz'),
             destruct_ref_data_dir,
             destruct_config,
+            config
         ),
     )
 
@@ -334,6 +365,7 @@ def create_destruct_workflow(
             mgd.TempOutputFile('tumour_sample_2.fastq.gz'),
             destruct_ref_data_dir,
             destruct_config,
+            config
         ),
         kwargs={'tag': True}
     )
@@ -353,6 +385,7 @@ def create_destruct_workflow(
             mgd.TempInputFile('tumour_sample_1.fastq.gz'),
             mgd.TempInputFile('tumour_sample_2.fastq.gz'),
             destruct_config,
+            config,
             destruct_ref_data_dir,
             mgd.OutputFile(breakpoints_csv),
             mgd.OutputFile(breakpoints_library_csv),
