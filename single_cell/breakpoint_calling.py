@@ -58,7 +58,7 @@ def breakpoint_calling_workflow(args):
 
     workflow.subworkflow(
         name='destruct',
-        ctx={'docker_image': config['docker']['destruct']},
+        ctx={'docker_image': config['docker']['single_cell_pipeline']},
         func="single_cell.workflows.destruct_singlecell.create_destruct_workflow",
         args=(
             normal_bam,
