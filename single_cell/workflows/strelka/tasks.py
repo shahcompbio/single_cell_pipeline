@@ -466,7 +466,8 @@ def filter_indel_file_list(
 
                 writer.write_record(record)
 
-        writer.close()
+        if writer:
+            writer.close()
 
 
 def _convert_dict_to_call(data_dict):
