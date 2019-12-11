@@ -1,5 +1,11 @@
 # Change Log
 
+### v0.5.5:
+
+#### changes:
+1. updated pypeliner to v0.5.13
+
+
 ### v0.5.4:
 
 #### bugs:
