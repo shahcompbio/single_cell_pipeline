@@ -4,7 +4,7 @@
 
 #### changes:
 1. updated pypeliner to v0.5.13
-
+2. updated documentation
 
 ### v0.5.4:
 
