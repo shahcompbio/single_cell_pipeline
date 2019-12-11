@@ -355,10 +355,11 @@ class CsvOutput(object):
 
         self.__write_yaml()
 
-    def write_csv_with_header(self, infile):
+    def write_csv_with_header(self, infile, headerless_input=False):
         with helpers.getFileHandle(self.filepath, 'wt') as writer:
             with helpers.getFileHandle(infile) as reader:
-                writer.write(self.header_line)
+                if headerless_input:
+                    writer.write(self.header_line)
                 self.write_csv_data(reader, writer)
 
         self.__write_yaml()
@@ -479,7 +480,7 @@ def concatenate_csv_files_quick_lowmem(inputfiles, output, write_header=True, dt
     csvoutput.concatenate_files(inputfiles)
 
 
-def prep_csv_files(filepath, outputfile, header=False, dtypes=None):
+def prep_csv_files(filepath, outputfile, dtypes=None):
     """
     generate header less csv files
     :param filepath:
@@ -506,19 +507,13 @@ def prep_csv_files(filepath, outputfile, header=False, dtypes=None):
         sep=csvinput.sep, dtypes=csvinput.dtypes
     )
 
-    if header:
-        csvoutput.write_csv_with_header(filepath)
-    else:
-        csvoutput.write_headerless_csv(filepath)
+    csvoutput.write_headerless_csv(filepath)
 
 
 def finalize_csv(infile, outfile, dtypes=None):
     type_converter = pandas_to_std_types()
 
     csvinput = CsvInput(infile)
-
-    if csvinput.header:
-        raise CsvInputError("cannot finalize file with header")
 
     for col, type in csvinput.dtypes.items():
         if dtypes and col in dtypes:
@@ -531,7 +526,10 @@ def finalize_csv(infile, outfile, dtypes=None):
         outfile, header=True, columns=csvinput.columns,
         sep=csvinput.sep, dtypes=csvinput.dtypes
     )
-    csvoutput.write_csv_with_header(infile)
+
+    headerless_input = False if csvinput.header else True
+
+    csvoutput.write_csv_with_header(infile, headerless_input=headerless_input)
 
 
 def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', suffixes=None, write_header=True, dtypes=None):
