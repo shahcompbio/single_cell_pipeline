@@ -1,0 +1,47 @@
+normal:
+    15-1-10000000:
+        bam: tests/variant_calling/inputs/normal/15-1-10000000.bam
+    15-10000001-20000000:
+        bam: tests/variant_calling/inputs/normal/15-10000001-20000000.bam
+    15-20000001-30000000:
+        bam: tests/variant_calling/inputs/normal/15-20000001-30000000.bam
+    15-30000001-40000000:
+        bam: tests/variant_calling/inputs/normal/15-30000001-40000000.bam
+    15-40000001-50000000:
+        bam: tests/variant_calling/inputs/normal/15-40000001-50000000.bam
+    15-50000001-60000000:
+        bam: tests/variant_calling/inputs/normal/15-50000001-60000000.bam
+    15-60000001-70000000:
+        bam: tests/variant_calling/inputs/normal/15-60000001-70000000.bam
+    15-70000001-80000000:
+        bam: tests/variant_calling/inputs/normal/15-70000001-80000000.bam
+    15-80000001-90000000:
+        bam: tests/variant_calling/inputs/normal/15-80000001-90000000.bam
+    15-90000001-100000000:
+        bam: tests/variant_calling/inputs/normal/15-90000001-100000000.bam
+    15-100000001-102531392:
+        bam: tests/variant_calling/inputs/normal/15-100000001-102531392.bam
+tumour:
+    15-1-10000000:
+        bam: tests/variant_calling/inputs/tumour/15-1-10000000.bam
+    15-10000001-20000000:
+        bam: tests/variant_calling/inputs/tumour/15-10000001-20000000.bam
+    15-20000001-30000000:
+        bam: tests/variant_calling/inputs/tumour/15-20000001-30000000.bam
+    15-30000001-40000000:
+        bam: tests/variant_calling/inputs/tumour/15-30000001-40000000.bam
+    15-40000001-50000000:
+        bam: tests/variant_calling/inputs/tumour/15-40000001-50000000.bam
+    15-50000001-60000000:
+        bam: tests/variant_calling/inputs/tumour/15-50000001-60000000.bam
+    15-60000001-70000000:
+        bam: tests/variant_calling/inputs/tumour/15-60000001-70000000.bam
+    15-70000001-80000000:
+        bam: tests/variant_calling/inputs/tumour/15-70000001-80000000.bam
+    15-80000001-90000000:
+        bam: tests/variant_calling/inputs/tumour/15-80000001-90000000.bam
+    15-90000001-100000000:
+        bam: tests/variant_calling/inputs/tumour/15-90000001-100000000.bam
+    15-100000001-102531392:
+        bam: tests/variant_calling/inputs/tumour/15-100000001-102531392.bam
+
