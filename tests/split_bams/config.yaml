@@ -1,0 +1,14 @@
+split_bam:
+  chromosomes:
+  - '15'
+  docker:
+    samtools: samtools:test
+    single_cell_pipeline: singlecellpipeline:test
+  max_cores: 8
+  memory:
+    high: 16
+    low: 4
+    med: 6
+  one_split_job: true
+  ref_genome: /refdata/human/GRCh37-lite.fa
+  split_size: 10000000
