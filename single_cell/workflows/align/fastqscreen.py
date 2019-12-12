@@ -3,13 +3,11 @@ import shutil
 from collections import defaultdict
 
 import pandas as pd
+import pypeliner
 from single_cell.utils import csvutils
 from single_cell.utils import fastqutils
 from single_cell.utils import helpers
-
 from single_cell.workflows.align.dtypes import dtypes
-
-import pypeliner
 
 
 def merge_fastq_screen_counts(
@@ -24,10 +22,8 @@ def merge_fastq_screen_counts(
             continue
         detailed_data.append(pd.read_csv(countsfile))
 
-    if len(detailed_data) > 0:
-        df = pd.concat(detailed_data)
-    else:
-        df = pd.DataFrame(columns=["cell_id", "readend", "human", "mouse", "count"])
+    df = pd.concat(detailed_data)
+
     index_cols = [v for v in df.columns.values if v != "count"]
 
     df['count'] = df.groupby(index_cols)['count'].transform('sum')
@@ -43,10 +39,7 @@ def merge_fastq_screen_counts(
 
     summary_counts = [pd.read_csv(countsfile) for countsfile in all_summary_counts]
 
-    if len(summary_counts) > 0:
-        df = pd.concat(summary_counts)
-    else:
-        df = pd.DataFrame(columns - ["cell_id",  "fastqscreen_nohit"])
+    df = pd.concat(summary_counts)
 
     update_cols = [v for v in df.columns.values if v != 'cell_id']
 
@@ -113,14 +106,18 @@ def run_fastq_screen_paired_end(fastq_r1, fastq_r2, tempdir, params, docker_imag
     return tagged_fastq_r1, tagged_fastq_r2
 
 
-def write_detailed_counts(counts, outfile, cell_id):
+def write_detailed_counts(counts, outfile, cell_id, fastqscreen_params):
     header = None
+
+    genomes = [genome['name'] for genome in fastqscreen_params['genomes']]
 
     with helpers.getFileHandle(outfile, 'wt') as writer:
 
         for read_end, read_end_counts in counts.items():
 
             if not read_end_counts:
+                outstr = ['cell_id', 'readend'] + genomes + ['count']
+                writer.write(','.join(outstr) + '\n')
                 continue
 
             if not header:
@@ -137,7 +134,9 @@ def write_detailed_counts(counts, outfile, cell_id):
                 writer.write(','.join(map(str, outstr)) + '\n')
 
 
-def write_summary_counts(counts, outfile, cell_id):
+def write_summary_counts(counts, outfile, cell_id, fastqscreen_params):
+    genomes = [genome['name'] for genome in fastqscreen_params['genomes']]
+
     summary_counts = defaultdict(int)
     for read_end, read_end_counts in counts.items():
         for flags, count in read_end_counts.items():
@@ -153,6 +152,14 @@ def write_summary_counts(counts, outfile, cell_id):
                 summary_counts['nohit'] += count
 
     with helpers.getFileHandle(outfile, 'wt') as writer:
+        if not summary_counts:
+            columns = ['cell_id']
+            columns += ['fastqscreen_' + genome for genome in genomes]
+            columns += ['fastqscreen_nohit']
+            header = ','.join(columns) + '\n'
+            writer.write(header)
+            return
+
         keys = sorted(summary_counts.keys())
         header = ['cell_id'] + ['fastqscreen_{}'.format(key) for key in keys]
         header = ','.join(header) + '\n'
@@ -211,8 +218,8 @@ def organism_filter(
     reader = fastqutils.PairedTaggedFastqReader(tagged_fastq_r1, tagged_fastq_r2)
     counts = reader.gather_counts()
 
-    write_detailed_counts(counts, detailed_metrics, cell_id)
-    write_summary_counts(counts, summary_metrics, cell_id)
+    write_detailed_counts(counts, detailed_metrics, cell_id, params)
+    write_summary_counts(counts, summary_metrics, cell_id, params)
 
     if filter_contaminated_reads:
         filter_reads(

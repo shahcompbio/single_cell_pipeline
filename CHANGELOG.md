@@ -1,13 +1,28 @@
 # Change Log
 
+### v0.5.5:
+
+#### changes:
+1. updated pypeliner to v0.5.13
+2. updated documentation
+
+### v0.5.4:
+
+#### bugs:
+1. mismatching csv type error in empty fastq files
+
+#### changes:
+1. refactor errors with empty fastq screen files when fastq is empty
+
+
 ### v0.5.3:
 
 #### bugs:
 1. fixed base64 encode issue for images in qc reports
-2. issue deleting non-existant bam key
+2. issue deleting non-existent bam key
 3. missing .gz.csv.yaml extensions for lumpy files
 4. fixed container for lumpy
-5. pd.concat on empy set of dataframes fixed
+5. pd.concat on empty set of dataframes fixed
 6. plotting bugs in hmmcopy
 7. pandas loading issues related to dtypes specified but not names
 8. use new hmmcopy script, better params format

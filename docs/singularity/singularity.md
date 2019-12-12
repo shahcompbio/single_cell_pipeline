@@ -1,13 +1,17 @@
 # single cell pipeline on a  cluster 
 
-NOTE: the following steps require singularity and access to dockerhub from the compute nodes.
+#### Requirements:
 
-
-#### input yaml
-
-```
-singularity pull docker://docker.io/singlecellpipeline/single_cell_pipeline:v0.4.0
-```
+1. singularity install on head node and all compute nodes
+2. System should allow ssh into localhost without any passphrase or other issues on head node and all compute nodes. The following command should work on all nodes
+   ```
+   ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null localhost
+   ```
+    this can be done through ssh keys on the cluster. We don't support ssh keys with a passphrase at the moment.
+3. access to dockerhub on all nodes
+    ```
+    singularity pull docker://docker.io/singlecellpipeline/single_cell_pipeline:v{VERSION}
+    ```
 
 ### Download the reference data 
 
@@ -44,7 +48,7 @@ singularity:
     server: 'docker.io'
     username: null
     password: null
-    local_cache: '/home/runner/singularity/cache'
+    local_cache: '/juno/work/shah/runner/singularity/cache'
     singularity_exe: 'singularity'
     mounts:
       juno: /juno/work/shah/pipelinedir
@@ -59,6 +63,8 @@ context:
       walltime_retry_increment: '48:00'
 
 ```
+Please update the local_cache and the mounts directories before you run. The `\commom` mount will mount the required LSF paths in singularity to give job submission access to the pipeline. If the LSF executables are located at a different location, please provide that path in the config.
+
 
 ### launch the pipeline
 
@@ -67,19 +73,21 @@ write the following to the a file:
 ```
 export PATH=/common/juno/OS7/10.1/linux3.10-glibc2.17-x86_64/bin:$PATH
 
-single_cell qc --input_yaml /path/to/input.yaml --library_id A97318A --maxjobs 100 \
+single_cell alignment --input_yaml /path/to/input.yaml --library_id A97318A --maxjobs 100 \
 --sentinel_only  --context_config context.yaml --loglevel DEBUG \
---alignment_output results/alignment --hmmcopy_output results/hmmcopy \
---annotation_output results/annotation --tmpdir temp/temp/QC \
---pipelinedir temp/pipeline/QC  --submit lsf \
+--out_dir results/alignment --bams_dir results/alignment_bams \
+--tmpdir temp/temp/QC --pipelinedir temp/pipeline/QC  --submit lsf \
 --nativespec ' -n {ncpus} -W {walltime} -R "rusage[mem={mem}]span[ptile={ncpus}]select[type==CentOS7]"' \
 --config_override '{"refdir": "/path/to/reference/data/dir"}' 
 ```
 
+Please refer to [doc](../../README.md) for detailed instructions for running all single cell sub commands.
+
 launch the pipeline:
 
 ```
-singularity run --bind /common --bind /juno/work  docker://docker.io/singlecellpipeline/single_cell_pipeline:v0.4.0 sh /path/to/shell/script/from/previous/step
+export SINGULARITY_CACHEDIR=/juno/work/shah/runner/singularity/cache
+singularity run --bind /common --bind /juno/work  docker://docker.io/singlecellpipeline/single_cell_pipeline:v{VERSION} sh /path/to/shell/script/from/previous/step
 ```
 
 The `--bind /common` will mount the `/common` directory inside the singularity. The PATH environment variable must also be set to point to the location of LSF binaries. This will make the commands such as `bsub`, `bjobs` and `bhosts` available to the pipeline. This path will depend on the singularity location. 

@@ -4,7 +4,6 @@ Plot sequencing metrics based on metric table and SampleSheet files.
 from __future__ import division
 
 import argparse
-
 import matplotlib
 
 matplotlib.use('Agg')  # required for running on the cluster
@@ -549,7 +548,7 @@ class PlotMetrics(object):
         for samp in samples:
             cc = metrics[metrics['cell_id'] == samp]["cell_call"].iloc[0]
             plt.plot(range(0, 101), df.loc[samp][
-                map(str, range(0, 101))].tolist(),color= cmap[cc], alpha=alpha)
+                map(str, range(0, 101))].tolist(), color=cmap[cc], alpha=alpha)
 
         if self.gc_content:
             ax = sns.barplot(x='gc', y='windows', data=gcdata,

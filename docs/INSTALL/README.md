@@ -3,7 +3,7 @@
 1. clone the single cell pipeline repo.
 	```
 	export GIT_SSL_NO_VERIFY=1
-	git clone https://dgrewal@svn.bcgsc.ca/bitbucket/scm/sc/single_cell_pipeline.git
+	git clone https://github.com/shahcompbio/single_cell_pipeline.git
 	```
 2. install miniconda
 	```
@@ -108,10 +108,12 @@
       autoploidy:
         map_wig_file: /refdata/GRCh37-lite.map.ws_125_to_500000.wig
 	```
-11. run the QC pipeline:
+11. run the alignment pipeline:
 	```
-	single_cell qc --input_yaml single_cell_pipeline/INSTALL/input.yaml --out_dir dlp --submit local --library_id A96139A --loglevel DEBUG --tmpdir temp --pipelinedir pipeline --maxjobs 2 --config_file /path/to/config.yaml
+	single_cell alignment --input_yaml single_cell_pipeline/INSTALL/input.yaml --out_dir dlp --bams_dir bams --submit local --library_id A96139A --loglevel DEBUG --tmpdir temp --pipelinedir pipeline --maxjobs 2 --config_file /path/to/config.yaml
 	```
+	Please refer to [doc](../../README.md) for detailed instructions for running all single cell sub commands.
+
 	Replace /path/to/ with your path to config.yaml
     *Outputs:*
     * ```data/SA123.bam``` and ```data/SA456.bam```: aligned bam files
