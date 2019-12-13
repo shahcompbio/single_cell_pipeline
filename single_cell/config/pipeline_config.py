@@ -383,11 +383,35 @@ def get_infer_haps_params(reference_dir, reference):
         },
         'ref_data_dir': referencedata['copynumber_ref_data'],
         'docker': {
-            'single_cell_pipeline': docker_containers['remixt'],
+            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
+            'remixt': docker_containers['remixt'],
         },
     }
 
     return {'infer_haps': params}
+
+
+def get_count_haps_params(reference_dir, reference):
+    referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
+
+    docker_containers = config_reference.containers()['docker']
+
+    params = {
+        'memory': {'low': 4, 'med': 6, 'high': 16},
+        'max_cores': None,
+        'chromosomes': referencedata['chromosomes'],
+        'extract_seqdata': {
+            'genome_fasta_template': referencedata['ref_genome'],
+            'genome_fai_template': referencedata['ref_genome'] + '.fai',
+        },
+        'ref_data_dir': referencedata['copynumber_ref_data'],
+        'docker': {
+            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
+            'remixt': docker_containers['remixt'],
+        },
+    }
+
+    return {'count_haps': params}
 
 
 def get_breakpoint_params(reference_dir, reference):
@@ -466,6 +490,8 @@ def get_singlecell_pipeline_config(config_params, override=None):
                                                  config_params['copynumber_bin_size']))
 
     params.update(get_infer_haps_params(reference_dir, reference))
+
+    params.update(get_count_haps_params(reference_dir, reference))
 
     params.update(get_breakpoint_params(reference_dir, reference))
 
