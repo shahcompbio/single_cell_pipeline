@@ -53,6 +53,7 @@ def std_to_pandas_types():
         "int": "Int64",
         "float": "float64",
         "str": "str",
+        "NA": "NA"
     }
 
 
@@ -221,7 +222,7 @@ class CsvInput(object):
         names = None if self.header else self.columns
 
         std_to_pandas = std_to_pandas_types()
-        dtypes = {k: std_to_pandas[v] for k, v in self.dtypes.items()}
+        dtypes = {k: std_to_pandas[v] for k, v in dtypes.items()}
 
         try:
             data = pd.read_csv(
