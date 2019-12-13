@@ -1,5 +1,17 @@
 # Change Log
 
+### v0.5.6:
+
+#### bugs:
+1. fixed an issue with double headers in snv calling output
+2. issues in plotting due to gc data dtypes set to string
+
+#### Changes:
+1. destruct container does not need single cell pipeline
+2. remixt container does not need single cell pipeline 
+3. some updates to documentation
+4. updated to biowrappers v0.2.1
+
 ### v0.5.5:
 
 #### changes:
