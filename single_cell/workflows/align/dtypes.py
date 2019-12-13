@@ -37,6 +37,10 @@ def dtypes():
         'fastqscreen_mm10_multihit': 'Int64',
         'is_contaminated': 'bool'
     }
+
+    gc = {str(i): 'float64' for i in range(0,100)}
+    gc['cell_id'] = 'str'
+
     dtypes = locals()
 
     return dtypes
