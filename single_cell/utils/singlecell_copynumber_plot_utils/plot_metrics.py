@@ -529,6 +529,8 @@ class PlotMetrics(object):
         df = self.read_input_data(infile, self.gc_tablename)
         df = df.set_index("cell_id")
 
+        df = df.astype(float)
+
         cmap = self.get_cmap(metrics)
 
         samples = df.index
@@ -608,6 +610,8 @@ class PlotMetrics(object):
         df = self.read_input_data(infile, self.gc_tablename)
         df = df.set_index("cell_id")
 
+        df = df.astype(float)
+
         samps = get_samples_by_ec(metrics)
         cmap = self.get_cmap(metrics)
 
@@ -677,6 +681,7 @@ class PlotMetrics(object):
 
         df = self.read_input_data(infile, self.gc_tablename)
         df = df.set_index("cell_id")
+        df = df.astype(float)
 
         samps = get_samples_by_ec_cc(metrics)
 
