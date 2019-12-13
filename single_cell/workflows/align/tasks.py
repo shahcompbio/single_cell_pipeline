@@ -87,7 +87,7 @@ def collect_gc(infiles, outfile, tempdir):
                                   'gcbias')
         gen_gc.main()
 
-    csvutils.concatenate_csv(tempouts, outfile, dtypes=dtypes()['metrics'])
+    csvutils.concatenate_csv(tempouts, outfile, dtypes=dtypes()['gc'])
 
 
 def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
