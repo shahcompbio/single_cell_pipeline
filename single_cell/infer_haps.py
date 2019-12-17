@@ -274,15 +274,6 @@ def count_haps_workflow(args):
 
     haplotypes_filename, tumour_cells = inpututils.load_count_haps_input(args['input_yaml'])
 
-    if isinstance(normal_data, dict):
-        workflow.setobj(
-            obj=mgd.OutputChunks('normal_cell_id'),
-            value=list(normal_data.keys()),
-        )
-        bam_file = mgd.InputFile('normal.bam', 'normal_cell_id', fnames=normal_data, extensions=['.bai'])
-    else:
-        bam_file = mgd.InputFile(normal_data, extensions=['.bai'])
-
     workflow.setobj(
         obj=mgd.OutputChunks('tumour_cell_id'),
         value=list(tumour_cells.keys()),
