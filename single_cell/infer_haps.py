@@ -22,10 +22,10 @@ def infer_haps(
 ):
     baseimage = {'docker_image': config['docker']['single_cell_pipeline']}
 
+    chromosomes = config['chromosomes']
+
     remixt_config = config.get('extract_seqdata', {})
     remixt_ref_data_dir = config['ref_data_dir']
-
-    chromosomes = config['chromosomes']
 
     ctx = dict(mem_retry_increment=2, disk_retry_increment=50, ncpus=1, **baseimage)
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
@@ -297,15 +297,6 @@ def count_haps_workflow(args):
     input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
 
     haplotypes_filename, tumour_cells = inpututils.load_count_haps_input(args['input_yaml'])
-
-    if isinstance(normal_data, dict):
-        workflow.setobj(
-            obj=mgd.OutputChunks('normal_cell_id'),
-            value=list(normal_data.keys()),
-        )
-        bam_file = mgd.InputFile('normal.bam', 'normal_cell_id', fnames=normal_data, extensions=['.bai'])
-    else:
-        bam_file = mgd.InputFile(normal_data, extensions=['.bai'])
 
     workflow.setobj(
         obj=mgd.OutputChunks('tumour_cell_id'),
