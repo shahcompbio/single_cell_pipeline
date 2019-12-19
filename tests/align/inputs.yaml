@@ -1,0 +1,34 @@
+SA1044-A90707B-R03-C39:
+  column: 39
+  condition: B
+  fastqs:
+    AHLLH2AFXX:
+      fastq_1: tests/data/align/SA1044-A90707B-R03-C39_S524_R1_001.fastq.gz
+      fastq_2: tests/data/align/SA1044-A90707B-R03-C39_S524_R2_001.fastq.gz
+      sequencing_center: UBCBRC
+      sequencing_instrument: N550
+  img_col: 34
+  index_i5: i7-39
+  index_i7: i5-03
+  pick_met: C31
+  primer_i5: AACCGGTT
+  primer_i7: ACGTACGT
+  row: 3
+  sample_type: 'null'
+SA1044-A90707B-R04-C41:
+  column: 41
+  condition: B
+  fastqs:
+    AHLLH2AFXX:
+      fastq_1: tests/data/align/SA1044-A90707B-R04-C41_S466_R1_001.fastq.gz
+      fastq_2: tests/data/align/SA1044-A90707B-R04-C41_S466_R2_001.fastq.gz
+      sequencing_center: UBCBRC
+      sequencing_instrument: N550
+  img_col: 32
+  index_i5: i7-41
+  index_i7: i5-04
+  pick_met: C31
+  primer_i5: AACCGGTT
+  primer_i7: ACGTACGT
+  row: 4
+  sample_type: 'null'
