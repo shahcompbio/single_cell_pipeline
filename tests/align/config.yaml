@@ -1,0 +1,35 @@
+alignment:
+  adapter: CTGTCTCTTATACACATCTCCGAGCCCACGAGAC
+  adapter2: CTGTCTCTTATACACATCTGACGCTGCCGACGA
+  aligner: bwa-mem
+  chromosomes:
+  - '22'
+  - Y
+  docker:
+    bwa: singlecellpipeline/bwa:v0.0.2
+    fastq_screen: singlecellpipeline/fastq_screen:v0.0.2
+    fastqc: singlecellpipeline/fastqc:v0.0.2
+    picard: singlecellpipeline/picard:v0.0.3
+    samtools: singlecellpipeline/samtools:v0.0.3
+    single_cell_pipeline: singlecellpipeline/single_cell_pipeline:v0.5.5
+    trimgalore: singlecellpipeline/trimgalore:v0.0.2
+  fastq_screen_params:
+    aligner: bwa
+    filter_contaminated_reads: false
+    genomes:
+    - name: grch37
+      path: tests/ref_data/align/human/GRCh37-lite.fa
+    - name: mm10
+      path: tests/ref_data/align/mouse/mm10_build38_mouse.fasta
+    - name: salmon
+      path: tests/ref_data/align/salmon/GCF_002021735.1_Okis_V1_genomic.fna
+    strict_validation: true
+  gc_windows: tests/ref_data/align/human/gc_windows.txt
+  memory:
+    med: 6
+  picard_wgs_params:
+    count_unpaired: false
+    min_bqual: 20
+    min_mqual: 20
+  ref_genome: tests/ref_data/align/human/GRCh37-lite.fa
+  ref_type: grch37
