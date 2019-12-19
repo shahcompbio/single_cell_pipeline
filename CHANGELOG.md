@@ -1,5 +1,12 @@
 # Change Log
 
+### v0.5.7
+
+#### Changes:
+1. updated biowrappers version to v0.2.2
+2. updated destruct and remixt container versions
+
+
 ### v0.5.6:
 
 #### bugs:
