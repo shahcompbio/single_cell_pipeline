@@ -117,11 +117,11 @@ SA12345-A12345-R01-C01:
 
 ```
 single_cell alignment \
---input_yaml inputs/SC-1234/fastqs.yaml \
---tmpdir temp/SC-1234/tmp \
---pipelinedir pipeline/SC-1234  \
---out_dir results/SC-1234/results/alignment \
---bams_dir results/SC-1234/results/bams \
+ --input_yaml inputs/SC-1234/fastqs.yaml \
+ --tmpdir temp/SC-1234/tmp \
+ --pipelinedir pipeline/SC-1234  \
+ --out_dir results/SC-1234/results/alignment \
+ --bams_dir results/SC-1234/results/bams \
  --library_id A123123 \
  ...
 ```
@@ -138,10 +138,10 @@ The metadata file is structured as follows:
 
 ```
 filenames:
-  {CELL_ID_1}.bam
-  {CELL_ID_1}.bam.bai
-  {CELL_ID_2}.bam
-  {CELL_ID_2}.bam.bai
+  - {CELL_ID_1}.bam
+  - {CELL_ID_1}.bam.bai
+  - {CELL_ID_2}.bam
+  - {CELL_ID_2}.bam.bai
   ...
 meta:
   type: cellbams
@@ -174,9 +174,9 @@ The metadata file is structured as follows:
 
 ```
 filenames:
-  {LIBRARY_ID}_{TABLE_1}.csv.gz
-  {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
-  input.yaml
+  - {LIBRARY_ID}_{TABLE_1}.csv.gz
+  - {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
+  - input.yaml
   ...
 
 meta:
@@ -229,11 +229,11 @@ SA12345-A12345-R01-C01:
 
 ```
 single_cell hmmcopy \
---input_yaml inputs/SC-1234/bams.yaml \
---tmpdir temp/SC-1234/tmp \
---pipelinedir pipeline/SC-1234  \
---out_dir results/SC-1234/results/hmmcopy \
---library_id A123123 \
+ --input_yaml inputs/SC-1234/bams.yaml \
+ --tmpdir temp/SC-1234/tmp \
+ --pipelinedir pipeline/SC-1234  \
+ --out_dir results/SC-1234/results/hmmcopy \
+ --library_id A123123 \
  ...
 ```
 
@@ -261,8 +261,8 @@ The metadata file is structured as follows:
 
 ```
 filenames:
-  {LIBRARY_ID}_{TABLE_1}.csv.gz
-  {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
+  - {LIBRARY_ID}_{TABLE_1}.csv.gz
+  - {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
   ...
 meta:
   command: 'single_cell hmmcopy ...'
@@ -302,10 +302,10 @@ segs_pdf_tar: results/hmmcopy/A12345_segs.tar.gz```
 
 ```
 single_cell annotation \
---input_yaml inputs/SC-1234/annotation.yaml \
---tmpdir temp/SC-1234/tmp \
---pipelinedir pipeline/SC-1234  \
---out_dir results/SC-1234/results/annotation \
+ --input_yaml inputs/SC-1234/annotation.yaml \
+ --tmpdir temp/SC-1234/tmp \
+ --pipelinedir pipeline/SC-1234  \
+ --out_dir results/SC-1234/results/annotation \
  --library_id A123123 \
  ...
 ```
@@ -374,10 +374,10 @@ cell_bams:
 
 ```
 single_cell merge_cell_bams \
---input_yaml inputs/SC-1234/merge_cell_bams.yaml \
---tmpdir temp/SC-1234/tmp \
---pipelinedir pipeline/SC-1234  \
---out_dir results/SC-1234/results \
+ --input_yaml inputs/SC-1234/merge_cell_bams.yaml \
+ --tmpdir temp/SC-1234/tmp \
+ --pipelinedir pipeline/SC-1234  \
+ --out_dir results/SC-1234/results \
  ...
 ```
 
@@ -393,8 +393,8 @@ The metadata file is structured as follows:
 
 ```
 filenames:
-  {REGION_1}.bam
-  {REGION_2}.bam
+  - {REGION_1}.bam
+  - {REGION_2}.bam
   ...
 meta:
   command: 'single_cell merge_cell_bams ...'
@@ -428,9 +428,9 @@ normal:
 ```
 single_cell split_wgs_bam \
  --input_yaml inputs/SC-1234/merge_cell_bams.yaml \
---tmpdir temp/SC-1234/tmp \
---pipelinedir pipeline/SC-1234  \
---out_dir results/SC-1234/results \
+ --tmpdir temp/SC-1234/tmp \
+ --pipelinedir pipeline/SC-1234  \
+ --out_dir results/SC-1234/results \
 ...
 ```
 
@@ -448,8 +448,8 @@ TODO: is this the same format as split cells?
 
 ```
 filenames:
-  {REGION_1}.bam
-  {REGION_2}.bam
+  - {REGION_1}.bam
+  - {REGION_2}.bam
   ...
 meta:
   command: 'single_cell split_wgs_bam ...'
@@ -496,9 +496,9 @@ tumour:
 ```
 single_cell variant_calling \
  --input_yaml inputs/SC-1234/variant_calling.yaml \
---tmpdir temp/SC-1234/tmp \
---pipelinedir pipeline/SC-1234  \
---out_dir results/SC-1234/results \
+ --tmpdir temp/SC-1234/tmp \
+ --pipelinedir pipeline/SC-1234  \
+ --out_dir results/SC-1234/results \
 ...
 ```
 
@@ -508,8 +508,8 @@ The metadata file is structured as follows:
 
 ```
 filenames:
-  {LIBRARY_ID}_{TABLE_1}.csv.gz
-  {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
+  - {LIBRARY_ID}_{TABLE_1}.csv.gz
+  - {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
   ...
 meta:
   command: 'single_cell variant_calling ...'
@@ -577,9 +577,9 @@ tumour_cells:
 ```
 single_cell breakpoint_calling \
  --input_yaml inputs/SC-1234/breakpoint_calling.yaml \
---tmpdir temp/SC-1234/tmp \
---pipelinedir pipeline/SC-1234  \
---out_dir results/SC-1234/results \
+ --tmpdir temp/SC-1234/tmp \
+ --pipelinedir pipeline/SC-1234  \
+ --out_dir results/SC-1234/results \
 ...
 ```
 
@@ -591,8 +591,8 @@ The metadata file is structured as follows:
 
 ```
 filenames:
-  {LIBRARY_ID}_{TABLE_1}.csv.gz
-  {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
+  - {LIBRARY_ID}_{TABLE_1}.csv.gz
+  - {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
   ...
 meta:
   command: 'single_cell breakpoint_calling ...'
@@ -658,9 +658,9 @@ tumour_cells:
 ```
 single_cell haplotype_calling \
  --input_yaml inputs/SC-1234/haplotype_calling.yaml \
---tmpdir temp/SC-1234/tmp \
---pipelinedir pipeline/SC-1234  \
---out_dir results/SC-1234/results \
+ --tmpdir temp/SC-1234/tmp \
+ --pipelinedir pipeline/SC-1234  \
+ --out_dir results/SC-1234/results \
 ...
 ```
 
@@ -671,8 +671,8 @@ The metadata file is structured as follows:
 
 ```
 filenames:
-  {LIBRARY_ID}_{TABLE_1}.csv.gz
-  {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
+  - {LIBRARY_ID}_{TABLE_1}.csv.gz
+  - {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
   ...
 meta:
   command: 'single_cell infer_haps ...'
@@ -713,9 +713,9 @@ tumour_cells:
 ```
 single_cell snv_genotyping \
  --input_yaml inputs/SC-1234/snv_genotyping.yaml \
---tmpdir temp/SC-1234/tmp \
---pipelinedir pipeline/SC-1234  \
---out_dir results/SC-1234/results \
+ --tmpdir temp/SC-1234/tmp \
+ --pipelinedir pipeline/SC-1234  \
+ --out_dir results/SC-1234/results \
 ...
 ```
 
@@ -725,8 +725,8 @@ The metadata file is structured as follows:
 
 ```
 filenames:
-  {LIBRARY_ID}_{TABLE_1}.csv.gz
-  {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
+  - {LIBRARY_ID}_{TABLE_1}.csv.gz
+  - {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
   ...
 meta:
   command: 'single_cell snv_genotyping ...'
@@ -758,9 +758,9 @@ normal:
 ```
 single_cell germline \
  --input_yaml inputs/SC-1234/variant_counting.yaml \
---tmpdir temp/SC-1234/tmp \
---pipelinedir pipeline/SC-1234  \
---out_dir results/SC-1234/results \
+ --tmpdir temp/SC-1234/tmp \
+ --pipelinedir pipeline/SC-1234  \
+ --out_dir results/SC-1234/results \
 ...
 ```
 
@@ -770,8 +770,8 @@ The metadata file is structured as follows:
 
 ```
 filenames:
-  {LIBRARY_ID}_{TABLE_1}.csv.gz
-  {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
+  - {LIBRARY_ID}_{TABLE_1}.csv.gz
+  - {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
   ...
 meta:
   command: 'single_cell germline_calling ...'
