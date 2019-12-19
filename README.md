@@ -335,8 +335,8 @@ The metadata file is structured as follows:
 
 ```
 filenames:
-  {LIBRARY_ID}_{TABLE_1}.csv.gz
-  {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
+  - {LIBRARY_ID}_{TABLE_1}.csv.gz
+  - {LIBRARY_ID}_{TABLE_1}.csv.gz.yaml
   ...
 meta:
   command: 'single_cell annotation ...'
