@@ -55,11 +55,6 @@ def destruct_bamdisc_and_numreads(
            ]
     pypeliner.commandline.execute(*cmd)
 
-    numreads_r1 = get_read_count(reads_1)
-    numreads_r2 = get_read_count(reads_2)
-
-    return max(numreads_r1, numreads_r2)
-
 
 def merge_fastqs(inputs, output):
     read_counter = 0

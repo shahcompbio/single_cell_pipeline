@@ -147,12 +147,11 @@ def variant_calling_workflow(args):
 
     workflow.transform(
         name='prep_museq_csv',
-        func='single_cell.utils.csvutils.prep_csv_files',
+        func='single_cell.utils.csvutils.finalize_csv',
         args=(
             mgd.TempInputFile('museq.csv'),
             mgd.OutputFile(filepaths['museq_csv'], extensions=['.yaml'])
         ),
-        kwargs={'header': True}
     )
 
     workflow.transform(
@@ -170,12 +169,11 @@ def variant_calling_workflow(args):
 
     workflow.transform(
         name='prep_strelka_csv',
-        func='single_cell.utils.csvutils.prep_csv_files',
+        func='single_cell.utils.csvutils.finalize_csv',
         args=(
             mgd.TempInputFile('strelka_snv.csv'),
             mgd.OutputFile(filepaths['strelka_csv'], extensions=['.yaml'])
         ),
-        kwargs={'header': True}
     )
 
     workflow.transform(

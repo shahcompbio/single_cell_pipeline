@@ -1,9 +1,10 @@
 import os
-import remixt
-import remixt.seqdataio
-import remixt.config
 
+import remixt.config
+import remixt.seqdataio
 from single_cell.utils import helpers
+
+import remixt
 
 
 def create_chromosome_seqdata(seqdata, bam_file, tempdir, config, ref_data_dir,
