@@ -22,10 +22,10 @@ def infer_haps(
 ):
     baseimage = {'docker_image': config['docker']['single_cell_pipeline']}
 
+    chromosomes = config['chromosomes']
+
     remixt_config = config.get('extract_seqdata', {})
     remixt_ref_data_dir = config['ref_data_dir']
-
-    chromosomes = config['chromosomes']
 
     ctx = dict(mem_retry_increment=2, disk_retry_increment=50, ncpus=1, **baseimage)
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
@@ -238,12 +238,11 @@ def infer_haps_workflow(args):
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     haplotypes_filename = os.path.join(args["out_dir"], "haplotypes.tsv")
-    allele_counts_filename = os.path.join(args["out_dir"], "allele_counts.tsv")
 
     meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
     input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
 
-    normal_data, tumour_cells = inpututils.load_haps_input(args['input_yaml'])
+    normal_data = inpututils.load_infer_haps_input(args['input_yaml'])
 
     if isinstance(normal_data, dict):
         workflow.setobj(
@@ -254,11 +253,6 @@ def infer_haps_workflow(args):
     else:
         bam_file = mgd.InputFile(normal_data, extensions=['.bai'])
 
-    workflow.setobj(
-        obj=mgd.OutputChunks('tumour_cell_id'),
-        value=list(tumour_cells.keys()),
-    )
-
     workflow.subworkflow(
         name='infer_haps',
         func=infer_haps,
@@ -268,6 +262,45 @@ def infer_haps_workflow(args):
             mgd.TempOutputFile("allele_counts.csv"),
             config,
         ),
+    )
+
+    workflow.transform(
+        name='generate_meta_files_results',
+        func='single_cell.utils.helpers.generate_and_upload_metadata',
+        args=(
+            sys.argv[0:],
+            args['out_dir'],
+            [haplotypes_filename],
+            mgd.OutputFile(meta_yaml)
+        ),
+        kwargs={
+            'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
+            'input_yaml': mgd.OutputFile(input_yaml_blob),
+            'metadata': {'type': 'infer_haps'}
+        }
+    )
+
+    return workflow
+
+
+def count_haps_workflow(args):
+    config = inpututils.load_config(args)
+    config = config['count_haps']
+    baseimage = config['docker']['single_cell_pipeline']
+
+    ctx = dict(mem_retry_increment=2, disk_retry_increment=50, ncpus=1, docker_image=baseimage)
+    workflow = pypeliner.workflow.Workflow(ctx=ctx)
+
+    allele_counts_filename = os.path.join(args["out_dir"], "allele_counts.tsv")
+
+    meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
+
+    haplotypes_filename, tumour_cells = inpututils.load_count_haps_input(args['input_yaml'])
+
+    workflow.setobj(
+        obj=mgd.OutputChunks('tumour_cell_id'),
+        value=list(tumour_cells.keys()),
     )
 
     workflow.subworkflow(
@@ -288,13 +321,13 @@ def infer_haps_workflow(args):
         args=(
             sys.argv[0:],
             args['out_dir'],
-            [haplotypes_filename, allele_counts_filename],
+            [allele_counts_filename],
             mgd.OutputFile(meta_yaml)
         ),
         kwargs={
             'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
             'input_yaml': mgd.OutputFile(input_yaml_blob),
-            'metadata': {'type': 'infer_haps'}
+            'metadata': {'type': 'count_haps'}
         }
     )
 
@@ -305,5 +338,13 @@ def infer_haps_pipeline(args):
     pyp = pypeliner.app.Pypeline(config=args)
 
     workflow = infer_haps_workflow(args)
+
+    pyp.run(workflow)
+
+
+def count_haps_pipeline(args):
+    pyp = pypeliner.app.Pypeline(config=args)
+
+    workflow = count_haps_workflow(args)
 
     pyp.run(workflow)
