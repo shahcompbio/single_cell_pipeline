@@ -2,8 +2,8 @@ split_bam:
   chromosomes:
   - '15'
   docker:
-    samtools: samtools:test
-    single_cell_pipeline: singlecellpipeline:test
+    samtools: singlecellpipeline/samtools:v0.0.3
+    single_cell_pipeline: singlecellpipeline/single_cell_pipeline:v0.5.4
   max_cores: 8
   memory:
     high: 16
