@@ -30,7 +30,7 @@ variant_calling:
       split_size: 10000000
   docker:
     mutationseq: singlecellpipeline/mutationseq:v0.0.3
-    single_cell_pipeline: singlecellpipeline/single_cell_pipeline:v0.5.3
+    single_cell_pipeline: singlecellpipeline/single_cell_pipeline:v0.5.6
     strelka: singlecellpipeline/strelka:v0.0.3
     vcftools: singlecellpipeline/vcftools:v0.0.2
   mappability:
