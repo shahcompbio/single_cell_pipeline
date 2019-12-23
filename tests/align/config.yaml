@@ -3,8 +3,9 @@ alignment:
   adapter2: CTGTCTCTTATACACATCTGACGCTGCCGACGA
   aligner: bwa-mem
   chromosomes:
-  - '22'
-  - Y
+  - '6'
+  - '8'
+  - '17'
   docker:
     bwa: singlecellpipeline/bwa:v0.0.2
     fastq_screen: singlecellpipeline/fastq_screen:v0.0.2
