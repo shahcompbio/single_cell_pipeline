@@ -1,3 +1,4 @@
+import re
 from collections import defaultdict
 from itertools import islice
 
@@ -30,6 +31,10 @@ class FastqReader(object):
                 yield fastq_read
 
 
+def _get_read_name(fastq_line1):
+    return re.split('/| |\t|#FQST:', fastq_line1.split()[0])[0].rstrip()
+
+
 class PairedFastqReader(object):
     def __init__(self, r1_path, r2_path):
         self.reader_r1 = FastqReader(r1_path)
@@ -47,7 +52,7 @@ class PairedFastqReader(object):
             if not read_r1 or not read_r2:
                 raise Exception('mismatching number of reads in R1 and R2')
 
-            assert read_r1[0].split()[0].split('/')[0] == read_r2[0].split()[0].split('/')[0]
+            assert _get_read_name(read_r1[0]) == _get_read_name(read_r2[0])
 
             yield read_r1, read_r2
 
@@ -76,7 +81,7 @@ class TaggedFastqReader(FastqReader):
         return flag_map
 
     def add_tag_to_read_comment(self, read, tag=None):
-        read_id = read[0].split(' ')[0]
+        read_name = _get_read_name(read[0])
 
         if not tag:
             tag = self.get_read_tag(read)
@@ -87,7 +92,7 @@ class TaggedFastqReader(FastqReader):
 
         comment = tag
 
-        read[0] = read_id + ' ' + comment + '\n'
+        read[0] = read_name + '\t' + comment + '\n'
 
         return read
 
