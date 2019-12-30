@@ -86,7 +86,10 @@ def variant_calling_workflow(args):
             mgd.OutputFile(filepaths['strelka_snv'], extensions=['.tbi', '.csi']),
             config,
         ),
-        kwargs={"chromosomes": config["chromosomes"]}
+        kwargs={
+            "chromosomes": config["chromosomes"],
+            "use_depth_thresholds": config['use_depth_thresholds']
+        }
     )
 
     workflow.transform(
