@@ -28,7 +28,8 @@ def containers():
         'cell_cycle_classifier': 'singlecellpipeline/cell_cycle_classifier:v0.0.1',
         'biobloom': 'singlecellpipeline/biobloom:v0.0.2',
         'corrupt_tree': 'singlecellpipeline/corrupt_tree:v0.0.1',
-        'fastq_screen': 'singlecellpipeline/fastq_screen:v0.0.2'
+        'fastq_screen': 'singlecellpipeline/fastq_screen:v0.0.2',
+        'svtyper': 'singlecellpipeline/svtyper:v0.0.1'
     }
 
     return {'docker': docker_images}

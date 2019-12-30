@@ -7,14 +7,15 @@ from single_cell.clean_sentinels import clean_sentinels
 from single_cell.cmdline import parse_args
 from single_cell.docker_run import run_with_docker
 from single_cell.generate_config import generate_config
-from single_cell.hmmcopy import hmmcopy_pipeline
-from single_cell.infer_haps import infer_haps_pipeline
-from single_cell.infer_haps import count_haps_pipeline
-from single_cell.merge_bams import merge_bams_pipeline
-from single_cell.split_bam import split_bam_pipeline
-from single_cell.variant_calling import variant_calling_pipeline
-from single_cell.snv_genotyping import snv_genotyping_pipeline
 from single_cell.germline_calling import germline_calling_pipeline
+from single_cell.hmmcopy import hmmcopy_pipeline
+from single_cell.infer_haps import count_haps_pipeline
+from single_cell.infer_haps import infer_haps_pipeline
+from single_cell.merge_bams import merge_bams_pipeline
+from single_cell.snv_genotyping import snv_genotyping_pipeline
+from single_cell.split_bam import split_bam_pipeline
+from single_cell.sv_genotyping import sv_genotyping_pipeline
+from single_cell.variant_calling import variant_calling_pipeline
 
 
 def main():
@@ -64,6 +65,9 @@ def main():
 
     if args["which"] == "snv_genotyping":
         snv_genotyping_pipeline(args)
+
+    if args["which"] == "sv_genotyping":
+        sv_genotyping_pipeline(args)
 
 
 if __name__ == "__main__":

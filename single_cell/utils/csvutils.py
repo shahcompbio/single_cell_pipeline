@@ -208,6 +208,7 @@ class CsvInput(object):
 
     def __verify_data(self, df):
         if not list(df.columns.values) == self.columns:
+            print(df.columns.values, self.columns)
             raise CsvParseError("metadata mismatch in {}".format(self.filepath))
 
     def read_csv(self, chunksize=None):

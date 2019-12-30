@@ -177,11 +177,12 @@ def parse_args():
     variant_counting.set_defaults(which='snv_genotyping')
 
     # ================
-    # genoptyping
+    # genotyping
     # ================
-    genotyping = add_global_args(
-        subparsers.add_parser("genotyping"))
-    genotyping.set_defaults(which='genotyping')
+    sv_genotyping = add_global_args(
+        subparsers.add_parser("sv_genotyping"))
+    sv_genotyping.set_defaults(which='sv_genotyping')
+
 
     # ======================================
     # generates pipeline and batch configs
