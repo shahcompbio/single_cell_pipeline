@@ -1,5 +1,5 @@
 SA1090-A96213A-R20-C28:
-  bam: ./test_data/align/bams/SA1090-A96213A-R20-C28.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R20-C28.bam
   column: 28
   condition: B
   img_col: 45
@@ -10,7 +10,7 @@ SA1090-A96213A-R20-C28:
   primer_i7: CTATCT
   row: 20
 SA1090-A96213A-R20-C62:
-  bam: ./test_data/align/bams/SA1090-A96213A-R20-C62.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R20-C62.bam
   column: 62
   condition: B
   img_col: 11
@@ -21,7 +21,7 @@ SA1090-A96213A-R20-C62:
   primer_i7: AAGCTA
   row: 20
 SA1090-A96213A-R22-C43:
-  bam: ./test_data/align/bams/SA1090-A96213A-R22-C43.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R22-C43.bam
   column: 43
   condition: B
   img_col: 30
@@ -32,7 +32,7 @@ SA1090-A96213A-R22-C43:
   primer_i7: ATTCCG
   row: 22
 SA1090-A96213A-R22-C44:
-  bam: ./test_data/align/bams/SA1090-A96213A-R22-C44.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R22-C44.bam
   column: 44
   condition: B
   img_col: 29
@@ -43,7 +43,7 @@ SA1090-A96213A-R22-C44:
   primer_i7: TATATC
   row: 22
 SA1090-A96213A-R24-C12:
-  bam: ./test_data/align/bams/SA1090-A96213A-R24-C12.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R24-C12.bam
   column: 12
   condition: B
   img_col: 61
@@ -54,7 +54,7 @@ SA1090-A96213A-R24-C12:
   primer_i7: GCGGAC
   row: 24
 SA1090-A96213A-R24-C20:
-  bam: ./test_data/align/bams/SA1090-A96213A-R24-C20.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R24-C20.bam
   column: 20
   condition: B
   img_col: 53
@@ -65,7 +65,7 @@ SA1090-A96213A-R24-C20:
   primer_i7: TTATTC
   row: 24
 SA1090-A96213A-R24-C58:
-  bam: ./test_data/align/bams/SA1090-A96213A-R24-C58.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R24-C58.bam
   column: 58
   condition: B
   img_col: 15
@@ -76,7 +76,7 @@ SA1090-A96213A-R24-C58:
   primer_i7: CGATTA
   row: 24
 SA1090-A96213A-R25-C14:
-  bam: ./test_data/align/bams/SA1090-A96213A-R25-C14.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R25-C14.bam
   column: 14
   condition: B
   img_col: 59
@@ -87,7 +87,7 @@ SA1090-A96213A-R25-C14:
   primer_i7: TGCTTT
   row: 25
 SA1090-A96213A-R25-C22:
-  bam: ./test_data/align/bams/SA1090-A96213A-R25-C22.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R25-C22.bam
   column: 22
   condition: B
   img_col: 51
@@ -98,7 +98,7 @@ SA1090-A96213A-R25-C22:
   primer_i7: CTTCGA
   row: 25
 SA1090-A96213A-R25-C40:
-  bam: ./test_data/align/bams/SA1090-A96213A-R25-C40.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R25-C40.bam
   column: 40
   condition: B
   img_col: 33
@@ -109,7 +109,7 @@ SA1090-A96213A-R25-C40:
   primer_i7: GATGCT
   row: 25
 SA1090-A96213A-R25-C64:
-  bam: ./test_data/align/bams/SA1090-A96213A-R25-C64.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R25-C64.bam
   column: 64
   condition: B
   img_col: 9
@@ -120,7 +120,7 @@ SA1090-A96213A-R25-C64:
   primer_i7: GCCGGT
   row: 25
 SA1090-A96213A-R26-C49:
-  bam: ./test_data/align/bams/SA1090-A96213A-R26-C49.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R26-C49.bam
   column: 49
   condition: B
   img_col: 24
@@ -131,7 +131,7 @@ SA1090-A96213A-R26-C49:
   primer_i7: CGTGAT
   row: 26
 SA1090-A96213A-R26-C50:
-  bam: ./test_data/align/bams/SA1090-A96213A-R26-C50.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R26-C50.bam
   column: 50
   condition: B
   img_col: 23
@@ -142,7 +142,7 @@ SA1090-A96213A-R26-C50:
   primer_i7: CTGATC
   row: 26
 SA1090-A96213A-R26-C61:
-  bam: ./test_data/align/bams/SA1090-A96213A-R26-C61.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R26-C61.bam
   column: 61
   condition: B
   img_col: 12
@@ -153,7 +153,7 @@ SA1090-A96213A-R26-C61:
   primer_i7: ACATCG
   row: 26
 SA1090-A96213A-R26-C64:
-  bam: ./test_data/align/bams/SA1090-A96213A-R26-C64.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R26-C64.bam
   column: 64
   condition: B
   img_col: 9
@@ -164,7 +164,7 @@ SA1090-A96213A-R26-C64:
   primer_i7: GCCGGT
   row: 26
 SA1090-A96213A-R27-C14:
-  bam: ./test_data/align/bams/SA1090-A96213A-R27-C14.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R27-C14.bam
   column: 14
   condition: B
   img_col: 59
@@ -175,7 +175,7 @@ SA1090-A96213A-R27-C14:
   primer_i7: TGCTTT
   row: 27
 SA1090-A96213A-R27-C21:
-  bam: ./test_data/align/bams/SA1090-A96213A-R27-C21.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R27-C21.bam
   column: 21
   condition: B
   img_col: 52
@@ -186,7 +186,7 @@ SA1090-A96213A-R27-C21:
   primer_i7: TGGAGC
   row: 27
 SA1090-A96213A-R27-C45:
-  bam: ./test_data/align/bams/SA1090-A96213A-R27-C45.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R27-C45.bam
   column: 45
   condition: B
   img_col: 28
@@ -197,7 +197,7 @@ SA1090-A96213A-R27-C45:
   primer_i7: CAGGCC
   row: 27
 SA1090-A96213A-R28-C23:
-  bam: ./test_data/align/bams/SA1090-A96213A-R28-C23.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R28-C23.bam
   column: 23
   condition: B
   img_col: 50
@@ -208,7 +208,7 @@ SA1090-A96213A-R28-C23:
   primer_i7: GGAGAA
   row: 28
 SA1090-A96213A-R28-C39:
-  bam: ./test_data/align/bams/SA1090-A96213A-R28-C39.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R28-C39.bam
   column: 39
   condition: B
   img_col: 34
@@ -219,7 +219,7 @@ SA1090-A96213A-R28-C39:
   primer_i7: AGATGT
   row: 28
 SA1090-A96213A-R28-C64:
-  bam: ./test_data/align/bams/SA1090-A96213A-R28-C64.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R28-C64.bam
   column: 64
   condition: B
   img_col: 9
@@ -230,7 +230,7 @@ SA1090-A96213A-R28-C64:
   primer_i7: GCCGGT
   row: 28
 SA1090-A96213A-R29-C18:
-  bam: ./test_data/align/bams/SA1090-A96213A-R29-C18.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R29-C18.bam
   column: 18
   condition: B
   img_col: 55
@@ -241,7 +241,7 @@ SA1090-A96213A-R29-C18:
   primer_i7: CGCCTG
   row: 29
 SA1090-A96213A-R29-C47:
-  bam: ./test_data/align/bams/SA1090-A96213A-R29-C47.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R29-C47.bam
   column: 47
   condition: B
   img_col: 26
@@ -252,7 +252,7 @@ SA1090-A96213A-R29-C47:
   primer_i7: TTGACT
   row: 29
 SA1090-A96213A-R29-C59:
-  bam: ./test_data/align/bams/SA1090-A96213A-R29-C59.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R29-C59.bam
   column: 59
   condition: B
   img_col: 14
@@ -263,7 +263,7 @@ SA1090-A96213A-R29-C59:
   primer_i7: CATTCA
   row: 29
 SA1090-A96213A-R29-C62:
-  bam: ./test_data/align/bams/SA1090-A96213A-R29-C62.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R29-C62.bam
   column: 62
   condition: B
   img_col: 11
@@ -274,7 +274,7 @@ SA1090-A96213A-R29-C62:
   primer_i7: AAGCTA
   row: 29
 SA1090-A96213A-R30-C15:
-  bam: ./test_data/align/bams/SA1090-A96213A-R30-C15.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R30-C15.bam
   column: 15
   condition: B
   img_col: 58
@@ -285,7 +285,7 @@ SA1090-A96213A-R30-C15:
   primer_i7: CCTATT
   row: 30
 SA1090-A96213A-R30-C35:
-  bam: ./test_data/align/bams/SA1090-A96213A-R30-C35.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R30-C35.bam
   column: 35
   condition: B
   img_col: 38
@@ -296,7 +296,7 @@ SA1090-A96213A-R30-C35:
   primer_i7: AAACCT
   row: 30
 SA1090-A96213A-R30-C55:
-  bam: ./test_data/align/bams/SA1090-A96213A-R30-C55.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R30-C55.bam
   column: 55
   condition: B
   img_col: 18
@@ -307,7 +307,7 @@ SA1090-A96213A-R30-C55:
   primer_i7: TGTTGG
   row: 30
 SA1090-A96213A-R31-C09:
-  bam: ./test_data/align/bams/SA1090-A96213A-R31-C09.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R31-C09.bam
   column: 9
   condition: B
   img_col: 64
@@ -318,7 +318,7 @@ SA1090-A96213A-R31-C09:
   primer_i7: TAAGGC
   row: 31
 SA1090-A96213A-R31-C37:
-  bam: ./test_data/align/bams/SA1090-A96213A-R31-C37.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R31-C37.bam
   column: 37
   condition: B
   img_col: 36
@@ -329,7 +329,7 @@ SA1090-A96213A-R31-C37:
   primer_i7: TCAAGT
   row: 31
 SA1090-A96213A-R32-C39:
-  bam: ./test_data/align/bams/SA1090-A96213A-R32-C39.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R32-C39.bam
   column: 39
   condition: B
   img_col: 34
@@ -340,7 +340,7 @@ SA1090-A96213A-R32-C39:
   primer_i7: AGATGT
   row: 32
 SA1090-A96213A-R32-C41:
-  bam: ./test_data/align/bams/SA1090-A96213A-R32-C41.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R32-C41.bam
   column: 41
   condition: B
   img_col: 32
@@ -351,7 +351,7 @@ SA1090-A96213A-R32-C41:
   primer_i7: AGGAAT
   row: 32
 SA1090-A96213A-R32-C65:
-  bam: ./test_data/align/bams/SA1090-A96213A-R32-C65.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R32-C65.bam
   column: 65
   condition: B
   img_col: 8
@@ -362,7 +362,7 @@ SA1090-A96213A-R32-C65:
   primer_i7: CGGCCT
   row: 32
 SA1090-A96213A-R32-C66:
-  bam: ./test_data/align/bams/SA1090-A96213A-R32-C66.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R32-C66.bam
   column: 66
   condition: B
   img_col: 7
@@ -373,7 +373,7 @@ SA1090-A96213A-R32-C66:
   primer_i7: TAGTTG
   row: 32
 SA1090-A96213A-R33-C31:
-  bam: ./test_data/align/bams/SA1090-A96213A-R33-C31.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R33-C31.bam
   column: 31
   condition: B
   img_col: 42
@@ -384,7 +384,7 @@ SA1090-A96213A-R33-C31:
   primer_i7: TTCTCG
   row: 33
 SA1090-A96213A-R33-C38:
-  bam: ./test_data/align/bams/SA1090-A96213A-R33-C38.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R33-C38.bam
   column: 38
   condition: B
   img_col: 35
@@ -395,7 +395,7 @@ SA1090-A96213A-R33-C38:
   primer_i7: CGTACG
   row: 33
 SA1090-A96213A-R33-C66:
-  bam: ./test_data/align/bams/SA1090-A96213A-R33-C66.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R33-C66.bam
   column: 66
   condition: B
   img_col: 7
@@ -406,7 +406,7 @@ SA1090-A96213A-R33-C66:
   primer_i7: TAGTTG
   row: 33
 SA1090-A96213A-R35-C18:
-  bam: ./test_data/align/bams/SA1090-A96213A-R35-C18.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R35-C18.bam
   column: 18
   condition: B
   img_col: 55
@@ -417,7 +417,7 @@ SA1090-A96213A-R35-C18:
   primer_i7: CGCCTG
   row: 35
 SA1090-A96213A-R35-C24:
-  bam: ./test_data/align/bams/SA1090-A96213A-R35-C24.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R35-C24.bam
   column: 24
   condition: B
   img_col: 49
@@ -428,7 +428,7 @@ SA1090-A96213A-R35-C24:
   primer_i7: TTTCAC
   row: 35
 SA1090-A96213A-R35-C38:
-  bam: ./test_data/align/bams/SA1090-A96213A-R35-C38.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R35-C38.bam
   column: 38
   condition: B
   img_col: 35
@@ -439,7 +439,7 @@ SA1090-A96213A-R35-C38:
   primer_i7: CGTACG
   row: 35
 SA1090-A96213A-R35-C47:
-  bam: ./test_data/align/bams/SA1090-A96213A-R35-C47.bam
+  bam: ./test_data/hmmcopy/align/bams/SA1090-A96213A-R35-C47.bam
   column: 47
   condition: B
   img_col: 26
