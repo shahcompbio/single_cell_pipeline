@@ -101,7 +101,7 @@ def generate_secondary_table(parsed_data):
     for brk_call, brk_data in parsed_data:
         breakpoint_id = brk_call[6]
 
-        for dval in data:
+        for dval in brk_data:
             dval = dval.strip().split()
 
             assert len(dval) == 13
