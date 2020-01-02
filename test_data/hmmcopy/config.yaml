@@ -1,0 +1,46 @@
+hmmcopy:
+  bin_size: 500000
+  chromosomes:
+  - '6'
+  - '8'
+  - '17'
+  docker:
+    hmmcopy: singlecellpipeline/hmmcopy:v0.0.5
+    single_cell_pipeline: singlecellpipeline/single_cell_pipeline:v0.5.6
+  e: 0.999999
+  eta: 50000
+  exclude_list: /refdata/human/repeats.satellite.regions
+  g: 3
+  gc_wig_file: test_data/align/ref_data/human/GRCh37-lite.gc.ws_500000.wig
+  good_cells:
+  - - median_hmmcopy_reads_per_bin
+    - ge
+    - 50
+  - - is_contaminated
+    - in
+    - - 'False'
+      - 'false'
+      - false
+  igv_segs_quality_threshold: 0.75
+  kappa: 100,100,700,100,25,25,25,25,25,25,25,25
+  lambda: 20
+  m: 0,1,2,3,4,5,6,7,8,9,10,11
+  map_cutoff: 0.9
+  map_wig_file: test_data/align/ref_data/human/GRCh37-lite.map.ws_125_to_500000.wig
+  memory:
+    med: 6
+  min_mqual: 20
+  mu: 0,1,2,3,4,5,6,7,8,9,10,11
+  multipliers:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  nu: 2.1
+  num_states: 12
+  ref_genome: test_data/align/ref_data/human/GRCh37-lite.fa
+  s: 1
+  smoothing_function: modal
+  strength: 1000
