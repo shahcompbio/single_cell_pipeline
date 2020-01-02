@@ -348,32 +348,17 @@ def write_svtyper_annotation(annotation, inputcsv, outfile):
     :param outfile: filename for write out file
     :type outfile: str
     """
-    if str(inputcsv):
-        inputcsv = pd.read_csv(inputcsv, delimiter=",")
+    inputcsv = inputcsv[['CHROM', 'POS', annotation, 'cell_id']]
 
-    assert len(inputcsv.index) % 2 == 0
-    num_records = int(len(inputcsv.index) / 2)
-    cell_ids = np.unique(inputcsv["cell_id"])
+    inputcsv['coord'] = list(zip(inputcsv['CHROM'], inputcsv['POS']))
 
-    positions = inputcsv["POS"]
-    positions = positions[:num_records]
+    inputcsv = inputcsv.pivot(index='cell_id', columns='coord', values=annotation)
 
-    chroms = inputcsv["CHROM"]
-    chroms = chroms[:num_records]
+    inputcsv = inputcsv.T
 
-    output = pd.DataFrame(
-        {
-            "chromosome": chroms,
-            "position": positions
-        },
-        columns=["chromosome", "position"]
-    )
+    inputcsv[['CHROM', 'POS']] = pd.DataFrame(inputcsv.index.tolist(), index=inputcsv.index)
 
-    for cell_id in cell_ids:
-        svtyper_annotation = inputcsv.loc[inputcsv['cell_id'] == cell_id, annotation].values
-        output[cell_id] = pd.Series(svtyper_annotation)
-
-    output.to_csv(outfile, index=False)
+    inputcsv.to_csv(outfile, index=False)
 
 
 def write_svtyper_annotations(csv, output_paths, tempdir):
@@ -398,6 +383,8 @@ def write_svtyper_annotations(csv, output_paths, tempdir):
                    "RP", "RS", "SQ",
                    "GL", "AB"]
 
+    csv = pd.read_csv(csv, delimiter=",")
+
     for annotation in annotations:
         temp_output_path = os.path.join(tempdir, '{}.csv.gz'.format(annotation))
 
@@ -410,7 +397,7 @@ def write_svtyper_annotations(csv, output_paths, tempdir):
         csvutils.finalize_csv(temp_output_path, output_paths[annotation])
 
 
-def merge_csvs(input_csvs, merged_csv, tempdir=None):
+def merge_csvs(input_csvs, merged_csv):
     """
     merges input csv files
     into one csv

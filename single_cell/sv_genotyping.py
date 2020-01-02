@@ -1,3 +1,4 @@
+import logging
 import os
 
 import pypeliner
@@ -16,7 +17,8 @@ def create_sv_genotyper_workflow(
         "AO", "AP", "AS", "ASC", "DP", "GQ", "QA",
         "QR", "RO", "RP", "RS", "SQ", "GL", "AB"
     ]
-    output_template = {ann: os.path.join(out_dir, '{sample_id}', '{library_id}', ann + ".csv.gz") for ann in annotations}
+    output_template = {ann: os.path.join(out_dir, '{sample_id}', '{library_id}', ann + ".csv.gz") for ann in
+                       annotations}
 
     ctx = {
         'mem': 8, 'num_retry': 3, 'mem_retry_increment': 2, 'ncpus': 1,
@@ -25,6 +27,14 @@ def create_sv_genotyper_workflow(
 
     sv_genotyping_config = config['sv_genotyping']
     reference_genome = sv_genotyping_config['ref_genome']
+
+    error_str = '''
+  ___ __  __ ___  ___  ___  ___  __  __  ___  _  _  _____  _    _      ___  ___    _  _____  _   _  ___  ___
+ | __|\ \/ /| _ \| __|| _ \|_ _||  \/  || __|| \| ||_   _|/_\  | |    | __|| __|  /_\|_   _|| | | || _ \| __|
+ | _|  >  < |  _/| _| |   / | | | |\/| || _| | .` |  | | / _ \ | |__  | _| | _|  / _ \ | |  | |_| ||   /| _|
+ |___|/_/\_\|_|  |___||_|_\|___||_|  |_||___||_|\_|  |_|/_/ \_\|____| |_|  |___|/_/ \_\|_|   \___/ |_|_\|___|
+ '''
+    logging.getLogger("SV_GENOTYPING").warning(error_str)
 
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
