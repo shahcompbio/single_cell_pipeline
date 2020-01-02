@@ -1,170 +1,170 @@
 normal:
   17-1-10000000:
-    bam: test_data/split_wgs_bam/bams/17-1-10000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/17-1-10000000.bam
   17-10000001-20000000:
-    bam: test_data/split_wgs_bam/bams/17-10000001-20000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/17-10000001-20000000.bam
   17-20000001-30000000:
-    bam: test_data/split_wgs_bam/bams/17-20000001-30000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/17-20000001-30000000.bam
   17-30000001-40000000:
-    bam: test_data/split_wgs_bam/bams/17-30000001-40000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/17-30000001-40000000.bam
   17-40000001-50000000:
-    bam: test_data/split_wgs_bam/bams/17-40000001-50000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/17-40000001-50000000.bam
   17-50000001-60000000:
-    bam: test_data/split_wgs_bam/bams/17-50000001-60000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/17-50000001-60000000.bam
   17-60000001-70000000:
-    bam: test_data/split_wgs_bam/bams/17-60000001-70000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/17-60000001-70000000.bam
   17-70000001-80000000:
-    bam: test_data/split_wgs_bam/bams/17-70000001-80000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/17-70000001-80000000.bam
   17-80000001-81195210:
-    bam: test_data/split_wgs_bam/bams/17-80000001-81195210.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/17-80000001-81195210.bam
   6-1-10000000:
-    bam: test_data/split_wgs_bam/bams/6-1-10000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/6-1-10000000.bam
   6-100000001-110000000:
-    bam: test_data/split_wgs_bam/bams/6-100000001-110000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/6-100000001-110000000.bam
   6-10000001-20000000:
-    bam: test_data/split_wgs_bam/bams/6-10000001-20000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/6-10000001-20000000.bam
   6-110000001-120000000:
-    bam: test_data/split_wgs_bam/bams/6-110000001-120000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/6-110000001-120000000.bam
   6-120000001-130000000:
-    bam: test_data/split_wgs_bam/bams/6-120000001-130000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/6-120000001-130000000.bam
   6-130000001-140000000:
-    bam: test_data/split_wgs_bam/bams/6-130000001-140000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/6-130000001-140000000.bam
   6-140000001-150000000:
-    bam: test_data/split_wgs_bam/bams/6-140000001-150000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/6-140000001-150000000.bam
   6-150000001-160000000:
-    bam: test_data/split_wgs_bam/bams/6-150000001-160000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/6-150000001-160000000.bam
   6-160000001-170000000:
-    bam: test_data/split_wgs_bam/bams/6-160000001-170000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/6-160000001-170000000.bam
   6-170000001-171115067:
-    bam: test_data/split_wgs_bam/bams/6-170000001-171115067.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/6-170000001-171115067.bam
   6-20000001-30000000:
-    bam: test_data/split_wgs_bam/bams/6-20000001-30000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/6-20000001-30000000.bam
   6-30000001-40000000:
-    bam: test_data/split_wgs_bam/bams/6-30000001-40000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/6-30000001-40000000.bam
   6-40000001-50000000:
-    bam: test_data/split_wgs_bam/bams/6-40000001-50000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/6-40000001-50000000.bam
   6-50000001-60000000:
-    bam: test_data/split_wgs_bam/bams/6-50000001-60000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/6-50000001-60000000.bam
   6-60000001-70000000:
-    bam: test_data/split_wgs_bam/bams/6-60000001-70000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/6-60000001-70000000.bam
   6-70000001-80000000:
-    bam: test_data/split_wgs_bam/bams/6-70000001-80000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/6-70000001-80000000.bam
   6-80000001-90000000:
-    bam: test_data/split_wgs_bam/bams/6-80000001-90000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/6-80000001-90000000.bam
   6-90000001-100000000:
-    bam: test_data/split_wgs_bam/bams/6-90000001-100000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/6-90000001-100000000.bam
   8-1-10000000:
-    bam: test_data/split_wgs_bam/bams/8-1-10000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/8-1-10000000.bam
   8-100000001-110000000:
-    bam: test_data/split_wgs_bam/bams/8-100000001-110000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/8-100000001-110000000.bam
   8-10000001-20000000:
-    bam: test_data/split_wgs_bam/bams/8-10000001-20000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/8-10000001-20000000.bam
   8-110000001-120000000:
-    bam: test_data/split_wgs_bam/bams/8-110000001-120000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/8-110000001-120000000.bam
   8-120000001-130000000:
-    bam: test_data/split_wgs_bam/bams/8-120000001-130000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/8-120000001-130000000.bam
   8-130000001-140000000:
-    bam: test_data/split_wgs_bam/bams/8-130000001-140000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/8-130000001-140000000.bam
   8-140000001-146364022:
-    bam: test_data/split_wgs_bam/bams/8-140000001-146364022.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/8-140000001-146364022.bam
   8-20000001-30000000:
-    bam: test_data/split_wgs_bam/bams/8-20000001-30000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/8-20000001-30000000.bam
   8-30000001-40000000:
-    bam: test_data/split_wgs_bam/bams/8-30000001-40000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/8-30000001-40000000.bam
   8-40000001-50000000:
-    bam: test_data/split_wgs_bam/bams/8-40000001-50000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/8-40000001-50000000.bam
   8-50000001-60000000:
-    bam: test_data/split_wgs_bam/bams/8-50000001-60000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/8-50000001-60000000.bam
   8-60000001-70000000:
-    bam: test_data/split_wgs_bam/bams/8-60000001-70000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/8-60000001-70000000.bam
   8-70000001-80000000:
-    bam: test_data/split_wgs_bam/bams/8-70000001-80000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/8-70000001-80000000.bam
   8-80000001-90000000:
-    bam: test_data/split_wgs_bam/bams/8-80000001-90000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/8-80000001-90000000.bam
   8-90000001-100000000:
-    bam: test_data/split_wgs_bam/bams/8-90000001-100000000.bam
+    bam: test_data/variant_calling/split_wgs_bam/bams/8-90000001-100000000.bam
 tumour:
   17-1-10000000:
-    bam: test_data/merge_cell_bams/bams/17-1-10000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/17-1-10000000.bam
   17-10000001-20000000:
-    bam: test_data/merge_cell_bams/bams/17-10000001-20000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/17-10000001-20000000.bam
   17-20000001-30000000:
-    bam: test_data/merge_cell_bams/bams/17-20000001-30000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/17-20000001-30000000.bam
   17-30000001-40000000:
-    bam: test_data/merge_cell_bams/bams/17-30000001-40000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/17-30000001-40000000.bam
   17-40000001-50000000:
-    bam: test_data/merge_cell_bams/bams/17-40000001-50000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/17-40000001-50000000.bam
   17-50000001-60000000:
-    bam: test_data/merge_cell_bams/bams/17-50000001-60000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/17-50000001-60000000.bam
   17-60000001-70000000:
-    bam: test_data/merge_cell_bams/bams/17-60000001-70000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/17-60000001-70000000.bam
   17-70000001-80000000:
-    bam: test_data/merge_cell_bams/bams/17-70000001-80000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/17-70000001-80000000.bam
   17-80000001-81195210:
-    bam: test_data/merge_cell_bams/bams/17-80000001-81195210.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/17-80000001-81195210.bam
   6-1-10000000:
-    bam: test_data/merge_cell_bams/bams/6-1-10000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/6-1-10000000.bam
   6-100000001-110000000:
-    bam: test_data/merge_cell_bams/bams/6-100000001-110000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/6-100000001-110000000.bam
   6-10000001-20000000:
-    bam: test_data/merge_cell_bams/bams/6-10000001-20000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/6-10000001-20000000.bam
   6-110000001-120000000:
-    bam: test_data/merge_cell_bams/bams/6-110000001-120000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/6-110000001-120000000.bam
   6-120000001-130000000:
-    bam: test_data/merge_cell_bams/bams/6-120000001-130000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/6-120000001-130000000.bam
   6-130000001-140000000:
-    bam: test_data/merge_cell_bams/bams/6-130000001-140000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/6-130000001-140000000.bam
   6-140000001-150000000:
-    bam: test_data/merge_cell_bams/bams/6-140000001-150000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/6-140000001-150000000.bam
   6-150000001-160000000:
-    bam: test_data/merge_cell_bams/bams/6-150000001-160000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/6-150000001-160000000.bam
   6-160000001-170000000:
-    bam: test_data/merge_cell_bams/bams/6-160000001-170000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/6-160000001-170000000.bam
   6-170000001-171115067:
-    bam: test_data/merge_cell_bams/bams/6-170000001-171115067.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/6-170000001-171115067.bam
   6-20000001-30000000:
-    bam: test_data/merge_cell_bams/bams/6-20000001-30000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/6-20000001-30000000.bam
   6-30000001-40000000:
-    bam: test_data/merge_cell_bams/bams/6-30000001-40000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/6-30000001-40000000.bam
   6-40000001-50000000:
-    bam: test_data/merge_cell_bams/bams/6-40000001-50000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/6-40000001-50000000.bam
   6-50000001-60000000:
-    bam: test_data/merge_cell_bams/bams/6-50000001-60000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/6-50000001-60000000.bam
   6-60000001-70000000:
-    bam: test_data/merge_cell_bams/bams/6-60000001-70000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/6-60000001-70000000.bam
   6-70000001-80000000:
-    bam: test_data/merge_cell_bams/bams/6-70000001-80000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/6-70000001-80000000.bam
   6-80000001-90000000:
-    bam: test_data/merge_cell_bams/bams/6-80000001-90000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/6-80000001-90000000.bam
   6-90000001-100000000:
-    bam: test_data/merge_cell_bams/bams/6-90000001-100000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/6-90000001-100000000.bam
   8-1-10000000:
-    bam: test_data/merge_cell_bams/bams/8-1-10000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/8-1-10000000.bam
   8-100000001-110000000:
-    bam: test_data/merge_cell_bams/bams/8-100000001-110000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/8-100000001-110000000.bam
   8-10000001-20000000:
-    bam: test_data/merge_cell_bams/bams/8-10000001-20000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/8-10000001-20000000.bam
   8-110000001-120000000:
-    bam: test_data/merge_cell_bams/bams/8-110000001-120000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/8-110000001-120000000.bam
   8-120000001-130000000:
-    bam: test_data/merge_cell_bams/bams/8-120000001-130000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/8-120000001-130000000.bam
   8-130000001-140000000:
-    bam: test_data/merge_cell_bams/bams/8-130000001-140000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/8-130000001-140000000.bam
   8-140000001-146364022:
-    bam: test_data/merge_cell_bams/bams/8-140000001-146364022.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/8-140000001-146364022.bam
   8-20000001-30000000:
-    bam: test_data/merge_cell_bams/bams/8-20000001-30000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/8-20000001-30000000.bam
   8-30000001-40000000:
-    bam: test_data/merge_cell_bams/bams/8-30000001-40000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/8-30000001-40000000.bam
   8-40000001-50000000:
-    bam: test_data/merge_cell_bams/bams/8-40000001-50000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/8-40000001-50000000.bam
   8-50000001-60000000:
-    bam: test_data/merge_cell_bams/bams/8-50000001-60000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/8-50000001-60000000.bam
   8-60000001-70000000:
-    bam: test_data/merge_cell_bams/bams/8-60000001-70000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/8-60000001-70000000.bam
   8-70000001-80000000:
-    bam: test_data/merge_cell_bams/bams/8-70000001-80000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/8-70000001-80000000.bam
   8-80000001-90000000:
-    bam: test_data/merge_cell_bams/bams/8-80000001-90000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/8-80000001-90000000.bam
   8-90000001-100000000:
-    bam: test_data/merge_cell_bams/bams/8-90000001-100000000.bam
+    bam: test_data/variant_calling/merge_cell_bams/bams/8-90000001-100000000.bam

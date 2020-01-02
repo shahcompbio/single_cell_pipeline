@@ -1,5 +1,5 @@
-hmmcopy_metrics: test_data/hmmcopy/results/A96213A_hmmcopy_metrics.csv.gz
-hmmcopy_reads: test_data/hmmcopy/results/A96213A_reads.csv.gz
-alignment_metrics: test_data/align/results/A96213A_alignment_metrics.csv.gz
-gc_metrics: test_data/align/results/A96213A_gc_metrics.csv.gz
-segs_pdf_tar: test_data/hmmcopy/results/A96213A_segs.tar.gz
+hmmcopy_metrics: test_data/annotation/hmmcopy/results/A96213A_hmmcopy_metrics.csv.gz
+hmmcopy_reads: test_data/annotation/hmmcopy/results/A96213A_reads.csv.gz
+alignment_metrics: test_data/annotation/align/results/A96213A_alignment_metrics.csv.gz
+gc_metrics: test_data/annotation/align/results/A96213A_gc_metrics.csv.gz
+segs_pdf_tar: test_data/annotation/hmmcopy/results/A96213A_segs.tar.gz
