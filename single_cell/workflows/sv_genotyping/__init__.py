@@ -71,7 +71,6 @@ def create_sv_genotyping_workflow(
         args=(
             mgd.TempInputFile("genotypedlumpy.csv.gz", 'cell_id', axes_origin=[], extensions=['.yaml']),
             mgd.TempOutputFile("genotypedmerged_lumpy.csv.gz", extensions=['.yaml']),
-            mgd.TempSpace("merged_lumpy")
         )
     )
 
@@ -108,7 +107,6 @@ def create_sv_genotyping_workflow(
         args=(
             mgd.TempInputFile("genotypeddestruct.csv.gz", 'cell_id', axes_origin=[], extensions=['.yaml']),
             mgd.TempOutputFile("genotypedmerged_destruct.csv.gz", extensions=['.yaml']),
-            mgd.TempSpace("merged_destruct")
         )
     )
 
@@ -120,8 +118,7 @@ def create_sv_genotyping_workflow(
                 mgd.TempInputFile("genotypedmerged_lumpy.csv.gz", extensions=['.yaml']),
                 mgd.TempInputFile("genotypedmerged_destruct.csv.gz", extensions=['.yaml'])
             ],
-            mgd.TempOutputFile("lumpy_destruct_merged.csv.gz"),
-            mgd.TempSpace("temp")
+            mgd.TempOutputFile("lumpy_destruct_merged.csv.gz", extensions=['.yaml']),
         )
     )
 
