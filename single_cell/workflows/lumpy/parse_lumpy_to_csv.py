@@ -5,29 +5,26 @@ from single_cell.utils import helpers
 
 
 def group_lumpy_data(infile):
-    parsed_data = {}
+    key = None
+    data = []
 
-    with open(infile) as data:
-        for line in data:
+    with open(infile) as f:
+        for line in f:
             if not line.startswith("\t"):
-                if parsed_data:
-                    yield parsed_data
-                parsed_data = {}
-                key = tuple(line.split())
-                assert key not in parsed_data
-                parsed_data[key] = []
+                if key is not None:
+                    yield key, data
+                key = tuple(line.rstrip().split())
+                data = []
             else:
-                parsed_data[key].append(line)
+                data.append(line)
+        if key is not None:
+            yield key, data
 
 
 def generate_primary_table(parsed_data):
     data = []
 
-    for lumpy_call in parsed_data:
-        assert len(lumpy_call.keys()) == 1
-
-        brk_call = list(lumpy_call.keys())[0]
-
+    for brk_call, brk_data in parsed_data:
         row_data = dict()
 
         row_data['chrom1'] = brk_call[0]
@@ -101,12 +98,8 @@ def write_to_csv(df, filepath):
 def generate_secondary_table(parsed_data):
     counts = {}
 
-    for lumpy_call in parsed_data:
-        assert len(lumpy_call.keys()) == 1
-        key = list(lumpy_call.keys())[0]
-        data = lumpy_call[key]
-
-        breakpoint_id = key[6]
+    for brk_call, brk_data in parsed_data:
+        breakpoint_id = brk_call[6]
 
         for dval in data:
             dval = dval.strip().split()
