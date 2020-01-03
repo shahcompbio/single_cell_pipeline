@@ -5,6 +5,11 @@
 #### Changes:
 1. updated biowrappers version to v0.2.2
 2. updated destruct and remixt container versions
+3. added sv genotyping (experimental)
+
+#### bugs:
+1. missing last line in lumpy parsed output
+2. issues with fastqscreen tags 
 
 
 ### v0.5.6:
@@ -18,6 +23,7 @@
 2. remixt container does not need single cell pipeline 
 3. some updates to documentation
 4. updated to biowrappers v0.2.1
+5. split infer and count haps
 
 ### v0.5.5:
 

@@ -285,6 +285,7 @@ def get_variant_calling_params(reference_dir, reference):
         },
         'ref_genome': referencedata['ref_genome'],
         'chromosomes': referencedata['chromosomes'],
+        'use_depth_thresholds': True,
         'split_size': 10000000,
         'cosmic_status': copy.deepcopy(status_data),
         'dbsnp_status': copy.deepcopy(status_data),
@@ -438,16 +439,20 @@ def get_breakpoint_params(reference_dir, reference):
     return {'breakpoint_calling': params}
 
 
-def get_multi_sample_params():
+def get_sv_genotyping_params(reference_dir, reference):
     docker_containers = config_reference.containers()['docker']
 
+    referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
+
     params = {
+        'ref_genome': referencedata['ref_genome'],
         'memory': {'low': 4, 'med': 6, 'high': 16},
         'docker': {
             'single_cell_pipeline': docker_containers['single_cell_pipeline'],
+            'svtyper': docker_containers['svtyper']
         },
     }
-    return {'multi_sample': params}
+    return {'sv_genotyping': params}
 
 
 def get_singlecell_pipeline_config(config_params, override=None):
@@ -495,7 +500,7 @@ def get_singlecell_pipeline_config(config_params, override=None):
 
     params.update(get_breakpoint_params(reference_dir, reference))
 
-    params.update(get_multi_sample_params())
+    params.update(get_sv_genotyping_params(reference_dir, reference))
 
     params = override_config(params, override)
 

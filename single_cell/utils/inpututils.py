@@ -112,6 +112,28 @@ def load_variant_counting_input(input_yaml):
     return strelka_vcf_data, museq_vcf_data, cells_data_out
 
 
+def load_sv_genotyper_input(input_yaml):
+    yamldata = load_yaml(input_yaml)
+
+    sv_calls = yamldata['sv_calls']
+    lumpy_csvs = {}
+    destruct_csvs = {}
+    for sample, sampledata in sv_calls.items():
+        for library, library_data in sampledata.items():
+            lumpy_csvs[(sample, library)] = library_data['lumpy']
+            destruct_csvs[(sample, library)] = library_data['destruct']
+
+    cells_data = yamldata['tumour_cells']
+
+    cells_data_out = {}
+    for sample, sampledata in cells_data.items():
+        for library, library_data in sampledata.items():
+            for cell, cell_data in library_data.items():
+                cells_data_out[(sample, library, cell)] = cell_data['bam']
+
+    return lumpy_csvs, destruct_csvs, cells_data_out
+
+
 def load_yaml(path):
     try:
         with open(path) as infile:
