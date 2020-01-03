@@ -16,7 +16,6 @@ import pypeliner
 def infer_haps(
         bam_file,
         haplotypes_filename,
-        allele_counts_filename,
         config,
         from_tumour=False,
 ):
@@ -123,30 +122,6 @@ def infer_haps(
             mgd.OutputFile(haplotypes_filename),
             mgd.TempInputFile('haplotypes.tsv', 'chromosome'),
         )
-    )
-
-    workflow.transform(
-        name='create_segments',
-        ctx={'mem': 16, 'docker_image': remixt_image},
-        func='remixt.analysis.segment.create_segments',
-        args=(
-            mgd.TempOutputFile('segments.tsv'),
-            remixt_config,
-            config['ref_data_dir'],
-        ),
-    )
-
-    workflow.transform(
-        name='haplotype_allele_readcount',
-        ctx={'mem': 16, 'docker_image': remixt_image},
-        func='remixt.analysis.readcount.haplotype_allele_readcount',
-        args=(
-            mgd.OutputFile(allele_counts_filename),
-            mgd.TempInputFile('segments.tsv'),
-            mgd.TempInputFile('seqdata_file.h5'),
-            mgd.InputFile(haplotypes_filename),
-            remixt_config
-        ),
     )
 
     return workflow
@@ -261,7 +236,6 @@ def infer_haps_workflow(args):
         args=(
             bam_file,
             mgd.OutputFile(haplotypes_filename),
-            mgd.TempOutputFile("allele_counts.csv"),
             config,
         ),
     )
