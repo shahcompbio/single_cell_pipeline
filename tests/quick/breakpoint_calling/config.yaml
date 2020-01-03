@@ -2,7 +2,7 @@ breakpoint_calling:
   destruct_config:
     genome_fai: test_data/align/ref_data/human/GRCh37-lite.fa.fai
     genome_fasta: test_data/align/ref_data/human/GRCh37-lite.fa
-    gtf_filename: tests/ref_data/GRCh37-lite.gtf
+    gtf_filename: test_data/breakpoint_calling/ref_data/GRCh37-lite.gtf
   docker:
     destruct: singlecellpipeline/destruct:v0.0.1
     lumpy: singlecellpipeline/lumpy:v0.0.3
@@ -12,4 +12,4 @@ breakpoint_calling:
     high: 16
     low: 4
     med: 6
-  ref_data_directory: tests/ref_data
+  ref_data_directory: test_data/breakpoint_calling/ref_data/
