@@ -1,2 +1,2 @@
 normal:
-  bam: tests/split_bams/HCC1395BL_chr15.bam
+  bam: ./tests/data/split_bams/HCC1395BL_chr15.bam
