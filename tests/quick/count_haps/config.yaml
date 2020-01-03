@@ -3,7 +3,7 @@ count_haps:
   - '15'
   docker:
     remixt: singlecellpipeline/remixt:v0.0.2
-    single_cell_pipeline: singlecellpipeline/remixt:v0.5.4
+    single_cell_pipeline: singlecellpipeline/single_cell_pipeline:v0.5.6
   extract_seqdata:
     genome_fai_template: /refdata/human/GRCh37-lite.fa.fai
     genome_fasta_template: /refdata/human/GRCh37-lite.fa
