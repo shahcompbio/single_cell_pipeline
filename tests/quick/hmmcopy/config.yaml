@@ -9,7 +9,7 @@ hmmcopy:
     single_cell_pipeline: singlecellpipeline/single_cell_pipeline:v0.5.6
   e: 0.999999
   eta: 50000
-  exclude_list: /refdata/human/repeats.satellite.regions
+  exclude_list: test_data/align/ref_data/human/repeats.satellite.regions
   g: 3
   gc_wig_file: test_data/align/ref_data/human/GRCh37-lite.gc.ws_500000.wig
   good_cells:
