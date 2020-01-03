@@ -121,10 +121,52 @@ single_cell breakpoint_calling \
 
 ```
 single_cell variant_calling \
-    --input_yaml tests/quick/variant_calling/inputs.yaml
+    --input_yaml tests/quick/variant_calling/inputs.yaml \
     --out_dir test_data/variant_calling/results \
     --submit local --loglevel DEBUG \
     --config_file tests/quick/variant_calling/config.yaml \
     --context_config context_config.yaml \
     --tmpdir variantcallingtmp --maxjobs 4 --nocleanup
 ```
+
+### Infer haplotypes workflow
+
+```
+single_cell infer_haps \
+    --input_yaml tests/quick/infer_haps/inputs.yaml \
+    --out_dir test_data/infer_haps/results \
+    --submit local --loglevel DEBUG \
+    --config_file tests/quick/infer_haps/config.yaml \
+    --context_config context_config.yaml \
+    --tmpdir inferhapstmp --maxjobs 4 --nocleanup
+```
+
+### Count haplotype reads workflow
+
+```
+single_cell count_haps \
+    --input_yaml tests/quick/count_haps/inputs.yaml \
+    --out_dir test_data/count_haps/results \
+    --submit local --loglevel DEBUG \
+    --config_file tests/quick/count_haps/config.yaml \
+    --context_config context_config.yaml \
+    --tmpdir counthapstmp --maxjobs 4 --nocleanup
+```
+
+## Test dataset creation
+
+The test data for the following workflows originates from the `create_dlp_test_fastq.py` script in the sisyphus repo:
+
+- alignment
+- hmmcopy
+- annotation
+- split_wgs_bams
+- merge_cell_bams
+- variant_calling
+- breakpoint_calling
+
+The test data for the following workflows are downsampled versions of the test data for [remixt](https://github.com/amcpherson/remixt):
+
+- infer_haps
+- count_haps
+
