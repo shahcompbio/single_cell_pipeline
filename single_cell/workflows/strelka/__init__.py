@@ -14,7 +14,7 @@ def create_strelka_workflow(
         config,
         chromosomes=default_chromosomes,
         split_size=int(1e7),
-        use_depth_thresholds=False):
+        use_depth_thresholds=True):
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
            'num_retry': 3, 'docker_image': config['docker']['single_cell_pipeline']}
 
