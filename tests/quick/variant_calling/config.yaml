@@ -62,3 +62,4 @@ variant_calling:
   tri_nucleotide_context:
     kwargs:
       split_size: 10000000
+  use_depth_thresholds: False
