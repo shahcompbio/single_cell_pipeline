@@ -23,10 +23,11 @@ variant_calling:
       local_path: /refdata/human/wgEncodeCrgMapabilityAlign50mer.bigWig
       url: http://hgdownload-test.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/release3/wgEncodeCrgMapabilityAlign50mer.bigWig
     ref_genome:
-      local_path: /refdata/human/GRCh37-lite.fa
+      local_path: test_data/align/ref_data/human/GRCh37-lite.fa
       url: http://www.bcgsc.ca/downloads/genomes/9606/hg19/1000genomes/bwa_ind/genome/GRCh37-lite.fa
     snpeff:
       db: GRCh37.75
+      data_dir: /refdata/snpeff/data/
   dbsnp_status:
     kwargs:
       split_size: 10000000
