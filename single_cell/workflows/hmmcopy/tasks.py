@@ -113,6 +113,7 @@ def run_hmmcopy(
         tempdir,
         docker_image
 ):
+
     # generate wig file for hmmcopy
     helpers.makedirs(tempdir)
     readcount_wig = os.path.join(tempdir, 'readcounter.wig')

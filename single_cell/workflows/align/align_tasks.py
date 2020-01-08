@@ -191,6 +191,7 @@ def align_lanes(
         adapter2, fastqscreen_detailed_metrics,
         fastqscreen_summary_metrics, fastqscreen_params
 ):
+
     lane_bams = []
     detailed_counts = []
     summary_counts = []

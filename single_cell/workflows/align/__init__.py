@@ -51,6 +51,7 @@ def bam_metrics_workflow(
                                        for cellid in cell_ids])
 
     baseimage = config['docker']['single_cell_pipeline']
+
     workflow = pypeliner.workflow.Workflow(ctx={'docker_image': baseimage})
 
     workflow.setobj(
@@ -173,12 +174,14 @@ def create_alignment_workflow(
 
     baseimage = config['docker']['single_cell_pipeline']
 
+    ctx = {'mem': 7, 'ncpus': 1, 'docker_image': baseimage, 'mem_retry_factor': 1}
+
     bam_filename = dict([(cellid, bam_filename[cellid])
                          for cellid in cell_ids])
 
     chromosomes = config["chromosomes"]
 
-    workflow = pypeliner.workflow.Workflow()
+    workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     workflow.setobj(
         obj=mgd.OutputChunks('chrom'),
@@ -200,7 +203,6 @@ def create_alignment_workflow(
 
     workflow.transform(
         name='align_reads',
-        ctx={'mem': 7, 'ncpus': 1, 'docker_image': baseimage},
         axes=('cell_id',),
         func="single_cell.workflows.align.align_tasks.align_lanes",
         args=(
@@ -226,7 +228,6 @@ def create_alignment_workflow(
 
     workflow.transform(
         name='merge_fastq_screen_metrics',
-        ctx={'mem': 7, 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.workflows.align.fastqscreen.merge_fastq_screen_counts",
         args=(
             mgd.TempInputFile('organism_detailed_count_per_cell.csv', 'cell_id'),
@@ -261,7 +262,7 @@ def create_alignment_workflow(
 
     workflow.transform(
         name='add_contamination_status',
-        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        ctx={'mem': config['memory']['med']},
         func="single_cell.workflows.align.tasks.add_contamination_status",
         args=(
             mgd.TempInputFile('alignment_metrics.csv', extensions=['.yaml']),
@@ -275,7 +276,7 @@ def create_alignment_workflow(
 
     workflow.transform(
         name='plot_metrics',
-        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        ctx={'mem': config['memory']['med']},
         func="single_cell.workflows.align.tasks.plot_metrics",
         args=(
             mgd.InputFile(alignment_metrics, extensions=['.yaml']),
@@ -288,7 +289,7 @@ def create_alignment_workflow(
 
     workflow.transform(
         name='tar_all_files',
-        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
+        ctx={'mem': config['memory']['med']},
         func="single_cell.utils.helpers.tar_files",
         args=(
             [
