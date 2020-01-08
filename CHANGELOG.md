@@ -1,5 +1,15 @@
 # Change Log
 
+### v0.5.8
+
+#### Changes:
+1. updated biowrappers to v0.2.4
+2. updated pypeliner version to v0.5.15
+3. optimized QC VM size for cost savings
+4. snpeff now uses data from the refdata dir instead of downloading
+5. added test datasets
+
+
 ### v0.5.7
 
 #### Changes:
