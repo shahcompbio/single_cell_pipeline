@@ -279,7 +279,7 @@ class CsvOutput(object):
             )
             return None
 
-    def __write_yaml(self):
+    def write_yaml(self):
         type_converter = pandas_to_std_types()
 
         yamldata = {'header': self.header, 'sep': self.sep, 'columns': []}
@@ -317,7 +317,7 @@ class CsvOutput(object):
             if not dtype == 'NA' and not expected_dtype == dtype:
                 raise CsvTypeMismatch(col, expected_dtype, dtype)
 
-        self.__write_yaml()
+        self.write_yaml()
 
     def write_csv_data(self, reader, writer):
         reader_gzip = type(reader) == gzip.GzipFile
@@ -346,7 +346,7 @@ class CsvOutput(object):
                 with helpers.getFileHandle(infile) as reader:
                     self.write_csv_data(reader, writer)
 
-        self.__write_yaml()
+        self.write_yaml()
 
     def write_headerless_csv(self, infile):
         with helpers.getFileHandle(self.filepath, 'wt') as writer:
@@ -355,7 +355,7 @@ class CsvOutput(object):
                     raise CsvWriterError("cannot write, wrong header")
                 self.write_csv_data(reader, writer)
 
-        self.__write_yaml()
+        self.write_yaml()
 
     def write_csv_with_header(self, infile, headerless_input=False):
         with helpers.getFileHandle(self.filepath, 'wt') as writer:
@@ -364,7 +364,7 @@ class CsvOutput(object):
                     writer.write(self.header_line)
                 self.write_csv_data(reader, writer)
 
-        self.__write_yaml()
+        self.write_yaml()
 
 
 def annotate_csv(infile, annotation_data, outfile, on="cell_id", write_header=True, dtypes=None):
@@ -621,3 +621,13 @@ def write_dataframe_to_csv_and_yaml(df, outfile, write_header=False, sep=',', dt
 def get_metadata(infile):
     csvinput = CsvInput(infile)
     return csvinput.header, csvinput.dtypes, csvinput.columns
+
+
+def write_metadata(infile):
+    csvinput = CsvInput(infile)
+
+    csvoutput = CsvOutput(
+        infile, header=csvinput.header, sep=csvinput.sep, dtypes=csvinput.dtypes,
+        columns=csvinput.columns
+    )
+    csvoutput.write_yaml()

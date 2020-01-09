@@ -3,12 +3,14 @@ Created on May 9, 2018
 
 @author: dgrewal
 '''
-import pandas as pd
-from single_cell.utils import helpers
-from single_cell.utils import csvutils
-import logging
 import gc
+import logging
+
+import pandas as pd
 from biowrappers.components.io.hdf5 import tasks as biowrappers_hdf5
+from single_cell.utils import csvutils
+from single_cell.utils import helpers
+
 
 def get_min_itemsize(files):
     min_itemsize = {}
@@ -25,8 +27,8 @@ def get_min_itemsize(files):
             min_itemsize[col] += 2
     return min_itemsize
 
-def cast_columns(df):
 
+def cast_columns(df):
     if not isinstance(df, pd.DataFrame):
         return df
 
@@ -61,18 +63,18 @@ def cast_h5_file(h5data, output):
                 df = None
                 gc.collect()
 
+
 def concat_csvs_to_hdf(infiles, outfile, tablenames):
     with pd.HDFStore(outfile, 'w', complevel=9, complib='blosc') as output:
         for infile, tablename in zip(infiles, tablenames):
             df = pd.read_csv(infile)
-            #pytables silently ignores empty tables
+            # pytables silently ignores empty tables
             if df.empty:
                 df = df.append(pd.Series([]), ignore_index=True)
             output.put(tablename, df, format='table')
 
 
 def merge_csvs_to_hdf_in_memory(infiles, outfile, tablename):
-
     data = [pd.read_csv(infile) for infile in infiles]
     data = pd.concat(data)
 
@@ -81,7 +83,6 @@ def merge_csvs_to_hdf_in_memory(infiles, outfile, tablename):
 
 
 def merge_csvs_to_hdf_on_disk(infiles, outfile, tablename):
-
     with pd.HDFStore(outfile, 'w', complevel=9, complib='blosc') as output:
 
         for infile in infiles:
@@ -100,6 +101,7 @@ def convert_csv_to_hdf(infile, outfile, tablename):
     with pd.HDFStore(outfile, 'w', complevel=9, complib='blosc') as out_store:
         out_store.put(tablename, df, format='table')
 
+
 def set_categories_df(df, categories):
     if not isinstance(df, pd.DataFrame):
         return df
@@ -110,7 +112,6 @@ def set_categories_df(df, categories):
 
 
 def concat_hdf_tables(in_files, out_file, categories={}):
-
     chunksize = 10 ** 6
 
     with pd.HDFStore(out_file, 'w', complevel=9, complib='blosc') as output:
@@ -159,7 +160,6 @@ def merge_cells_in_memory(
 def merge_cells_on_disk(
         hdf_input, output_store_obj, tablename,
         tables_to_merge=None, dtypes={}):
-
     with pd.HDFStore(hdf_input, 'r') as input_store:
 
         if not tables_to_merge:
@@ -180,7 +180,6 @@ def merge_cells_on_disk(
 def merge_per_cell_tables(
         infile, output, out_tablename,
         tables_to_merge=None, in_memory=True, dtypes={}):
-
     if isinstance(output, pd.HDFStore):
         output_store = output
     else:
@@ -265,8 +264,15 @@ def annotate_store_with_dict(infile, annotation_data, output, tables=None):
 
 
 def convert_hdf_to_csv(h5_input, outputs):
+    chunksize = 10 ** 5
+    header = False
 
-    with pd.HDFStore(h5_input) as h5_data:
-        for tablename, outfile in outputs.items():
-            df = h5_data[tablename]
-            csvutils.write_dataframe_to_csv_and_yaml(df, outfile, write_header=True)
+    for tablename, outfile in outputs.items():
+        for chunk in pd.read_hdf(h5_input, key=tablename, chunksize=chunksize):
+
+            if header:
+                chunk.to_csv(outfile, index=False, header=False, mode='w')
+            else:
+                chunk.to_csv(outfile, index=False, mode='a')
+
+        csvutils.write_metadata(outfile)
