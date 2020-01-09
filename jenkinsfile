@@ -1,0 +1,72 @@
+pipeline{
+	agent {
+            label 'scpipeline'
+    }
+    environment { 
+        AZURE_CLIENT_ID = credentials('azure_client_id')
+        AZURE_CLIENT_SECRET = credentials('azure_secret_key')
+        DOCKERHUB = credentials('dockerhub') 
+        SINGLECELLTESTSETS = credentials('singlecelltestsets')
+    }
+    stages {
+        stage('build') {
+            steps{
+                sh 'bash tests/jenkins/build_docker/build.sh $DOCKERHUB_USR $DOCKERHUB_PSW $AZURE_CLIENT_ID $AZURE_CLIENT_SECRET scdnastagingcr.azurecr.io'
+            }
+        }
+        stage('refdata'){
+            steps{
+              sh 'bash tests/jenkins/refdata/download.sh singlecelltestsets $SINGLECELLTESTSETS'
+            }
+       }
+       stage('runtests'){
+         parallel{
+           //  stage('align'){
+           //      steps{
+           //        sh 'bash tests/jenkins/align/align.sh singlecelltestsets $SINGLECELLTESTSETS'
+           //      }
+           // }
+           //  stage('hmmcopy'){
+           //      steps{
+           //        sh 'bash tests/jenkins/hmmcopy/hmmcopy.sh singlecelltestsets $SINGLECELLTESTSETS'
+           //     }
+           // }
+            stage('annotation'){
+                steps{
+                  sh 'bash tests/jenkins/annotation/annotation.sh singlecelltestsets $SINGLECELLTESTSETS'
+               }
+           }
+           //  stage('merge_cell_bams'){
+           //      steps{
+           //        sh 'bash tests/jenkins/merge_cell_bams/merge_cell_bams.sh singlecelltestsets $SINGLECELLTESTSETS'
+           //     }
+           // }
+           //  stage('split_wgs_bam'){
+           //      steps{
+           //        sh 'bash tests/jenkins/split_wgs_bam/split_wgs_bam.sh singlecelltestsets $SINGLECELLTESTSETS'
+           //     }
+           // }
+           //  stage('variant_calling'){
+           //      steps{
+           //        sh 'bash tests/jenkins/variant_calling/variant_calling.sh singlecelltestsets $SINGLECELLTESTSETS'
+           //     }
+           // }
+           //  stage('breakpoint_calling'){
+           //      steps{
+           //        sh 'bash tests/jenkins/breakpoint_calling/breakpoint_calling.sh singlecelltestsets $SINGLECELLTESTSETS'
+           //     }
+           // }
+           //  stage('infer_haps'){
+           //      steps{
+           //        sh 'bash tests/jenkins/infer_haps/infer_haps.sh singlecelltestsets $SINGLECELLTESTSETS'
+           //     }
+           // }
+           //  stage('count_haps'){
+           //      steps{
+           //        sh 'bash tests/jenkins/count_haps/count_haps.sh singlecelltestsets $SINGLECELLTESTSETS'
+           //     }
+           // }
+         }
+      }
+    }
+}
