@@ -129,6 +129,18 @@ single_cell variant_calling \
     --tmpdir variantcallingtmp --maxjobs 4 --nocleanup
 ```
 
+### SNV Genotyping workflow
+
+```
+single_cell snv_genotyping \
+    --input_yaml tests/quick/snv_genotyping/inputs.yaml \
+    --out_dir test_data/snv_genotyping/results \
+    --submit local --loglevel DEBUG \
+    --config_file tests/quick/snv_genotyping/config.yaml \
+    --context_config context_config.yaml \
+    --tmpdir snvgenotypingtmp --maxjobs 4 --nocleanup
+```
+
 ### Infer haplotypes workflow
 
 ```
