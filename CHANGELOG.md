@@ -1,5 +1,11 @@
 # Change Log
 
+### v0.5.9
+
+#### Bug:
+1. excessive memory usage in h5 to csv conversion
+
+
 ### v0.5.8
 
 #### Changes:
