@@ -1,0 +1,5 @@
+tumour:
+  SA213-A456-R01-C02:
+    bam: COUNT_HAPS/data/HCC1395_chr15.bam
+haplotypes: COUNT_HAPS/data/haplotypes.tsv
+

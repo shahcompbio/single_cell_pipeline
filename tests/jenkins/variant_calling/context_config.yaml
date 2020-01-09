@@ -1,0 +1,7 @@
+docker:
+    server: 'docker.io'
+    username: null
+    password: null
+    mounts:
+      home: /home
+      refdata: /refdata
