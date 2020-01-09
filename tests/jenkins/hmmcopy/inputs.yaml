@@ -1,0 +1,33 @@
+SA1090-A96213A-R20-C28:
+  bam: HMMCOPY/bams/SA1090-A96213A-R20-C28.bam
+  column: 28
+  condition: B
+  img_col: 45
+  index_i5: i5-20
+  index_i7: i7-28
+  pick_met: C1
+  primer_i5: GTATAG
+  primer_i7: CTATCT
+  row: 20
+SA1090-A96213A-R20-C62:
+  bam: HMMCOPY/bams/SA1090-A96213A-R20-C62.bam
+  column: 62
+  condition: B
+  img_col: 11
+  index_i5: i5-20
+  index_i7: i7-62
+  pick_met: C1
+  primer_i5: GTATAG
+  primer_i7: AAGCTA
+  row: 20
+SA1090-A96213A-R22-C43:
+  bam: HMMCOPY/bams/SA1090-A96213A-R22-C43.bam
+  column: 43
+  condition: B
+  img_col: 30
+  index_i5: i5-22
+  index_i7: i7-43
+  pick_met: C2
+  primer_i5: GCTGTA
+  primer_i7: ATTCCG
+  row: 22

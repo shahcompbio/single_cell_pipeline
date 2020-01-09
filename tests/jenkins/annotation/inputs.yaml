@@ -1,0 +1,5 @@
+hmmcopy_metrics: ANNOTATION/data/A96213A_hmmcopy_metrics.csv.gz
+hmmcopy_reads: ANNOTATION/data/A96213A_reads.csv.gz
+alignment_metrics: ANNOTATION/data/A96213A_alignment_metrics.csv.gz
+gc_metrics: ANNOTATION/data/A96213A_gc_metrics.csv.gz
+segs_pdf_tar: ANNOTATION/data/A96213A_segs.tar.gz
