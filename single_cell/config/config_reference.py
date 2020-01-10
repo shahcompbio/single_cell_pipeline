@@ -67,6 +67,9 @@ def get_reference_data(reference, rootdir):
             },
             'dbsnp': {
                 'local_path': os.path.join(rootdir, 'human/dbsnp_b146_GRCh37p13.vcf.gz'),
+            },
+            'snpeff': {
+                'local_path': os.path.join(rootdir, 'snpeff/data/')
             }
         }
 
@@ -98,6 +101,9 @@ def get_reference_data(reference, rootdir):
             },
             'dbsnp': {
                 'local_path': None,
+            },
+            'snpeff': {
+                'local_path': None
             }
         }
 
