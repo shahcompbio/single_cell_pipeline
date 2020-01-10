@@ -256,7 +256,10 @@ def get_germline_calling_params(reference_dir, reference):
                        '/wgEncodeCrgMapabilityAlign50mer.bigWig',
                 'local_path': referencedata['databases']['mappability']['local_path'],
             },
-            'snpeff': {"db": 'GRCh37.75'},
+            'snpeff': {
+                "db": 'GRCh37.75',
+                "data_dir": referencedata['databases']['snpeff']['local_path']
+            },
         },
     }
 
@@ -317,7 +320,10 @@ def get_variant_calling_params(reference_dir, reference):
                 'url': 'http://www.bcgsc.ca/downloads/genomes/9606/hg19/1000genomes/bwa_ind/genome/GRCh37-lite.fa',
                 'local_path': referencedata['ref_genome'],
             },
-            'snpeff': {"db": 'GRCh37.75'},
+            'snpeff': {
+                "db": 'GRCh37.75',
+                "data_dir": referencedata['databases']['snpeff']['local_path']
+            },
         },
         'museq_params': {
             'threshold': 0.5,
