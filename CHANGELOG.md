@@ -4,7 +4,7 @@
 
 #### Bug:
 1. excessive memory usage in h5 to csv conversion
-
+2. fixed config issue for snpeff
 
 ### v0.5.8
 
