@@ -263,8 +263,7 @@ def annotate_store_with_dict(infile, annotation_data, output, tables=None):
         input_store.close()
 
 
-def convert_hdf_to_csv(h5_input, outputs):
-    chunksize = 10 ** 6
+def convert_hdf_to_csv(h5_input, outputs, chunksize=10**6):
     header = False
 
     for tablename, outfile in outputs.items():
