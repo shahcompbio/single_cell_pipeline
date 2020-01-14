@@ -274,5 +274,6 @@ def convert_hdf_to_csv(h5_input, outputs, chunksize=10**6):
                 chunk.to_csv(outfile, index=False, header=False, mode='a', compression=compression)
             else:
                 chunk.to_csv(outfile, index=False, mode='w', compression=compression)
+                header = True
 
         csvutils.write_metadata(outfile)
