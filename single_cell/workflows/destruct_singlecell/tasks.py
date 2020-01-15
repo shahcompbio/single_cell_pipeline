@@ -1,16 +1,11 @@
 import gzip
 import os
 import random
-import shutil
-from itertools import islice
 
 import pandas as pd
-from single_cell.utils import helpers
-
 import pypeliner
-
 from single_cell.utils import fastqutils
-
+from single_cell.utils import helpers
 
 
 def destruct_bamdisc_and_numreads(
@@ -56,7 +51,7 @@ def destruct_bamdisc_and_numreads(
     pypeliner.commandline.execute(*cmd)
 
 
-def merge_fastqs(inputs, output):
+def merge_fastqs(inputs, output, tag=False):
     read_counter = 0
     with helpers.getFileHandle(output, 'wt') as merged:
         for cellid in inputs:
@@ -64,96 +59,11 @@ def merge_fastqs(inputs, output):
             reader = fastqutils.FastqReader(infile)
             for read in reader.get_read_iterator():
                 read[0] = '@' + str(int(read_counter)) + '/' + read[0].split('/')[1]
+                if tag:
+                    read[2] = '+' + cellid + "\n"
                 for line in read:
                     merged.write(line)
                 read_counter += 1
-
-
-
-
-def merge_read_counts(readcounts):
-    return readcounts
-
-
-def re_index_reads_both(
-        input_r1, reindex_r1, input_r2, reindex_r2,
-        cell_id, cells, offset, tag=False
-):
-    re_index_reads(input_r1, reindex_r1, cell_id, cells, offset, tag=tag)
-    re_index_reads(input_r2, reindex_r2, cell_id, cells, offset, tag=tag)
-
-
-def get_start_count(cells, readcounts, cell_id):
-    index = cells.index(cell_id)
-
-    reads_before = [readcounts[cell] for cell in cells[:index]]
-
-    return sum(reads_before)
-
-
-def re_index_reads(input_fastq, output_fastq, cell_id, cells, cell_read_counts, tag=False):
-    start_count = get_start_count(cells, cell_read_counts, cell_id)
-
-    with helpers.getFileHandle(input_fastq) as infile:
-        with helpers.getFileHandle(output_fastq, 'wt') as outfile:
-
-            while True:
-                fastq_read = list(islice(infile, 4))
-
-                if not fastq_read:
-                    break
-
-                assert len(fastq_read) == 4, 'fastq file format error'
-
-                if not fastq_read[0].startswith('@'):
-                    raise ValueError('Expected @ as first character of read name')
-
-                if not fastq_read[2].startswith('+'):
-                    raise ValueError('Expected = as first character of read comment')
-
-                fastq_read[0] = '@' + str(int(start_count)) + '/' + fastq_read[0].split('/')[1]
-
-                start_count += 1
-
-                if tag:
-                    fastq_read[2] = '+' + cell_id + "\n"
-
-                for fastq_line in fastq_read:
-                    outfile.write(fastq_line)
-
-
-def get_read_count(input_fastq):
-    def blocks(files, size=65536):
-        while True:
-            b = files.read(size)
-            if not b:
-                break
-            yield b
-
-    with helpers.getFileHandle(input_fastq) as indata:
-        linecount = sum(bl.count("\n") for bl in blocks(indata))
-
-    assert linecount % 4 == 0
-
-    readcount = linecount / 4
-
-    return int(readcount)
-
-
-def merge_cell_fastqs(input_fastqs_1, output_fastq_1):
-    """
-    concatenates all fastq files
-    if inputs are gzip: dont need to use gzip to uncompress
-    and compress again since gzip files can be concatenated
-    :param input_fastqs_1: input fastq file
-    :type input_fastqs_1: dict or list
-    :param output_fastq_1: merged fastq file
-    :type output_fastq_1: str
-    """
-    with open(output_fastq_1, 'wb') as outfile:
-        for cell_id, filepath in input_fastqs_1.items():
-            with open(filepath, 'rb') as infile:
-                shutil.copyfileobj(infile, outfile, length=16 * 1024 * 1024)
 
 
 def random_subset(iterator, K):

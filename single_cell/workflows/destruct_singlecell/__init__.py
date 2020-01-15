@@ -71,6 +71,7 @@ def process_cells_destruct(
             mgd.TempInputFile('cell_reads_1.fastq.gz', 'cell_id'),
             mgd.OutputFile(reads_1),
         ),
+        kwargs={'tag': tag}
     )
 
     workflow.transform(
@@ -81,6 +82,7 @@ def process_cells_destruct(
             mgd.TempInputFile('cell_reads_2.fastq.gz', 'cell_id'),
             mgd.OutputFile(reads_2),
         ),
+        kwargs={'tag': tag}
     )
 
     workflow.transform(
@@ -143,6 +145,7 @@ def destruct_preprocess_workflow(
                 mgd.OutputFile(normal_sample_2),
                 mgd.OutputFile(normal_stats),
             ),
+            kwargs={'tag': tag}
         )
     else:
         workflow.setobj(
