@@ -1,5 +1,14 @@
 # Change Log
 
+### v0.5.10
+
+#### Bug:
+1. conversion to csv from hdf was overwriting not appending
+
+#### Changes:
+1. destruct version updated
+
+
 ### v0.5.9
 
 #### Bug:
