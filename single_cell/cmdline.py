@@ -36,19 +36,24 @@ class parseRegionTemplate(argparse.Action):
         setattr(args, self.dest, values)
 
 
-def separate_pipelinedir_by_subcommand(args):
+def separate_pypeliner_dirs_by_subcommand(args):
     if args['which'] in ['generate_config', 'clean_sentinels']:
         return args
 
     pipelinedir = args.get("pipelinedir", None)
-
     if pipelinedir:
         subcommand_name = args.get("which", None)
-
         if not subcommand_name:
             return args
-
         args["pipelinedir"] = os.path.join(pipelinedir, subcommand_name)
+
+    pipelinedir = args.get("tempdir", None)
+    if pipelinedir:
+        subcommand_name = args.get("which", None)
+        if not subcommand_name:
+            return args
+        args["tempdir"] = os.path.join(pipelinedir, subcommand_name)
+
 
     return args
 
@@ -228,6 +233,6 @@ def parse_args():
     args = generate_batch_config.generate_submit_config_in_temp(args)
 
     # separate pipelinedirs of subcommands
-    args = separate_pipelinedir_by_subcommand(args)
+    args = separate_pypeliner_dirs_by_subcommand(args)
 
     return args
