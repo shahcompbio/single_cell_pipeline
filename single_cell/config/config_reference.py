@@ -22,7 +22,7 @@ def containers():
         'snpeff': 'singlecellpipeline/vcftools:v0.0.2',
         'titan': 'singlecellpipeline/titan:v0.0.1',
         'remixt': 'singlecellpipeline/remixt:v0.0.3',
-        'destruct': 'singlecellpipeline/destruct:v0.0.3',
+        'destruct': 'singlecellpipeline/destruct:v0.0.4',
         'trimgalore': 'singlecellpipeline/trimgalore:v0.0.2',
         'lumpy': 'singlecellpipeline/lumpy:v0.0.3',
         'cell_cycle_classifier': 'singlecellpipeline/cell_cycle_classifier:v0.0.1',
