@@ -9,13 +9,12 @@ import pypeliner
 
 def get_output_files(bkp_dir):
     data = {
-        'breakpoints_filename': os.path.join(bkp_dir, 'breakpoints.csv.gz'),
-        'breakpoints_lib_filename': os.path.join(bkp_dir, 'breakpoints_library.csv.gz'),
-        'cell_counts_filename': os.path.join(bkp_dir, 'cell_counts.csv.gz'),
-        'breakpoints_bed': os.path.join(bkp_dir, 'lumpy_breakpoints.bed'),
-        'breakpoints_csv': os.path.join(bkp_dir, 'lumpy_breakpoints.csv.gz'),
-        'breakpoints_evidence_csv': os.path.join(bkp_dir, 'lumpy_breakpoints_evidence.csv.gz'),
-
+        'destruct_breakpoints_filename': os.path.join(bkp_dir, 'destruct_breakpoints.csv.gz'),
+        'destruct_breakpoints_lib_filename': os.path.join(bkp_dir, 'destruct_breakpoints_library.csv.gz'),
+        'destruct_cell_counts_filename': os.path.join(bkp_dir, 'destruct_cell_counts.csv.gz'),
+        'lumpy_breakpoints_bed': os.path.join(bkp_dir, 'lumpy_breakpoints.bed'),
+        'lumpy_breakpoints_csv': os.path.join(bkp_dir, 'lumpy_breakpoints.csv.gz'),
+        'lumpy_breakpoints_evidence_csv': os.path.join(bkp_dir, 'lumpy_breakpoints_evidence.csv.gz'),
     }
 
     return data
@@ -66,9 +65,9 @@ def breakpoint_calling_workflow(args):
             config.get('destruct_config', {}),
             config,
             ref_data_directory,
-            mgd.OutputFile(out_files['breakpoints_filename'], extensions=['.yaml']),
-            mgd.OutputFile(out_files['breakpoints_lib_filename'], extensions=['.yaml']),
-            mgd.OutputFile(out_files['cell_counts_filename'], extensions=['.yaml']),
+            mgd.OutputFile(out_files['destruct_breakpoints_filename'], extensions=['.yaml']),
+            mgd.OutputFile(out_files['destruct_breakpoints_lib_filename'], extensions=['.yaml']),
+            mgd.OutputFile(out_files['destruct_cell_counts_filename'], extensions=['.yaml']),
         ),
     )
 
@@ -79,9 +78,9 @@ def breakpoint_calling_workflow(args):
             config,
             normal_bam,
             mgd.InputFile('tumour.bam', 'tumour_cell_id', fnames=tumour_cells, extensions=['.bai']),
-            mgd.OutputFile(out_files['breakpoints_csv'], extensions=['.yaml']),
-            mgd.OutputFile(out_files['breakpoints_evidence_csv'], extensions=['.yaml']),
-            mgd.OutputFile(out_files['breakpoints_bed']),
+            mgd.OutputFile(out_files['lumpy_breakpoints_csv'], extensions=['.yaml']),
+            mgd.OutputFile(out_files['lumpy_breakpoints_evidence_csv'], extensions=['.yaml']),
+            mgd.OutputFile(out_files['lumpy_breakpoints_bed']),
         ),
     )
 
