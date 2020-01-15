@@ -7,7 +7,7 @@
 
 #### Changes:
 1. destruct version updated
-
+2. docker container is built from tag, not from commit id
 
 ### v0.5.9
 
