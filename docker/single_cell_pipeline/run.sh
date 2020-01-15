@@ -8,7 +8,7 @@ cat docker/single_cell_pipeline/dockerfile_template \
  | sed "s/{git_commit}/$TAG/g" \
  > docker/single_cell_pipeline/dockerfile
 
-docker build -t single_cell_pipeline -f docker/single_cell_pipeline/dockerfile .
+docker build -t single_cell_pipeline -f docker/single_cell_pipeline/dockerfile . --no-cache
 
 docker tag single_cell_pipeline $REGISTRY/singlecellpipeline/single_cell_pipeline:$TAG
 
