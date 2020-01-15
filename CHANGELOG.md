@@ -1,5 +1,12 @@
 # Change Log
 
+### v0.5.11:
+
+#### Changes:
+1. tempdir is now separated by subcommands
+2. file names updated for breakpoint calling
+
+
 ### v0.5.10
 
 #### Bug:
