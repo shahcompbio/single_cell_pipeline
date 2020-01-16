@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.5.13
+
+#### bug:
+1. splitting heatmap into 1000 cells per page doesnt account for cases where the next page only has 1 cell which cant be plotted.
+
 ### v0.5.12
 
 #### bug:
