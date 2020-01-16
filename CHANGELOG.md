@@ -1,5 +1,13 @@
 # Change Log
 
+### v0.5.12
+
+#### bug:
+1. destruct read indexing was broken
+
+#### Changes:
+1. flags to selectively run destruct or lumpy
+
 ### v0.5.11:
 
 #### Changes:
