@@ -54,7 +54,6 @@ def separate_pypeliner_dirs_by_subcommand(args):
             return args
         args["tempdir"] = os.path.join(pipelinedir, subcommand_name)
 
-
     return args
 
 
@@ -173,6 +172,18 @@ def parse_args():
     breakpoint_calling = add_global_args(
         subparsers.add_parser("breakpoint_calling"))
     breakpoint_calling.set_defaults(which='breakpoint_calling')
+    breakpoint_calling.add_argument(
+        "--destruct",
+        default=False,
+        action="store_true",
+        help='''run destruct'''
+    )
+    breakpoint_calling.add_argument(
+        "--lumpy",
+        default=False,
+        action="store_true",
+        help='''run lumpy'''
+    )
 
     # ================
     # variant counting
@@ -187,7 +198,6 @@ def parse_args():
     sv_genotyping = add_global_args(
         subparsers.add_parser("sv_genotyping"))
     sv_genotyping.set_defaults(which='sv_genotyping')
-
 
     # ======================================
     # generates pipeline and batch configs
