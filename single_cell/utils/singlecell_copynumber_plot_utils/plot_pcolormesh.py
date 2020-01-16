@@ -535,11 +535,14 @@ class PlotPcolor(object):
                     'The output file will only plot 1000 cells per page,'
                     ' add --high_memory to override'
                 )
-
                 samples = sorted(samples)
                 # plot in groups of 1000
                 sample_sets = [samples[x:x + 1000]
                                for x in range(0, len(samples), 1000)]
+                if len(sample_sets[-1]) ==1:
+                    sample_sets[-2] += sample_sets[-1]
+                    del sample_sets[-1]
+
                 for samples in sample_sets:
                     genplot(data, samples)
             else:
