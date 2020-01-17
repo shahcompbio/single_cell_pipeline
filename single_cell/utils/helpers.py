@@ -444,6 +444,21 @@ def extract_tar(input_tar, outdir):
     with tarfile.open(input_tar) as tar:
         tar.extractall(path=outdir)
 
+def refdata_exists(path, dirname):
+    '''
+    remove directory at given path
+    :param path: path to dir
+    :param dirname: name of dir
+    '''
+    return os.path.isdir(os.path.join(path, dirname))
+
+def del_refdata(path, dirname):
+    '''
+    remove directory at given path
+    :param path: path to dir
+    :param dirname: name of dir
+    '''
+    return os.path.rmdir(os.path.join(path, dirname))
 
 def tar_files(infiles, tar_output, tempdir):
     if isinstance(infiles, dict):

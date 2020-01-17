@@ -1,5 +1,6 @@
 # Change Log
 
+<<<<<<< HEAD
 ### v0.5.16
 
 ####Changes:
@@ -12,6 +13,8 @@
 #### bug:
 1. metadata regions are none sometimes
 
+=======
+>>>>>>> 556156f... jenkins testing: alingment, annotation, hmmcopy, merge/split bam, variant/breakpoint calling. code written/untested for infer/count haps.
 ### v0.5.14
 
 #### bug:

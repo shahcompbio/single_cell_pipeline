@@ -27,6 +27,7 @@ def infer_haps(
     remixt_ref_data_dir = config['ref_data_dir']
 
     chromosomes = config['chromosomes']
+    remixt_config['chromosomes'] = chromosomes
 
     ctx = dict(mem_retry_increment=2, disk_retry_increment=50, ncpus=1, **baseimage)
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
@@ -139,6 +140,8 @@ def extract_allele_readcounts(
 
     remixt_config = config.get('extract_seqdata', {})
     remixt_ref_data_dir = config['ref_data_dir']
+
+    remixt_config['chromosomes'] = config['chromosomes']
 
     workflow = pypeliner.workflow.Workflow(ctx=baseimage)
 

@@ -1,0 +1,7 @@
+import pysam
+import pandas as pandas
+from os.path import listdir
+from os.path import isfile, join
+
+onlyfiles = [f for f in listdir(".") if isfile(join(".", f))]
+onlyfiles = [f if not ".bai" in f for f in onlyfiles]

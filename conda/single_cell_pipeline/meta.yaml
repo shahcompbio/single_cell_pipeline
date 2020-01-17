@@ -1,10 +1,18 @@
 package:
   name: single_cell_pipeline
+<<<<<<< HEAD
   version: '0.5.16'
 
 source:
   git_url: https://github.com/shahcompbio/single_cell_pipeline.git
   git_rev: v0.5.16
+=======
+  version: '0.5.14'
+
+source:
+  git_url: https://github.com/shahcompbio/single_cell_pipeline.git
+  git_rev: v0.5.14
+>>>>>>> 556156f... jenkins testing: alingment, annotation, hmmcopy, merge/split bam, variant/breakpoint calling. code written/untested for infer/count haps.
 
 build:
   number: 4
