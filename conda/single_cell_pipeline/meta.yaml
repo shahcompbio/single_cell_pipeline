@@ -15,18 +15,15 @@ requirements:
 
   run:
     - python
-    - intervaltree
     - matplotlib
     - pypdf2
     - pypeliner
     - pysam
-    - python-dateutil
     - pyvcf
     - pyyaml
     - seaborn
     - statsmodels
     - scikit-learn
-    - jsonpickle
 about:
   home: http://shahlab.ca
   summary: 'Bioinformatics pipeline for single cell analysis'
