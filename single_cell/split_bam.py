@@ -32,7 +32,7 @@ def split_bam_workflow(args):
         name="get_regions",
         ctx={'mem': config['memory']['low'], 'ncpus': 1, 'docker_image': baseimage},
         func="single_cell.utils.pysamutils.get_regions_from_reference",
-        ret=pypeliner.managed.TempOutputObj('region'),
+        ret=pypeliner.managed.OutputChunks('region'),
         args=(
             config["ref_genome"],
             config["split_size"],
@@ -50,7 +50,7 @@ def split_bam_workflow(args):
                 "normal.split.bam", 'region',
                 template=split_bam_template, axes_origin=[]
             ),
-            pypeliner.managed.TempInputObj('region'),
+            pypeliner.managed.InputChunks('region'),
             config,
         ),
     )
@@ -68,7 +68,7 @@ def split_bam_workflow(args):
             'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
             'input_yaml': mgd.OutputFile(input_yaml_blob),
             'metadata': {'type': 'wgs_regionbams'},
-            'template': (mgd.TempInputObj('region'), split_bam_template, 'region'),
+            'template': (mgd.InputChunks('region'), split_bam_template, 'region'),
         }
     )
 
