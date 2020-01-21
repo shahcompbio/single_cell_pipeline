@@ -52,7 +52,7 @@ def merge_bams_workflow(args):
         args=(
             mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files, extensions=['.bai']),
             mgd.OutputFile("merged.bam", "region", axes_origin=[], extensions=['.bai'], template=merge_out_template),
-            mgd.TempInputObj("region"),
+            mgd.InputChunks("region"),
             config,
         )
     )
