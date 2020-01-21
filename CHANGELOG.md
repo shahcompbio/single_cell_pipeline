@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.5.15
+
+#### bug:
+1. metadata regions are none sometimes
+
 ### v0.5.14
 
 #### bug:
