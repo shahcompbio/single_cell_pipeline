@@ -1,23 +1,18 @@
 # Installation and test run
 
-1. clone the single cell pipeline repo.
+1. install miniconda
 	```
-	export GIT_SSL_NO_VERIFY=1
-	git clone https://github.com/shahcompbio/single_cell_pipeline.git
-	```
-2. install miniconda
-	```
-	wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
-	sudo bash Miniconda2-latest-Linux-x86_64.sh -b -p /usr/local/miniconda2
-	echo "export PATH=/usr/local/miniconda2/bin:$PATH" >> ~/.bashrc
+	wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+	sudo bash Miniconda3-latest-Linux-x86_64.sh -b -p /usr/local/miniconda3
+	echo "export PATH=/usr/local/miniconda3/bin:$PATH" >> ~/.bashrc
 	source ~/.bashrc
-	sudo chmod -R 775 /usr/local/miniconda2/
+	sudo chmod -R 775 /usr/local/miniconda3/
 	```
-3.  update conda
+2.  update conda
 	```
 	conda upgrade  conda -y
 	```
-4.  add conda channels
+3.  add conda channels
 	```
 	conda config --add channels https://conda.anaconda.org/dranew
 	conda config --add channels 'bioconda'
@@ -26,7 +21,7 @@
 	conda config --add channels https://conda.anaconda.org/aroth85
 	conda config --add channels https://conda.anaconda.org/shahcompbio
 	```
-5.  Install Dependencies + Biowrappers
+4.  Install single cell pipeline
 	```
 	conda install -c shahcompbio single_cell_pipeline
 	```
