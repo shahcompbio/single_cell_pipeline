@@ -10,7 +10,7 @@
     this can be done through ssh keys on the cluster. We don't support ssh keys with a passphrase at the moment.
 3. access to dockerhub on all nodes
     ```
-    singularity pull docker://docker.io/singlecellpipeline/single_cell_pipeline:v{VERSION}
+    singularity run docker://docker.io/singlecellpipeline/single_cell_pipeline:v{VERSION}
     ```
 
 ### Download the reference data 
