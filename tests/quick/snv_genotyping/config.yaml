@@ -1,0 +1,66 @@
+variant_calling:
+  chromosomes:
+  - '6'
+  - '8'
+  - '17'
+  cosmic_status:
+    kwargs:
+      split_size: 10000000
+  databases:
+    cosmic:
+      download_method: sftp
+      host: sftp-cancer.sanger.ac.uk
+      local_path: /refdata/human/cosmic_v75.vcf.gz
+      password: shahlabith
+      remote_paths:
+        coding: /files/grch37/cosmic/v75/VCF/CosmicCodingMuts.vcf.gz
+        non_coding: /files/grch37/cosmic/v75/VCF/CosmicNonCodingVariants.vcf.gz
+      user_name: awm3@sfu.ca
+    dbsnp:
+      local_path: /refdata/human/dbsnp_b146_GRCh37p13.vcf.gz
+      url: ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b146_GRCh37p13/VCF/common_all_20151104.vcf.gz
+    mappability:
+      local_path: /refdata/human/wgEncodeCrgMapabilityAlign50mer.bigWig
+      url: http://hgdownload-test.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/release3/wgEncodeCrgMapabilityAlign50mer.bigWig
+    ref_genome:
+      local_path: test_data/align/ref_data/human/GRCh37-lite.fa
+      url: http://www.bcgsc.ca/downloads/genomes/9606/hg19/1000genomes/bwa_ind/genome/GRCh37-lite.fa
+    snpeff:
+      db: GRCh37.75
+      data_dir: /refdata/snpeff/data/
+  dbsnp_status:
+    kwargs:
+      split_size: 10000000
+  docker:
+    mutationseq: singlecellpipeline/mutationseq:v0.0.3
+    single_cell_pipeline: singlecellpipeline/single_cell_pipeline:v0.5.6
+    strelka: singlecellpipeline/strelka:v0.0.3
+    vcftools: singlecellpipeline/vcftools:v0.0.2
+  mappability:
+    kwargs:
+      split_size: 10000000
+  max_cores: 8
+  memory:
+    high: 16
+    low: 4
+    med: 6
+  museq_params:
+    baseq_threshold: 10
+    buffer_size: 2G
+    coverage: 4
+    indl_threshold: 0.05
+    mapq_threshold: 10
+    normal_variant: 25
+    purity: 70
+    threshold: 0.5
+    tumour_variant: 2
+    verbose: true
+  ref_genome: test_data/align/ref_data/human/GRCh37-lite.fa
+  snpeff:
+    kwargs:
+      split_size: 10000000
+  split_size: 10000000
+  tri_nucleotide_context:
+    kwargs:
+      split_size: 10000000
+  use_depth_thresholds: False
