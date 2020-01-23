@@ -1,5 +1,12 @@
 # Change Log
 
+### v0.5.16
+
+####Changes:
+1. updated pypeliner to v0.5.16
+2. conda build fixed
+
+
 ### v0.5.15
 
 #### bug:
