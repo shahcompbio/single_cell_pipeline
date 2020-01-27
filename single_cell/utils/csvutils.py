@@ -50,7 +50,7 @@ def pandas_to_std_types():
 def std_to_pandas_types():
     return {
         "bool": "bool",
-        "int": "Int64",
+        "int": "Int64", # FIX: reconsider using Int64
         "float": "float64",
         "str": "str",
         "NA": "NA"
@@ -102,6 +102,7 @@ class CsvInput(object):
         self.compression = self.__get_compression_type_pandas()
         self.na_rep = na_rep
 
+        # FIX: assume always there is a yaml file otherwise use a different set of functions
         if os.path.exists(self.yaml_file):
             metadata = self.__parse_metadata()
         else:
@@ -117,6 +118,7 @@ class CsvInput(object):
         return self.filepath + '.yaml'
 
     def __detect_sep_from_header(self, header):
+        # FIX: remove this
         """
         detect whether file is tab or comma separated from header
         :param header: header line
@@ -136,11 +138,13 @@ class CsvInput(object):
             return ','
 
     def __detect_sep_from_file(self):
+        # FIX: explicit sep always, or default to ','
         with helpers.getFileHandle(self.filepath) as reader:
             header = reader.readline().strip()
             return self.__detect_sep_from_header(header)
 
     def __get_compression_type_pandas(self):
+        # FIX: always use gzip? this seems to throw many errors btw
         filepath = self.filepath
         if filepath.endswith('.tmp'):
             filepath = filepath[:-4]
@@ -160,6 +164,7 @@ class CsvInput(object):
             return None
 
     def __is_empty(self):
+        # FIX: not used, removed
         with open(self.filepath) as f:
             first_line = f.readline()
             if len(first_line) == 0:
@@ -167,6 +172,7 @@ class CsvInput(object):
                 return True
 
     def __generate_dtypes(self, columns=None, sep=','):
+        # FIX: remove
         data = pd.read_csv(
             self.filepath, compression=self.compression, chunksize=10 ** 6,
             sep=sep
@@ -198,9 +204,12 @@ class CsvInput(object):
         return header, sep, dtypes, columns
 
     def generate_metadata(self):
+        # FIX: perhaps remove this method
         with helpers.getFileHandle(self.filepath) as inputfile:
+            # FIX: dont infer sep
             header = inputfile.readline().strip()
             sep = self.__detect_sep_from_header(header)
+
             columns = header.split(sep)
             header = True
             dtypes = self.__generate_dtypes(sep=sep)
@@ -218,6 +227,7 @@ class CsvInput(object):
                 yield df
 
         dtypes = {k: v for k, v in self.dtypes.items() if v != "NA"}
+
         # if header exists then use first line (0) as header
         header = 0 if self.header else None
         names = None if self.header else self.columns
@@ -241,6 +251,8 @@ class CsvInput(object):
 
 
 class CsvOutput(object):
+    # FIX: this class should have a write function that takes either a dataframe or a generator of
+    # dataframes and writes correct csvyaml
     def __init__(
             self, filepath, header=True, sep=',', columns=None, dtypes=None,
             na_rep='NA'
@@ -320,6 +332,7 @@ class CsvOutput(object):
         self.write_yaml()
 
     def write_csv_data(self, reader, writer):
+        # FIX: assume gzipped, always concatenate unless there is a header
         reader_gzip = type(reader) == gzip.GzipFile
         writer_gzip = type(writer) == gzip.GzipFile
 
@@ -337,6 +350,7 @@ class CsvOutput(object):
                 writer.write(line)
 
     def concatenate_files(self, infiles):
+        # FIX: break this out as a separate function
         header = self.header_line if self.header else None
 
         with helpers.getFileHandle(self.filepath, 'wt') as writer:
@@ -348,6 +362,7 @@ class CsvOutput(object):
 
         self.write_yaml()
 
+    # FIX: not sure why we need the next 2
     def write_headerless_csv(self, infile):
         with helpers.getFileHandle(self.filepath, 'wt') as writer:
             with helpers.getFileHandle(infile) as reader:
@@ -368,6 +383,7 @@ class CsvOutput(object):
 
 
 def annotate_csv(infile, annotation_data, outfile, on="cell_id", write_header=True, dtypes=None):
+    # FIX: out of place?
     csvinput = CsvInput(infile)
 
     metrics_df = csvinput.read_csv()
@@ -393,6 +409,9 @@ def annotate_csv(infile, annotation_data, outfile, on="cell_id", write_header=Tr
 
 
 def concatenate_csv(in_filenames, out_filename, key_column=None, write_header=True, dtypes=None):
+    # FIX: check that columns dtypes are exactly the same
+    # check for a header, if no header then concatenate with shutils otherwise create
+    # a csvoutput and read from csvinputs (possibly in chunks and write dataframes using write_csv)
     if not isinstance(in_filenames, dict):
         in_filenames = dict(enumerate(in_filenames))
 
@@ -459,6 +478,7 @@ def extrapolate_types_from_yaml_files(csv_files):
 
 
 def concatenate_csv_files_quick_lowmem(inputfiles, output, write_header=True, dtypes=None):
+    # FIX: check that columns dtypes are exactly the same
     type_converter = pandas_to_std_types()
 
     if isinstance(inputfiles, dict):
@@ -483,6 +503,7 @@ def concatenate_csv_files_quick_lowmem(inputfiles, output, write_header=True, dt
 
 
 def prep_csv_files(filepath, outputfile, dtypes=None):
+    # FIX: dtypes mandatory
     """
     generate header less csv files
     :param filepath:
@@ -513,6 +534,7 @@ def prep_csv_files(filepath, outputfile, dtypes=None):
 
 
 def finalize_csv(infile, outfile, dtypes=None):
+    # FIX: dtypes mandatory
     type_converter = pandas_to_std_types()
 
     csvinput = CsvInput(infile)

@@ -103,6 +103,7 @@ def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
         outfile = os.path.join(tempdir, sample + "_metrics.csv")
         sample_outputs.append(outfile)
 
+        # FIX: this should be where data is standardized...
         collmet = CollectMetrics(wgs, insrt, flgstat,
                                  mkdup, outfile, sample)
         collmet.main()
