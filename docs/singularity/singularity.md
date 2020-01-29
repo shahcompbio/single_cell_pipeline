@@ -35,6 +35,9 @@ https://singlecellreference.blob.core.windows.net/refdata
 
 NOTE: Access to data on azure is restricted to the shahlab. To request access to the data please contact Diljot Grewal <grewald@mskcc.org.>
 
+### download the test data
+
+*see /docs/testdata for instructions on downloading testdata and test input yamls.*
 
 ### create the context configuration file
 
