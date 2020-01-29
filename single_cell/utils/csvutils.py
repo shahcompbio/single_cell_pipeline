@@ -474,7 +474,7 @@ def merge_csv(in_filenames, out_filename, how, on, suffixes=None, write_header=T
         in_filenames = in_filenames.values()
 
     data = [CsvInput(infile) for infile in in_filenames]
-
+ 
     dfs = [csvinput.read_csv() for csvinput in data]
     dtypes = [csvinput.dtypes for csvinput in data]
 
