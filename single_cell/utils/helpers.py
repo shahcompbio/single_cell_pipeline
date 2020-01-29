@@ -156,8 +156,10 @@ class getFileHandle(object):
             return "gzip"
         elif ext == ".h5" or ext == ".hdf5":
             return "h5"
+        elif ext == '.yaml':
+            return 'plain-text'
         else:
-            logging.getLogger("single_cell.helpers").warn(
+            logging.getLogger("single_cell.helpers").warning(
                 "Couldn't detect output format. extension {}".format(ext)
             )
             return "plain-text"
@@ -197,7 +199,7 @@ def get_file_format(filepath):
     elif ext == ".h5" or ext == ".hdf5":
         return "h5"
     else:
-        logging.getLogger("single_cell.plot_metrics").warn(
+        logging.getLogger("single_cell.plot_metrics").warning(
             "Couldn't detect output format. extension {}".format(ext)
         )
         return "csv"
