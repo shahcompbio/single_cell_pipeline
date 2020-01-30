@@ -343,6 +343,18 @@ class CsvOutput(object):
 
         self.write_yaml()
 
+    def write_text(self, text):
+        assert self.columns
+        assert self.dtypes
+
+        with gzip.open(self.filepath, 'wt') as writer:
+
+            if self.header:
+                self.write_header(writer)
+
+            for line in text:
+                writer.write(line)
+
 
 def write_metadata(infile):
     csvinput = IrregularCsvInput(infile)
@@ -469,7 +481,7 @@ def rewrite_csv_file(filepath, outputfile, write_header=True):
         csvoutput.rewrite_csv(filepath)
 
 
-def merge_csv(in_filenames, out_filename, how, on, suffixes=None, write_header=True):
+def merge_csv(in_filenames, out_filename, how, on,  write_header=True):
     if isinstance(in_filenames, dict):
         in_filenames = in_filenames.values()
 
@@ -478,7 +490,7 @@ def merge_csv(in_filenames, out_filename, how, on, suffixes=None, write_header=T
     dfs = [csvinput.read_csv() for csvinput in data]
     dtypes = [csvinput.dtypes for csvinput in data]
 
-    data = merge_frames(dfs, how, on, suffixes=suffixes)
+    data = merge_frames(dfs, how, on)
 
     dtypes = merge_dtypes(dtypes)
 
@@ -488,12 +500,18 @@ def merge_csv(in_filenames, out_filename, how, on, suffixes=None, write_header=T
     csvoutput.write_df(data)
 
 
-def merge_frames(frames, how, on, suffixes=None):
-    '''
+def merge_frames(frames, how, on):
+    """
     annotates input_df using ref_df
-    '''
-
-    suff = ['', '']
+    :param frames:
+    :type frames:
+    :param how:
+    :type how:
+    :param on:
+    :type on:
+    :return:
+    :rtype:
+    """
 
     if ',' in on:
         on = on.split(',')
@@ -508,22 +526,14 @@ def merge_frames(frames, how, on, suffixes=None):
         cols_to_use += on
         cols_to_use = list(set(cols_to_use))
 
-        if suffixes:
-            suff = (suffixes[0], suffixes[1])
-
-        merged_frame = pd.merge(left, right[cols_to_use],
-                                how=how,
-                                on=on,
-                                suffixes=suff)
+        merged_frame = pd.merge(
+            left, right[cols_to_use], how=how, on=on,
+        )
         for i, frame in enumerate(frames[2:]):
 
-            if suffixes:
-                suff = (suffixes[i + 2], suffixes[i + 2])
-
-            merged_frame = pd.merge(merged_frame, frame,
-                                    how=how,
-                                    on=on,
-                                    suffixes=suff)
+            merged_frame = pd.merge(
+                merged_frame, frame, how=how, on=on,
+            )
         return merged_frame
 
 
