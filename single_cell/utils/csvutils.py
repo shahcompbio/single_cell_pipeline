@@ -197,7 +197,6 @@ class CsvInput(object):
 
     def __verify_data(self, df):
         if not list(df.columns.values) == self.columns:
-            print(df.columns.values, self.columns)
             raise CsvParseError("metadata mismatch in {}".format(self.filepath))
 
     def read_csv(self, chunksize=None):
@@ -264,7 +263,6 @@ class CsvOutput(object):
         type_converter = pandas_to_std_types()
 
         yamldata = {'header': self.header, 'sep': self.sep, 'columns': []}
-
         for column in self.columns:
             data = {'name': column, 'dtype': type_converter[self.dtypes[column]]}
             yamldata['columns'].append(data)
@@ -286,7 +284,6 @@ class CsvOutput(object):
 
     def __write_df(self, df, header=True, mode='w'):
         self.__verify_df(df)
-
         df.to_csv(
             self.filepath, sep=self.sep, na_rep=self.na_rep,
             index=False, compression='gzip', mode=mode, header=header
@@ -300,7 +297,6 @@ class CsvOutput(object):
                 self.__write_df(df, header=False, mode='a')
 
     def write_df(self, df, chunks=False):
-
         if chunks:
             self.__write_df_chunks(df, header=self.header)
         else:
@@ -503,7 +499,6 @@ def merge_frames(frames, how, on, suffixes=None):
     else:
         left = frames[0]
         right = frames[1]
-
         cols_to_use = list(right.columns.difference(left.columns))
         cols_to_use += on
         cols_to_use = list(set(cols_to_use))
@@ -515,11 +510,11 @@ def merge_frames(frames, how, on, suffixes=None):
                                 how=how,
                                 on=on,
                                 suffixes=suff)
+
         for i, frame in enumerate(frames[2:]):
 
             if suffixes:
                 suff = (suffixes[i + 2], suffixes[i + 2])
-
             merged_frame = pd.merge(merged_frame, frame,
                                     how=how,
                                     on=on,
