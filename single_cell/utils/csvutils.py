@@ -491,6 +491,7 @@ def merge_frames(frames, how, on, suffixes=None):
 
     suff = ['', '']
 
+
     if ',' in on:
         on = on.split(',')
 
