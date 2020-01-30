@@ -15,6 +15,9 @@ import pytest
 def n_frames():
     return random.randint(2, 10)
 
+@pytest.fixture
+def n_rows():
+    return 5
 ###############################################
 #                utilities                    #
 ################################################
@@ -73,6 +76,7 @@ def approx_compare_cols(data, reference, column_name, eps=0.001):
 def make_test_df(name, dtypes, tmpdir, length, write = False):
     filename = os.path.join(tmpdir, name)
     df_dict = {}
+
     for col, dtype in dtypes.items():
         if dtype == "str":
             df_dict[col] = "".join(_enumerated_list(length))
@@ -325,6 +329,7 @@ class WriteDataFrameToCsvAndYaml:
 
 class TestMergeHelpers:
 
+    #these take length so as to not tap into the fixture above
     def make_mergeable_test_dfs(self, tmpdir, n_dfs, dtypes,
                                 shared, length, write=False,
                                 headers=True, get_expected=False,
@@ -354,97 +359,75 @@ class TestMergeHelpers:
                                                          names[i],
                                                          dtypes[i],
                                                          headers)
-        print ("i")
+
         if get_expected and merge_args:
-            print (dfs[0], dfs[1], merge_args["suffixes"])
+
             expected_output = dfs[0].merge(dfs[1], how=merge_args["how"],
                                            on=merge_args["on"],
                                            suffixes=merge_args["suffixes"])
-        print( "a")
         return dfs, names, expected_output
 
+    def merge_directional_test(self, length, direction):
+
+        dtypes1 = {v: "int" for v in 'ABCD'}
+        dtypes2 = {v: "int" for v in 'AEFGH'}
+
+        merge_args = {"how": direction, "on": ['A'], "suffixes": ["", ""]}
+
+        dfs, names, ref = self.make_mergeable_test_dfs("", 2,
+                                                       [dtypes1, dtypes2], ["A"],
+                                                       length, write=False,
+                                                       get_expected=True,
+                                                       merge_args=merge_args)
+
+        merged = csvutils.merge_frames(dfs, how=merge_args["how"],
+                                       on=merge_args["on"],
+                                       suffixes=merge_args["suffixes"])
+
+        assert dfs_exact_match(ref, merged)
 
 class TestMergeFrames(TestMergeHelpers):
 
-    def test_merge_frames(self):
+    def test_merge_frames(self, n_rows):
         """
         basic sanity check - test merging of two frames on 1 col
         """
 
-        dtypes1 = {v: "int" for v in 'ABCD'}
-        dtypes2 = {v: "int" for v in 'AEFGH'}
+        self.merge_directional_test(n_rows, "outer")
 
-        merge_args = {"how": 'outer', "on": ['A'], "suffixes": ["", ""]}
-
-        dfs, names, ref = self.make_mergeable_test_dfs("", 2,
-                                                       [dtypes1, dtypes2], ["A"],
-                                                       100, write=False,
-                                                       get_expected=True,
-                                                       merge_args=merge_args)
-
-        merged = csvutils.merge_frames(dfs, how=merge_args["how"],
-                                       on=merge_args["on"],
-                                       suffixes=merge_args["suffixes"])
-
-        assert dfs_exact_match(ref, merged)
-
-    def test_merge_frames_inner(self):
+    def test_merge_frames_inner(self, n_rows):
         """
         test merging of 2 dfs on 1 col with inner merge
         """
+        self.merge_directional_test(n_rows, "inner")
 
-        dtypes1 = {v: "int" for v in 'ABCD'}
-        dtypes2 = {v: "int" for v in 'AEFGH'}
-
-        merge_args = {"how": 'inner', "on": ['A'], "suffixes": ["", ""]}
-
-        dfs, names, ref = self.make_mergeable_test_dfs("", 2,
-                                                       [dtypes1, dtypes2], ["A"],
-                                                       100, write=False,
-                                                       get_expected=True,
-                                                       merge_args=merge_args)
-
-        merged = csvutils.merge_frames(dfs, how=merge_args["how"],
-                                       on=merge_args["on"],
-                                       suffixes=merge_args["suffixes"])
-
-        assert dfs_exact_match(ref, merged)
-
-    def test_merge_frames_left(self):
+    def test_merge_frames_left(self, n_rows):
         """
         test merging of 2 dfs on 1 col with left merge
         """
 
-        dtypes1 = {v: "int" for v in 'ABCD'}
-        dtypes2 = {v: "int" for v in 'AEFGH'}
+        self.merge_directional_test(n_rows, "left")
 
-        merge_args = {"how": 'left', "on": ['A'], "suffixes": ["", ""]}
-
-        dfs, names, ref = self.make_mergeable_test_dfs("", 2,
-                                                       [dtypes1, dtypes2], ["A"],
-                                                       100, write=False,
-                                                       get_expected=True,
-                                                       merge_args=merge_args)
-
-        merged = csvutils.merge_frames(dfs, how=merge_args["how"],
-                                       on=merge_args["on"],
-                                       suffixes=merge_args["suffixes"])
-
-        assert dfs_exact_match(ref, merged)
-
-    def test_merge_frames_right(self):
+    def test_merge_frames_right(self, n_rows):
         """
         test merging of 2 dfs on 1 col with right merge
         """
 
-        dtypes1 = {v: "int" for v in 'ABCD'}
-        dtypes2 = {v: "int" for v in 'AEFGH'}
+        self.merge_directional_test(n_rows, "right")
 
-        merge_args = {"how": 'right', "on": ['A'], "suffixes": ["", ""]}
+    def test_merge_multiple_cols(self, n_rows):
+        """
+        test merging of 2 dfs on multiple columns with right merge
+        """
+
+        dtypes1 = {v: "int" for v in 'ABCD'}
+        dtypes2 = {v: "int" for v in 'ABEFGH'}
+
+        merge_args = {"how": "outer", "on": ['A', 'B'], "suffixes": ["", ""]}
 
         dfs, names, ref = self.make_mergeable_test_dfs("", 2,
-                                                       [dtypes1, dtypes2], ["A"],
-                                                       100, write=False,
+                                                       [dtypes1, dtypes2], merge_args["on"],
+                                                       n_rows, write=False,
                                                        get_expected=True,
                                                        merge_args=merge_args)
 
@@ -454,18 +437,35 @@ class TestMergeFrames(TestMergeHelpers):
 
         assert dfs_exact_match(ref, merged)
 
-    def test_merge_multiple_cols(self):
-        """
-        test merging of 2 dfs on multiple columns with right merge
-        """
-        pass
+    def test_merge_one_frame(self, n_rows):
+        '''
+        provide just one df
+        :param n_rows: number of rows in simulated df
+        :return: assertion
+        '''
+        dtypes1 = {v: "int" for v in 'ACD'}
+        dtypes2 = {v: "int" for v in 'AEFGH'}
 
-    def test_merge_frames_multiple_frames(self, n_frames):
+        merge_args = {"how": "outer", "on": ["A"], "suffixes": ["", ""]}
+
+        df, name, _ = self.make_mergeable_test_dfs("", 1, [dtypes1, dtypes2],
+                                                     merge_args["on"],
+                                                     n_rows, write=False,
+                                                     merge_args=merge_args)
+
+        merged = csvutils.merge_frames(df, how=merge_args["how"],
+                                       on=merge_args["on"],
+                                       suffixes=merge_args["suffixes"])
+
+        assert dfs_exact_match(df, merged)
+
+    def test_merge_frames_multiple_frames(self, n_frames, n_rows):
         """
         test merging of n_frames on 1 col with right merge
         :param n_frames: number of dataframes to merge
         """
 
+        return
         dtypes = []
         for i in range(n_frames):
             dtypes.append({v: "int" for v in _enumerated_list(4,
@@ -477,7 +477,7 @@ class TestMergeFrames(TestMergeHelpers):
 
         print("d")
         dfs, names, ref = self.make_mergeable_test_dfs("", n_frames, dtypes,
-                                                       ["A"], 100, write=False,
+                                                       ["A"], n_rows, write=False,
                                                        get_expected=True,
                                                        merge_args=merge_args)
         print ("here")
@@ -489,11 +489,27 @@ class TestMergeFrames(TestMergeHelpers):
         print("f")
         assert dfs_exact_match(ref, merged)
 
-    def test_merge_frames_nothing_to_merge(self):
+    def test_merge_frames_nothing_to_merge(self, n_rows):
         """
         test merging of 2 dfs on 0 col
         """
-        pass
+
+        dtypes1 = {v: "int" for v in 'CD'}
+        dtypes2 = {v: "int" for v in 'EFGH'}
+
+        merge_args = {"how": "outer", "on": [], "suffixes": ["", ""]}
+
+        dfs, names, ref = self.make_mergeable_test_dfs("", 2, [dtypes1, dtypes2],
+                                                       merge_args["on"],
+                                                       n_rows,
+                                                       write=False, get_expected=True,
+                                                       merge_args=merge_args)
+        print ("fjk ")
+        merged = csvutils.merge_frames(dfs, how=merge_args["how"],
+                                       on=merge_args["on"],
+                                       suffixes=merge_args["suffixes"])
+
+        assert dfs_exact_match(ref, merged)
 
     def test_merge_frames_cols_to_merge_have_different_dtypes(self):
         """
@@ -544,7 +560,7 @@ class TestMergeDtypes(TestMergeHelpers):
 
 class TestMergeCsv(TestMergeHelpers):
 
-    def test_merge_csv(self, tmpdir):
+    def test_merge_csv(self, tmpdir, n_rows):
 
         dtypes1 = {v: "int" for v in 'ABCD'}
         dtypes2 = {v: "int" for v in 'AEFGH'}
@@ -554,7 +570,7 @@ class TestMergeCsv(TestMergeHelpers):
 
         dfs, names, ref = self.make_mergeable_test_dfs(tmpdir, 2,
                                                   [dtypes1, dtypes2], ["A"],
-                                                  100, write=True,
+                                                  n_rows, write=True,
                                                   get_expected=True,
                                                   merge_args=merge_args)
 
@@ -567,7 +583,7 @@ class TestMergeCsv(TestMergeHelpers):
         assert dfs_exact_match(ref, merged)
 
 
-    def test_merge_csv_no_header(self, tmpdir):
+    def test_merge_csv_no_header(self, tmpdir, n_rows):
         """
         merge csvs with no headers
         """
@@ -580,7 +596,7 @@ class TestMergeCsv(TestMergeHelpers):
 
         dfs, names, ref = self.make_mergeable_test_dfs(tmpdir, 2,
                                                        [dtypes1, dtypes2], ["A"],
-                                                       100, headers=False,
+                                                       n_rows, headers=False,
                                                        write=True,
                                                        get_expected=True,
                                                        merge_args=merge_args)
