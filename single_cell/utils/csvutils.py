@@ -449,6 +449,10 @@ class CsvOutput(object):
                 writer.write(line)
 
         self.write_yaml()
+<<<<<<< HEAD
+=======
+
+>>>>>>> align: updates for csvutils
 
 
 def write_metadata(infile, dtypes):
@@ -549,8 +553,13 @@ def annotate_csv(infile, annotation_data, outfile, annotation_dtypes, on="cell_i
     csv_dtypes = csvinput.dtypes
 
     for col, dtype in csv_dtypes.items():
+<<<<<<< HEAD
         if col in annotation_dtypes:
             assert dtype == annotation_dtypes[col]
+=======
+        assert dtype == annotation_dtypes[col]
+
+>>>>>>> align: updates for csvutils
 
     csv_dtypes.update(annotation_dtypes)
 
