@@ -333,7 +333,7 @@ def genotype(
 
     output['cell_id'] = cell_id
 
-    csvutils.write_dataframe_to_csv_and_yaml(output, output_csv, write_header=True)
+    csvutils.write_dataframe_to_csv_and_yaml(output, output_csv, {}, write_header=True)
 
 
 def write_svtyper_annotation(annotation, inputcsv, outfile):
