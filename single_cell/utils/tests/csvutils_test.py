@@ -39,11 +39,13 @@ def _raises_correct_error(function, *args,
         return raised
 
 def dfs_exact_match(data, reference):
+
     if isinstance(data, str):
         data = csvutils.CsvInput(data).read_csv()
     if isinstance(reference, str):
         reference = csvutils.CsvInput(reference).read_csv()
-
+    if set(data.columns) != set(reference.columns):
+        return False
     return all([data[col].equals(reference[col]) for col in reference.columns])
 
 
@@ -113,8 +115,8 @@ def _rand_float_col(n):
     return [random.uniform(0, 100) for _ in range(n)]
 
 
-def _rand_int_col(n):
-    return range(n)
+def _rand_int_col(n, scale=1):
+    return list(range(n)) * scale
     #return [random.randint(0, 10) for _ in range(n)]
 
 
@@ -362,6 +364,7 @@ class TestMergeHelpers:
             name, df = make_test_df(base_name, dtypes[i], tmpdir, length)
             names.append(name)
             dfs.append(df)
+
         shared_values = dfs[0][shared] #arbitary choose first df
         for df in dfs:
             df.update(shared_values)
@@ -505,7 +508,6 @@ class TestMergeFrames(TestMergeHelpers):
 
         merge_args = {"how": "outer", "on": [], "suffixes": ["", ""]}
 
-
         dfs, names, ref = self.make_mergeable_test_dfs("", 2, [dtypes1, dtypes2],
                                                        merge_args["on"],
                                                        n_rows,
@@ -514,7 +516,8 @@ class TestMergeFrames(TestMergeHelpers):
 
         assert _raises_correct_error(csvutils.merge_frames, dfs,
                                      how=merge_args["how"],
-                                     on=merge_args["on"])
+                                     on=merge_args["on"],
+                                     expected_error=csvutils.CsvMergeException)
 
     def test_merge_frames_cols_to_merge_have_different_dtypes(self, n_rows):
         """
@@ -528,25 +531,57 @@ class TestMergeFrames(TestMergeHelpers):
 
         dfs, names, _ = self.make_mergeable_test_dfs("", 2,
                                                      [dtypes1, dtypes2], ["A"],
-                                                      n_rows, write=False,
-                                                      get_expected=False,
-                                                      merge_args=merge_args)
+                                                     n_rows, write=False,
+                                                     get_expected=False,
+                                                     merge_args=merge_args)
 
         assert _raises_correct_error(csvutils.merge_frames, dfs,
                                      how=merge_args["how"],
-                                     on=merge_args["on"])
+                                     on=merge_args["on"],
+                                     expected_error=csvutils.CsvMergeColumnMismatchException)
 
-    def test_merge_frames_create_nans(self):
+    def test_merge_frames_create_nans(self, n_rows):
         """
         test merging of 2 dfs on 1 col to create NaNs
         """
-        pass
 
-    def test_merge_frames_with_nans(self):
+        dtypes1 = {v: "int" for v in 'ACD'}
+        dtypes2 = {v: "int" for v in 'ACD'}
+
+        merge_args = {"how": "outer", "on": ["A"], "suffixes": ["", ""]}
+
+        dfs, name, _ = self.make_mergeable_test_dfs("", 2, [dtypes1, dtypes2],
+                                                    [], n_rows, write=False,
+                                                    merge_args=merge_args)
+        on = merge_args["on"]
+        dfs[0].iloc[2, dfs[0].columns.get_loc(on[0])] = 10
+
+        assert _raises_correct_error(csvutils.merge_frames, dfs,
+                                     how=merge_args["how"],
+                                     on=merge_args["on"],
+                                     expected_error=csvutils.CsvMergeColumnMismatchException)
+
+    def test_merge_frames_with_nans(self, n_rows):
         """
         test merging of 2 dfs on 1 col which contains NaNs in each
         """
-        pass
+
+        dtypes1 = {v: "float" for v in 'ACD'}
+        dtypes2 = {v: "float" for v in 'ACD'}
+
+        merge_args = {"how": "outer", "on": ["A"], "suffixes": ["", ""]}
+
+        dfs, name, _ = self.make_mergeable_test_dfs("", 2, [dtypes1, dtypes2],
+                                                    [], n_rows, write=False,
+                                                    merge_args=merge_args)
+        on = merge_args["on"]
+        dfs[0].iloc[2, dfs[0].columns.get_loc(on[0])] = np.NaN
+        dfs[1].iloc[2, dfs[1].columns.get_loc(on[0])] = np.NaN
+
+        assert _raises_correct_error(csvutils.merge_frames, dfs,
+                                     how=merge_args["how"],
+                                     on=merge_args["on"],
+                                     expected_error=csvutils.CsvMergeColumnMismatchException)
 
 
 class TestMergeDtypes(TestMergeHelpers):
@@ -555,7 +590,9 @@ class TestMergeDtypes(TestMergeHelpers):
         """
         basic sanity check - test merging of two dtype dicts
         """
-        pass
+        dtypes1 = {v: "float" for v in 'ACD'}
+        dtypes2 = {v: "float" for v in 'ACD'}
+
 
     def test_merge_dtypes_none_given(self):
         """

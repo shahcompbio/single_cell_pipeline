@@ -5,6 +5,12 @@ import shutil
 import pandas as pd
 import yaml
 
+class CsvMergeException(Exception):
+    pass
+
+class CsvMergeColumnMismatchException(Exception):
+    pass
+
 class CsvParseError(Exception):
     pass
 
@@ -495,6 +501,28 @@ def merge_csv(in_filenames, out_filename, how, on, write_header=True):
     csvoutput.write_df(data)
 
 
+def _validate_merge_cols(frames, on):
+    '''
+    make sure frames look good. raise relevant exceptions
+    :param frames: list of dfs to merge
+    :param on: list of common columns in frames on which to merge
+    :return: nothing
+    '''
+    if on == []:
+        raise CsvMergeException("unable to merge if given nothing to merge on")
+
+    #check that columns to be merged have identical values
+    standard = frames[0][on]
+    for frame in frames:
+        if not standard.equals(frame[on]):
+            raise CsvMergeColumnMismatchException("columns on which to merge must be identical")
+
+    #check that columns to be merged have same dtypes
+    for shared_col in on:
+        if len(set([frame[shared_col].dtypes for frame in frames])) != 1:
+            raise CsvMergeColumnMismatchException("columns on which to merge must have same dtypes")
+
+
 def merge_frames(frames, how, on):
     """
     annotates input_df using ref_df
@@ -507,18 +535,15 @@ def merge_frames(frames, how, on):
     :return:
     :rtype:
     """
-    if on == []:
-        raise CsvParseError("unable to merge if given nothing to merge on")
 
     if ',' in on:
         on = on.split(',')
 
-    for shared_col in on:
-        if len(set([frame[shared_col].dtypes for frame in frames])) != 1:
-            raise CsvParseError("dtypes of merged columns must be identical")
+    _validate_merge_cols(frames, on)
 
     if len(frames) == 1:
         return frames[0]
+
     else:
         left = frames[0]
         right = frames[1]
