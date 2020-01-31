@@ -49,7 +49,7 @@ def add_contamination_status(
     data['is_contaminated'] = data['is_contaminated'].astype(col_type)
 
     csvutils.write_dataframe_to_csv_and_yaml(
-        data, outfile, write_header=True, dtypes=dtypes()['metrics']
+        data, outfile, dtypes()['metrics'], write_header=True
     )
 
     # get cells that are contaminated and have enopugh human reads
@@ -80,14 +80,14 @@ def collect_gc(infiles, outfile, tempdir):
     for cell_id, infile in infiles.items():
         tempout = os.path.join(
             tempdir,
-            "{}.parsed.csv".format(cell_id))
+            "{}.parsed.csv.gz".format(cell_id))
         tempouts.append(tempout)
         gen_gc = GenerateCNMatrix(infile, tempout, ',',
                                   'NORMALIZED_COVERAGE', cell_id,
-                                  'gcbias')
+                                  'gcbias', dtypes()['gc'])
         gen_gc.main()
 
-    csvutils.concatenate_csv(tempouts, outfile, dtypes=dtypes()['gc'])
+    csvutils.concatenate_csv(tempouts, outfile)
 
 
 def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
@@ -100,14 +100,14 @@ def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
         mkdup = markdups_metrics[sample]
         insrt = insert_metrics[sample]
         wgs = wgs_metrics[sample]
-        outfile = os.path.join(tempdir, sample + "_metrics.csv")
+        outfile = os.path.join(tempdir, sample + "_metrics.csv.gz")
         sample_outputs.append(outfile)
 
         collmet = CollectMetrics(wgs, insrt, flgstat,
-                                 mkdup, outfile, sample)
+                                 mkdup, outfile, sample, dtypes()['metrics'])
         collmet.main()
 
-    csvutils.concatenate_csv(sample_outputs, merged_metrics, dtypes=dtypes()['metrics'])
+    csvutils.concatenate_csv(sample_outputs, merged_metrics)
 
 
 def picard_wgs_dup(

@@ -31,7 +31,7 @@ def merge_fastq_screen_counts(
     df = df.drop_duplicates(subset=index_cols)
 
     csvutils.write_dataframe_to_csv_and_yaml(
-        df, merged_detailed_counts, write_header=True, dtypes=dtypes()
+        df, merged_detailed_counts, dtypes()['fastqscreen_detailed'], write_header=True
     )
 
     if isinstance(all_summary_counts, dict):
@@ -49,7 +49,7 @@ def merge_fastq_screen_counts(
     df = df.drop_duplicates(subset=['cell_id'])
 
     csvutils.write_dataframe_to_csv_and_yaml(
-        df, merged_summary_counts, write_header=True, dtypes=dtypes()
+        df, merged_summary_counts, dtypes()['metrics'], write_header=True
     )
 
 

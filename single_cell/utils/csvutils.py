@@ -385,6 +385,8 @@ class CsvOutput(object):
             for line in text:
                 writer.write(line)
 
+        self.write_yaml()
+
 
 def write_metadata(infile):
     csvinput = IrregularCsvInput(infile)
@@ -499,7 +501,9 @@ def annotate_csv(infile, annotation_data, outfile, annotation_dtypes, on="cell_i
 
     csv_dtypes = csvinput.dtypes
 
-    assert not set(csv_dtypes.keys()).intersection(annotation_dtypes.keys())
+    for col, dtype in csv_dtypes.items():
+        assert dtype == annotation_dtypes[col]
+
 
     csv_dtypes.update(annotation_dtypes)
 
@@ -545,6 +549,7 @@ def merge_csv(in_filenames, out_filename, how, on, write_header=True):
         in_filenames = in_filenames.values()
 
     data = [CsvInput(infile) for infile in in_filenames]
+
 
     dfs = [csvinput.read_csv() for csvinput in data]
 

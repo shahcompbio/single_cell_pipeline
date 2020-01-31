@@ -46,7 +46,7 @@ def add_corrupt_tree_order(corrupt_tree, metrics, output):
     metrics['order_corrupt_tree'] = metrics['order_corrupt_tree'].astype(col_dtype)
 
     csvutils.write_dataframe_to_csv_and_yaml(
-        metrics, output, write_header=True, dtypes=dtypes()['metrics']
+        metrics, output, dtypes()['metrics'], write_header=True
     )
 
 
@@ -64,7 +64,7 @@ def annotate_metrics(
         for colname, value in cellinfo.items():
             metrics.loc[metrics["cell_id"] == cellid, colname] = value
 
-    csvutils.write_dataframe_to_csv_and_yaml(metrics, output, dtypes=dtypes()['metrics'])
+    csvutils.write_dataframe_to_csv_and_yaml(metrics, output, dtypes()['metrics'])
 
 
 def add_quality(hmmcopy_metrics, alignment_metrics, output, training_data, tempdir):
@@ -136,7 +136,7 @@ def cell_cycle_classifier(hmmcopy_reads, hmmcopy_metrics, alignment_metrics, out
     for colname in cols_cell_cycle:
         hmm_metrics_df[colname] = hmm_metrics_df[colname].astype(out_dtypes[colname])
 
-    csvutils.write_dataframe_to_csv_and_yaml(hmm_metrics_df, output, dtypes=out_dtypes)
+    csvutils.write_dataframe_to_csv_and_yaml(hmm_metrics_df, output, out_dtypes)
 
 
 def filter_plot_tar(metrics, src_tar, pass_tar, fail_tar, tempdir, filters):

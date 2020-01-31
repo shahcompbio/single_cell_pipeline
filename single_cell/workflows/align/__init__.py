@@ -104,7 +104,7 @@ def bam_metrics_workflow(
         func="single_cell.workflows.align.tasks.collect_gc",
         ctx={'mem': config['memory']['med'], 'ncpus': 1},
         args=(
-            mgd.InputFile('gc_metrics_percell', 'cell_id', axes_origin=[], fnames=gc_metrics_percell),
+            mgd.InputFile('gc_metrics_percell.csv.gz', 'cell_id', axes_origin=[], fnames=gc_metrics_percell),
             mgd.OutputFile(gc_metrics, extensions=['.yaml']),
             mgd.TempSpace("temp_gc")
         ),
@@ -133,7 +133,7 @@ def bam_metrics_workflow(
             sample_info,
             mgd.TempOutputFile('alignment_metrics_annotated.csv.gz', extensions=['.yaml']),
         ),
-        kwargs={'dtypes': dtypes()['metrics']}
+        kwargs={'annotation_dtypes': dtypes()['metrics']}
     )
 
     workflow.transform(
@@ -143,13 +143,13 @@ def bam_metrics_workflow(
         args=(
             [
                 mgd.TempInputFile("alignment_metrics_annotated.csv.gz", extensions=['.yaml']),
-                mgd.InputFile(summary_fastq_screen_count_per_cell),
+                mgd.InputFile(summary_fastq_screen_count_per_cell, extensions=['.yaml']),
             ],
             mgd.OutputFile(alignment_metrics, extensions=['.yaml']),
             'outer',
             ['cell_id'],
         ),
-        kwargs={'dtypes': dtypes()['metrics']}
+        # kwargs={'dtypes': dtypes()['metrics']}
     )
 
     return workflow
@@ -220,8 +220,8 @@ def create_alignment_workflow(
             config['docker'],
             config['adapter'],
             config['adapter2'],
-            mgd.TempOutputFile('organism_detailed_count_per_cell.csv', 'cell_id'),
-            mgd.TempOutputFile('organism_summary_count_per_cell.csv', 'cell_id'),
+            mgd.TempOutputFile('organism_detailed_count_per_cell.csv.gz', 'cell_id'),
+            mgd.TempOutputFile('organism_summary_count_per_cell.csv.gz', 'cell_id'),
             config['fastq_screen_params'],
         )
     )
@@ -230,10 +230,10 @@ def create_alignment_workflow(
         name='merge_fastq_screen_metrics',
         func="single_cell.workflows.align.fastqscreen.merge_fastq_screen_counts",
         args=(
-            mgd.TempInputFile('organism_detailed_count_per_cell.csv', 'cell_id'),
-            mgd.TempInputFile('organism_summary_count_per_cell.csv', 'cell_id'),
+            mgd.TempInputFile('organism_detailed_count_per_cell.csv.gz', 'cell_id'),
+            mgd.TempInputFile('organism_summary_count_per_cell.csv.gz', 'cell_id'),
             mgd.OutputFile(detailed_fastqscreen_metrics, extensions=['.yaml']),
-            mgd.TempOutputFile('organism_summary_count_per_cell.csv'),
+            mgd.TempOutputFile('organism_summary_count_per_cell.csv.gz'),
         )
     )
 
@@ -242,8 +242,8 @@ def create_alignment_workflow(
         func="single_cell.workflows.align.bam_metrics_workflow",
         args=(
             mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename, extensions=['.bai']),
-            mgd.TempInputFile('organism_summary_count_per_cell.csv'),
-            mgd.TempOutputFile('alignment_metrics.csv', extensions=['.yaml']),
+            mgd.TempInputFile('organism_summary_count_per_cell.csv.gz', extensions=['.yaml']),
+            mgd.TempOutputFile('alignment_metrics.csv.gz', extensions=['.yaml']),
             mgd.OutputFile(gc_metrics, extensions=['.yaml']),
             mgd.TempOutputFile('markdups_metrics.txt', 'cell_id', axes_origin=[]),
             mgd.TempOutputFile('flagstat_metrics.txt', 'cell_id', axes_origin=[]),
@@ -265,7 +265,7 @@ def create_alignment_workflow(
         ctx={'mem': config['memory']['med']},
         func="single_cell.workflows.align.tasks.add_contamination_status",
         args=(
-            mgd.TempInputFile('alignment_metrics.csv', extensions=['.yaml']),
+            mgd.TempInputFile('alignment_metrics.csv.gz', extensions=['.yaml']),
             mgd.OutputFile(alignment_metrics, extensions=['.yaml']),
         ),
         kwargs={
