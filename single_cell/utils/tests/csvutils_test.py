@@ -17,18 +17,33 @@ def n_frames():
 
 @pytest.fixture
 def n_rows():
-    return 5
+    return 10
 ###############################################
 #                utilities                    #
 ################################################
 
+
+def _raises_correct_error(function, *args,
+                          expected_error=csvutils.CsvParseError,
+                          **kwargs):
+    raised = False
+    try:
+        function(*args, **kwargs)
+    except Exception as e:
+        if type(e) == expected_error:
+            raised = True
+        else:
+            print("raised wrong error: raised: {}, expected: {}"
+                   .format(type(e), expected_error))
+    finally:
+        return raised
 
 def dfs_exact_match(data, reference):
     if isinstance(data, str):
         data = csvutils.CsvInput(data).read_csv()
     if isinstance(reference, str):
         reference = csvutils.CsvInput(reference).read_csv()
-    print ("using pandas", data,"using csvutils", reference)
+
     return all([data[col].equals(reference[col]) for col in reference.columns])
 
 
@@ -79,7 +94,7 @@ def make_test_df(name, dtypes, tmpdir, length, write = False):
 
     for col, dtype in dtypes.items():
         if dtype == "str":
-            df_dict[col] = "".join(_enumerated_list(length))
+            df_dict[col] = _str_list(length)
         if dtype == "int":
             df_dict[col] = _rand_int_col(length)
         if dtype == "float":
@@ -87,6 +102,7 @@ def make_test_df(name, dtypes, tmpdir, length, write = False):
         if dtype == "bool":
             df_dict[col] = _rand_bool_col(length)
     df = pd.DataFrame(df_dict, columns=dtypes.keys())
+
     if write:
         csvutils.write_dataframe_to_csv_and_yaml(df, filename, dtypes)
 
@@ -106,8 +122,8 @@ def _rand_bool_col(n):
     return [random.choice([True, False]) for _ in range(n)]
 
 
-def _enumerated_list(n, must_have="", count=0):
-    s = random.choices(string.ascii_uppercase, k=n)
+def _str_list(n, must_have="", count=0):
+    s = random.sample(string.ascii_uppercase, k=n)
     if count:
         s = [l+str(count) for l in s]
     s.append(must_have)
@@ -346,9 +362,7 @@ class TestMergeHelpers:
             name, df = make_test_df(base_name, dtypes[i], tmpdir, length)
             names.append(name)
             dfs.append(df)
-
         shared_values = dfs[0][shared] #arbitary choose first df
-
         for df in dfs:
             df.update(shared_values)
 
@@ -361,10 +375,10 @@ class TestMergeHelpers:
                                                          headers)
 
         if get_expected and merge_args:
-
             expected_output = dfs[0].merge(dfs[1], how=merge_args["how"],
                                            on=merge_args["on"],
                                            suffixes=merge_args["suffixes"])
+
         return dfs, names, expected_output
 
     def merge_directional_test(self, length, direction):
@@ -381,8 +395,7 @@ class TestMergeHelpers:
                                                        merge_args=merge_args)
 
         merged = csvutils.merge_frames(dfs, how=merge_args["how"],
-                                       on=merge_args["on"],
-                                       suffixes=merge_args["suffixes"])
+                                       on=merge_args["on"])
 
         assert dfs_exact_match(ref, merged)
 
@@ -415,7 +428,7 @@ class TestMergeFrames(TestMergeHelpers):
 
         self.merge_directional_test(n_rows, "right")
 
-    def test_merge_multiple_cols(self, n_rows):
+    def test_merge_frames_multiple_cols(self, n_rows):
         """
         test merging of 2 dfs on multiple columns with right merge
         """
@@ -432,32 +445,28 @@ class TestMergeFrames(TestMergeHelpers):
                                                        merge_args=merge_args)
 
         merged = csvutils.merge_frames(dfs, how=merge_args["how"],
-                                       on=merge_args["on"],
-                                       suffixes=merge_args["suffixes"])
-
+                                       on=merge_args["on"])
         assert dfs_exact_match(ref, merged)
 
-    def test_merge_one_frame(self, n_rows):
+    def test_merge_frames_one_frame(self, n_rows):
         '''
         provide just one df
         :param n_rows: number of rows in simulated df
         :return: assertion
         '''
         dtypes1 = {v: "int" for v in 'ACD'}
-        dtypes2 = {v: "int" for v in 'AEFGH'}
 
         merge_args = {"how": "outer", "on": ["A"], "suffixes": ["", ""]}
 
-        df, name, _ = self.make_mergeable_test_dfs("", 1, [dtypes1, dtypes2],
-                                                     merge_args["on"],
-                                                     n_rows, write=False,
-                                                     merge_args=merge_args)
+        dfs, name, _ = self.make_mergeable_test_dfs("", 1, [dtypes1],
+                                                   merge_args["on"],
+                                                   n_rows, write=False,
+                                                   merge_args=merge_args) #returns list of 1 df
 
-        merged = csvutils.merge_frames(df, how=merge_args["how"],
-                                       on=merge_args["on"],
-                                       suffixes=merge_args["suffixes"])
+        merged = csvutils.merge_frames(dfs, how=merge_args["how"],
+                                       on=merge_args["on"])
 
-        assert dfs_exact_match(df, merged)
+        assert dfs_exact_match(dfs[0], merged)
 
     def test_merge_frames_multiple_frames(self, n_frames, n_rows):
         """
@@ -465,29 +474,26 @@ class TestMergeFrames(TestMergeHelpers):
         :param n_frames: number of dataframes to merge
         """
 
-        return
         dtypes = []
+        n_cols_per_frame = 2
         for i in range(n_frames):
-            dtypes.append({v: "int" for v in _enumerated_list(4,
-                                                              must_have="A",
+            dtypes.append({v: "int" for v in _str_list(n_cols_per_frame,
+                                                              must_have="merge_on",
                                                               count=i)})
 
-        print(dtypes)
-        merge_args = {"how": 'right', "on": ['A'], "suffixes": [""]*n_frames}
+        merge_args = {"how": 'right', "on": ['merge_on'], "suffixes": [""]*n_frames}
 
-        print("d")
-        dfs, names, ref = self.make_mergeable_test_dfs("", n_frames, dtypes,
-                                                       ["A"], n_rows, write=False,
-                                                       get_expected=True,
+        dfs, names, _ = self.make_mergeable_test_dfs("", n_frames, dtypes,
+                                                       ["merge_on"], n_rows, write=False,
+                                                       get_expected=False,
                                                        merge_args=merge_args)
-        print ("here")
-        print (dfs)
-        merged = csvutils.merge_frames(dfs, how=merge_args["how"],
-                                       on=merge_args["on"],
-                                       suffixes=merge_args["suffixes"])
 
-        print("f")
-        assert dfs_exact_match(ref, merged)
+        merged = csvutils.merge_frames(dfs, how=merge_args["how"],
+                                       on=merge_args["on"])
+
+        #just naively make sure it has right # of cols
+        assert merged.shape[0] == n_rows \
+               and merged.shape[1] == (n_cols_per_frame * n_frames) + 1
 
     def test_merge_frames_nothing_to_merge(self, n_rows):
         """
@@ -499,23 +505,36 @@ class TestMergeFrames(TestMergeHelpers):
 
         merge_args = {"how": "outer", "on": [], "suffixes": ["", ""]}
 
+
         dfs, names, ref = self.make_mergeable_test_dfs("", 2, [dtypes1, dtypes2],
                                                        merge_args["on"],
                                                        n_rows,
-                                                       write=False, get_expected=True,
+                                                       write=False, get_expected=False,
                                                        merge_args=merge_args)
-        print ("fjk ")
-        merged = csvutils.merge_frames(dfs, how=merge_args["how"],
-                                       on=merge_args["on"],
-                                       suffixes=merge_args["suffixes"])
 
-        assert dfs_exact_match(ref, merged)
+        assert _raises_correct_error(csvutils.merge_frames, dfs,
+                                     how=merge_args["how"],
+                                     on=merge_args["on"])
 
-    def test_merge_frames_cols_to_merge_have_different_dtypes(self):
+    def test_merge_frames_cols_to_merge_have_different_dtypes(self, n_rows):
         """
         test merging of 2 dfs on 1 col. Each dataframe has different dtype for col
         """
-        pass
+
+        dtypes1 = {v: "int" for v in 'ABCD'}
+        dtypes2 = {v: "str" for v in 'AEFGH'}
+
+        merge_args = {"how": "outer", "on": ['A'], "suffixes": ["", ""]}
+
+        dfs, names, _ = self.make_mergeable_test_dfs("", 2,
+                                                     [dtypes1, dtypes2], ["A"],
+                                                      n_rows, write=False,
+                                                      get_expected=False,
+                                                      merge_args=merge_args)
+
+        assert _raises_correct_error(csvutils.merge_frames, dfs,
+                                     how=merge_args["how"],
+                                     on=merge_args["on"])
 
     def test_merge_frames_create_nans(self):
         """
@@ -575,8 +594,7 @@ class TestMergeCsv(TestMergeHelpers):
                                                   merge_args=merge_args)
 
         csvutils.merge_csv(names, merged, how=merge_args["how"],
-                           on=merge_args["on"],
-                           suffixes=merge_args["suffixes"])
+                           on=merge_args["on"])
 
         assert os.path.exists(merged)
 
@@ -602,8 +620,7 @@ class TestMergeCsv(TestMergeHelpers):
                                                        merge_args=merge_args)
 
         csvutils.merge_csv(names, merged, how=merge_args["how"],
-                           on=merge_args["on"],
-                           suffixes=merge_args["suffixes"])
+                           on=merge_args["on"])
 
         assert os.path.exists(merged)
 
