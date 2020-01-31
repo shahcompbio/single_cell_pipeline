@@ -6,6 +6,7 @@ import random
 import string
 import pytest
 import itertools
+import yaml as y
 
 ###############################################
 #                fixtures                     #
@@ -22,29 +23,70 @@ def n_frames():
 @pytest.fixture
 def n_rows():
     return 10
+
 ###############################################
 #                utilities                    #
 ################################################
 
 
-def _raises_correct_error(function, *args,
-                          expected_error=csvutils.CsvParseError,
-                          **kwargs):
+class TestHelpers:
 
-    raised = False
-    try:
-        function(*args, **kwargs)
-    except Exception as e:
-        if type(e) == expected_error:
-            raised = True
-        else:
-            print("raised wrong error: raised: {}, expected: {}"
-                   .format(type(e), expected_error))
-    finally:
-        return raised
+    #these take length so as to not tap into the fixture above
+    def make_test_dfs(self, tmpdir, n_dfs, dtypes,
+                                shared, length, write=False,
+                                headers=True, get_expected=False,
+                                merge_args=None):
+
+        dfs = []
+        names = []
+
+        for dtype_set in dtypes:
+            assert set(shared).issubset(set(dtype_set.keys()))
+
+        for i in range(n_dfs):
+            base_name = str(i) + ".csv.gz"
+            name, df = make_test_df(base_name, dtypes[i], tmpdir, length)
+            names.append(name)
+            dfs.append(df)
+
+        shared_values = dfs[0][shared] #arbitary choose first df
+        for df in dfs:
+            df.update(shared_values)
+
+        expected_output = None
+        if write:
+            for i in range(n_dfs):
+                csvutils.write_dataframe_to_csv_and_yaml(dfs[i],
+                                                         names[i],
+                                                         dtypes[i],
+                                                         headers)
+
+        if get_expected and merge_args:
+            expected_output = dfs[0].merge(dfs[1], how=merge_args["how"],
+                                           on=merge_args["on"],
+                                           suffixes=merge_args["suffixes"])
+
+        return dfs, names, expected_output
+
+    def merge_directional_test(self, length, direction):
+
+        dtypes1 = {v: "int" for v in 'ABCD'}
+        dtypes2 = {v: "int" for v in 'AEFGH'}
+
+        merge_args = {"how": direction, "on": ['A'], "suffixes": ["", ""]}
+
+        dfs, names, ref = self.make_test_dfs("", 2,
+                                                       [dtypes1, dtypes2], ["A"],
+                                                       length, write=False,
+                                                       get_expected=True,
+                                                       merge_args=merge_args)
+
+        merged = csvutils.merge_frames(dfs, how=merge_args["how"],
+                                       on=merge_args["on"])
+
+        assert dfs_exact_match(ref, merged)
 
 def dfs_exact_match(data, reference):
-
     if isinstance(data, str):
         data = csvutils.CsvInput(data).read_csv()
     if isinstance(reference, str):
@@ -116,6 +158,23 @@ def make_test_df(name, dtypes, tmpdir, length, write = False):
     return filename, df
 
 
+def _raises_correct_error(function, *args,
+                          expected_error=csvutils.CsvParseError,
+                          **kwargs):
+
+    raised = False
+    try:
+        function(*args, **kwargs)
+    except Exception as e:
+        if type(e) == expected_error:
+            raised = True
+        else:
+            print("raised wrong error: raised: {}, expected: {}"
+                   .format(type(e), expected_error))
+    finally:
+        return raised
+
+
 def _rand_float_col(n):
     return [random.uniform(0, 100) for _ in range(n)]
 
@@ -137,10 +196,10 @@ def _str_list(n, must_have="", count=0):
     return s
 
 
-
 ################################################
 #                  tests                       #
 ################################################
+
 
 class TestAnnotateCsv:
 
@@ -329,20 +388,71 @@ class TestRewriteCsvFile:
         pass
 
 
-class WriteDataFrameToCsvAndYaml:
+class TestWriteDataFrameToCsvAndYaml(TestHelpers):
 
-    def test_write_to_csv_yaml(self):
+    def write_successful(self, df, dtypes, csv, yaml_file, wrote_header=True):
+
+        head = "infer"
+        if not wrote_header:
+            head = None
+        csv = pd.read_csv(csv, sep=",", header=head)
+
+        yaml_loader = y.load(open(yaml_file),  Loader=y.FullLoader)["columns"]
+        yaml = {}
+
+        for dtype in yaml_loader:
+            yaml[dtype["name"]] = dtype["dtype"]
+
+        if not wrote_header:
+            csv.columns = df.columns
+
+        if not df.equals(csv):
+            return False
+
+        if yaml != dtypes:
+
+            return False
+        return True
+
+
+
+        assert yaml == dtypes
+
+    def base_write_to_csv_yaml_test(self, temp, length, header, return_info=False):
+        dtypes = {v: "int" for v in 'ABCD'}
+
+        dfs, names, ref = self.make_test_dfs(temp, 1, [dtypes], ["A"], length,
+                                             write=True, get_expected=False)
+
+        df = dfs[0]
+        filename = names[0]
+        yaml_filename = filename + ".yaml"
+
+        csvutils.write_dataframe_to_csv_and_yaml(df, filename, dtypes,
+                                                 write_header=header)
+
+        assert os.path.exists(names[0])
+
+        assert os.path.exists(names[0] + ".yaml")
+
+        assert self.write_successful(df, dtypes, filename, yaml_filename,
+                                     wrote_header=header)
+
+        if return_info:
+            return df, filename, yaml_filename, dtypes
+
+    def test_write_to_csv_yaml(self, tmpdir, n_rows):
         """
         basic sanity check - write normal df
         """
-        pass
+        self.base_write_to_csv_yaml_test(tmpdir, n_rows, True)
 
-    def test_write_to_csv_yaml_no_header(self):
+    def test_write_to_csv_yaml_no_header(self, tmpdir, n_rows):
         """
         write single df without header
         """
-        pass
-
+        self.base_write_to_csv_yaml_test(tmpdir, n_rows,
+                                         False, return_info=True)
     def test_write_to_csv_yaml_empty(self):
         """
         write empty df
@@ -350,64 +460,8 @@ class WriteDataFrameToCsvAndYaml:
         pass
 
 
-class TestMergeHelpers:
 
-    #these take length so as to not tap into the fixture above
-    def make_mergeable_test_dfs(self, tmpdir, n_dfs, dtypes,
-                                shared, length, write=False,
-                                headers=True, get_expected=False,
-                                merge_args=None):
-
-        dfs = []
-        names = []
-
-        for dtype_set in dtypes:
-            assert set(shared).issubset(set(dtype_set.keys()))
-
-        for i in range(n_dfs):
-            base_name = str(i) + ".csv.gz"
-            name, df = make_test_df(base_name, dtypes[i], tmpdir, length)
-            names.append(name)
-            dfs.append(df)
-
-        shared_values = dfs[0][shared] #arbitary choose first df
-        for df in dfs:
-            df.update(shared_values)
-
-        expected_output = None
-        if write:
-            for i in range(n_dfs):
-                csvutils.write_dataframe_to_csv_and_yaml(dfs[i],
-                                                         names[i],
-                                                         dtypes[i],
-                                                         headers)
-
-        if get_expected and merge_args:
-            expected_output = dfs[0].merge(dfs[1], how=merge_args["how"],
-                                           on=merge_args["on"],
-                                           suffixes=merge_args["suffixes"])
-
-        return dfs, names, expected_output
-
-    def merge_directional_test(self, length, direction):
-
-        dtypes1 = {v: "int" for v in 'ABCD'}
-        dtypes2 = {v: "int" for v in 'AEFGH'}
-
-        merge_args = {"how": direction, "on": ['A'], "suffixes": ["", ""]}
-
-        dfs, names, ref = self.make_mergeable_test_dfs("", 2,
-                                                       [dtypes1, dtypes2], ["A"],
-                                                       length, write=False,
-                                                       get_expected=True,
-                                                       merge_args=merge_args)
-
-        merged = csvutils.merge_frames(dfs, how=merge_args["how"],
-                                       on=merge_args["on"])
-
-        assert dfs_exact_match(ref, merged)
-
-class TestMergeFrames(TestMergeHelpers):
+class TestMergeFrames(TestHelpers):
 
     def test_merge_frames(self, n_rows):
         """
@@ -446,11 +500,11 @@ class TestMergeFrames(TestMergeHelpers):
 
         merge_args = {"how": "outer", "on": ['A', 'B'], "suffixes": ["", ""]}
 
-        dfs, names, ref = self.make_mergeable_test_dfs("", 2,
-                                                       [dtypes1, dtypes2], merge_args["on"],
-                                                       n_rows, write=False,
-                                                       get_expected=True,
-                                                       merge_args=merge_args)
+        dfs, names, ref = self.make_test_dfs("", 2, [dtypes1, dtypes2],
+                                             merge_args["on"],
+                                             n_rows, write=False,
+                                             get_expected=True,
+                                             merge_args=merge_args)
 
         merged = csvutils.merge_frames(dfs, how=merge_args["how"],
                                        on=merge_args["on"])
@@ -466,10 +520,10 @@ class TestMergeFrames(TestMergeHelpers):
 
         merge_args = {"how": "outer", "on": ["A"], "suffixes": ["", ""]}
 
-        dfs, name, _ = self.make_mergeable_test_dfs("", 1, [dtypes1],
-                                                   merge_args["on"],
-                                                   n_rows, write=False,
-                                                   merge_args=merge_args) #returns list of 1 df
+        dfs, name, _ = self.make_test_dfs("", 1, [dtypes1],
+                                          merge_args["on"],
+                                          n_rows, write=False,
+                                          merge_args=merge_args) #returns list of 1 df
 
         merged = csvutils.merge_frames(dfs, how=merge_args["how"],
                                        on=merge_args["on"])
@@ -491,10 +545,10 @@ class TestMergeFrames(TestMergeHelpers):
 
         merge_args = {"how": 'right', "on": ['merge_on'], "suffixes": [""]*n_frames}
 
-        dfs, names, _ = self.make_mergeable_test_dfs("", n_frames, dtypes,
-                                                       ["merge_on"], n_rows, write=False,
-                                                       get_expected=False,
-                                                       merge_args=merge_args)
+        dfs, names, _ = self.make_test_dfs("", n_frames, dtypes,
+                                           ["merge_on"], n_rows, write=False,
+                                           get_expected=False,
+                                           merge_args=merge_args)
 
         merged = csvutils.merge_frames(dfs, how=merge_args["how"],
                                        on=merge_args["on"])
@@ -513,11 +567,11 @@ class TestMergeFrames(TestMergeHelpers):
 
         merge_args = {"how": "outer", "on": [], "suffixes": ["", ""]}
 
-        dfs, names, ref = self.make_mergeable_test_dfs("", 2, [dtypes1, dtypes2],
-                                                       merge_args["on"],
-                                                       n_rows,
-                                                       write=False, get_expected=False,
-                                                       merge_args=merge_args)
+        dfs, names, ref = self.make_test_dfs("", 2, [dtypes1, dtypes2],
+                                             merge_args["on"],
+                                             n_rows, write=False,
+                                             get_expected=False,
+                                             merge_args=merge_args)
 
         assert _raises_correct_error(csvutils.merge_frames, dfs,
                                      how=merge_args["how"],
@@ -534,11 +588,10 @@ class TestMergeFrames(TestMergeHelpers):
 
         merge_args = {"how": "outer", "on": ['A'], "suffixes": ["", ""]}
 
-        dfs, names, _ = self.make_mergeable_test_dfs("", 2,
-                                                     [dtypes1, dtypes2], ["A"],
-                                                     n_rows, write=False,
-                                                     get_expected=False,
-                                                     merge_args=merge_args)
+        dfs, names, _ = self.make_test_dfs("", 2, [dtypes1, dtypes2], ["A"],
+                                           n_rows, write=False,
+                                           get_expected=False,
+                                           merge_args=merge_args)
 
         assert _raises_correct_error(csvutils.merge_frames, dfs,
                                      how=merge_args["how"],
@@ -555,9 +608,9 @@ class TestMergeFrames(TestMergeHelpers):
 
         merge_args = {"how": "outer", "on": ["A"], "suffixes": ["", ""]}
 
-        dfs, name, _ = self.make_mergeable_test_dfs("", 2, [dtypes1, dtypes2],
-                                                    [], n_rows, write=False,
-                                                    merge_args=merge_args)
+        dfs, name, _ = self.make_test_dfs("", 2, [dtypes1, dtypes2],
+                                          [], n_rows, write=False,
+                                          merge_args=merge_args)
         on = merge_args["on"]
         dfs[0].iloc[2, dfs[0].columns.get_loc(on[0])] = 10
 
@@ -576,9 +629,9 @@ class TestMergeFrames(TestMergeHelpers):
 
         merge_args = {"how": "outer", "on": ["A"], "suffixes": ["", ""]}
 
-        dfs, name, _ = self.make_mergeable_test_dfs("", 2, [dtypes1, dtypes2],
-                                                    [], n_rows, write=False,
-                                                    merge_args=merge_args)
+        dfs, name, _ = self.make_test_dfs("", 2, [dtypes1, dtypes2],
+                                          [], n_rows, write=False,
+                                          merge_args=merge_args)
         on = merge_args["on"]
         dfs[0].iloc[2, dfs[0].columns.get_loc(on[0])] = np.NaN
         dfs[1].iloc[2, dfs[1].columns.get_loc(on[0])] = np.NaN
@@ -589,7 +642,7 @@ class TestMergeFrames(TestMergeHelpers):
                                      expected_error=csvutils.CsvMergeColumnMismatchException)
 
 
-class TestMergeDtypes(TestMergeHelpers):
+class TestMergeDtypes(TestHelpers):
 
     def test_merge_dtypes(self):
         """
@@ -639,7 +692,8 @@ class TestMergeDtypes(TestMergeHelpers):
 
         assert ref == merged_dtypes
 
-class TestMergeCsv(TestMergeHelpers):
+
+class TestMergeCsv(TestHelpers):
 
     def test_merge_csv(self, tmpdir, n_rows):
 
@@ -649,11 +703,11 @@ class TestMergeCsv(TestMergeHelpers):
         merged = os.path.join(tmpdir, 'merged.csv.gz')
         merge_args = {"how":'outer', "on":['A'], "suffixes":["",""]}
 
-        dfs, names, ref = self.make_mergeable_test_dfs(tmpdir, 2,
-                                                  [dtypes1, dtypes2], ["A"],
-                                                  n_rows, write=True,
-                                                  get_expected=True,
-                                                  merge_args=merge_args)
+        dfs, names, ref = self.make_test_dfs(tmpdir, 2,
+                                             [dtypes1, dtypes2], ["A"],
+                                             n_rows, write=True,
+                                             get_expected=True,
+                                             merge_args=merge_args)
 
         csvutils.merge_csv(names, merged, how=merge_args["how"],
                            on=merge_args["on"])
@@ -674,12 +728,11 @@ class TestMergeCsv(TestMergeHelpers):
         merged = os.path.join(tmpdir, 'merged.csv.gz')
         merge_args = {"how": 'outer', "on": ['A'], "suffixes": ["", ""]}
 
-        dfs, names, ref = self.make_mergeable_test_dfs(tmpdir, 2,
-                                                       [dtypes1, dtypes2], ["A"],
-                                                       n_rows, headers=False,
-                                                       write=True,
-                                                       get_expected=True,
-                                                       merge_args=merge_args)
+        dfs, names, ref = self.make_test_dfs(tmpdir, 2,
+                                             [dtypes1, dtypes2], ["A"],
+                                             n_rows, headers=False,
+                                             write=True, get_expected=True,
+                                             merge_args=merge_args)
 
         csvutils.merge_csv(names, merged, how=merge_args["how"],
                            on=merge_args["on"])
