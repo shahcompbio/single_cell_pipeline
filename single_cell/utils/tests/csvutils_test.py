@@ -631,6 +631,7 @@ class TestMergeDtypes(TestMergeHelpers):
         dtypes = [{v: "int" for v in "".join(_str_list(3, "A"))}
                   for _ in range(n_dtypes)]
 
+        #taken from https://stackoverflow.com/questions/9819602/union-of-dict-objects-in-python
         ref = dict(itertools.chain.from_iterable(dct.items()
                                                  for dct in dtypes))
 
