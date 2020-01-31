@@ -596,6 +596,7 @@ def merge_csv(in_filenames, out_filename, how, on, write_header=True):
 
     data = [CsvInput(infile) for infile in in_filenames]
 
+
     dfs = [csvinput.read_csv() for csvinput in data]
 
     dtypes = [csvinput.dtypes for csvinput in data]
