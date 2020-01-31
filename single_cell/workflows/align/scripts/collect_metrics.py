@@ -3,18 +3,25 @@ Extract metrics table.
 '''
 
 from __future__ import division
-import pandas as pd
+
 import os
 
+import pandas as pd
+
+from single_cell.utils import csvutils
+
 class CollectMetrics(object):
-    def __init__(self, wgs_metrics, insert_metrics, flagstat_metrics, markdups_metrics, output, sample_id):
+    def __init__(
+            self, wgs_metrics, insert_metrics, flagstat_metrics,
+            markdups_metrics, output, sample_id, dtypes
+    ):
         self.wgs_metrics = wgs_metrics
         self.flagstat_metrics = flagstat_metrics
         self.insert_metrics = insert_metrics
         self.markdups_metrics = markdups_metrics
         self.output = output
         self.sample_id = sample_id
-
+        self.dtypes = dtypes
 
     def extract_wgs_metrics(self):
         """
@@ -29,7 +36,6 @@ class CollectMetrics(object):
 
         addmetrics = False
         addhist = False
-
 
         for line in mfile:
             if line.strip() == '':
@@ -56,31 +62,33 @@ class CollectMetrics(object):
         header, data = metrics
 
         header = [v.lower() for v in header]
-        header = {v:i for i,v in enumerate(header)}
+        header = {v: i for i, v in enumerate(header)}
 
         gen_territory = int(data[header['genome_territory']])
-        cov_depth  = float(data[header['mean_coverage']])
+        cov_depth = float(data[header['mean_coverage']])
         count = int(hist[0])
         cov_breadth = (gen_territory - count) / gen_territory
 
         return cov_breadth, cov_depth
-
 
     def extract_flagstat_metrics(self):
         """
         extract from flagstat
         """
 
-        df = pd.read_csv(self.flagstat_metrics,
-                           sep=r'\s\+\s0\s',
-                           header=None,
-                           names=['value', 'type'],
-                           engine='python')
+        df = pd.read_csv(
+            self.flagstat_metrics,
+            sep=r'\s\+\s0\s',
+            header=None,
+            names=['value', 'type'],
+            engine='python'
+        )
 
-        tot_reads = df[df['type']=='in total (QC-passed reads + QC-failed reads)']['value']
-        tot_mpd_reads = df[(df['type'].str.contains('mapped') == True ) & ( df['type'].str.contains('mate mapped') == False)]
-        tot_dup_reads = df[df['type']=='duplicates']['value']
-        tot_prop_paired = df[df['type'].str.contains('properly paired') ]
+        tot_reads = df[df['type'] == 'in total (QC-passed reads + QC-failed reads)']['value']
+        tot_mpd_reads = df[
+            (df['type'].str.contains('mapped') == True) & (df['type'].str.contains('mate mapped') == False)]
+        tot_dup_reads = df[df['type'] == 'duplicates']['value']
+        tot_prop_paired = df[df['type'].str.contains('properly paired')]
 
         assert len(tot_reads) == 1
         assert len(tot_mpd_reads) == 1
@@ -91,7 +99,6 @@ class CollectMetrics(object):
         tot_mpd_reads = tot_mpd_reads['value'].iloc[0]
         tot_dup_reads = tot_dup_reads.iloc[0]
         tot_prop_paired = tot_prop_paired['value'].iloc[0]
-
 
         return tot_reads, tot_mpd_reads, tot_dup_reads, tot_prop_paired
 
@@ -118,7 +125,7 @@ class CollectMetrics(object):
         header, data = targetlines
 
         header = [v.lower() for v in header]
-        header = {v:i for i,v in enumerate(header)}
+        header = {v: i for i, v in enumerate(header)}
 
         unprd_mpd_rds = int(data[header['unpaired_reads_examined']])
         prd_mpd_rds = int(data[header['read_pairs_examined']])
@@ -130,7 +137,8 @@ class CollectMetrics(object):
         rd_pair_opt_dup = int(data[header['read_pair_optical_duplicates']])
 
         try:
-            perc_dup_reads = (unprd_dup_rds + ((prd_dup_rds + rd_pair_opt_dup) * 2)) / (unprd_mpd_rds + (prd_mpd_rds * 2))
+            perc_dup_reads = (unprd_dup_rds + ((prd_dup_rds + rd_pair_opt_dup) * 2)) / (
+                        unprd_mpd_rds + (prd_mpd_rds * 2))
         except ZeroDivisionError:
             perc_dup_reads = 0
 
@@ -148,7 +156,7 @@ class CollectMetrics(object):
         if not os.path.isfile(self.insert_metrics):
             return 0, 0, 0
 
-        #if the insert metrics fails due to low coverage
+        # if the insert metrics fails due to low coverage
         if open(self.insert_metrics).readline().startswith("## FAILED"):
             return 0, 0, 0
 
@@ -170,7 +178,7 @@ class CollectMetrics(object):
         header, data = targetlines
 
         header = [v.lower() for v in header]
-        header = {v:i for i,v in enumerate(header)}
+        header = {v: i for i, v in enumerate(header)}
 
         median_ins_size = data[header['median_insert_size']]
         mean_ins_size = data[header['mean_insert_size']]
@@ -182,24 +190,27 @@ class CollectMetrics(object):
 
         return median_ins_size, mean_ins_size, std_dev_ins_size
 
-
     def write_data(self, header, data):
         """
         write to the output
         """
         assert len(header) == len(data)
-        #replace empty vals with NA
+        # replace empty vals with NA
         data = [v if v != '' else 'NA' for v in data]
 
-        writer = open(self.output, 'w')
-        writer.write(','.join(header) + '\n')
-        writer.write(','.join([str(v) for v in data]))
-        writer.close()
+        csvout = csvutils.CsvOutput(
+            self.output, self.dtypes, header=True, columns=header
+        )
+
+        csvout.write_text([','.join([str(v) for v in data])])
+
+        # print(os.path.exists(self.output+'.yaml'))
 
 
-    #=========================================================================
+
+    # =========================================================================
     # Run script
-    #=========================================================================
+    # =========================================================================
 
     def main(self):
 
@@ -226,4 +237,3 @@ class CollectMetrics(object):
                        'standard_deviation_insert_size']
 
         self.write_data(header, output)
-

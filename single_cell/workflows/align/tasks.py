@@ -15,6 +15,51 @@ from .scripts import GenerateCNMatrix
 from .scripts import SummaryMetrics
 
 
+class LibraryContaminationError(Exception):
+    pass
+
+
+def add_contamination_status(
+        infile, outfile,
+        reference='grch37', ref_threshold=0.6, alt_threshold=0.2,
+        strict_validation=True
+):
+    data = csvutils.read_csv_and_yaml(infile)
+
+    data = data.set_index('cell_id', drop=False)
+
+    fastqscreen_cols = [col for col in data.columns.values if col.startswith('fastqscreen_')]
+
+    reference = "fastqscreen_{}".format(reference)
+    if reference not in fastqscreen_cols:
+        raise Exception("Could not find the fastq screen counts")
+
+    alts = [col for col in fastqscreen_cols if not col == reference]
+
+    data['is_contaminated'] = False
+
+    perc_ref = data[reference] / data['total_reads']
+    data.loc[perc_ref <= ref_threshold, 'is_contaminated'] = True
+
+    for altcol in alts:
+        perc_alt = data[altcol] / data['total_reads']
+        data.loc[perc_alt > alt_threshold, 'is_contaminated'] = True
+
+    col_type = dtypes()['metrics']['is_contaminated']
+    data['is_contaminated'] = data['is_contaminated'].astype(col_type)
+
+    csvutils.write_dataframe_to_csv_and_yaml(
+        data, outfile, dtypes()['metrics'], write_header=True
+    )
+
+    # get cells that are contaminated and have enopugh human reads
+    check_df = data.loc[data['is_contaminated'] == True]
+    check_df['perc_ref'] = data[reference] / data['total_reads']
+    check_df = check_df[check_df['perc_ref'] > ref_threshold]
+    if strict_validation and (len(check_df) / len(data) > 0.2):
+        logging.error("over 20% of cells are contaminated")
+
+
 def plot_metrics(metrics, output, plot_title, gc_matrix, gc_content):
     plot = PlotMetrics(
         metrics, output, plot_title, gcbias_matrix=gc_matrix,
@@ -35,14 +80,14 @@ def collect_gc(infiles, outfile, tempdir):
     for cell_id, infile in infiles.items():
         tempout = os.path.join(
             tempdir,
-            "{}.parsed.csv".format(cell_id))
+            "{}.parsed.csv.gz".format(cell_id))
         tempouts.append(tempout)
         gen_gc = GenerateCNMatrix(infile, tempout, ',',
                                   'NORMALIZED_COVERAGE', cell_id,
-                                  'gcbias')
+                                  'gcbias', dtypes()['gc'])
         gen_gc.main()
 
-    csvutils.concatenate_csv(tempouts, outfile, dtypes=dtypes()['gc'])
+    csvutils.concatenate_csv(tempouts, outfile)
 
 
 def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
@@ -55,14 +100,14 @@ def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
         mkdup = markdups_metrics[sample]
         insrt = insert_metrics[sample]
         wgs = wgs_metrics[sample]
-        outfile = os.path.join(tempdir, sample + "_metrics.csv")
+        outfile = os.path.join(tempdir, sample + "_metrics.csv.gz")
         sample_outputs.append(outfile)
 
         collmet = CollectMetrics(wgs, insrt, flgstat,
-                                 mkdup, outfile, sample)
+                                 mkdup, outfile, sample, dtypes()['metrics'])
         collmet.main()
 
-    csvutils.concatenate_csv(sample_outputs, merged_metrics, dtypes=dtypes()['metrics'])
+    csvutils.concatenate_csv(sample_outputs, merged_metrics)
 
 
 def picard_wgs_dup(

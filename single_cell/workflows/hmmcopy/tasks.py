@@ -237,7 +237,7 @@ def get_mappability_col(reads, annotated_reads):
     alldata = pd.concat(alldata)
 
     csvutils.write_dataframe_to_csv_and_yaml(
-        alldata, annotated_reads, write_header=True, dtypes=dtypes()['reads']
+        alldata, annotated_reads, dtypes()['reads'], write_header=True
     )
 
 
