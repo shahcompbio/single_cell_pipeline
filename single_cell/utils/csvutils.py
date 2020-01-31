@@ -5,11 +5,18 @@ import shutil
 import pandas as pd
 import yaml
 
+
+class CsvMergeDtypesEmptyMergeSet(Exception):
+    pass
+
+
 class CsvMergeException(Exception):
     pass
 
+
 class CsvMergeColumnMismatchException(Exception):
     pass
+
 
 class CsvParseError(Exception):
     pass
@@ -368,6 +375,10 @@ def write_metadata(infile):
 
 
 def merge_dtypes(dtypes_all):
+
+    if dtypes_all == []:
+        raise CsvMergeDtypesEmptyMergeSet("must provide dtypes to merge")
+
     merged_dtypes = {}
 
     for dtypes in dtypes_all:

@@ -5,11 +5,15 @@ import single_cell.utils.csvutils as csvutils
 import random
 import string
 import pytest
+import itertools
 
 ###############################################
 #                fixtures                     #
 ################################################
 
+@pytest.fixture
+def n_dtypes():
+    return random.randint(2, 10)
 
 @pytest.fixture
 def n_frames():
@@ -26,6 +30,7 @@ def n_rows():
 def _raises_correct_error(function, *args,
                           expected_error=csvutils.CsvParseError,
                           **kwargs):
+
     raised = False
     try:
         function(*args, **kwargs)
@@ -591,28 +596,47 @@ class TestMergeDtypes(TestMergeHelpers):
         basic sanity check - test merging of two dtype dicts
         """
         dtypes1 = {v: "float" for v in 'ACD'}
-        dtypes2 = {v: "float" for v in 'ACD'}
+        dtypes2 = {v: "float" for v in 'ACDEF'}
+        ref = {v: "float" for v in
+               set(dtypes1.keys()).union(set(dtypes2.keys()))}
 
+        merged_dtypes = csvutils.merge_dtypes([dtypes1, dtypes2])
+
+        assert ref == merged_dtypes
 
     def test_merge_dtypes_none_given(self):
         """
         test merging of empty list of dtypes
         """
-        pass
 
-    def test_merge_dtypes_one_give(self):
+        assert _raises_correct_error(csvutils.merge_dtypes, [],
+                                     expected_error=csvutils.CsvMergeDtypesEmptyMergeSet)
+
+    def test_merge_dtypes_one_given(self):
         """
         test merging of list of 1 dtype dict
         """
-        pass
+        dtypes1 = {v: "float" for v in 'ACD'}
+        ref = dtypes1
 
-    def test_merge_dtypes_multiple_given(n_dtypes):
+        merged_dtypes = csvutils.merge_dtypes([dtypes1])
+
+        assert ref == merged_dtypes
+
+    def test_merge_dtypes_multiple_given(self, n_dtypes):
         """
         test merging of n_dtypes dtype dicts
         :param n_dtypes: number of dtypes to merge
         """
-        pass
+        dtypes = [{v: "int" for v in "".join(_str_list(3, "A"))}
+                  for _ in range(n_dtypes)]
 
+        ref = dict(itertools.chain.from_iterable(dct.items()
+                                                 for dct in dtypes))
+
+        merged_dtypes = csvutils.merge_dtypes(dtypes)
+
+        assert ref == merged_dtypes
 
 class TestMergeCsv(TestMergeHelpers):
 
