@@ -13,6 +13,11 @@ class CsvMergeDtypesEmptyMergeSet(Exception):
 class CsvConcatException(Exception):
     pass
 
+
+class CsvAnnotateError(Exception):
+    pass
+
+
 class CsvMergeException(Exception):
     pass
 
@@ -301,8 +306,7 @@ class CsvOutput(object):
 
     def __write_df(self, df, header=True, mode='w'):
         self.__verify_df(df)
-        print("df",df)
-        print("dtypes,", df.dtypes)
+
         df.to_csv(
             self.filepath, sep=self.sep, na_rep=self.na_rep,
             index=False, compression='gzip', mode=mode, header=header
@@ -447,15 +451,20 @@ def concatenate_csv_files_quick_lowmem(inputfiles, output, dtypes, columns, writ
     csvoutput.write_data_streams(inputfiles)
 
 
-def annotate_csv(infile, annotation_data, outfile, on="cell_id", write_header=True, annotation_dtypes=None):
+#annotation_dtypes shouldnt be default, if it is None, it breaks
+def annotate_csv(infile, annotation_data, outfile, annotation_dtypes, on="cell_id", write_header=True):
+
     csvinput = CsvInput(infile)
     metrics_df = csvinput.read_csv()
 
     merge_on = metrics_df[on]
 
+    if not all([on in list(annotation_data.keys()) for on in merge_on]):
+        raise CsvAnnotateError("annotation_data must contain all "
+                               "elements in infile's annotation col")
+
     for cell in merge_on:
         col_data = annotation_data[cell]
-
         for column, value in col_data.items():
             metrics_df.loc[metrics_df[on] == cell, column] = value
 
@@ -534,7 +543,6 @@ def _validate_merge_cols(frames, on):
     #check that columns to be merged have identical values
     standard = frames[0][on]
     for frame in frames:
-        print(standard, "\n", frame[on])
         if not standard.equals(frame[on]):
             raise CsvMergeColumnMismatchException("columns on which to merge must be identical")
 
@@ -584,6 +592,5 @@ def merge_frames(frames, how, on):
 
 def write_dataframe_to_csv_and_yaml(df, outfile, dtypes, write_header=True):
     csvoutput = CsvOutput(outfile, dtypes, header=write_header)
-    print("in", df)
-    print(outfile)
+
     csvoutput.write_df(df)

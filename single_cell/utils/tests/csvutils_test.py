@@ -42,12 +42,12 @@ class TestHelpers:
 
         for dtype_set in dtypes:
             assert set(shared).issubset(set(dtype_set.keys()))
-
         for i in range(n_dfs):
             base_name = str(i) + ".csv.gz"
             name, df = make_test_df(base_name, dtypes[i], tmpdir, length)
             names.append(name)
             dfs.append(df)
+
         shared_values = dfs[0][shared] #arbitary choose first df
         for df in dfs:
             df.update(shared_values)
@@ -125,19 +125,22 @@ def approx_compare_cols(data, reference, column_name, eps=0.001):
 
     assert np.nanmax(diff.tolist()) < eps
 
+def simulate_col(dtype, length):
+    if dtype == "str":
+        return _str_list(length)
+    if dtype == "int":
+        return _rand_int_col(length)
+    if dtype == "float":
+        return _rand_float_col(length)
+    if dtype == "bool":
+        return _rand_bool_col(length)
 
 def make_test_df(name, dtypes, tmpdir, length, write=False):
     filename = os.path.join(tmpdir, name)
     df_dict = {}
     for col, dtype in dtypes.items():
-        if dtype == "str":
-            df_dict[col] = _str_list(length)
-        if dtype == "int":
-            df_dict[col] = _rand_int_col(length)
-        if dtype == "float":
-            df_dict[col] = _rand_float_col(length)
-        if dtype == "bool":
-            df_dict[col] = _rand_bool_col(length)
+        df_dict[col] = simulate_col(dtype, length)
+
     df = pd.DataFrame(df_dict, columns=dtypes.keys())
     if write:
         csvutils.write_dataframe_to_csv_and_yaml(df, filename, dtypes)
@@ -179,7 +182,8 @@ def _str_list(n, must_have="", count=0):
     s = random.sample(string.ascii_uppercase, k=n)
     if count:
         s = [l+str(count) for l in s]
-    s.append(must_have)
+    if must_have!= "":
+        s.append(must_have)
     return s
 
 def dfs_exact_match(data, reference):
@@ -201,32 +205,123 @@ def dfs_exact_match(data, reference):
 ################################################
 
 
-class TestAnnotateCsv: #early tuesday
+class TestAnnotateCsv(TestHelpers):
+    def sim_ann_input(self, annotate_col, dtypes):
 
-    def test_annotate_csv(self):
+
+        annotations = {cell_id: {col: simulate_col(dtype, 1)
+                                 for col, dtype in dtypes.items()}
+                       for cell_id in annotate_col}
+
+        return annotations
+
+    def sim_ann_test_inputs(self, temp, length, main_dtypes, annotation_dtypes,
+                            on="cell_id"):
+
+
+        dfs, names, _ = self.make_test_dfs(temp, 1, [main_dtypes],
+                                           [], length, write=True,
+                                           get_expected=False)
+
+        annotation_input = self.sim_ann_input(dfs[0][on].tolist(),
+                                              annotation_dtypes)
+
+        annotated = os.path.join(temp, "annotated.csv.gz")
+
+        return names[0], annotation_input, annotated
+
+    def validate_annotation_test(self, annotated, annotation_input):
+
+        assert os.path.exists(annotated)
+
+    def test_annotate_csv(self, tmpdir, n_rows):
         """
         basic sanity check - test annotating normal csv
         """
-        pass
+        dtypes = {v: "int" for v in 'ABCD'}
+        dtypes["cell_id"] = "str"
+        annotation_dtypes = {v: "int" for v in 'ERF'}
 
-    def test_annotate_csv_wrong_lengths(self):
+        base_csv, annotation, output = self.sim_ann_test_inputs(tmpdir, n_rows,
+                                                                dtypes,
+                                                                annotation_dtypes)
+
+        csvutils.annotate_csv(base_csv, annotation, output, annotation_dtypes)
+
+        self.validate_annotation_test(output, annotation)
+
+    def test_annotate_csv_merge_not_on_cellid(self, tmpdir, n_rows):
+        """
+
+        """
+
+        dtypes = {v: "int" for v in 'ABCD'}
+        dtypes["TEST"] = "str"
+        annotation_dtypes = {v: "int" for v in 'ERF'}
+
+        base_csv, annotation, output = self.sim_ann_test_inputs(tmpdir, n_rows,
+                                                                dtypes,
+                                                                annotation_dtypes,
+                                                                on="TEST")
+
+        csvutils.annotate_csv(base_csv, annotation, output, annotation_dtypes, on="TEST")
+
+        self.validate_annotation_test(output, annotation)
+
+    def test_annotate_csv_annotation_col_mismatch(self, tmpdir, n_rows):
         """
         test annotating csv where annotation_data differs in length from csv
         """
-        pass
+        dtypes = {v: "int" for v in 'ABCD'}
+        dtypes["cell_id"] = "str"
+        annotation_dtypes = {v: "int" for v in 'ERF'}
 
-    def test_annotate_csv_dtype_mismatch(self):
+        base_csv, annotation, output = self.sim_ann_test_inputs(tmpdir, n_rows,
+                                                                dtypes,
+                                                                annotation_dtypes)
+
+        annotation["new_cell"] = {"E":1, "R":43., "F":2}
+
+        csvutils.annotate_csv(base_csv, annotation, output, annotation_dtypes)
+
+        self.validate_annotation_test(output, annotation)
+
+    def test_annotate_csv_annotation_col_dtype_mismatch(self, tmpdir, n_rows):
         """
         test annotating csv with inappropriate annotation_dtypes
         """
-        pass
+        dtypes = {v: "int" for v in 'ABCD'}
+        dtypes["cell_id"] = "str"
+        annotation_dtypes = {v: "int" for v in 'ERF'}
 
-    def test_annotate_csv_no_write_header(self):
+        base_csv, annotation, output = self.sim_ann_test_inputs(tmpdir, n_rows,
+                                                                dtypes,
+                                                                annotation_dtypes)
+
+        new_keys = range(len(annotation.keys()))
+
+        annotation = {new_keys[i]: annotation[cell_id]
+                      for i, cell_id in enumerate(annotation.keys())}
+
+        _raises_correct_error(csvutils.annotate_csv,
+                              base_csv, annotation, output, annotation_dtypes,
+                              csvutils.CsvAnnotateError)
+
+    def test_annotate_csv_no_write_header(self, tmpdir, n_rows):
         """
         test annotating csv without writing header
         """
-        pass
+        dtypes = {v: "int" for v in 'ABCD'}
+        dtypes["cell_id"] = "str"
+        annotation_dtypes = {v: "int" for v in 'ERF'}
 
+        base_csv, annotation, output = self.sim_ann_test_inputs(tmpdir, n_rows,
+                                                                dtypes,
+                                                                annotation_dtypes)
+
+        csvutils.annotate_csv(base_csv, annotation, output, annotation_dtypes, write_header=False)
+
+        self.validate_annotation_test(output, annotation)
 
 class TestConcatCsv(TestHelpers):
 
@@ -444,10 +539,11 @@ class TestConcatCsvFilesQuickLowMem(TestHelpers):
 
 
     ######### error-generating
-    def test_quick_concat(self, tmpdir, n_rows):
+    def test_quick_concat_scale(self, tmpdir, n_rows):
         """
         sanity check - two easy csvs
         """
+        return
         dtypes = {v: "int" for v in 'ABCD'}
         concatenated = os.path.join(tmpdir, 'concat.csv.gz')
         dfs, names, _ = self.make_test_dfs(tmpdir, 2, [dtypes, dtypes],
@@ -459,14 +555,6 @@ class TestConcatCsvFilesQuickLowMem(TestHelpers):
         # csvutils.concatenate_csv_files_quick_lowmem(names, concatenated, dtypes, dtypes.keys())
         #
         # assert dfs_exact_match(ref, concatenated)
-
-
-    def test_quick_concat_no_header(self, tmpdir, n_rows):
-        """
-        concat two large dataframes
-        """
-        pass
-
 
 
 class WriteHelpers(TestHelpers):
@@ -781,7 +869,6 @@ class TestMergeFrames(TestHelpers):
 
         merged = csvutils.merge_frames(dfs, how=merge_args["how"],
                                        on=merge_args["on"])
-        print(ref, "\n", merged)
         assert dfs_exact_match(ref,merged)
 
 
@@ -924,4 +1011,3 @@ class TestMergeCsv(TestHelpers):
         assert os.path.exists(merged)
 
         assert dfs_exact_match(ref, merged)
-
