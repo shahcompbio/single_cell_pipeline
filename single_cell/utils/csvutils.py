@@ -10,6 +10,10 @@ class CsvMergeDtypesEmptyMergeSet(Exception):
     pass
 
 
+class DtypesMergeException(Exception):
+    pass
+
+
 class CsvConcatException(Exception):
     pass
 
@@ -395,7 +399,8 @@ def merge_dtypes(dtypes_all):
     for dtypes in dtypes_all:
         for k, v in dtypes.items():
             if k in merged_dtypes:
-                assert merged_dtypes[k] == v
+                if merged_dtypes[k] != v:
+                    raise DtypesMergeException("dtypes not mergeable")
             else:
                 merged_dtypes[k] = v
 
