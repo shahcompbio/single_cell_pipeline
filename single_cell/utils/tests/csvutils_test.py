@@ -8,21 +8,26 @@ import itertools
 import yaml as y
 import single_cell.utils.tests.test_helpers as helpers
 
+
 ###############################################
 #                fixtures                     #
 ################################################
+
 
 @pytest.fixture
 def n_dtypes():
     return random.randint(2, 10)
 
+
 @pytest.fixture
 def n_frames():
     return random.randint(3, 10)
 
+
 @pytest.fixture
 def n_rows():
     return random.randint(3, 10)
+
 
 ################################################
 #                  tests                       #
@@ -32,8 +37,7 @@ def n_rows():
 class AnnotationHelpers(helpers.TestInputs, helpers.TestValidationHelpers):
 
     def sim_ann_input(self, annotate_col, dtypes):
-
-        annotations = {cell_id: {col: self.simulate_col(dtype, 1)
+        annotations = {cell_id: {col: self.simulate_col(dtype, 1)[0]
                                  for col, dtype in dtypes.items()}
                        for cell_id in annotate_col}
 
@@ -41,9 +45,8 @@ class AnnotationHelpers(helpers.TestInputs, helpers.TestValidationHelpers):
 
     def make_ann_test_inputs(self, temp, length, dtypes, ann_dtypes,
                              write_header=True, on="cell_id"):
-
         df = self.make_test_dfs([dtypes], length)
-        csv =self.write_dfs(temp, df, [dtypes], write_header)
+        csv = self.write_dfs(temp, df, [dtypes], write_header)
 
         df = df[0]
         csv = csv[0]
@@ -54,9 +57,8 @@ class AnnotationHelpers(helpers.TestInputs, helpers.TestValidationHelpers):
 
     def base_annotation_test(self, temp, length, dtypes, ann_dtypes, head=True,
                              on="cell_id"):
-
         csv, annotation = self.make_ann_test_inputs(temp, length,
-                                                    dtypes,ann_dtypes,
+                                                    dtypes, ann_dtypes,
                                                     write_header=head,
                                                     on=on)
 
@@ -67,9 +69,23 @@ class AnnotationHelpers(helpers.TestInputs, helpers.TestValidationHelpers):
 
         return csv, annotation, annotated
 
-    def validate_annotation_test(self, csv, annotation, annotated):
+    def validate_annotation_test(self, csv, annotation, annotated, on):
 
-        return os.path.exists(annotated)
+        if isinstance(csv, str):
+            csv = csvutils.CsvInput(csv).read_csv()
+
+        annotation_comparable = {on: list(annotation.keys())}
+        annotation_as_list = list(annotation.values())
+
+        for k in annotation_as_list[0].keys():
+            annotation_comparable[k] = [ann[k] for ann in annotation_as_list]
+
+        annotation_comparable = pd.DataFrame(annotation_comparable)
+
+        compare = csv.merge(annotation_comparable, how="outer", on=on)
+
+        return os.path.exists(annotated) \
+               and self.dfs_exact_match(compare, annotated)
 
 
 class TestAnnotateCsv(AnnotationHelpers):
@@ -77,6 +93,8 @@ class TestAnnotateCsv(AnnotationHelpers):
     def test_annotate_csv(self, tmpdir, n_rows):
         """
         basic sanity check - test annotating normal csv
+        :param tmpdir: temporary directory to write in
+        :param n_rows: number of rows in test csvs
         """
         dtypes = {v: "int" for v in 'ABCD'}
         dtypes["cell_id"] = "str"
@@ -84,11 +102,14 @@ class TestAnnotateCsv(AnnotationHelpers):
 
         csv, annotation, annotated = self.base_annotation_test(tmpdir, n_rows,
                                                                dtypes, ann_dtypes)
+        print(annotated)
+        assert self.validate_annotation_test(csv, annotation, annotated, "cell_id")
 
-        assert self.validate_annotation_test(csv, annotation, annotated)
-
-    def test_annotate_csv_merge_not_on_cellid(self, tmpdir, n_rows):
+    def test_annotate_csv_annotate_not_on_cell_id(self, tmpdir, n_rows):
         """
+        test annotating on different column that default "cell_id"
+        :param tmpdir: temporary directory to write in
+        :param n_rows: number of rows in test csvs
         """
 
         dtypes = {v: "int" for v in 'ABCD'}
@@ -99,11 +120,13 @@ class TestAnnotateCsv(AnnotationHelpers):
                                                                dtypes, ann_dtypes,
                                                                on="TEST")
 
-        assert self.validate_annotation_test(csv, annotation, annotated)
+        assert self.validate_annotation_test(csv, annotation, annotated, "TEST")
 
     def test_annotate_csv_annotation_col_mismatch(self, tmpdir, n_rows):
         """
         test annotating csv where annotation_data differs in length from csv
+        :param tmpdir: temporary directory to write in
+        :param n_rows: number of rows in test csvs
         """
 
         dtypes = {v: "int" for v in 'ABCD'}
@@ -118,12 +141,15 @@ class TestAnnotateCsv(AnnotationHelpers):
 
         csvutils.annotate_csv(csv, annotation, annotated, ann_dtypes)
 
-        self.validate_annotation_test(csv, annotation, annotated)
+        self.validate_annotation_test(csv, annotation, annotated, "cell_id")
 
     def test_annotate_csv_annotation_col_dtype_mismatch(self, tmpdir, n_rows):
         """
         test annotating csv with inappropriate annotation_dtypes
+        :param tmpdir: temporary directory to write in
+        :param n_rows: number of rows in test csvs
         """
+
         dtypes = {v: "int" for v in 'ABCD'}
         dtypes["cell_id"] = "str"
         ann_dtypes = {v: "int" for v in 'ERF'}
@@ -142,6 +168,8 @@ class TestAnnotateCsv(AnnotationHelpers):
     def test_annotate_csv_no_write_header(self, tmpdir, n_rows):
         """
         test annotating csv without writing header
+        :param tmpdir: temporary directory to write in
+        :param n_rows: number of rows in test csvs
         """
         dtypes = {v: "int" for v in 'ABCD'}
         dtypes["cell_id"] = "str"
@@ -151,13 +179,25 @@ class TestAnnotateCsv(AnnotationHelpers):
                                                                dtypes, ann_dtypes,
                                                                head=False)
 
-        assert self.validate_annotation_test(csv, annotation, annotated)
+        assert self.validate_annotation_test(csv, annotation, annotated, "cell_id")
 
 
 class ConcatHelpers(helpers.TestInputs, helpers.TestValidationHelpers):
 
     def base_test_concat(self, length, dtypes, write=False, dir=None,
                          get_ref=False, write_head=True):
+        """
+        base concatenation test; make dfs, write them,
+        get a "reference" concat output
+        :param length: number of rows in df; use length not n_rows so as to not use fixture
+        :param dtypes: list of dtypes to use in creation of test dfs
+        :param write: T/F :write out dfs to csvs
+        :param dir: directory to write to if writing
+        :param get_ref: T/F: get excpected output from concatenation using
+        pandas built-ins
+        :param write_head: T/F: write header when writing out to csvs
+        :return: dfs and or csvs and or expected output
+        """
 
         dfs = self.make_test_dfs(dtypes, length)
 
@@ -179,6 +219,8 @@ class TestConcatCsv(ConcatHelpers):
     def test_concat_csv(self, tmpdir, n_rows):
         """
         basic sanity check - concat two csvs with same cols
+        :param tmpdir: temporary directory to write in
+        :param n_rows: number of rows in test csvs
         """
         dtypes = {v: "int" for v in 'ABCD'}
         concatenated = os.path.join(tmpdir, 'concat.csv.gz')
@@ -190,21 +232,12 @@ class TestConcatCsv(ConcatHelpers):
 
         assert self.dfs_exact_match(ref, concatenated)
 
-    def test_concat_csv_nan_error(self, tmpdir, n_rows):
-
-        dtypes1 = {v: "int" for v in 'ABCD'}
-        dtypes2 = {v: "int" for v in 'AGF'}
-
-        concatenated = os.path.join(tmpdir, 'concat.csv.gz')
-
-        dfs, csvs = self.base_test_concat(n_rows, [dtypes1, dtypes2],
-                                          write=True, dir=tmpdir)
-
-        csvutils.concatenate_csv(csvs, concatenated)
-
-        ##need to assert an error
-
     def test_concat_csv_no_header(self, tmpdir, n_rows):
+        """
+        test concating csvs with no headers
+        :param tmpdir: temporary directory to write in
+        :param n_rows: number of rows in test csvs
+        """
 
         dtypes = {v: "int" for v in 'ABCD'}
         concatenated = os.path.join(tmpdir, 'concat.csv.gz')
@@ -216,13 +249,12 @@ class TestConcatCsv(ConcatHelpers):
 
         assert self.dfs_exact_match(ref, concatenated)
 
-        concatenated = pd.read_csv(concatenated) #ignore seperate yaml
+        concatenated = pd.read_csv(concatenated)  # ignore separate yaml
 
         assert all([col not in concatenated.columns.tolist()
                     for col in dtypes.keys()])
 
     def test_concat_csv_empty_inputs(self, tmpdir):
-
         dtypes = {v: "int" for v in 'ABCD'}
         concatenated = os.path.join(tmpdir, 'concat.csv.gz')
 
@@ -241,7 +273,6 @@ class TestConcatCsv(ConcatHelpers):
                                           expected_error=csvutils.CsvConcatException)
 
     def test_concat_csv_input_as_dict(self, tmpdir, n_rows):
-
         dtypes = {v: "int" for v in 'ABCD'}
         concatenated = os.path.join(tmpdir, 'concat.csv.gz')
 
@@ -305,7 +336,7 @@ class TestConcatCsv(ConcatHelpers):
         concatenated = os.path.join(tmpdir, 'concat.csv.gz')
 
         dfs, csvs = self.base_test_concat(n_rows, [dtypes1, dtypes2], write=True,
-                                               get_ref=False, dir=tmpdir)
+                                          get_ref=False, dir=tmpdir)
 
         assert self._raises_correct_error(csvutils.concatenate_csv, csvs,
                                           concatenated,
@@ -333,6 +364,21 @@ class TestConcatCsv(ConcatHelpers):
 
         assert self.dfs_exact_match(ref, concatenated)
 
+    def test_concat_csv_gen_nans_with_int_dtype(self, tmpdir, n_rows):
+        """
+        concat two csvs with NaNs
+        """
+        dtypes1 = {v: "int" for v in 'ABCD'}
+        dtypes2 = {v: "int" for v in 'ABE'}
+
+        concatenated = os.path.join(tmpdir, 'concat.csv.gz')
+
+        dfs, csvs = self.base_test_concat(n_rows, [dtypes1, dtypes2], write=True,
+                                          get_ref=False, dir=tmpdir)
+
+        assert self._raises_correct_error(csvutils.concatenate_csv, csvs,
+                                          concatenated,
+                                          expected_error=csvutils.CsvConcatNaNIntDtypeException)
 
 class TestConcatCsvFilesPandas(ConcatHelpers):
 
@@ -352,7 +398,6 @@ class TestConcatCsvFilesPandas(ConcatHelpers):
         assert self.dfs_exact_match(ref, concatenated)
 
     def test_concat_csv_pandas_no_header(self, tmpdir, n_rows):
-
         dtypes = {v: "int" for v in 'ABCD'}
         concatenated = os.path.join(tmpdir, 'concat.csv.gz')
 
@@ -382,7 +427,6 @@ class TestConcatCsvFilesQuickLowMem(ConcatHelpers):
 
         assert self.dfs_exact_match(ref, concatenated)
 
-    ######### error-generating
     def test_quick_concat_scale(self, tmpdir, n_rows):
         """
         sanity check - two easy csvs
@@ -416,7 +460,7 @@ class WriteHelpers(helpers.TestInputs, helpers.TestValidationHelpers):
         return True
 
     def metadata_write_successful(self, dtypes, yaml_file):
-        yaml_loader = y.load(open(yaml_file),  Loader=y.FullLoader)["columns"]
+        yaml_loader = y.load(open(yaml_file), Loader=y.FullLoader)["columns"]
         yaml = {}
 
         for dtype in yaml_loader:
@@ -430,7 +474,6 @@ class WriteHelpers(helpers.TestInputs, helpers.TestValidationHelpers):
 class TestWriteMetadata(WriteHelpers):
 
     def base_write_metadata_test(self, temp, length, dtypes):
-
         df = self.make_test_dfs(dtypes, length)
 
         csv = self.write_dfs(temp, df, dtypes)
@@ -462,7 +505,7 @@ class TestWriteMetadata(WriteHelpers):
         filename = os.path.join(tmpdir, "test.csv.gz")
         yaml_filename = filename + ".yaml"
 
-        dtypes = {"A":"NaN", "B":"NaN"}
+        dtypes = {"A": "NaN", "B": "NaN"}
         pd.DataFrame({"A": [], "B": []}).to_csv(filename, index=False)
 
         assert os.path.exists(filename)
@@ -484,7 +527,6 @@ class TestWriteDataFrameToCsvAndYaml(WriteHelpers):
         assert self.metadata_write_successful(dtypes, yaml_filename)
 
     def base_write_to_csv_yaml_test(self, temp, dtypes, length, write_header=True):
-
         df = self.make_test_dfs([dtypes], length)
 
         csv = self.write_dfs(temp, df, [dtypes], write_header)
@@ -609,7 +651,6 @@ class TestMergeFrames(MergeHelpers):
         """
         self.merge_frames_directional_test(n_rows, "inner")
 
-
     def test_merge_frames_left(self, n_rows):
         """
         test merging of 2 dfs on 1 col with left merge
@@ -623,7 +664,6 @@ class TestMergeFrames(MergeHelpers):
         """
 
         self.merge_frames_directional_test(n_rows, "right")
-
 
     def test_merge_frames_multiple_cols(self, n_rows):
         """
@@ -672,15 +712,15 @@ class TestMergeFrames(MergeHelpers):
         suffs = ["", ""]
         cols = 3
 
-        dtypes =[{v: "int" for v in self._str_list(cols, must_have=on[0], count=i)}
-                 for i in range(n_frames)]
+        dtypes = [{v: "int" for v in self._str_list(cols, must_have=on[0], count=i)}
+                  for i in range(n_frames)]
 
         dfs = self.base_merge_test(n_rows, how, on, suffs, dtypes,
                                    get_ref=False)
 
         merged = csvutils.merge_frames(dfs, how=how, on=on)
 
-        #just naively make sure it has right # of cols
+        # just naively make sure it has right # of cols
         assert merged.shape[0] == n_rows \
                and merged.shape[1] == (cols * n_frames) + 1
 
@@ -694,8 +734,8 @@ class TestMergeFrames(MergeHelpers):
         dfs = self.make_mergeable_test_dfs([dtypes1, dtypes2], [], n_rows)
 
         assert self._raises_correct_error(csvutils.merge_frames, dfs,
-                                             how="outter", on=[],
-                                             expected_error=csvutils.CsvMergeException)
+                                          how="outter", on=[],
+                                          expected_error=csvutils.CsvMergeException)
 
     def test_merge_frames_cols_to_merge_have_different_dtypes(self, n_rows):
         """
@@ -708,8 +748,8 @@ class TestMergeFrames(MergeHelpers):
         dfs = self.make_mergeable_test_dfs([dtypes1, dtypes2], [], n_rows)
 
         assert self._raises_correct_error(csvutils.merge_frames, dfs,
-                                             how="outer", on=[],
-                                              expected_error=csvutils.CsvMergeException)
+                                          how="outer", on=[],
+                                          expected_error=csvutils.CsvMergeException)
 
     def test_merge_frames_merge_col_different(self, n_rows):
         """
@@ -722,8 +762,8 @@ class TestMergeFrames(MergeHelpers):
         dfs = self.make_mergeable_test_dfs([dtypes1, dtypes2], [], n_rows)
 
         assert self._raises_correct_error(csvutils.merge_frames, dfs,
-                                             how="outer", on=[],
-                                              expected_error=csvutils.CsvMergeException)
+                                          how="outer", on=[],
+                                          expected_error=csvutils.CsvMergeException)
 
     def test_merge_frames_with_nans(self, n_rows):
         """
@@ -732,8 +772,8 @@ class TestMergeFrames(MergeHelpers):
         return
         dtypes1 = {v: "float" for v in 'ACD'}
         dtypes2 = {v: "float" for v in 'AEG'}
-        how="outer"
-        on=[]
+        how = "outer"
+        on = []
 
         dfs = self.make_mergeable_test_dfs([dtypes1, dtypes2], on, n_rows)
 
@@ -745,6 +785,21 @@ class TestMergeFrames(MergeHelpers):
         merged = csvutils.merge_frames(dfs, how=how, on=on)
 
         assert dfs_exact_match(ref, merged)
+
+    def test_merge_frames_differing_vals_on_common_cols(self, n_rows):
+        """
+        test merging of 2 dfs on multiple columns with right merge
+        """
+        how = "inner"
+        on = ["A"]
+        dtypes1 = {v: "float" for v in "AC"}
+        dtypes2 = {v: "float" for v in "ACF"}
+
+        dfs = self.make_mergeable_test_dfs([dtypes1, dtypes2], on, n_rows)
+
+        assert self._raises_correct_error(csvutils.merge_frames, dfs,
+                                          how=how, on=on,
+                                          expected_error=csvutils.CsvMergeCommonColException)
 
 
 class TestMergeDtypes(MergeHelpers):
@@ -788,7 +843,7 @@ class TestMergeDtypes(MergeHelpers):
         dtypes = [{v: "int" for v in "".join(self._str_list(3, "A"))}
                   for _ in range(n_dtypes)]
 
-        #taken from https://stackoverflow.com/questions/9819602/union-of-dict-objects-in-python
+        # taken from https://stackoverflow.com/questions/9819602/union-of-dict-objects-in-python
         ref = dict(itertools.chain.from_iterable(dct.items()
                                                  for dct in dtypes))
 
@@ -797,7 +852,6 @@ class TestMergeDtypes(MergeHelpers):
         assert ref == merged_dtypes
 
     def merge_dtype_test_types_different(self, type):
-
         dtypes1 = {v: type for v in 'ACD'}
         dtypes2 = {v: type for v in 'ACDEF'}
         ref = {v: type for v in
@@ -841,7 +895,6 @@ class TestMergeDtypes(MergeHelpers):
 class TestMergeCsv(MergeHelpers):
 
     def test_merge_csv(self, tmpdir, n_rows):
-
         dtypes1 = {v: "int" for v in 'ABCD'}
         dtypes2 = {v: "int" for v in 'AEFGH'}
         how = "outer"
@@ -858,7 +911,6 @@ class TestMergeCsv(MergeHelpers):
         assert os.path.exists(merged)
 
         assert self.dfs_exact_match(ref, merged)
-
 
     def test_merge_csv_no_header(self, tmpdir, n_rows):
         """

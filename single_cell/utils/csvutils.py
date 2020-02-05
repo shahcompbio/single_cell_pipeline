@@ -1,12 +1,19 @@
 import gzip
 import os
 import shutil
-
+import itertools
 import pandas as pd
 import yaml
 
 
 class CsvMergeDtypesEmptyMergeSet(Exception):
+    pass
+
+class CsvConcatNaNIntDtypeException(Exception):
+    pass
+
+
+class CsvMergeCommonColException(Exception):
     pass
 
 
@@ -417,7 +424,19 @@ def concatenate_csv(inputfiles, output, write_header=True):
 
     inputs = [CsvInput(infile) for infile in inputfiles]
 
-    dtypes = merge_dtypes([csvinput.dtypes for csvinput in inputs])
+    dtypes = [csvinput.dtypes for csvinput in inputs]
+
+    #if all types are int
+    uq_cols = set(list(itertools.chain(*[d.keys() for d in dtypes])))
+
+    uq_dtypes = set(list(itertools.chain(*[list(d.values()) for d in dtypes])))
+
+    if uq_cols != set(dtypes[0].keys()):
+        if uq_dtypes == {"int"}:
+            raise CsvConcatNaNIntDtypeException("if dtypes are 'int',"
+                                                " all columns must be identical")
+
+    dtypes = merge_dtypes(dtypes)
 
     headers = [csvinput.header for csvinput in inputs]
 
@@ -431,10 +450,12 @@ def concatenate_csv(inputfiles, output, write_header=True):
     if not all(columns[0] == elem for elem in columns):
         low_memory = False
 
+
     if low_memory:
         concatenate_csv_files_quick_lowmem(inputfiles, output, dtypes, columns, write_header=write_header)
     else:
         concatenate_csv_files_pandas(inputfiles, output, dtypes, columns, write_header=write_header)
+
 
 def concatenate_csv_files_pandas(in_filenames, out_filename, dtypes, columns, write_header=True):
 
@@ -523,6 +544,7 @@ def merge_csv(in_filenames, out_filename, how, on, write_header=True):
     data = [CsvInput(infile) for infile in in_filenames]
 
     dfs = [csvinput.read_csv() for csvinput in data]
+
     dtypes = [csvinput.dtypes for csvinput in data]
 
     data = merge_frames(dfs, how, on)
@@ -556,6 +578,12 @@ def _validate_merge_cols(frames, on):
         if len(set([frame[shared_col].dtypes for frame in frames])) != 1:
             raise CsvMergeColumnMismatchException("columns on which to merge must have same dtypes")
 
+    common_cols = set.intersection(*[set(frame.columns) for frame in frames])
+    cols_to_check = list(common_cols - set(on))
+
+    for frame1, frame2 in zip(frames[:-1], frames[1:]):
+        if not frame1[cols_to_check].equals(frame2[cols_to_check]):
+            raise CsvMergeCommonColException("non-merged common cols must be identical")
 
 def merge_frames(frames, how, on):
     """

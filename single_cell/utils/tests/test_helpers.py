@@ -88,12 +88,12 @@ class TestValidationHelpers:
             data = csvutils.CsvInput(data).read_csv()
         if isinstance(reference, str):
             reference = csvutils.CsvInput(reference).read_csv()
+
         if set(data.columns) != set(reference.columns):
             return False
 
         #read csv doesnt precicely read floats
         data = data.round(5)
         reference = reference.round(5)
-        print (data, "\n\n", reference)
-        print([reference[col].equals(data[col]) for col in reference.columns])
+
         return all([reference[col].equals(data[col]) for col in reference.columns])
