@@ -1,9 +1,40 @@
 import gzip
 import os
 import shutil
-
+import itertools
 import pandas as pd
 import yaml
+
+
+class CsvMergeDtypesEmptyMergeSet(Exception):
+    pass
+
+class CsvConcatNaNIntDtypeException(Exception):
+    pass
+
+
+class CsvMergeCommonColException(Exception):
+    pass
+
+
+class DtypesMergeException(Exception):
+    pass
+
+
+class CsvConcatException(Exception):
+    pass
+
+
+class CsvAnnotateError(Exception):
+    pass
+
+
+class CsvMergeException(Exception):
+    pass
+
+
+class CsvMergeColumnMismatchException(Exception):
+    pass
 
 
 class CsvParseError(Exception):
@@ -25,6 +56,7 @@ def pandas_to_std_types():
         "object": "str",
         "str": "str",
         "category": "str",
+        "NaN": "NaN",
     }
 
 
@@ -73,6 +105,7 @@ class IrregularCsvInput(object):
         typeinfo = {}
         for column, dtype in df.dtypes.items():
             if column in ['chr', 'chrom', 'chromosome']:
+                typeinfo[column] = 'str'
                 typeinfo[column] = 'str'
             else:
                 if df.empty:
@@ -196,8 +229,7 @@ class CsvInput(object):
         return header, dtypes, columns
 
     def __verify_data(self, df):
-        if not list(df.columns.values) == self.columns:
-            print(df.columns.values, self.columns)
+        if not set(list(df.columns.values)) == set(self.columns):
             raise CsvParseError("metadata mismatch in {}".format(self.filepath))
 
     def read_csv(self, chunksize=None):
@@ -264,7 +296,6 @@ class CsvOutput(object):
         type_converter = pandas_to_std_types()
 
         yamldata = {'header': self.header, 'sep': self.sep, 'columns': []}
-
         for column in self.columns:
             data = {'name': column, 'dtype': type_converter[self.dtypes[column]]}
             yamldata['columns'].append(data)
@@ -280,7 +311,7 @@ class CsvOutput(object):
 
     def __verify_df(self, df):
         if self.columns:
-            assert list(df.columns.values) == self.columns
+            assert set(list(df.columns.values)) == set(self.columns)
         else:
             self.columns = df.columns.values
 
@@ -300,7 +331,6 @@ class CsvOutput(object):
                 self.__write_df(df, header=False, mode='a')
 
     def write_df(self, df, chunks=False):
-
         if chunks:
             self.__write_df_chunks(df, header=self.header)
         else:
@@ -343,6 +373,18 @@ class CsvOutput(object):
 
         self.write_yaml()
 
+    def write_text(self, text):
+        assert self.columns
+        assert self.dtypes
+
+        with gzip.open(self.filepath, 'wt') as writer:
+
+            if self.header:
+                self.write_header(writer)
+
+            for line in text:
+                writer.write(line)
+
 
 def write_metadata(infile):
     csvinput = IrregularCsvInput(infile)
@@ -355,12 +397,17 @@ def write_metadata(infile):
 
 
 def merge_dtypes(dtypes_all):
+
+    if dtypes_all == []:
+        raise CsvMergeDtypesEmptyMergeSet("must provide dtypes to merge")
+
     merged_dtypes = {}
 
     for dtypes in dtypes_all:
         for k, v in dtypes.items():
             if k in merged_dtypes:
-                assert merged_dtypes[k] == v
+                if merged_dtypes[k] != v:
+                    raise DtypesMergeException("dtypes not mergeable")
             else:
                 merged_dtypes[k] = v
 
@@ -368,16 +415,33 @@ def merge_dtypes(dtypes_all):
 
 
 def concatenate_csv(inputfiles, output, write_header=True):
+
+    if inputfiles == [] or inputfiles == {}:
+        raise CsvConcatException("nothing provided to concat")
+
     if isinstance(inputfiles, dict):
         inputfiles = inputfiles.values()
 
     inputs = [CsvInput(infile) for infile in inputfiles]
 
-    dtypes = merge_dtypes([csvinput.dtypes for csvinput in inputs])
+    dtypes = [csvinput.dtypes for csvinput in inputs]
+
+    #if all types are int
+    uq_cols = set(list(itertools.chain(*[d.keys() for d in dtypes])))
+
+    uq_dtypes = set(list(itertools.chain(*[list(d.values()) for d in dtypes])))
+
+    if uq_cols != set(dtypes[0].keys()):
+        if uq_dtypes == {"int"}:
+            raise CsvConcatNaNIntDtypeException("if dtypes are 'int',"
+                                                " all columns must be identical")
+
+    dtypes = merge_dtypes(dtypes)
 
     headers = [csvinput.header for csvinput in inputs]
 
     columns = [csvinput.columns for csvinput in inputs]
+    columns = list(set([col for column_set in columns for col in column_set]))
 
     low_memory = True
     if any(headers):
@@ -386,7 +450,6 @@ def concatenate_csv(inputfiles, output, write_header=True):
     if not all(columns[0] == elem for elem in columns):
         low_memory = False
 
-    columns = columns[0]
 
     if low_memory:
         concatenate_csv_files_quick_lowmem(inputfiles, output, dtypes, columns, write_header=write_header)
@@ -395,6 +458,7 @@ def concatenate_csv(inputfiles, output, write_header=True):
 
 
 def concatenate_csv_files_pandas(in_filenames, out_filename, dtypes, columns, write_header=True):
+
     if isinstance(in_filenames, dict):
         in_filenames = in_filenames.values()
 
@@ -402,7 +466,6 @@ def concatenate_csv_files_pandas(in_filenames, out_filename, dtypes, columns, wr
         CsvInput(in_filename).read_csv() for in_filename in in_filenames
     ]
     data = pd.concat(data, ignore_index=True)
-
     csvoutput = CsvOutput(out_filename, dtypes, header=write_header, columns=columns)
     csvoutput.write_df(data)
 
@@ -414,15 +477,20 @@ def concatenate_csv_files_quick_lowmem(inputfiles, output, dtypes, columns, writ
     csvoutput.write_data_streams(inputfiles)
 
 
-def annotate_csv(infile, annotation_data, outfile, on="cell_id", write_header=True, annotation_dtypes=None):
+#annotation_dtypes shouldnt be default, if it is None, it breaks
+def annotate_csv(infile, annotation_data, outfile, annotation_dtypes, on="cell_id", write_header=True):
+
     csvinput = CsvInput(infile)
     metrics_df = csvinput.read_csv()
 
     merge_on = metrics_df[on]
 
+    if not all([on in list(annotation_data.keys()) for on in merge_on]):
+        raise CsvAnnotateError("annotation_data must contain all "
+                               "elements in infile's annotation col")
+
     for cell in merge_on:
         col_data = annotation_data[cell]
-
         for column, value in col_data.items():
             metrics_df.loc[metrics_df[on] == cell, column] = value
 
@@ -469,16 +537,17 @@ def rewrite_csv_file(filepath, outputfile, write_header=True):
         csvoutput.rewrite_csv(filepath)
 
 
-def merge_csv(in_filenames, out_filename, how, on, suffixes=None, write_header=True):
+def merge_csv(in_filenames, out_filename, how, on, write_header=True):
     if isinstance(in_filenames, dict):
         in_filenames = in_filenames.values()
 
     data = [CsvInput(infile) for infile in in_filenames]
 
     dfs = [csvinput.read_csv() for csvinput in data]
+
     dtypes = [csvinput.dtypes for csvinput in data]
 
-    data = merge_frames(dfs, how, on, suffixes=suffixes)
+    data = merge_frames(dfs, how, on)
 
     dtypes = merge_dtypes(dtypes)
 
@@ -488,45 +557,73 @@ def merge_csv(in_filenames, out_filename, how, on, suffixes=None, write_header=T
     csvoutput.write_df(data)
 
 
-def merge_frames(frames, how, on, suffixes=None):
+def _validate_merge_cols(frames, on):
     '''
-    annotates input_df using ref_df
+    make sure frames look good. raise relevant exceptions
+    :param frames: list of dfs to merge
+    :param on: list of common columns in frames on which to merge
+    :return: nothing
     '''
+    if on == []:
+        raise CsvMergeException("unable to merge if given nothing to merge on")
 
-    suff = ['', '']
+    #check that columns to be merged have identical values
+    standard = frames[0][on]
+    for frame in frames:
+        if not standard.equals(frame[on]):
+            raise CsvMergeColumnMismatchException("columns on which to merge must be identical")
+
+    #check that columns to be merged have same dtypes
+    for shared_col in on:
+        if len(set([frame[shared_col].dtypes for frame in frames])) != 1:
+            raise CsvMergeColumnMismatchException("columns on which to merge must have same dtypes")
+
+    common_cols = set.intersection(*[set(frame.columns) for frame in frames])
+    cols_to_check = list(common_cols - set(on))
+
+    for frame1, frame2 in zip(frames[:-1], frames[1:]):
+        if not frame1[cols_to_check].equals(frame2[cols_to_check]):
+            raise CsvMergeCommonColException("non-merged common cols must be identical")
+
+def merge_frames(frames, how, on):
+    """
+    annotates input_df using ref_df
+    :param frames:
+    :type frames:
+    :param how:
+    :type how:
+    :param on:
+    :type on:
+    :return:
+    :rtype:
+    """
 
     if ',' in on:
         on = on.split(',')
 
+    _validate_merge_cols(frames, on)
+
     if len(frames) == 1:
         return frames[0]
+
     else:
         left = frames[0]
         right = frames[1]
-
         cols_to_use = list(right.columns.difference(left.columns))
         cols_to_use += on
         cols_to_use = list(set(cols_to_use))
 
-        if suffixes:
-            suff = (suffixes[0], suffixes[1])
-
-        merged_frame = pd.merge(left, right[cols_to_use],
-                                how=how,
-                                on=on,
-                                suffixes=suff)
+        merged_frame = pd.merge(
+            left, right[cols_to_use], how=how, on=on,
+        )
         for i, frame in enumerate(frames[2:]):
-
-            if suffixes:
-                suff = (suffixes[i + 2], suffixes[i + 2])
-
-            merged_frame = pd.merge(merged_frame, frame,
-                                    how=how,
-                                    on=on,
-                                    suffixes=suff)
+            merged_frame = pd.merge(
+                merged_frame, frame, how=how, on=on,
+            )
         return merged_frame
 
 
 def write_dataframe_to_csv_and_yaml(df, outfile, dtypes, write_header=True):
     csvoutput = CsvOutput(outfile, dtypes, header=write_header)
+
     csvoutput.write_df(df)
