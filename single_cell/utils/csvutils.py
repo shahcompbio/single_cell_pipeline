@@ -395,7 +395,6 @@ def concatenate_csv(in_filenames, out_filename, key_column=None, write_header=Tr
     if not isinstance(in_filenames, dict):
         in_filenames = dict(enumerate(in_filenames))
 
-    print(in_filenames)
     data = []
     sep = None
 
