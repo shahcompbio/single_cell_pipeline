@@ -119,7 +119,7 @@ def add_quality(hmmcopy_metrics, alignment_metrics, output, training_data, tempd
         intermediate_output,
         predictions)
 
-    csvutils.prep_csv_files(intermediate_output, output, dtypes=dtypes()['metrics'])
+    csvutils.rewrite_csv_file(intermediate_output, output, dtypes=dtypes()['metrics'])
 
 
 def merge_metrics(hmmcopy_metrics, alignment_metrics, merged_output):
@@ -132,7 +132,6 @@ def merge_metrics(hmmcopy_metrics, alignment_metrics, merged_output):
         'outer',
         ['cell_id'],
         write_header=False,
-        dtypes=dtypes()['metrics']
     )
 
 

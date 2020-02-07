@@ -3,13 +3,17 @@ Created on Jul 24, 2017
 
 @author: dgrewal
 '''
-import pypeliner.managed as mgd
-
 import pypeliner
+import pypeliner.managed as mgd
+from single_cell.workflows.mutationseq.dtypes import dtypes
+
+
+def museq_callback(record):
+    return record.INFO['PR']
 
 
 def create_museq_workflow(
-        normal_bam, tumour_bam, ref_genome, snv_vcf,
+        normal_bam, tumour_bam, snv_vcf, museq_csv,
         config):
     museq_docker = {'docker_image': config['docker']['mutationseq']}
     vcftools_docker = {'docker_image': config['docker']['vcftools']}
@@ -75,6 +79,29 @@ def create_museq_workflow(
             mgd.OutputFile(snv_vcf, extensions=['.tbi', '.csi']),
         ),
         kwargs={'docker_config': vcftools_docker}
+    )
+
+    workflow.transform(
+        name='convert_museq_to_csv',
+        func="biowrappers.components.io.vcf.tasks.convert_vcf_to_csv",
+        ctx=ctx,
+        args=(
+            mgd.InputFile(snv_vcf),
+            mgd.TempOutputFile('museq.csv'),
+        ),
+        kwargs={
+            'score_callback': museq_callback,
+        }
+    )
+
+    workflow.transform(
+        name='prep_museq_csv',
+        func='single_cell.utils.csvutils.rewrite_csv_file',
+        args=(
+            mgd.TempInputFile('museq.csv'),
+            mgd.OutputFile(museq_csv, extensions=['.yaml'])
+        ),
+        kwargs={'dtypes': dtypes()['snv_museq']}
     )
 
     return workflow
