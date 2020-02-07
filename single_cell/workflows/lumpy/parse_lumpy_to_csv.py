@@ -91,7 +91,7 @@ def generate_primary_table(parsed_data):
 
 
 def write_to_csv(df, filepath):
-    df.to_csv(filepath, index=False, na_rep='NA',
+    df.to_csv(filepath, index=False, na_rep='NaN',
               compression=helpers.get_compression_type_pandas(filepath))
 
 

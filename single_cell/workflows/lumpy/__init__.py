@@ -1,5 +1,6 @@
 import pypeliner
 import pypeliner.managed as mgd
+from single_cell.workflows.lumpy.dtypes import dtypes
 
 
 def lumpy_preprocess_workflow(
@@ -143,7 +144,7 @@ def lumpy_calling_workflow(
         config,
         normal_disc_reads, normal_split_reads, normal_histogram, normal_mean_stdev,
         tumour_disc_reads, tumour_split_reads, tumour_histogram, tumour_mean_stdev,
-        lumpy_bed, lumpy_calls, lumpy_evidence, tumour_id=None, normal_id=None,
+        lumpy_bed, lumpy_calls, lumpy_evidence, tumour_id='tumour', normal_id='normal',
         sample_id=None, library_id=None
 ):
     if sample_id and not tumour_id:
@@ -186,29 +187,35 @@ def lumpy_calling_workflow(
         func='single_cell.workflows.lumpy.parse_lumpy_to_csv.parse_lumpy',
         args=(
             mgd.InputFile(lumpy_bed),
-            mgd.TempOutputFile('lumpy_calls.csv'),
-            mgd.TempOutputFile('lumpy_evidence.csv'),
+            mgd.TempOutputFile('lumpy_calls.csv.gz'),
+            mgd.TempOutputFile('lumpy_evidence.csv.gz'),
         ),
     )
 
     workflow.transform(
         name='prep_lumpy_calls',
         ctx={'mem': 8, 'ncpus': 1},
-        func="single_cell.utils.csvutils.prep_csv_files",
+        func="single_cell.utils.csvutils.rewrite_csv_file",
         args=(
-            mgd.TempInputFile('lumpy_calls.csv'),
+            mgd.TempInputFile('lumpy_calls.csv.gz'),
             mgd.OutputFile(lumpy_calls, extensions=['.yaml']),
         ),
+        kwargs= {
+            'dtypes': dtypes()['breakpoint']
+        }
     )
 
     workflow.transform(
         name='prep_lumpy_evidence',
         ctx={'mem': 8, 'ncpus': 1},
-        func="single_cell.utils.csvutils.prep_csv_files",
+        func="single_cell.utils.csvutils.rewrite_csv_file",
         args=(
-            mgd.TempInputFile('lumpy_evidence.csv'),
+            mgd.TempInputFile('lumpy_evidence.csv.gz'),
             mgd.OutputFile(lumpy_evidence, extensions=['.yaml']),
         ),
+        kwargs={
+            'dtypes': dtypes()['evidence']
+        }
     )
 
     return workflow

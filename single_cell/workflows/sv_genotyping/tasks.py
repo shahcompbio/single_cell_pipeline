@@ -394,7 +394,7 @@ def write_svtyper_annotations(csv, output_paths, tempdir):
             temp_output_path
         )
 
-        csvutils.finalize_csv(temp_output_path, output_paths[annotation])
+        csvutils.rewrite_csv_file(temp_output_path, output_paths[annotation])
 
 
 def merge_csvs(input_csvs, merged_csv):
