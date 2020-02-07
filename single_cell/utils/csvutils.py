@@ -1,4 +1,5 @@
 import gzip
+import logging
 import os
 import shutil
 import itertools
@@ -45,6 +46,9 @@ class CsvInputError(Exception):
     pass
 
 
+from single_cell.utils import helpers
+
+
 def pandas_to_std_types():
     return {
         "bool": "bool",
@@ -77,7 +81,7 @@ class CsvTypeMismatch(Exception):
 
 
 class IrregularCsvInput(object):
-    def __init__(self, filepath, na_rep='NaN'):
+    def __init__(self, filepath, dtypes, na_rep='NaN'):
         """
         csv file and all related metadata
         :param filepath: path to csv
@@ -93,11 +97,30 @@ class IrregularCsvInput(object):
 
         self.header, self.sep, self.dtypes, self.columns = metadata
 
-        self.__confirm_compression_type_pandas()
+        self.dtypes = dtypes
 
     @property
     def yaml_file(self):
         return self.filepath + '.yaml'
+
+    def __get_compression_type_pandas(self):
+        filepath = self.filepath
+        if filepath.endswith('.tmp'):
+            filepath = filepath[:-4]
+
+        _, ext = os.path.splitext(filepath)
+
+        if ext == ".csv":
+            return None
+        elif ext == ".gz":
+            return "gzip"
+        elif ext == ".h5" or ext == ".hdf5":
+            raise CsvInputError("HDF is not supported")
+        else:
+            logging.getLogger("single_cell.utils.csv").warn(
+                "Couldn't detect output format. extension {}".format(ext)
+            )
+            return None
 
     def get_dtypes_from_df(self, df):
         type_converter = pandas_to_std_types()
@@ -134,18 +157,9 @@ class IrregularCsvInput(object):
         elif ',' in header:
             return ','
 
-    def __confirm_compression_type_pandas(self):
-        filepath = self.filepath
-        if filepath.endswith('.tmp'):
-            filepath = filepath[:-4]
-
-        _, ext = os.path.splitext(filepath)
-
-        if not ext == ".gz":
-            raise CsvInputError("{} is not supported".format(ext))
-
     def __generate_metadata(self):
-        with gzip.open(self.filepath, 'rt') as inputfile:
+
+        with helpers.getFileHandle(self.filepath, 'rt') as inputfile:
             header = inputfile.readline().strip()
             sep = self.__detect_sep_from_header(header)
             columns = header.split(sep)
@@ -154,8 +168,10 @@ class IrregularCsvInput(object):
             return header, sep, dtypes, columns
 
     def __generate_dtypes(self, columns=None, sep=','):
+        compression = self.__get_compression_type_pandas()
+
         data = pd.read_csv(
-            self.filepath, compression='gzip', chunksize=10 ** 6,
+            self.filepath, compression=compression, chunksize=10 ** 6,
             sep=sep
         )
         data = next(data)
@@ -165,6 +181,34 @@ class IrregularCsvInput(object):
 
         typeinfo = self.get_dtypes_from_df(data)
         return typeinfo
+
+    def read_csv(self, chunksize=None):
+        def return_gen(df_iterator):
+            for df in df_iterator:
+                for col in df.columns.values:
+                    assert col in self.dtypes, col
+                yield df
+
+        dtypes = {k: v for k, v in self.dtypes.items() if v != "NA"}
+        # if header exists then use first line (0) as header
+        header = 0 if self.header else None
+        names = None if self.header else self.columns
+
+        compression = self.__get_compression_type_pandas()
+
+        try:
+            data = pd.read_csv(
+                self.filepath, compression=compression, chunksize=chunksize,
+                sep=self.sep, header=header, names=names, dtype=dtypes)
+        except pd.errors.EmptyDataError:
+            data = pd.DataFrame(columns=self.columns)
+
+        if chunksize:
+            return return_gen(data)
+        else:
+            for col in data.columns.values:
+                assert col in self.dtypes, col
+            return data
 
 
 class CsvInput(object):
@@ -314,9 +358,24 @@ class CsvOutput(object):
             assert set(list(df.columns.values)) == set(self.columns)
         else:
             self.columns = df.columns.values
+    def __cast_df(self, df):
+        for column_name in df.columns.values:
+            dtype = self.dtypes[column_name]
+
+            if str(dtype) == 'bool' and df[column_name].isnull().any():
+                raise Exception('NaN found in bool column:{}'.format(column_name))
+
+            df[column_name] = df[column_name].astype(dtype)
+
+        return df
 
     def __write_df(self, df, header=True, mode='w'):
-        self.__verify_df(df)
+        df = self.__cast_df(df)
+
+        if self.columns:
+            assert self.columns == list(df.columns.values)
+        else:
+            self.columns = list(df.columns.values)
 
         df.to_csv(
             self.filepath, sep=self.sep, na_rep=self.na_rep,
@@ -479,9 +538,7 @@ def concatenate_csv_files_quick_lowmem(inputfiles, output, dtypes, columns, writ
     csvoutput.write_data_streams(inputfiles)
 
 
-#annotation_dtypes shouldnt be default, if it is None, it breaks
 def annotate_csv(infile, annotation_data, outfile, annotation_dtypes, on="cell_id", write_header=True):
-
     csvinput = CsvInput(infile)
     metrics_df = csvinput.read_csv()
 
@@ -502,16 +559,15 @@ def annotate_csv(infile, annotation_data, outfile, annotation_dtypes, on="cell_i
     csv_dtypes = csvinput.dtypes
 
     for col, dtype in csv_dtypes.items():
-        assert dtype == annotation_dtypes[col]
+        assert dtype == dtypes[col]
 
-
-    csv_dtypes.update(annotation_dtypes)
+    csv_dtypes.update(dtypes)
 
     output = CsvOutput(outfile, csv_dtypes, header=write_header)
     output.write_df(metrics_df)
 
 
-def rewrite_csv_file(filepath, outputfile, write_header=True):
+def rewrite_csv_file(filepath, outputfile, write_header=True, dtypes=None):
     """
     generate header less csv files
     :param filepath:
@@ -519,12 +575,15 @@ def rewrite_csv_file(filepath, outputfile, write_header=True):
     :param outputfile:
     :type outputfile:
     """
-    csvinput = CsvInput(filepath)
+
+    if os.path.exists(filepath + '.yaml'):
+        csvinput = CsvInput(filepath)
+    else:
+        assert dtypes
+        csvinput = IrregularCsvInput(filepath, dtypes)
 
     if csvinput.header:
-        if write_header:
-            raise Exception('no op')
-
+        print(filepath)
         df = csvinput.read_csv()
 
         csvoutput = CsvOutput(
@@ -534,9 +593,6 @@ def rewrite_csv_file(filepath, outputfile, write_header=True):
         csvoutput.write_df(df)
 
     else:
-        if not write_header:
-            raise Exception('no op')
-
         csvoutput = CsvOutput(
             outputfile, header=write_header, columns=csvinput.columns,
             dtypes=csvinput.dtypes
@@ -549,7 +605,6 @@ def merge_csv(in_filenames, out_filename, how, on, write_header=True):
         in_filenames = in_filenames.values()
 
     data = [CsvInput(infile) for infile in in_filenames]
-
 
     dfs = [csvinput.read_csv() for csvinput in data]
 
@@ -635,3 +690,12 @@ def write_dataframe_to_csv_and_yaml(df, outfile, dtypes, write_header=True):
     csvoutput = CsvOutput(outfile, dtypes, header=write_header)
 
     csvoutput.write_df(df)
+
+
+def read_csv_and_yaml(infile, chunksize=None):
+    return CsvInput(infile).read_csv(chunksize=chunksize)
+
+
+def get_metadata(input):
+    csvinput = CsvInput(input)
+    return csvinput.header, csvinput.dtypes, csvinput.columns

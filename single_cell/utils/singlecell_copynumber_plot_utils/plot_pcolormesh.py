@@ -218,7 +218,7 @@ class PlotPcolor(object):
 
         bins = {}
 
-        header, dtypes, columns = csvutils.get_metadata(self.input)
+        header, _, columns = csvutils.get_metadata(self.input)
 
         with helpers.getFileHandle(self.input, 'rt') as freader:
             idxs = self.build_label_indices(columns)
