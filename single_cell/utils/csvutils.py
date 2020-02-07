@@ -7,7 +7,6 @@ import pandas as pd
 import yaml
 from single_cell.utils import helpers
 
-
 class CsvParseError(Exception):
     pass
 
@@ -400,14 +399,20 @@ def concatenate_csv(in_filenames, out_filename, key_column=None, write_header=Tr
     sep = None
 
     for key, in_filename in in_filenames.items():
-        csvinput = CsvInput(in_filename)
+        try:
+            csvinput = CsvInput(in_filename)
+        except TypeError:
+            continue
 
         if not sep:
             sep = csvinput.sep
         assert sep == csvinput.sep
-
-        df = csvinput.read_csv()
-
+        
+        try:
+            df = csvinput.read_csv()
+        except pd.io.common.EmptyDataError:
+            continue
+            
         if key_column is not None:
             df[key_column] = str(key)
         data.append(df)
