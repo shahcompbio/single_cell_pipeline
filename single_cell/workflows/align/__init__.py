@@ -233,7 +233,7 @@ def create_alignment_workflow(
             mgd.TempInputFile('organism_detailed_count_per_cell.csv.gz', 'cell_id'),
             mgd.TempInputFile('organism_summary_count_per_cell.csv.gz', 'cell_id'),
             mgd.OutputFile(detailed_fastqscreen_metrics, extensions=['.yaml']),
-            mgd.TempOutputFile('organism_summary_count_per_cell.csv.gz'),
+            mgd.TempOutputFile('organism_summary_count_per_cell.csv.gz', extensions=['.yaml']),
         )
     )
 

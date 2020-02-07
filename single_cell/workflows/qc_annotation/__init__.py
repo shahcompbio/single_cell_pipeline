@@ -106,7 +106,7 @@ def create_qc_annotation_workflow(
         workflow.transform(
             name='finalize_metrics',
             ctx={'mem': config['memory']['med'], 'ncpus': 1, 'num_retry': 1},
-            func="single_cell.utils.csvutils.finalize_csv",
+            func="single_cell.utils.csvutils.rewrite_csv_file",
             args=(
                 mgd.TempInputFile('merged_metrics.csv.gz', extensions=['.yaml']),
                 mgd.OutputFile(merged_metrics, extensions=['.yaml']),
@@ -117,7 +117,7 @@ def create_qc_annotation_workflow(
         workflow.transform(
             name='finalize_metrics',
             ctx={'mem': config['memory']['med'], 'ncpus': 1, 'num_retry': 1},
-            func="single_cell.utils.csvutils.finalize_csv",
+            func="single_cell.utils.csvutils.rewrite_csv_file",
             args=(
                 mgd.TempInputFile('merged_metrics.csv.gz', extensions=['.yaml']),
                 mgd.TempOutputFile('merged_metrics_with_header.csv.gz', extensions=['.yaml'])
