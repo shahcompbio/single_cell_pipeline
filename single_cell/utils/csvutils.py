@@ -391,32 +391,19 @@ def annotate_csv(infile, annotation_data, outfile, on="cell_id", write_header=Tr
     output.write_df(metrics_df)
 
 
-def filter_for_filesize(files, size=0):
-    if not isinstance(files, dict):
-        files = dict(enumerate(files))
-
-    filtered_files = {}
-    for label, file in files.items():
-        print("\n", label, file, size, os.path.getsize(file))
-        if os.path.getsize(file) > size:
-            filtered_files[label] = file
-
-    return filtered_files
-
-
 def concatenate_csv(in_filenames, out_filename, key_column=None, write_header=True, dtypes=None):
     if not isinstance(in_filenames, dict):
         in_filenames = dict(enumerate(in_filenames))
-
-    # for some reason the empty gz files are size 50 ## should eventually check uncompressed
-    in_filenames = filter_for_filesize(in_filenames, 50)
 
     print(in_filenames)
     data = []
     sep = None
 
     for key, in_filename in in_filenames.items():
-        csvinput = CsvInput(in_filename)
+        try:
+            csvinput = CsvInput(in_filename)
+        except pandas.io.common.EmptyDataError:
+            continue
 
         if not sep:
             sep = csvinput.sep
