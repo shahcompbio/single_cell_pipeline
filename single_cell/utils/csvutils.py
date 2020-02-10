@@ -483,16 +483,19 @@ def annotate_csv(infile, annotation_data, outfile, annotation_dtypes, on="cell_i
     csvinput = CsvInput(infile)
     metrics_df = csvinput.read_csv()
 
-    merge_on = metrics_df[on]
+    ann = pd.DataFrame(annotation_data).T
 
-    if not all([on in list(annotation_data.keys()) for on in merge_on]):
-        raise CsvAnnotateError("annotation_data must contain all "
-                               "elements in infile's annotation col")
+    # get annotation rows that correspond to rows in on
+    reformed_annotation = ann[ann.index.isin(metrics_df[on])]
 
-    for cell in merge_on:
-        col_data = annotation_data[cell]
-        for column, value in col_data.items():
-            metrics_df.loc[metrics_df[on] == cell, column] = value
+    # do nothing if the annotation df is empty
+    if reformed_annotation.empty:  # so we dont add NaNs
+        return write_dataframe_to_csv_and_yaml(metrics_df, outfile,
+                                               csvinput.dtypes,
+                                               write_header=write_header)
+
+    for new_col in reformed_annotation.columns:
+        metrics_df.loc[:, new_col] = reformed_annotation[new_col].values
 
     csv_dtypes = csvinput.dtypes
 
