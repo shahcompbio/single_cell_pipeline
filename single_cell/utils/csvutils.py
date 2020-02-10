@@ -401,15 +401,18 @@ def concatenate_csv(in_filenames, out_filename, key_column=None, write_header=Tr
     for key, in_filename in in_filenames.items():
         try:
             csvinput = CsvInput(in_filename)
-        except pandas.io.common.EmptyDataError:
+        except TypeError:
             continue
 
         if not sep:
             sep = csvinput.sep
         assert sep == csvinput.sep
-
-        df = csvinput.read_csv()
-
+        
+        try:
+            df = csvinput.read_csv()
+        except pandas.io.common.EmptyDataError:
+            continue
+            
         if key_column is not None:
             df[key_column] = str(key)
         data.append(df)
