@@ -6,7 +6,7 @@ import shutil
 
 import pandas as pd
 import yaml
-
+import collections
 
 class CsvMergeDtypesEmptyMergeSet(Exception):
     pass
