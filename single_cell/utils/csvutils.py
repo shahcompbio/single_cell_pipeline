@@ -5,7 +5,7 @@ import shutil
 import itertools
 import pandas as pd
 import yaml
-
+import collections
 
 class CsvMergeDtypesEmptyMergeSet(Exception):
     pass
@@ -50,7 +50,7 @@ from single_cell.utils import helpers
 
 
 def pandas_to_std_types():
-    return {
+    std_dict = {
         "bool": "bool",
         "int64": "int",
         "int": "int",
@@ -62,6 +62,8 @@ def pandas_to_std_types():
         "category": "str",
         "NaN": "NaN",
     }
+
+    return collections.defaultdict(lambda: "str", std_dict)
 
 
 class CsvWriterError(Exception):
