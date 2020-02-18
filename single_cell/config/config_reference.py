@@ -3,15 +3,17 @@ import os
 from single_cell.utils import helpers
 
 
-def containers():
-    version = helpers.get_version()
+def containers(version=None):
+    if not version:
+        version = helpers.get_version()
+        version = 'v'+version
 
     docker_images = {
         'bwa': 'bwa:v0.0.2',
         'samtools': 'samtools:v0.0.3',
         'python_base': 'python_base:v0.1.0',
         'picard': 'picard:v0.0.3',
-        'single_cell_pipeline': 'single_cell_pipeline:v{}'.format(version),
+        'single_cell_pipeline': 'single_cell_pipeline:{}'.format(version),
         'gatk': 'gatk:v0.0.1',
         'fastqc': 'fastqc:v0.0.2',
         'hmmcopy': 'hmmcopy:v0.0.5',
