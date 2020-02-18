@@ -487,24 +487,11 @@ def concatenate_csv(inputfiles, output, write_header=True):
 
     inputs = [CsvInput(infile) for infile in inputfiles]
 
-    dtypes = [csvinput.dtypes for csvinput in inputs]
-
-    #if all types are int
-    uq_cols = set(list(itertools.chain(*[d.keys() for d in dtypes])))
-
-    uq_dtypes = set(list(itertools.chain(*[list(d.values()) for d in dtypes])))
-
-    if uq_cols != set(dtypes[0].keys()):
-        if uq_dtypes == {"int"}:
-            raise CsvConcatNaNIntDtypeException("if dtypes are 'int',"
-                                                " all columns must be identical")
-
-    dtypes = merge_dtypes(dtypes)
+    dtypes = merge_dtypes([csvinput.dtypes for csvinput in inputs])
 
     headers = [csvinput.header for csvinput in inputs]
 
     columns = [csvinput.columns for csvinput in inputs]
-    columns = list(set([col for column_set in columns for col in column_set]))
 
     low_memory = True
     if any(headers):
@@ -513,6 +500,7 @@ def concatenate_csv(inputfiles, output, write_header=True):
     if not all(columns[0] == elem for elem in columns):
         low_memory = False
 
+    columns = columns[0]
 
     if low_memory:
         concatenate_csv_files_quick_lowmem(inputfiles, output, dtypes, columns, write_header=write_header)
@@ -529,6 +517,7 @@ def concatenate_csv_files_pandas(in_filenames, out_filename, dtypes, columns, wr
         CsvInput(in_filename).read_csv() for in_filename in in_filenames
     ]
     data = pd.concat(data, ignore_index=True)
+
     csvoutput = CsvOutput(out_filename, dtypes, header=write_header, columns=columns)
     csvoutput.write_df(data)
 
