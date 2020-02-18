@@ -561,9 +561,10 @@ def annotate_csv(infile, annotation_data, outfile, annotation_dtypes, on="cell_i
     csv_dtypes = csvinput.dtypes
 
     for col, dtype in csv_dtypes.items():
-        assert dtype == dtypes[col]
+        if col in annotation_dtypes:
+            assert dtype == annotation_dtypes[col]
 
-    csv_dtypes.update(dtypes)
+    csv_dtypes.update(annotation_dtypes)
 
     output = CsvOutput(outfile, csv_dtypes, header=write_header)
     output.write_df(metrics_df)
