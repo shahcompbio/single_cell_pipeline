@@ -9,6 +9,7 @@ from single_cell.utils import csvutils
 import pysam
 import os
 import pandas as pd
+import logging
 
 # class Comparer():
 #     def __init__(self, func, ref, to_compare):
@@ -138,7 +139,9 @@ def compare_count_haps(haps, refhaps):
     haps = pd.read_csv(haps, sep="\t")
     refhaps = pd.read_csv(refhaps, sep="\t")
 
-    assert not haps.empty
+    if haps.empty and refhaps.empty:
+        logging.getLogger('testing').warning("comparing empty hap counts")
+        return
 
     cols_must_match = ["chromosome", "position", "allele", "allele_id", "hap_label"]
 
@@ -188,10 +191,13 @@ def check_for_missing_cols(data, refdata):
     
     return common_cols
 
-def compare_tables(data, refdata):
+def compare_tables(data, refdata, eps=None):
     common_cols = check_for_missing_cols(data, refdata)
     for colname in common_cols:
-        exact_compare_cols(data, refdata, colname)
+        if not eps:
+            exact_compare_cols(data, refdata, colname)
+        else:
+            approx_compare_cols(data, refdata, colname, eps=eps)
 
 def compare_annotation(annotation, refannotation):
     annotation = csvutils.read_csv_and_yaml(annotation)
@@ -351,8 +357,21 @@ def compare_metrics(metrics, refmetrics):
     metrics = load(metrics, ["cell_id"], reindex=True)
     refmetrics = load(refmetrics, ["cell_id"], reindex=True)
 
-    metrics["autocorrelation_hmmcopy"] = metrics.autocorrelation_hmmcopy.round(6)
-    refmetrics["autocorrelation_hmmcopy"] = refmetrics.autocorrelation_hmmcopy.round(6)
+    if 'autocorrelation_hmmcopy' in metrics:
+        metrics["autocorrelation_hmmcopy"] = metrics.autocorrelation_hmmcopy.round(6)
+    if 'autocorrelation_hmmcopy' in refmetrics:
+        refmetrics["autocorrelation_hmmcopy"] = refmetrics.autocorrelation_hmmcopy.round(6)
 
     compare_tables(metrics, refmetrics)
 
+def compare_annotation_metrics(metrics, refmetrics):
+    metrics = load(metrics, ['cell_id'], reindex=True)
+    refmetrics = load(refmetrics, ['cell_id'], reindex=True)
+
+    exact_cols = ['multiplier','MSRSI_non_integerness','MBRSI_dispersion_non_integerness','empty_bins_hmmcopy','total_mapped_reads_hmmcopy','breakpoints','state_mode','column','img_col','row','order','fastqscreen_mm10','unpaired_duplicate_reads','paired_mapped_reads','estimated_library_size','paired_duplicate_reads','fastqscreen_salmon_multihit','total_properly_paired','total_duplicate_reads','fastqscreen_salmon','unpaired_mapped_reads','unmapped_reads','fastqscreen_grch37_multihit','total_reads','fastqscreen_nohit','total_mapped_reads','fastqscreen_mm10_multihit','fastqscreen_grch37',]
+    compare_tables(metrics[exact_cols], refmetrics[exact_cols])
+
+
+    approx_cols = ['MSRSI_non_integerness', 'MBRSI_dispersion_non_integerness', 'MBRSM_dispersion', 'autocorrelation_hmmcopy', 'cv_hmmcopy', 'mad_hmmcopy', 'mean_hmmcopy_reads_per_bin', 'median_hmmcopy_reads_per_bin', 'std_hmmcopy_reads_per_bin', 'total_halfiness', 'scaled_halfiness', 'mean_state_mads', 'mean_state_vars', 'mad_neutral_state', 'mean_copy', 'log_likelihood', 'true_multiplier', 'is_s_phase_prob', 'quality', 'percent_duplicate_reads', 'mean_insert_size', 'coverage_breadth', 'standard_deviation_insert_size', 'coverage_depth', 'median_insert_size', ]
+
+    compare_tables(metrics[approx_cols], refmetrics[approx_cols], eps=0.02)

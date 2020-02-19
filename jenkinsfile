@@ -9,7 +9,7 @@ pipeline{
     stages {
         stage('build') {
             steps{
-                sh 'bash tests/jenkins/build_docker/build.sh $DOCKERHUB_USR $DOCKERHUB_PSW'
+                sh 'bash tests/jenkins/build_docker/build.sh $DOCKERHUB_USR $DOCKERHUB_PSW docker.io singlecellpipelinetest'
             }
         }
 
@@ -28,8 +28,8 @@ pipeline{
             stage('hmmcopy'){
                 steps{
                   sh 'bash tests/jenkins/hmmcopy/hmmcopy.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
-               }
-           }
+                }
+            }
            stage('annotation'){
                steps{
                  sh 'bash tests/jenkins/annotation/annotation.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'

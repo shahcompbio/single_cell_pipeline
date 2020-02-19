@@ -3,7 +3,7 @@ set -e
 set -o pipefail
 
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
-
+TAG="${TAG}.beta"
 
 mkdir -p ANNOTATION/ref_test_data
 
@@ -19,8 +19,11 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   --context_config tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
   --tmpdir ANNOTATION/temp \
-  --pipelinedir ANNOTATION/pipeline --submit local --out_dir ANNOTATION/output \
-  --config_override '{"annotation": {"chromosomes": ["6", "8", "17"]}}' --no_corrupt_tree
+  --pipelinedir ANNOTATION/pipeline \
+  --submit local \
+  --out_dir ANNOTATION/output \
+  --config_override '{"annotation": {"chromosomes": ["6", "8", "17"]}, "version": '\"$TAG\"'}' \
+  --no_corrupt_tree
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v /usr/bin/docker:/usr/bin/docker --rm \
