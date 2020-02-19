@@ -104,7 +104,7 @@ def bam_metrics_workflow(
         func="single_cell.workflows.align.tasks.collect_gc",
         ctx={'mem': config['memory']['med'], 'ncpus': 1},
         args=(
-            mgd.InputFile('gc_metrics_percell.csv.gz', 'cell_id', axes_origin=[], fnames=gc_metrics_percell),
+            mgd.InputFile('gc_metrics_percell', 'cell_id', fnames=gc_metrics_percell),
             mgd.OutputFile(gc_metrics, extensions=['.yaml']),
             mgd.TempSpace("temp_gc")
         ),

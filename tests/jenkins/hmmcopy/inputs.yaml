@@ -1,5 +1,5 @@
 SA1090-A96213A-R20-C28:
-  bam: HMMCOPY/bams/SA1090-A96213A-R20-C28.bam
+  bam: HMMCOPY/ref_test_data/testdata/SA1090-A96213A-R20-C28.bam
   column: 28
   condition: B
   img_col: 45
@@ -10,7 +10,7 @@ SA1090-A96213A-R20-C28:
   primer_i7: CTATCT
   row: 20
 SA1090-A96213A-R20-C62:
-  bam: HMMCOPY/bams/SA1090-A96213A-R20-C62.bam
+  bam: HMMCOPY/ref_test_data/testdata/SA1090-A96213A-R20-C62.bam
   column: 62
   condition: B
   img_col: 11
@@ -21,7 +21,7 @@ SA1090-A96213A-R20-C62:
   primer_i7: AAGCTA
   row: 20
 SA1090-A96213A-R22-C43:
-  bam: HMMCOPY/bams/SA1090-A96213A-R22-C43.bam
+  bam: HMMCOPY/ref_test_data/testdata/SA1090-A96213A-R22-C43.bam
   column: 43
   condition: B
   img_col: 30
