@@ -373,7 +373,6 @@ class CsvOutput(object):
 
     def __write_df(self, df, header=True, mode='w'):
         df = self.__cast_df(df)
-
         if self.columns:
             assert self.columns == list(df.columns.values)
         else:
@@ -449,8 +448,8 @@ class CsvOutput(object):
         self.write_yaml()
 
 
-def write_metadata(infile):
-    csvinput = IrregularCsvInput(infile)
+def write_metadata(infile, dtypes):
+    csvinput = IrregularCsvInput(infile, dtypes)
 
     csvoutput = CsvOutput(
         infile, csvinput.dtypes, header=csvinput.header,
@@ -496,19 +495,19 @@ def concatenate_csv(inputfiles, output, write_header=True):
     low_memory = True
     if any(headers):
         low_memory = False
-
+    
     if not all(columns[0] == elem for elem in columns):
         low_memory = False
 
-    columns = columns[0]
-
     if low_memory:
+        columns = columns[0]
         concatenate_csv_files_quick_lowmem(inputfiles, output, dtypes, columns, write_header=write_header)
+
     else:
-        concatenate_csv_files_pandas(inputfiles, output, dtypes, columns, write_header=write_header)
+        concatenate_csv_files_pandas(inputfiles, output, dtypes, write_header=write_header)
 
 
-def concatenate_csv_files_pandas(in_filenames, out_filename, dtypes, columns, write_header=True):
+def concatenate_csv_files_pandas(in_filenames, out_filename, dtypes, write_header=True):
 
     if isinstance(in_filenames, dict):
         in_filenames = in_filenames.values()
@@ -517,8 +516,7 @@ def concatenate_csv_files_pandas(in_filenames, out_filename, dtypes, columns, wr
         CsvInput(in_filename).read_csv() for in_filename in in_filenames
     ]
     data = pd.concat(data, ignore_index=True)
-
-    csvoutput = CsvOutput(out_filename, dtypes, header=write_header, columns=columns)
+    csvoutput = CsvOutput(out_filename, dtypes, header=write_header)
     csvoutput.write_df(data)
 
 
@@ -529,7 +527,9 @@ def concatenate_csv_files_quick_lowmem(inputfiles, output, dtypes, columns, writ
     csvoutput.write_data_streams(inputfiles)
 
 
+#annotation_dtypes shouldnt be default, if it is None, it breaks
 def annotate_csv(infile, annotation_data, outfile, annotation_dtypes, on="cell_id", write_header=True):
+
     csvinput = CsvInput(infile)
     metrics_df = csvinput.read_csv()
 
@@ -575,7 +575,6 @@ def rewrite_csv_file(filepath, outputfile, write_header=True, dtypes=None):
         csvinput = IrregularCsvInput(filepath, dtypes)
 
     if csvinput.header:
-        print(filepath)
         df = csvinput.read_csv()
 
         csvoutput = CsvOutput(

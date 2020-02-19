@@ -49,7 +49,7 @@ class TestAnnotateCsv(helpers.AnnotationHelpers):
 
         csv, annotation, annotated = self.base_annotation_test(tmpdir, n_rows,
                                                                dtypes, ann_dtypes)
-        print(annotated)
+
         assert self.validate_annotation_test(csv, annotation, annotated, "cell_id")
 
     def test_annotate_csv_annotate_not_on_cell_id(self, tmpdir, n_rows):
@@ -288,7 +288,8 @@ class TestConcatCsv(helpers.ConcatHelpers):
         concatenated = os.path.join(tmpdir, 'concat.csv.gz')
 
         dfs = self.make_test_dfs([dtypes, dtypes], n_rows)
-        csvs = ["0.csv.gz", "1.csv.gz"]
+        csvs = [os.path.join(tmpdir, "0.csv.gz"),
+                os.path.join(tmpdir, "1.csv.gz")]
 
         dfs[0].iloc[2, dfs[0].columns.get_loc("A")] = np.NaN
         dfs[1].iloc[2, dfs[1].columns.get_loc("A")] = np.NaN
@@ -313,9 +314,10 @@ class TestConcatCsv(helpers.ConcatHelpers):
         dfs, csvs = self.base_test_concat(n_rows, [dtypes1, dtypes2], write=True,
                                           get_ref=False, dir=tmpdir)
 
+        #check for value error - should raise internal pandas error
         assert self._raises_correct_error(csvutils.concatenate_csv, csvs,
                                           concatenated,
-                                          expected_error=csvutils.CsvConcatNaNIntDtypeException)
+                                          expected_error=ValueError)
 
 class TestConcatCsvFilesPandas(helpers.ConcatHelpers):
     """
@@ -325,6 +327,7 @@ class TestConcatCsvFilesPandas(helpers.ConcatHelpers):
         """
         basic sanity check - concat 2 csvs with same cols
         """
+    
         dtypes = {v: "int" for v in 'ABCD'}
         concatenated = os.path.join(tmpdir, 'concat.csv.gz')
 
@@ -332,7 +335,7 @@ class TestConcatCsvFilesPandas(helpers.ConcatHelpers):
                                                write=True, get_ref=True,
                                                dir=tmpdir)
 
-        csvutils.concatenate_csv_files_pandas(csvs, concatenated, dtypes, dtypes.keys())
+        csvutils.concatenate_csv_files_pandas(csvs, concatenated, dtypes, list(dtypes.keys()))
 
         assert self.dfs_exact_match(ref, concatenated)
 
@@ -344,7 +347,7 @@ class TestConcatCsvFilesPandas(helpers.ConcatHelpers):
                                                write=True, get_ref=True,
                                                dir=tmpdir, write_head=False)
 
-        csvutils.concatenate_csv_files_pandas(csvs, concatenated, dtypes, dtypes.keys())
+        csvutils.concatenate_csv_files_pandas(csvs, concatenated, dtypes, list(dtypes.keys()))
 
         assert self.dfs_exact_match(ref, concatenated)
 
@@ -364,7 +367,7 @@ class TestConcatCsvFilesQuickLowMem(helpers.ConcatHelpers):
                                                write=True, get_ref=True,
                                                dir=tmpdir, write_head=False)
 
-        csvutils.concatenate_csv_files_quick_lowmem(csvs, concatenated, dtypes, dtypes.keys())
+        csvutils.concatenate_csv_files_quick_lowmem(csvs, concatenated, dtypes, list(dtypes.keys()))
 
         assert self.dfs_exact_match(ref, concatenated)
 
@@ -402,15 +405,16 @@ class TestWriteMetadata(helpers.WriteHelpers):
         csv = self.write_dfs(temp, df, dtypes)
 
         filename = csv[0]
+        dtypes = dtypes[0]
         yaml_filename = filename + ".yaml"
         os.remove(yaml_filename)
 
         assert not os.path.exists(yaml_filename)
 
-        csvutils.write_metadata(filename)
+        csvutils.write_metadata(filename, dtypes)
 
         assert os.path.exists(yaml_filename)
-        assert self.metadata_write_successful(dtypes[0], yaml_filename)
+        assert self.metadata_write_successful(dtypes, yaml_filename)
 
     def test_write_metadata(self, tmpdir, n_rows):
         """
@@ -434,7 +438,7 @@ class TestWriteMetadata(helpers.WriteHelpers):
         assert os.path.exists(filename)
         assert not os.path.exists(yaml_filename)
 
-        csvutils.write_metadata(filename)
+        csvutils.write_metadata(filename, dtypes)
 
         assert os.path.exists(yaml_filename)
         assert self.metadata_write_successful(dtypes, yaml_filename)
