@@ -252,7 +252,7 @@ def add_clustering_order(
             sample_info[cell_id] = {}
         sample_info[cell_id]['order'] = order
 
-    csvutils.annotate_csv(metrics, sample_info, output, dtypes=dtypes()['metrics'])
+    csvutils.annotate_csv(metrics, sample_info, output, dtypes()['metrics'])
 
 def group_cells_by_row(cells, metrics, sort_by_col=False):
     metricsdata = pd.read_csv(metrics, compression='gzip')
