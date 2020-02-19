@@ -1,13 +1,13 @@
 # build on top of out base image
-FROM {container_registry}/singlecellpipeline/python_singlecell_qc:v0.1.2
+FROM singlecellpipeline/python_singlecell_qc:v0.1.2
 
 # Copy the current directory contents into the container at /app
 ADD . /app
 
 # Install any needed packages specified in requirements.txt
-RUN pip install -e git+https://github.com/shahcompbio/pypeliner.git@v0.5.16#egg=pypeliner
+RUN pip install -e git+https://github.com/shahcompbio/pypeliner.git@v0.5.17#egg=pypeliner
 RUN pip install -e git+https://github.com/shahcompbio/biowrappers.git@v0.2.4#egg=biowrappers
-RUN pip install -e git+https://github.com/shahcompbio/single_cell_pipeline.git@{git_commit}#egg=single-cell-pipeline
+RUN pip install -e git+https://github.com/DouglasAbrams/single_cell_pipeline.git@{git_commit}#egg=single-cell-pipeline
 
 # Make port 80 available to the world outside this container
 EXPOSE 80
