@@ -3,6 +3,7 @@ set -e
 set -o pipefail
 
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
+TAG="${TAG}.beta"
 
 WKDIR=$PWD
 cd /mnt
@@ -21,7 +22,7 @@ sudo docker run -w $PWD -v $PWD:$PWD -v $WKDIR:$WKDIR -v /refdata:/refdata -v /v
   --submit local --loglevel DEBUG \
   --tmpdir VARIANT_CALLING/temp \
   --pipelinedir $WKDIR/VARIANT_CALLING/pipeline --submit local --out_dir $WKDIR/VARIANT_CALLING/output \
-  --config_override '{"variant_calling": {"chromosomes": ["6", "8", "17"]}}'
+  --config_override '{"variant_calling": {"chromosomes": ["6", "8", "17"]}, "version": '\"$TAG\"'}'
 
 docker run -w $PWD -v $PWD:$PWD -v $WKDIR:$WKDIR -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v /usr/bin/docker:/usr/bin/docker --rm \
