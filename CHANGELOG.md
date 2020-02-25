@@ -1,5 +1,12 @@
 # Change Log
 
+### v0.5.17
+
+#### Changes:
+1. updated the calculation for is_contaminated
+2. moved contaminated flagging to annotation
+
+
 ### v0.5.16
 
 ####Changes:
