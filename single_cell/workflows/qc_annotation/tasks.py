@@ -18,39 +18,6 @@ from .scripts import classify
 from .scripts import generate_qc
 
 
-def _get_col_data(df, organism):
-    return df['fastqscreen_{}'.format(organism)] - df['fastqscreen_{}_multihit'.format(organism)]
-
-
-def add_contamination_status(
-        infile, outfile, config,
-        reference='grch37', threshold=0.05
-):
-    data = csvutils.read_csv_and_yaml(infile)
-
-    data = data.set_index('cell_id', drop=False)
-
-    organisms = [genome['name'] for genome in config['genomes']]
-
-    if reference not in organisms:
-        raise Exception("Could not find the fastq screen counts")
-
-    alts = [col for col in organisms if not col == reference]
-
-    data['is_contaminated'] = False
-
-    for altcol in alts:
-        perc_alt = _get_col_data(data, altcol) / data['total_reads']
-        data.loc[perc_alt > threshold, 'is_contaminated'] = True
-
-    col_type = dtypes()['metrics']['is_contaminated']
-    data['is_contaminated'] = data['is_contaminated'].astype(col_type)
-
-    csvutils.write_dataframe_to_csv_and_yaml(
-        data, outfile, write_header=True
-    )
-
-
 def add_corrupt_tree_order(corrupt_tree, metrics, output):
     """
     adds corrupt tree order to metrics
