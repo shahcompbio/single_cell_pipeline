@@ -118,7 +118,6 @@ def get_align_params(reference_dir, reference, aligner):
         },
         'chromosomes': referencedata['chromosomes'],
         'gc_windows': referencedata['gc_windows'],
-        'ref_type': reference,
         'fastq_screen_params': {
             'strict_validation': True,
             'filter_contaminated_reads': False,
@@ -152,6 +151,7 @@ def get_annotation_params(reference_dir, reference):
         'chromosomes': referencedata['chromosomes'],
         'num_states': 12,
         'map_cutoff': 0.9,
+        'ref_type': reference,
         'corrupt_tree_params': {
             'neighborhood_size': 2,
             'lower_fraction': 0.05,
