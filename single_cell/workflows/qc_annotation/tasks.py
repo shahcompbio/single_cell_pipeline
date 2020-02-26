@@ -19,7 +19,7 @@ from .scripts import generate_qc
 
 
 def _get_col_data(df, organism):
-    return df['fastqscreen_{}'.format(organism)]
+    return df['fastqscreen_{}'.format(organism)] - df['fastqscreen_{}_multihit'.format(organism)]
 
 
 def add_contamination_status(
