@@ -50,7 +50,7 @@ def add_contamination_status(
     data['is_contaminated'] = data['is_contaminated'].astype(col_type)
 
     csvutils.write_dataframe_to_csv_and_yaml(
-        data, outfile, dtypes()['metrics'], write_header=True
+        data, outfile, write_header=True
     )
 
 
