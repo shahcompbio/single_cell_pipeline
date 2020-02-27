@@ -52,6 +52,7 @@ def annotation_workflow(args):
             mgd.OutputFile(annotation_files['corrupt_heatmap_pdf']),
             mgd.OutputFile(annotation_files['heatmap_filt_pdf']),
             config['annotation'],
+            config['alignment'],
             lib,
         ),
         kwargs={'no_corrupt_tree': args['no_corrupt_tree']}
