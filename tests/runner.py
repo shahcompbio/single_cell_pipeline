@@ -13,6 +13,7 @@ def generate_container_yaml(filepath):
             'server': os.environ['CONTAINER_REGISTRY'],
             'username': os.environ['CLIENT_ID'],
             'password': os.environ['SECRET_KEY'],
+            'org': 'singlecellpipeline',
             'mounts': {
                 'refdata': '/refdata',
                 'mnt': '/mnt',
