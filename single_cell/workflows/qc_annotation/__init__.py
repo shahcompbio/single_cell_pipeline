@@ -13,7 +13,7 @@ def create_qc_annotation_workflow(
         merged_metrics, qc_report, corrupt_tree, consensus_tree, phylo_csv,
         rank_trees, filtered_data, corrupt_tree_pdf, pass_segs, fail_segs,
         corrupt_tree_heatmap_output, plot_heatmap_ec_filt_output, config,
-        library_id, no_corrupt_tree=False,
+        alignment_config, library_id, no_corrupt_tree=False,
 ):
     ctx = {'docker_image': config['docker']['single_cell_pipeline']}
 
@@ -63,6 +63,7 @@ def create_qc_annotation_workflow(
         args=(
             mgd.TempInputFile('merged_metrics.csv.gz', extensions=['.yaml']),
             mgd.TempOutputFile('merged_metrics_contamination.csv.gz', extensions=['.yaml']),
+            alignment_config['fastq_screen_params']
         ),
         kwargs={
             'reference': config['ref_type'],

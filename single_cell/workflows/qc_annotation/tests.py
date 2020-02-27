@@ -43,7 +43,9 @@ def test_contamination(tmpdir):
 
     csvutils.write_dataframe_to_csv_and_yaml(data, infile, dtypes)
 
-    tasks.add_contamination_status(infile, outfile)
+    config = {'genomes': [{'name': 'grch37'}, {'name': 'mm10'}, {'name': 'salmon'}]}
+
+    tasks.add_contamination_status(infile, outfile, config)
 
     output = csvutils.read_csv_and_yaml(outfile)
 
