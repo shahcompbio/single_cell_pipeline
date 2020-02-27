@@ -5,7 +5,8 @@
 #### Changes:
 1. updated the calculation for is_contaminated
 2. moved contaminated flagging to annotation
-
+3. pypeliner updated to v0.5.17
+4. removed org from scp docker container names in config
 
 ### v0.5.16
 
