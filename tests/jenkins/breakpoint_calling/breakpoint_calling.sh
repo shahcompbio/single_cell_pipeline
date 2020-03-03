@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+set -o pipefail
 
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
 

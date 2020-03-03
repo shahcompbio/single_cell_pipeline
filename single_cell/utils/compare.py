@@ -42,9 +42,10 @@ def exact_compare_cols(data, reference, column_name):
     assert data_index == reference_index
 
     index_order = sorted(data_index)
-    
+
     reference = reference.reindex(index_order)
     data = data.reindex(index_order)
+
     assert data[column_name].equals(reference[column_name])
 
 def reset_indexes(data, refdata):
@@ -133,7 +134,18 @@ def bkps_starts_ends_overlap(data, refdata):
 
     return True
 
-        
+def compare_count_haps(haps, refhaps):
+    haps = pd.read_csv(haps, sep="\t")
+    refhaps = pd.read_csv(refhaps, sep="\t")
+
+    assert not haps.empty
+
+    cols_must_match = ["chromosome", "position", "allele", "allele_id", "hap_label"]
+
+    for col in cols_must_match:
+        exact_compare_cols(haps, refhaps, col)
+
+
 def compare_infer_haps(data, refdata):
     data = load(data, ["chromosome", "position"], reindex = True)
     refdata = load(refdata, ["chromosome", "position"], reindex = True)
