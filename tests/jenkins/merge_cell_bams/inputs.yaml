@@ -1,83 +1,83 @@
 cell_bams:
   SA1090-A96213A-R20-C28:
-    bam: ref_test_data/refdata/SA1090-A96213A-R20-C28.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R20-C28.bam
   SA1090-A96213A-R20-C62:
-    bam: ref_test_data/refdata/SA1090-A96213A-R20-C62.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R20-C62.bam
   SA1090-A96213A-R22-C43:
-    bam: ref_test_data/refdata/SA1090-A96213A-R22-C43.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R22-C43.bam
   SA1090-A96213A-R22-C44:
-    bam: ref_test_data/refdata/SA1090-A96213A-R22-C44.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R22-C44.bam
   SA1090-A96213A-R24-C12:
-    bam: ref_test_data/refdata/SA1090-A96213A-R24-C12.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R24-C12.bam
   SA1090-A96213A-R24-C20:
-    bam: ref_test_data/refdata/SA1090-A96213A-R24-C20.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R24-C20.bam
   SA1090-A96213A-R24-C58:
-    bam: ref_test_data/refdata/SA1090-A96213A-R24-C58.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R24-C58.bam
   SA1090-A96213A-R25-C14:
-    bam: ref_test_data/refdata/SA1090-A96213A-R25-C14.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R25-C14.bam
   SA1090-A96213A-R25-C22:
-    bam: ref_test_data/refdata/SA1090-A96213A-R25-C22.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R25-C22.bam
   SA1090-A96213A-R25-C40:
-    bam: ref_test_data/refdata/SA1090-A96213A-R25-C40.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R25-C40.bam
   SA1090-A96213A-R25-C64:
-    bam: ref_test_data/refdata/SA1090-A96213A-R25-C64.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R25-C64.bam
   SA1090-A96213A-R26-C49:
-    bam: ref_test_data/refdata/SA1090-A96213A-R26-C49.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R26-C49.bam
   SA1090-A96213A-R26-C50:
-    bam: ref_test_data/refdata/SA1090-A96213A-R26-C50.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R26-C50.bam
   SA1090-A96213A-R26-C61:
-    bam: ref_test_data/refdata/SA1090-A96213A-R26-C61.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R26-C61.bam
   SA1090-A96213A-R26-C64:
-    bam: ref_test_data/refdata/SA1090-A96213A-R26-C64.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R26-C64.bam
   SA1090-A96213A-R27-C14:
-    bam: ref_test_data/refdata/SA1090-A96213A-R27-C14.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R27-C14.bam
   SA1090-A96213A-R27-C21:
-    bam: ref_test_data/refdata/SA1090-A96213A-R27-C21.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R27-C21.bam
   SA1090-A96213A-R27-C45:
-    bam: ref_test_data/refdata/SA1090-A96213A-R27-C45.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R27-C45.bam
   SA1090-A96213A-R28-C23:
-    bam: ref_test_data/refdata/SA1090-A96213A-R28-C23.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R28-C23.bam
   SA1090-A96213A-R28-C39:
-    bam: ref_test_data/refdata/SA1090-A96213A-R28-C39.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R28-C39.bam
   SA1090-A96213A-R28-C64:
-    bam: ref_test_data/refdata/SA1090-A96213A-R28-C64.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R28-C64.bam
   SA1090-A96213A-R29-C18:
-    bam: ref_test_data/refdata/SA1090-A96213A-R29-C18.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R29-C18.bam
   SA1090-A96213A-R29-C47:
-    bam: ref_test_data/refdata/SA1090-A96213A-R29-C47.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R29-C47.bam
   SA1090-A96213A-R29-C59:
-    bam: ref_test_data/refdata/SA1090-A96213A-R29-C59.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R29-C59.bam
   SA1090-A96213A-R29-C62:
-    bam: ref_test_data/refdata/SA1090-A96213A-R29-C62.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R29-C62.bam
   SA1090-A96213A-R30-C15:
-    bam: ref_test_data/refdata/SA1090-A96213A-R30-C15.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R30-C15.bam
   SA1090-A96213A-R30-C35:
-    bam: ref_test_data/refdata/SA1090-A96213A-R30-C35.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R30-C35.bam
   SA1090-A96213A-R30-C55:
-    bam: ref_test_data/refdata/SA1090-A96213A-R30-C55.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R30-C55.bam
   SA1090-A96213A-R31-C09:
-    bam: ref_test_data/refdata/SA1090-A96213A-R31-C09.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R31-C09.bam
   SA1090-A96213A-R31-C37:
-    bam: ref_test_data/refdata/SA1090-A96213A-R31-C37.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R31-C37.bam
   SA1090-A96213A-R32-C39:
-    bam: ref_test_data/refdata/SA1090-A96213A-R32-C39.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R32-C39.bam
   SA1090-A96213A-R32-C41:
-    bam: ref_test_data/refdata/SA1090-A96213A-R32-C41.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R32-C41.bam
   SA1090-A96213A-R32-C65:
-    bam: ref_test_data/refdata/SA1090-A96213A-R32-C65.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R32-C65.bam
   SA1090-A96213A-R32-C66:
-    bam: ref_test_data/refdata/SA1090-A96213A-R32-C66.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R32-C66.bam
   SA1090-A96213A-R33-C31:
-    bam: ref_test_data/refdata/SA1090-A96213A-R33-C31.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R33-C31.bam
   SA1090-A96213A-R33-C38:
-    bam: ref_test_data/refdata/SA1090-A96213A-R33-C38.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R33-C38.bam
   SA1090-A96213A-R33-C66:
-    bam: ref_test_data/refdata/SA1090-A96213A-R33-C66.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R33-C66.bam
   SA1090-A96213A-R35-C18:
-    bam: ref_test_data/refdata/SA1090-A96213A-R35-C18.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R35-C18.bam
   SA1090-A96213A-R35-C24:
-    bam: ref_test_data/refdata/SA1090-A96213A-R35-C24.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R35-C24.bam
   SA1090-A96213A-R35-C38:
-    bam: ref_test_data/refdata/SA1090-A96213A-R35-C38.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R35-C38.bam
   SA1090-A96213A-R35-C47:
-    bam: ref_test_data/refdata/SA1090-A96213A-R35-C47.bam
+    bam: MERGE_CELL_BAMS/ref_test_data/testdata/merge-bams/SA1090-A96213A-R35-C47.bam

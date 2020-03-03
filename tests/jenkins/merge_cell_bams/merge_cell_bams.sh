@@ -1,13 +1,13 @@
 #!/bin/bash
+set -e
+set -o pipefail
 
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
 
-
-mkdir -p MERGE_WGS_BAMS/ref_test_data
+mkdir -p MERGE_CELL_BAMS/ref_test_data
 
 docker run -v $PWD:$PWD -w $PWD singlecellpipeline/azurecli:v0.0.1 \
-  az storage blob download-batch -s merge-bams -d MERGE_WGS_BAMS/ref_test_data --account-name $1 --account-key $2
-
+  az storage blob download-batch -s merge-bams -d MERGE_CELL_BAMS/ref_test_data --account-name $1 --account-key $2
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v /usr/bin/docker:/usr/bin/docker --rm \
@@ -22,4 +22,4 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v /usr/bin/docker:/usr/bin/docker --rm \
   $3/single_cell_pipeline:$TAG \
-  python tests/jenkins/merge_cell_bams/test_merge_cell_bams.py MERGE_WGS_BAMS/output MERGE_WGS_BAMS/ref_test_data/refdata
+  python tests/jenkins/merge_cell_bams/test_merge_cell_bams.py MERGE_CELL_BAMS/output MERGE_CELL_BAMS/ref_test_data/refdata
