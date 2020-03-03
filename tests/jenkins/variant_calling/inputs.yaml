@@ -1,170 +1,170 @@
 normal:
   17-1-10000000:
-    bam: VARIANT_CALLING/bams/normal/17-1-10000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/17-1-10000000.bam
   17-10000001-20000000:
-    bam: VARIANT_CALLING/bams/normal/17-10000001-20000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/17-10000001-20000000.bam
   17-20000001-30000000:
-    bam: VARIANT_CALLING/bams/normal/17-20000001-30000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/17-20000001-30000000.bam
   17-30000001-40000000:
-    bam: VARIANT_CALLING/bams/normal/17-30000001-40000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/17-30000001-40000000.bam
   17-40000001-50000000:
-    bam: VARIANT_CALLING/bams/normal/17-40000001-50000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/17-40000001-50000000.bam
   17-50000001-60000000:
-    bam: VARIANT_CALLING/bams/normal/17-50000001-60000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/17-50000001-60000000.bam
   17-60000001-70000000:
-    bam: VARIANT_CALLING/bams/normal/17-60000001-70000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/17-60000001-70000000.bam
   17-70000001-80000000:
-    bam: VARIANT_CALLING/bams/normal/17-70000001-80000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/17-70000001-80000000.bam
   17-80000001-81195210:
-    bam: VARIANT_CALLING/bams/normal/17-80000001-81195210.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/17-80000001-81195210.bam
   6-1-10000000:
-    bam: VARIANT_CALLING/bams/normal/6-1-10000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/6-1-10000000.bam
   6-100000001-110000000:
-    bam: VARIANT_CALLING/bams/normal/6-100000001-110000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/6-100000001-110000000.bam
   6-10000001-20000000:
-    bam: VARIANT_CALLING/bams/normal/6-10000001-20000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/6-10000001-20000000.bam
   6-110000001-120000000:
-    bam: VARIANT_CALLING/bams/normal/6-110000001-120000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/6-110000001-120000000.bam
   6-120000001-130000000:
-    bam: VARIANT_CALLING/bams/normal/6-120000001-130000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/6-120000001-130000000.bam
   6-130000001-140000000:
-    bam: VARIANT_CALLING/bams/normal/6-130000001-140000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/6-130000001-140000000.bam
   6-140000001-150000000:
-    bam: VARIANT_CALLING/bams/normal/6-140000001-150000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/6-140000001-150000000.bam
   6-150000001-160000000:
-    bam: VARIANT_CALLING/bams/normal/6-150000001-160000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/6-150000001-160000000.bam
   6-160000001-170000000:
-    bam: VARIANT_CALLING/bams/normal/6-160000001-170000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/6-160000001-170000000.bam
   6-170000001-171115067:
-    bam: VARIANT_CALLING/bams/normal/6-170000001-171115067.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/6-170000001-171115067.bam
   6-20000001-30000000:
-    bam: VARIANT_CALLING/bams/normal/6-20000001-30000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/6-20000001-30000000.bam
   6-30000001-40000000:
-    bam: VARIANT_CALLING/bams/normal/6-30000001-40000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/6-30000001-40000000.bam
   6-40000001-50000000:
-    bam: VARIANT_CALLING/bams/normal/6-40000001-50000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/6-40000001-50000000.bam
   6-50000001-60000000:
-    bam: VARIANT_CALLING/bams/normal/6-50000001-60000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/6-50000001-60000000.bam
   6-60000001-70000000:
-    bam: VARIANT_CALLING/bams/normal/6-60000001-70000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/6-60000001-70000000.bam
   6-70000001-80000000:
-    bam: VARIANT_CALLING/bams/normal/6-70000001-80000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/6-70000001-80000000.bam
   6-80000001-90000000:
-    bam: VARIANT_CALLING/bams/normal/6-80000001-90000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/6-80000001-90000000.bam
   6-90000001-100000000:
-    bam: VARIANT_CALLING/bams/normal/6-90000001-100000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/6-90000001-100000000.bam
   8-1-10000000:
-    bam: VARIANT_CALLING/bams/normal/8-1-10000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/8-1-10000000.bam
   8-100000001-110000000:
-    bam: VARIANT_CALLING/bams/normal/8-100000001-110000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/8-100000001-110000000.bam
   8-10000001-20000000:
-    bam: VARIANT_CALLING/bams/normal/8-10000001-20000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/8-10000001-20000000.bam
   8-110000001-120000000:
-    bam: VARIANT_CALLING/bams/normal/8-110000001-120000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/8-110000001-120000000.bam
   8-120000001-130000000:
-    bam: VARIANT_CALLING/bams/normal/8-120000001-130000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/8-120000001-130000000.bam
   8-130000001-140000000:
-    bam: VARIANT_CALLING/bams/normal/8-130000001-140000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/8-130000001-140000000.bam
   8-140000001-146364022:
-    bam: VARIANT_CALLING/bams/normal/8-140000001-146364022.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/8-140000001-146364022.bam
   8-20000001-30000000:
-    bam: VARIANT_CALLING/bams/normal/8-20000001-30000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/8-20000001-30000000.bam
   8-30000001-40000000:
-    bam: VARIANT_CALLING/bams/normal/8-30000001-40000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/8-30000001-40000000.bam
   8-40000001-50000000:
-    bam: VARIANT_CALLING/bams/normal/8-40000001-50000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/8-40000001-50000000.bam
   8-50000001-60000000:
-    bam: VARIANT_CALLING/bams/normal/8-50000001-60000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/8-50000001-60000000.bam
   8-60000001-70000000:
-    bam: VARIANT_CALLING/bams/normal/8-60000001-70000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/8-60000001-70000000.bam
   8-70000001-80000000:
-    bam: VARIANT_CALLING/bams/normal/8-70000001-80000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/8-70000001-80000000.bam
   8-80000001-90000000:
-    bam: VARIANT_CALLING/bams/normal/8-80000001-90000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/8-80000001-90000000.bam
   8-90000001-100000000:
-    bam: VARIANT_CALLING/bams/normal/8-90000001-100000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/normal/8-90000001-100000000.bam
 tumour:
   17-1-10000000:
-    bam: VARIANT_CALLING/bams/tumour/17-1-10000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/17-1-10000000.bam
   17-10000001-20000000:
-    bam: VARIANT_CALLING/bams/tumour/17-10000001-20000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/17-10000001-20000000.bam
   17-20000001-30000000:
-    bam: VARIANT_CALLING/bams/tumour/17-20000001-30000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/17-20000001-30000000.bam
   17-30000001-40000000:
-    bam: VARIANT_CALLING/bams/tumour/17-30000001-40000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/17-30000001-40000000.bam
   17-40000001-50000000:
-    bam: VARIANT_CALLING/bams/tumour/17-40000001-50000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/17-40000001-50000000.bam
   17-50000001-60000000:
-    bam: VARIANT_CALLING/bams/tumour/17-50000001-60000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/17-50000001-60000000.bam
   17-60000001-70000000:
-    bam: VARIANT_CALLING/bams/tumour/17-60000001-70000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/17-60000001-70000000.bam
   17-70000001-80000000:
-    bam: VARIANT_CALLING/bams/tumour/17-70000001-80000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/17-70000001-80000000.bam
   17-80000001-81195210:
-    bam: VARIANT_CALLING/bams/tumour/17-80000001-81195210.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/17-80000001-81195210.bam
   6-1-10000000:
-    bam: VARIANT_CALLING/bams/tumour/6-1-10000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/6-1-10000000.bam
   6-100000001-110000000:
-    bam: VARIANT_CALLING/bams/tumour/6-100000001-110000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/6-100000001-110000000.bam
   6-10000001-20000000:
-    bam: VARIANT_CALLING/bams/tumour/6-10000001-20000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/6-10000001-20000000.bam
   6-110000001-120000000:
-    bam: VARIANT_CALLING/bams/tumour/6-110000001-120000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/6-110000001-120000000.bam
   6-120000001-130000000:
-    bam: VARIANT_CALLING/bams/tumour/6-120000001-130000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/6-120000001-130000000.bam
   6-130000001-140000000:
-    bam: VARIANT_CALLING/bams/tumour/6-130000001-140000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/6-130000001-140000000.bam
   6-140000001-150000000:
-    bam: VARIANT_CALLING/bams/tumour/6-140000001-150000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/6-140000001-150000000.bam
   6-150000001-160000000:
-    bam: VARIANT_CALLING/bams/tumour/6-150000001-160000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/6-150000001-160000000.bam
   6-160000001-170000000:
-    bam: VARIANT_CALLING/bams/tumour/6-160000001-170000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/6-160000001-170000000.bam
   6-170000001-171115067:
-    bam: VARIANT_CALLING/bams/tumour/6-170000001-171115067.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/6-170000001-171115067.bam
   6-20000001-30000000:
-    bam: VARIANT_CALLING/bams/tumour/6-20000001-30000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/6-20000001-30000000.bam
   6-30000001-40000000:
-    bam: VARIANT_CALLING/bams/tumour/6-30000001-40000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/6-30000001-40000000.bam
   6-40000001-50000000:
-    bam: VARIANT_CALLING/bams/tumour/6-40000001-50000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/6-40000001-50000000.bam
   6-50000001-60000000:
-    bam: VARIANT_CALLING/bams/tumour/6-50000001-60000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/6-50000001-60000000.bam
   6-60000001-70000000:
-    bam: VARIANT_CALLING/bams/tumour/6-60000001-70000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/6-60000001-70000000.bam
   6-70000001-80000000:
-    bam: VARIANT_CALLING/bams/tumour/6-70000001-80000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/6-70000001-80000000.bam
   6-80000001-90000000:
-    bam: VARIANT_CALLING/bams/tumour/6-80000001-90000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/6-80000001-90000000.bam
   6-90000001-100000000:
-    bam: VARIANT_CALLING/bams/tumour/6-90000001-100000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/6-90000001-100000000.bam
   8-1-10000000:
-    bam: VARIANT_CALLING/bams/tumour/8-1-10000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/8-1-10000000.bam
   8-100000001-110000000:
-    bam: VARIANT_CALLING/bams/tumour/8-100000001-110000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/8-100000001-110000000.bam
   8-10000001-20000000:
-    bam: VARIANT_CALLING/bams/tumour/8-10000001-20000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/8-10000001-20000000.bam
   8-110000001-120000000:
-    bam: VARIANT_CALLING/bams/tumour/8-110000001-120000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/8-110000001-120000000.bam
   8-120000001-130000000:
-    bam: VARIANT_CALLING/bams/tumour/8-120000001-130000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/8-120000001-130000000.bam
   8-130000001-140000000:
-    bam: VARIANT_CALLING/bams/tumour/8-130000001-140000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/8-130000001-140000000.bam
   8-140000001-146364022:
-    bam: VARIANT_CALLING/bams/tumour/8-140000001-146364022.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/8-140000001-146364022.bam
   8-20000001-30000000:
-    bam: VARIANT_CALLING/bams/tumour/8-20000001-30000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/8-20000001-30000000.bam
   8-30000001-40000000:
-    bam: VARIANT_CALLING/bams/tumour/8-30000001-40000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/8-30000001-40000000.bam
   8-40000001-50000000:
-    bam: VARIANT_CALLING/bams/tumour/8-40000001-50000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/8-40000001-50000000.bam
   8-50000001-60000000:
-    bam: VARIANT_CALLING/bams/tumour/8-50000001-60000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/8-50000001-60000000.bam
   8-60000001-70000000:
-    bam: VARIANT_CALLING/bams/tumour/8-60000001-70000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/8-60000001-70000000.bam
   8-70000001-80000000:
-    bam: VARIANT_CALLING/bams/tumour/8-70000001-80000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/8-70000001-80000000.bam
   8-80000001-90000000:
-    bam: VARIANT_CALLING/bams/tumour/8-80000001-90000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/8-80000001-90000000.bam
   8-90000001-100000000:
-    bam: VARIANT_CALLING/bams/tumour/8-90000001-100000000.bam
+    bam: VARIANT_CALLING/ref_test_data/testdata/tumour/8-90000001-100000000.bam
