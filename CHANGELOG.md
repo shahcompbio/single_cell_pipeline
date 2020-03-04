@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.5.18
+
+#### Changes:
+1. upgraded pypeliner to v0.5.18
+
 ### v0.5.17
 
 #### Changes:
