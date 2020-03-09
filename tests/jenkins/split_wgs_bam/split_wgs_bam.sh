@@ -14,7 +14,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   $3/single_cell_pipeline:$TAG \
   single_cell split_wgs_bam --input_yaml tests/jenkins/split_wgs_bam/inputs.yaml \
   --maxjobs 4 --nocleanup --sentinel_only  \
-  --context_config tests/jenkins/align/context_config.yaml \
+  --context_config tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
   --tmpdir SPLIT_WGS_BAM/temp \
   --pipelinedir SPLIT_WGS_BAM/pipeline --submit local --out_dir SPLIT_WGS_BAM/output

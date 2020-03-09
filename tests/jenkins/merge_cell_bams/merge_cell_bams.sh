@@ -14,7 +14,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   $3/single_cell_pipeline:$TAG \
   single_cell merge_cell_bams --input_yaml tests/jenkins/merge_cell_bams/inputs.yaml \
   --maxjobs 4 --nocleanup --sentinel_only  \
-  --context_config tests/jenkins/align/context_config.yaml \
+  --context_config tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
   --tmpdir MERGE_CELL_BAMS/temp \
   --pipelinedir MERGE_CELL_BAMS/pipeline --submit local --out_dir MERGE_CELL_BAMS/output

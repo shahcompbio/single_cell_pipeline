@@ -14,7 +14,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   $3/single_cell_pipeline:$TAG \
   single_cell hmmcopy --input_yaml tests/jenkins/hmmcopy/inputs.yaml \
   --library_id A97318A --maxjobs 4 --nocleanup --sentinel_only  \
-  --context_config tests/jenkins/align/context_config.yaml \
+  --context_config tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
   --config_override '{"hmmcopy": {"chromosomes": ["6", "8", "17"]}}' --tmpdir HMMCOPY/temp \
   --pipelinedir HMMCOPY/pipeline --submit local --out_dir HMMCOPY/output
