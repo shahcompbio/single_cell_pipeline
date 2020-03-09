@@ -14,7 +14,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   $3/single_cell_pipeline:$TAG \
   single_cell breakpoint_calling --input_yaml tests/jenkins/breakpoint_calling/inputs.yaml \
   --maxjobs 4 --nocleanup --sentinel_only  \
-  --context_config tests/jenkins/align/context_config.yaml \
+  --context_config tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
   --tmpdir BREAKPOINT_CALLING/temp \
   --pipelinedir BREAKPOINT_CALLING/pipeline --submit local --out_dir BREAKPOINT_CALLING/output

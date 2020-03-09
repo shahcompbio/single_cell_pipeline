@@ -17,7 +17,7 @@ sudo docker run -w $PWD -v $PWD:$PWD -v $WKDIR:$WKDIR -v /refdata:/refdata -v /v
   $3/single_cell_pipeline:$TAG \
   single_cell variant_calling --input_yaml $WKDIR/tests/jenkins/variant_calling/inputs.yaml \
   --maxjobs 4 --nocleanup --sentinel_only  \
-  --context_config $WKDIR/tests/jenkins/align/context_config.yaml \
+  --context_config $WKDIR/tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
   --tmpdir VARIANT_CALLING/temp \
   --pipelinedir $WKDIR/VARIANT_CALLING/pipeline --submit local --out_dir $WKDIR/VARIANT_CALLING/output \

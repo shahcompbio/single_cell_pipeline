@@ -16,7 +16,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   singlecellpipeline/single_cell_pipeline:$TAG \
   single_cell infer_haps --input_yaml tests/jenkins/infer_haps/inputs.yaml \
   --maxjobs 4 --nocleanup --sentinel_only  \
-  --context_config tests/jenkins/infer_haps/context_config.yaml \
+  --context_config tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
   --tmpdir INFER_HAPS/temp \
   --pipelinedir INFER_HAPS/pipeline --submit local --out_dir INFER_HAPS/output \

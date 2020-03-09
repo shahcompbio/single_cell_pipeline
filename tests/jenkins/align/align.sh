@@ -15,7 +15,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   $3/single_cell_pipeline:$TAG \
   single_cell alignment --input_yaml tests/jenkins/align/inputs.yaml \
   --library_id A97318A --maxjobs 4 --nocleanup --sentinel_only  \
-  --context_config tests/jenkins/align/context_config.yaml \
+  --context_config tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
   --config_override '{"pypeliner_storage_account": "scdnadev"}' --tmpdir ALIGN/temp \
   --pipelinedir ALIGN/pipeline --submit local --out_dir ALIGN/output --bams_dir ALIGN/bams
