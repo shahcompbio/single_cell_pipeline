@@ -3,6 +3,8 @@ set -e
 set -o pipefail
 
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
+TAG="${TAG}.beta"
+
 
 mkdir -p MERGE_CELL_BAMS/ref_test_data
 

@@ -3,7 +3,7 @@ set -e
 set -o pipefail
 
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
-
+TAG="${TAG}.beta"
 
 mkdir -p ALIGN/ref_test_data
 

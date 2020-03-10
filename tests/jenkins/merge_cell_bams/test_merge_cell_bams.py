@@ -22,13 +22,12 @@ def compare_merge_counts():
     counts = get_merged_counts(output_path)
     refcounts = pd.read_csv(refcounts)
 
-    counts = counts.sort_values("interval", ascending=[True] * len(counts.index))
+    counts = counts.sort_values("interval", ascending=True)
     counts = counts.set_index("interval")
 
-    refcounts = refcounts.sort_values("interval", ascending=[True] * len(counts.index))
+    refcounts = refcounts.sort_values("interval", ascending=True)
     refcounts = refcounts.set_index("interval")
 
-    print(counts, "\n\n", refcounts)
     compare.compare_tables(counts, refcounts)
 
 
