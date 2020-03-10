@@ -3,11 +3,13 @@ set -e
 set -o pipefail
 
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
+TAG="${TAG}.beta"
+
 
 mkdir -p SPLIT_WGS_BAM/ref_test_data
 
 docker run -v $PWD:$PWD -w $PWD $3/azurecli:v0.0.1 \
-  az storage blob download-batch -s split-bam -d SPLIT/ref_test_data --account-name $1 --account-key $2
+  az storage blob download-batch -s split-bam -d SPLIT_WGS_BAM/ref_test_data --account-name $1 --account-key $2
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v /usr/bin/docker:/usr/bin/docker --rm \
@@ -22,4 +24,4 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v /usr/bin/docker:/usr/bin/docker --rm \
   $3/single_cell_pipeline:$TAG \
-  python tests/jenkins/split_wgs_bam/test_split_wgs_bam.py SPLIT/output SPLIT/ref_test_data/refdata
+  python tests/jenkins/split_wgs_bam/test_split_wgs_bam.py SPLIT_WGS_BAM/output SPLIT_WGS_BAM/ref_test_data/refdata

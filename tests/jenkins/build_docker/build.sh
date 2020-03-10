@@ -6,7 +6,18 @@
 echo "\n LOGIN \n"
 docker login -u $1 --password $2
 
-echo "\n RUN DOCKER \n"
-sh docker/single_cell_pipeline/run.sh docker.io singlecellpipelinetest
+REGISTRY=$3
+ORG=$4
+TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
+TAG="${TAG}.beta"
 
-sh docker/scgenome/run.sh docker.io singlecellpipelinetest
+COMMIT=`git rev-parse HEAD`
+
+cat tests/jenkins/build_docker/dockerfile_template \
+ | sed "s/{git_commit}/$COMMIT/g" \
+ > tests/jenkins/build_docker/dockerfile
+
+docker build -t $REGISTRY/$ORG/single_cell_pipeline:$TAG -f tests/jenkins/build_docker/dockerfile . --no-cache
+
+docker push $REGISTRY/$ORG/single_cell_pipeline:$TAG
+

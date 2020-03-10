@@ -24,4 +24,4 @@ if __name__ == "__main__":
     ref_metrics = get_inputs(ref_path, "A97318A")
     metrics = get_inputs(output_path, output_lib)
 
-    compare.compare_metrics(ref_metrics, metrics)
+    compare.compare_annotation_metrics(ref_metrics, metrics)
