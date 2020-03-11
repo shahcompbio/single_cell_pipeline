@@ -19,7 +19,10 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   --context_config tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
   --tmpdir SPLIT_WGS_BAM/temp \
-  --pipelinedir SPLIT_WGS_BAM/pipeline --submit local --out_dir SPLIT_WGS_BAM/output
+  --pipelinedir SPLIT_WGS_BAM/pipeline \
+  --submit local \
+  --out_dir SPLIT_WGS_BAM/output \
+  --config_override '{ "version": '\"$TAG\"'}'
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v /usr/bin/docker:/usr/bin/docker --rm \
