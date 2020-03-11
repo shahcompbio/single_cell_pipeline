@@ -6,8 +6,8 @@ def compare_count_haps():
     output_path = sys.argv[1]
     ref_path = sys.argv[2]
 
-    refhaps = os.path.join(ref_path, "haplotypes.tsv")
-    haps = os.path.join(output_path, "haplotypes.tsv")
+    refhaps = os.path.join(ref_path, "allele_counts_ref.csv.gz")
+    haps = os.path.join(output_path, "allele_counts.csv.gz")
 
     compare.compare_count_haps(haps, refhaps)
 

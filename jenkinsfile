@@ -50,21 +50,21 @@ pipeline{
                   sh 'bash tests/jenkins/variant_calling/variant_calling.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
                }
            }
-//            stage('breakpoint_calling'){
-//                steps{
-//                  sh 'bash tests/jenkins/breakpoint_calling/breakpoint_calling.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
-//               }
-//           }
+            stage('breakpoint_calling'){
+                steps{
+                  sh 'bash tests/jenkins/breakpoint_calling/breakpoint_calling.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
+               }
+           }
            //  stage('infer_haps'){
            //      steps{
            //        sh 'bash tests/jenkins/infer_haps/infer_haps.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
            //     }
            // }
-//            stage('count_haps'){
-//                steps{
-//                  sh 'bash tests/jenkins/count_haps/count_haps.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
-//               }
-//           }
+            stage('count_haps'){
+                steps{
+                  sh 'bash tests/jenkins/count_haps/count_haps.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
+               }
+           }
          }
       }
     }

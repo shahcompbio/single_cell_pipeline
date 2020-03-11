@@ -32,7 +32,8 @@ def get_config_params(override=None):
         "cluster": "azure", "aligner": "bwa-mem", "refdir": None,
         "reference": "grch37", "smoothing_function": "modal",
         "bin_size": 500000, "copynumber_bin_size": 1000,
-        'memory': {'high': 16, 'med': 6, 'low': 2}
+        'memory': {'high': 16, 'med': 6, 'low': 2},
+        'version': None
     }
 
     input_params = override_config(input_params, override)
