@@ -17,8 +17,12 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   --library_id A97318A --maxjobs 4 --nocleanup --sentinel_only  \
   --context_config tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
-  --config_override '{"pypeliner_storage_account": "scdnadev"}' --tmpdir ALIGN/temp \
-  --pipelinedir ALIGN/pipeline --submit local --out_dir ALIGN/output --bams_dir ALIGN/bams
+  --tmpdir ALIGN/temp \
+  --pipelinedir ALIGN/pipeline \
+  --submit local \
+  --out_dir ALIGN/output \
+  --bams_dir ALIGN/bams \
+  --config_override '{"version": '\"$TAG\"'}'
 
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
