@@ -263,7 +263,7 @@ def annotate_store_with_dict(infile, annotation_data, output, tables=None):
         input_store.close()
 
 
-def convert_hdf_to_csv(h5_input, outputs, chunksize=10**6):
+def convert_hdf_to_csv(h5_input, outputs, dtypes, chunksize=10**6):
     for tablename, outfile in outputs.items():
         header=False
         for chunk in pd.read_hdf(h5_input, key=tablename, chunksize=chunksize):
@@ -275,4 +275,4 @@ def convert_hdf_to_csv(h5_input, outputs, chunksize=10**6):
                 chunk.to_csv(outfile, index=False, mode='w', compression=compression)
                 header = True
 
-        csvutils.write_metadata(outfile)
+        csvutils.write_metadata(outfile, dtypes)
