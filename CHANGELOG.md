@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.5.19
+
+####Changes:
+1. upgraded remixt and cell cycle classifier
+
 ### v0.5.18
 
 #### Changes:
