@@ -142,35 +142,35 @@ NOTE: If reference data is not in ```/refdata```, then please update the followi
 ```ref_genome: /refdata/GRCh37-lite.fa```
 ```
 hmmcopy_params:
-	autoploidy:
-	  exclude_list: /refdata/repeats.satellite.regions
+  autoploidy:
+    exclude_list: /refdata/repeats.satellite.regions
 ```
 ```
 hmmcopy_params:
   autoploidy:
-	  gc_wig_file: /refdata/GRCh37-lite.gc.ws_500000.wig
+    gc_wig_file: /refdata/GRCh37-lite.gc.ws_500000.wig
 ```
 ```
 hmmcopy_params:
   autoploidy:
-	  map_wig_file: /refdata/GRCh37-lite.map.ws_125_to_500000.wig
+    map_wig_file: /refdata/GRCh37-lite.map.ws_125_to_500000.wig
 ```
 
 #### <a name="3.1.5"></a> 3.1.5 Run the alignment pipeline:
 ```
 single_cell alignment \
-	--input_yaml path/to/input.yaml \
-	--out_dir dlp \
-	--bams_dir bams \
-	--submit local \
-	--nocleanup \
-	--config_override '{"refdir": "path/to/refdata"}' \
-	--library_id A96139A \
-	--loglevel DEBUG \
-	--tmpdir temp \
-	--pipelinedir path/to/pipeline \
-	--maxjobs 2 \
-	--config_file /path/to/config.yaml
+--input_yaml path/to/input.yaml \
+--out_dir dlp \
+--bams_dir bams \
+--submit local \
+--nocleanup \
+--config_override '{"refdir": "path/to/refdata"}' \
+--library_id A96139A \
+--loglevel DEBUG \
+--tmpdir temp \
+--pipelinedir path/to/pipeline \
+--maxjobs 2 \
+--config_file /path/to/config.yaml
 ```
 
 Note:  
@@ -195,26 +195,26 @@ docker:
 Please replace the ```$PWD``` below with your current working directory.
 ```
 docker run -w $PWD -v $PWD:$PWD -v /datadrive:/datadrive -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/usr/bin/docker \
- --rm singlecellpipeline/single_cell_pipeline:v0.5.17 single_cell alignment \
- --input_yaml /home/qfliu/align/inputs.yaml \
- --library_id A97318A \
- --maxjobs 1 \
- --nocleanup \
- --sentinel_only  \
- --config_override '{"refdir": "/datadrive/refdata"}' \
- --context_config /home/qfliu/align/context_config.yaml \
- --submit local \
- --loglevel DEBUG \
- --tmpdir /datadrive/ALIGN/temp \
- --pipelinedir /datadrive/ALIGN/pipeline \
- --submit local \
- --out_dir /datadrive/ALIGN/output \
- --bams_dir /datadrive/ALIGN/bams
+--rm singlecellpipeline/single_cell_pipeline:v0.5.17 single_cell alignment \
+--input_yaml /home/qfliu/align/inputs.yaml \
+--library_id A97318A \
+--maxjobs 1 \
+--nocleanup \
+--sentinel_only  \
+--config_override '{"refdir": "/datadrive/refdata"}' \
+--context_config /home/qfliu/align/context_config.yaml \
+--submit local \
+--loglevel DEBUG \
+--tmpdir /datadrive/ALIGN/temp \
+--pipelinedir /datadrive/ALIGN/pipeline \
+--submit local \
+--out_dir /datadrive/ALIGN/output \
+--bams_dir /datadrive/ALIGN/bams
 
 ```
 #### 3.2.3 Use Azure blob storage accounts
 
-If you'd like to store and the use the data in Azure storage accounts. Please refer to [azure blob storage tutorial](../../azure/blobstorage.md).
+If you'd like to store and the use the data in Azure storage accounts. Please refer to [azure blob storage tutorial](../azure/blobstorage.md).
 
 ---
 ## <a name="4"></a>Understanding the pipeline outputs:
