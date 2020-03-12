@@ -3,7 +3,9 @@ Installation and test run
 ## Content:
 ##### 1. [Download Test Data and Reference Data](#1)
 ##### 2. [Create ```inputs.yaml```](#2)
-##### 3. [Change the configuration file and Run Pipeline](#3)
+##### 3. [Run pipeline using conda environment or docker image](#3)
+###### 3.1 [Using conda environment](#3.1)
+###### 3.2 [Using docker image](#3.2)
 ##### 4. [Understand the pipeline outputs](#4)
 ---
 ## 1. <a name="1"></a>Download Test Data and Reference Data
@@ -79,10 +81,10 @@ SA456:
   A sample input yaml file for the data downloaded in step 8 can be found in ```INSTALL/input.yaml```.\
   NOTE: The paths to files in ```INSTALL/input.yaml``` point to the ```/data``` directory. If you extracted the files to another location, please update the file accordingly.
 
-## 3. Run pipeline using conda environment or docker image
+## <a name="3"></a>3. Run pipeline using conda environment or docker image
 
-  ### 3.1 Using conda environment
-	Note: In this tutorial, we'll use the alignment as an example.
+  ### <a name="3.1"></a> 3.1 Using conda environment
+  Note: In this tutorial, we'll use the alignment as an example.
 
 #### Overview:
 
@@ -174,7 +176,7 @@ single_cell alignment \
 Note:  
 The paths in ```--out_dir```, ```--bams_dir```, ```--tmpdir``` and ```--pipelinedir``` will be created automatically.
 
-### 3.2 Using docker image
+### <a name="3.2"></a> 3.2 Using docker image
 Note: Please make sure you have docker installed.
 #### 3.2.1 Build ```context_config.yaml```
 Example:
@@ -215,7 +217,7 @@ docker run -w $PWD -v $PWD:$PWD -v /datadrive:/datadrive -v /var/run/docker.sock
 If you'd like to store and the use the data in Azure storage accounts. Please refer to [azure blob storage tutorial](../../azure/blobstorage.md).
 
 ---
-## Understanding the pipeline outputs:
+## <a name="4"></a>Understanding the pipeline outputs:
 
 Please refer to [doc](../../README.md) for detailed instructions for running all single cell sub commands.
 
