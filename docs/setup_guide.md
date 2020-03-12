@@ -214,7 +214,7 @@ docker run -w $PWD -v $PWD:$PWD -v /datadrive:/datadrive -v /var/run/docker.sock
 ```
 #### 3.2.3 Use Azure blob storage accounts
 
-If you'd like to store and the use the data in Azure storage accounts. Please refer to [azure blob storage tutorial](../azure/blobstorage.md).
+If you'd like to store and the use the data in Azure storage accounts. Please refer to [azure blob storage tutorial](../docs/azure/blobstorage.md).
 
 ---
 ## <a name="4"></a>Understanding the pipeline outputs:
