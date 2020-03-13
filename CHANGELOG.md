@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.5.20
+
+#### Changes:
+1. upgraded destruct and remixt to latest pypeliner.
+
 ### v0.5.19
 
 ####Changes:
