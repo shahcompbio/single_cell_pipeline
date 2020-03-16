@@ -305,6 +305,9 @@ class CsvOutput(object):
 
         self.columns = list(df.columns.values)
 
+        if self.dtypes:
+            df = cast_dataframe(df, self.dtypes)
+
         df_dtypes = get_dtypes_from_df(df)
 
         if not self.dtypes:
