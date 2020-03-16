@@ -41,21 +41,12 @@ def annotation_workflow(args):
             mgd.InputFile(annotation_infiles['segs_pdf_tar']),
             mgd.OutputFile(annotation_files['merged_metrics_csvs']),
             mgd.OutputFile(annotation_files['qc_report']),
-            mgd.OutputFile(annotation_files['corrupt_tree_newick']),
-            mgd.OutputFile(annotation_files['consensus_tree_newick']),
-            mgd.OutputFile(annotation_files['phylo_csv']),
-            mgd.OutputFile(annotation_files['loci_rank_trees']),
-            mgd.OutputFile(annotation_files['filtered_data']),
-            mgd.OutputFile(annotation_files['corrupt_tree_pdf']),
             mgd.OutputFile(annotation_files['segs_pass']),
             mgd.OutputFile(annotation_files['segs_fail']),
-            mgd.OutputFile(annotation_files['corrupt_heatmap_pdf']),
             mgd.OutputFile(annotation_files['heatmap_filt_pdf']),
             config['annotation'],
             config['alignment'],
-            lib,
-        ),
-        kwargs={'no_corrupt_tree': args['no_corrupt_tree']}
+        )
     )
 
     workflow.transform(
