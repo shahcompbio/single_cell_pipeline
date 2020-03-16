@@ -1,5 +1,10 @@
 # Change Log
 
+### V0.5.21
+
+#### Changes:
+1. upgraded remixt to v0.5.11
+
 ### v0.5.20
 
 #### Changes:
