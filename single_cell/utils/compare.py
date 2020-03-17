@@ -50,10 +50,12 @@ def exact_compare_cols(data, reference, column_name):
     data = data.reindex(index_order)
 
     if data[column_name].dtype == float:
+        if data[column_name].isnull().all() and reference[column_name].isnull().all():
+            return
         assert abs(max(data[column_name] - reference[column_name])) <= 0.001
     else:
         assert data[column_name].equals(reference[column_name])
-        
+
 
 def reset_indexes(data, refdata):
     assert data.index.equals(refdata.index)
