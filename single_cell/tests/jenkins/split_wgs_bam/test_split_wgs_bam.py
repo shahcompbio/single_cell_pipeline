@@ -1,6 +1,6 @@
 import os
 import sys
-from single_cell.utils import compare
+from single_cell.tests.jenkins import compare
 import pandas as pd
 import pysam
 
