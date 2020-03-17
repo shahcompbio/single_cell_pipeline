@@ -29,3 +29,5 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   -v /usr/bin/docker:/usr/bin/docker --rm \
   $3/single_cell_pipeline:$TAG \
   python tests/jenkins/annotation/test_annotation.py ANNOTATION/output A97318A  ANNOTATION/ref_test_data/refdata
+
+docker run -w $PWD -v $PWD:$PWD --rm $3/single_cell_pipeline:$TAG rm -rf ANNOTATION

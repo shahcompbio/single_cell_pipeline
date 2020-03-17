@@ -29,3 +29,5 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   -v /usr/bin/docker:/usr/bin/docker --rm \
   $3/single_cell_pipeline:$TAG \
   python tests/jenkins/merge_cell_bams/test_merge_cell_bams.py MERGE_CELL_BAMS/output MERGE_CELL_BAMS/ref_test_data/refdata
+
+docker run -w $PWD -v $PWD:$PWD --rm $3/single_cell_pipeline:$TAG rm -rf MERGE_CELL_BAMS

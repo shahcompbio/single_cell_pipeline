@@ -32,3 +32,5 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   -v /usr/bin/docker:/usr/bin/docker --rm \
   $3/single_cell_pipeline:$TAG \
   python tests/jenkins/count_haps/test_count_haps.py COUNT_HAPS/output COUNT_HAPS/ref_test_data
+
+docker run -w $PWD -v $PWD:$PWD --rm $3/single_cell_pipeline:$TAG rm -rf COUNT_HAPS
