@@ -27,6 +27,6 @@ sudo docker run -w $PWD -v $PWD:$PWD -v $WKDIR:$WKDIR -v /refdata:/refdata -v /v
 docker run -w $PWD -v $PWD:$PWD -v $WKDIR:$WKDIR -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v /usr/bin/docker:/usr/bin/docker --rm \
   $3/single_cell_pipeline:$TAG \
-  python $WKDIR/tests/jenkins/variant_calling/test_variant_calling.py $WKDIR/VARIANT_CALLING/output $PWD/VARIANT_CALLING/ref_test_data/refdata
+  python $WKDIR/single_cell/tests/jenkins/variant_calling/test_variant_calling.py $WKDIR/VARIANT_CALLING/output $PWD/VARIANT_CALLING/ref_test_data/refdata
 
 docker run -w $PWD -v $PWD:$PWD --rm $3/single_cell_pipeline:$TAG rm -rf VARIANT_CALLING
