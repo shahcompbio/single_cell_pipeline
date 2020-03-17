@@ -16,7 +16,7 @@ sudo docker run -v $PWD:$PWD -w $PWD $3/azurecli:v0.0.1 \
 sudo docker run -w $PWD -v $PWD:$PWD -v $WKDIR:$WKDIR -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v /usr/bin/docker:/usr/bin/docker --rm \
   $3/single_cell_pipeline:$TAG \
-  single_cell variant_calling --input_yaml $WKDIR/tests/jenkins/variant_calling/inputs.yaml \
+  single_cell variant_calling --input_yaml $WKDIR/single_cell/tests/jenkins/variant_calling/inputs.yaml \
   --maxjobs 4 --nocleanup --sentinel_only  \
   --context_config $WKDIR/single_cell/tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
