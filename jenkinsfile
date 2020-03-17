@@ -9,60 +9,60 @@ pipeline{
     stages {
         stage('build') {
             steps{
-                sh 'bash tests/jenkins/build_docker/build.sh $DOCKERHUB_USR $DOCKERHUB_PSW docker.io singlecellpipelinetest'
+                sh 'bash single_cell/tests/jenkins/build_docker/build.sh $DOCKERHUB_USR $DOCKERHUB_PSW docker.io singlecellpipelinetest'
             }
         }
 
         stage('refdata'){
             steps{
-              sh 'bash tests/jenkins/refdata/download.sh singlecelltestsets $SINGLECELLTESTSETS'
+              sh 'bash single_cell/tests/jenkins/refdata/download.sh singlecelltestsets $SINGLECELLTESTSETS'
             }
        }
        stage('runtests'){
          parallel{
             stage('align'){
                 steps{
-                  sh 'bash tests/jenkins/align/align.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
+                  sh 'bash single_cell/tests/jenkins/align/align.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
                 }
             }
             stage('hmmcopy'){
                 steps{
-                  sh 'bash tests/jenkins/hmmcopy/hmmcopy.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
+                  sh 'bash single_cell/tests/jenkins/hmmcopy/hmmcopy.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
                 }
             }
            stage('annotation'){
                steps{
-                 sh 'bash tests/jenkins/annotation/annotation.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
+                 sh 'bash single_cell/tests/jenkins/annotation/annotation.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
               }
            }
              stage('merge_cell_bams'){
                  steps{
-                    sh 'bash tests/jenkins/merge_cell_bams/merge_cell_bams.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
+                    sh 'bash single_cell/tests/jenkins/merge_cell_bams/merge_cell_bams.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
                 }
              }
             stage('split_wgs_bam'){
                 steps{
-                  sh 'bash tests/jenkins/split_wgs_bam/split_wgs_bam.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
+                  sh 'bash single_cell/tests/jenkins/split_wgs_bam/split_wgs_bam.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
                }
            }
             stage('variant_calling'){
                steps{
-                  sh 'bash tests/jenkins/variant_calling/variant_calling.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
+                  sh 'bash single_cell/tests/jenkins/variant_calling/variant_calling.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
                }
            }
             stage('breakpoint_calling'){
                 steps{
-                  sh 'bash tests/jenkins/breakpoint_calling/breakpoint_calling.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
+                  sh 'bash single_cell/tests/jenkins/breakpoint_calling/breakpoint_calling.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
                }
            }
            //  stage('infer_haps'){
            //      steps{
-           //        sh 'bash tests/jenkins/infer_haps/infer_haps.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
+           //        sh 'bash single_cell/tests/jenkins/infer_haps/infer_haps.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
            //     }
            // }
             stage('count_haps'){
                 steps{
-                  sh 'bash tests/jenkins/count_haps/count_haps.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
+                  sh 'bash single_cell/tests/jenkins/count_haps/count_haps.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
                }
            }
          }

@@ -1,6 +1,6 @@
 import os.path 
 import sys 
-from single_cell.utils import compare
+from single_cell.tests.jenkins import compare
 
 def get_inputs(path, library_id):
     '''
