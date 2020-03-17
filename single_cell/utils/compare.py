@@ -3,13 +3,15 @@ Created on Jun 14, 2018
 
 @author: douglas
 '''
-import warnings
-import numpy as np
-from single_cell.utils import csvutils
-import pysam
-import os
-import pandas as pd
 import logging
+import os
+import warnings
+
+import numpy as np
+import pandas as pd
+import pysam
+from single_cell.utils import csvutils
+
 
 # class Comparer():
 #     def __init__(self, func, ref, to_compare):
@@ -47,10 +49,13 @@ def exact_compare_cols(data, reference, column_name):
     reference = reference.reindex(index_order)
     data = data.reindex(index_order)
 
-    assert data[column_name].equals(reference[column_name])
+    if data[column_name].dtype == float:
+        assert abs(max(data[column_name] - reference[column_name])) <= 0.001
+    else:
+        assert data[column_name].equals(reference[column_name])
+        
 
 def reset_indexes(data, refdata):
-
     assert data.index.equals(refdata.index)
 
     index_order = sorted(data.index)
@@ -58,20 +63,22 @@ def reset_indexes(data, refdata):
     reindexed_refdata = refdata.reindex(index_order)
 
     return reindexed_data, reindexed_refdata
-    
+
+
 def approx_compare_cols(data, reference, column_name, eps=0.001):
     data_index = set(data.index)
     reference_index = set(reference.index)
 
     data, reference = reset_indexes(data, reference)
 
-    #check for exact match first
+    # check for exact match first
     if data[column_name].equals(reference[column_name]):
         return
 
     diff = data[column_name] - reference[column_name]
 
     assert np.nanmax(diff.tolist()) < eps
+
 
 def load_hmmcopy_reads_data(readsfile):
     keepcols = [
@@ -86,8 +93,8 @@ def load_hmmcopy_reads_data(readsfile):
 
     return reads
 
-def load(file, by, reindex = False):
 
+def load(file, by, reindex=False):
     loaded = csvutils.read_csv_and_yaml(file)
 
     loaded = loaded.sort_values(by, ascending=[True] * len(by))
@@ -97,22 +104,24 @@ def load(file, by, reindex = False):
 
     return loaded
 
+
 def _all_low_PR(calls, probname):
     is_low_PR = calls[probname] < 0.55
     is_low_PR = is_low_PR.tolist()
 
     return not False in is_low_PR
 
-def has_match(data, s1, e1, s2, e2):
-    matches_s1 = data.loc[(data.start1 >= s1 ) & (data.start1 <= e1 )]
-    matches_all = data.loc[(data.start2 >= s2 ) & (data.start2 <= e2 )]
 
-    if matches_all.index.size >= 1: 
+def has_match(data, s1, e1, s2, e2):
+    matches_s1 = data.loc[(data.start1 >= s1) & (data.start1 <= e1)]
+    matches_all = data.loc[(data.start2 >= s2) & (data.start2 <= e2)]
+
+    if matches_all.index.size >= 1:
         return True
     return False
 
-def bkps_starts_ends_overlap(data, refdata):
 
+def bkps_starts_ends_overlap(data, refdata):
     assert data.chrom1.equals(refdata.chrom1)
     assert data.chrom2.equals(refdata.chrom2)
 
@@ -135,6 +144,7 @@ def bkps_starts_ends_overlap(data, refdata):
 
     return True
 
+
 def compare_count_haps(haps, refhaps):
     haps = pd.read_csv(haps, sep="\t")
     refhaps = pd.read_csv(refhaps, sep="\t")
@@ -150,8 +160,8 @@ def compare_count_haps(haps, refhaps):
 
 
 def compare_infer_haps(data, refdata):
-    data = load(data, ["chromosome", "position"], reindex = True)
-    refdata = load(refdata, ["chromosome", "position"], reindex = True)
+    data = load(data, ["chromosome", "position"], reindex=True)
+    refdata = load(refdata, ["chromosome", "position"], reindex=True)
 
     similar, shared, diff = call_positions_similar(data, refdata)
 
@@ -164,7 +174,7 @@ def compare_infer_haps(data, refdata):
 
 
 def call_positions_similar(data, refdata, strict=False,
-                           loose=0.005, prob_cutoff = 0.55):
+                           loose=0.005, prob_cutoff=0.55):
     if strict:
         assert refdata.index.equals(data.index)
 
@@ -172,11 +182,12 @@ def call_positions_similar(data, refdata, strict=False,
     diff_calls = refdata.index.difference(data.index)
 
     n_shared = shared_calls.size
-    percentage_shared = n_shared/refdata.index.size
+    percentage_shared = n_shared / refdata.index.size
 
     if 1 - percentage_shared < loose:
         return True, shared_calls, diff_calls
     return False, shared_calls, diff_calls
+
 
 def check_for_missing_cols(data, refdata):
     data_cols = set(data.columns.values)
@@ -188,8 +199,9 @@ def check_for_missing_cols(data, refdata):
 
     if missing_cols:
         warnings.warn("missing cols in a reference: {}".format(missing_cols))
-    
+
     return common_cols
+
 
 def compare_tables(data, refdata, eps=None):
     common_cols = check_for_missing_cols(data, refdata)
@@ -198,6 +210,7 @@ def compare_tables(data, refdata, eps=None):
             exact_compare_cols(data, refdata, colname)
         else:
             approx_compare_cols(data, refdata, colname, eps=eps)
+
 
 def compare_annotation(annotation, refannotation):
     annotation = csvutils.read_csv_and_yaml(annotation)
@@ -223,7 +236,7 @@ def compare_variant_calls(callsdata, refcallsdata):
 
     assert similar
 
-    diff_data = calls[calls.index.isin(diff)] 
+    diff_data = calls[calls.index.isin(diff)]
 
     if diff_data.empty:
         return
@@ -235,38 +248,39 @@ def compare_variant_calls(callsdata, refcallsdata):
 
     compare_tables(calls, refcalls)
 
+
 def overlap(start1, end1, start2, end2):
     """Does the range (start1, end1) overlap with (start2, end2)?"""
     return end1 >= start2 and end2 >= start1
 
-def readcount_matches_target(mapped_target, unmapped_target, 
-                            bam, loose = 0.0001):
+
+def readcount_matches_target(mapped_target, unmapped_target,
+                             bam, loose=0.0001):
     mapped = reduce(lambda x, y: x + y, [int(l.rstrip('\n').split('\t')[2]) for l in pysam.idxstats(bam)])
-    
-    unmapped = reduce(lambda x, y: x + y, 
-        [int(l.rstrip('\n').split('\t')[3]) for l in pysam.idxstats(bam)])
-    
+
+    unmapped = reduce(lambda x, y: x + y,
+                      [int(l.rstrip('\n').split('\t')[3]) for l in pysam.idxstats(bam)])
+
     allowance_mapped = mapped * loose
     allowance_unmapped = unmapped * loose
 
     mapped_range = [mapped - allowance_mapped, mapped + allowance_mapped]
     unmapped_range = [unmapped - allowance_unmapped, unmapped + allowance_unmapped]
 
-    mapped_matches = mapped_target >= mapped_range[0] and mapped_target <= mapped_range[1] 
+    mapped_matches = mapped_target >= mapped_range[0] and mapped_target <= mapped_range[1]
 
-    unmapped_matches = unmapped_target >= unmapped_range[0] and unmapped_target <= unmapped_range[1] 
-    
-        
+    unmapped_matches = unmapped_target >= unmapped_range[0] and unmapped_target <= unmapped_range[1]
+
     return mapped_matches and unmapped_matches
 
+
 def parse_bams_from_dir(dir):
-    
-    onlyfiles = [f for f in os.listdir(dir) 
-                    if os.path.isfile(os.path.join(dir, f))]
+    onlyfiles = [f for f in os.listdir(dir)
+                 if os.path.isfile(os.path.join(dir, f))]
 
-    onlyfiles = [f for f in onlyfiles if not ".bai" in f ]
+    onlyfiles = [f for f in onlyfiles if not ".bai" in f]
 
-    onlyfiles = [f for f in onlyfiles if  ".bam" in f ]
+    onlyfiles = [f for f in onlyfiles if ".bam" in f]
 
     intervals = [get_interval_from_bamname(f) for f in onlyfiles]
 
@@ -274,37 +288,39 @@ def parse_bams_from_dir(dir):
 
     return intervals, onlyfiles
 
+
 def get_interval_from_bamname(bam):
     return bam.split(".")[0]
 
-def assess_bam_files(compare_dir, expected_counts):
 
+def assess_bam_files(compare_dir, expected_counts):
     assert os.path.isdir(compare_dir)
-    
-    expected_counts = pd.read_csv(expected_counts, sep = ",")
+
+    expected_counts = pd.read_csv(expected_counts, sep=",")
     intervals, bams = parse_bams_from_dir(compare_dir)
 
     for interval, bam in zip(intervals, bams):
         assert bam_counts_match(expected_counts, interval, bam)
         assert bam_header_wellformed(bam)
 
+
 def bam_header_wellformed(bam):
     bam = pysam.AlignmentFile(bam, "rb")
-    header = bam.text  
+    header = bam.text
 
-    if not header: #fails when empty
-        return False 
+    if not header:  # fails when empty
+        return False
     if not "@PG" in header:
         return False
     if not "@RG" in header:
         return False
     if not "@SQ" in header:
-        return False  
-        
+        return False
+
     return True
 
-def bam_counts_match(expected_counts, interval, bam):
 
+def bam_counts_match(expected_counts, interval, bam):
     at_interval = expected_counts.loc[expected_counts.interval == interval]
     at_interval = at_interval.to_dict(orient="list")
 
@@ -316,8 +332,7 @@ def bam_counts_match(expected_counts, interval, bam):
     return True
 
 
-def compare_breakpoint_calls(calls, refcalls): 
-
+def compare_breakpoint_calls(calls, refcalls):
     sort_by = ["breakpoint_id"]
 
     calls = load(calls, sort_by, True)
@@ -353,7 +368,6 @@ def compare_reads(readsdata, refreadsdata):
 
 
 def compare_metrics(metrics, refmetrics):
-
     metrics = load(metrics, ["cell_id"], reindex=True)
     refmetrics = load(refmetrics, ["cell_id"], reindex=True)
 
@@ -364,14 +378,25 @@ def compare_metrics(metrics, refmetrics):
 
     compare_tables(metrics, refmetrics)
 
+
 def compare_annotation_metrics(metrics, refmetrics):
     metrics = load(metrics, ['cell_id'], reindex=True)
     refmetrics = load(refmetrics, ['cell_id'], reindex=True)
 
-    exact_cols = ['multiplier','MSRSI_non_integerness','MBRSI_dispersion_non_integerness','empty_bins_hmmcopy','total_mapped_reads_hmmcopy','breakpoints','state_mode','column','img_col','row','order','fastqscreen_mm10','unpaired_duplicate_reads','paired_mapped_reads','estimated_library_size','paired_duplicate_reads','fastqscreen_salmon_multihit','total_properly_paired','total_duplicate_reads','fastqscreen_salmon','unpaired_mapped_reads','unmapped_reads','fastqscreen_grch37_multihit','total_reads','fastqscreen_nohit','total_mapped_reads','fastqscreen_mm10_multihit','fastqscreen_grch37',]
+    exact_cols = ['multiplier', 'MSRSI_non_integerness', 'MBRSI_dispersion_non_integerness', 'empty_bins_hmmcopy',
+                  'total_mapped_reads_hmmcopy', 'breakpoints', 'state_mode', 'column', 'img_col', 'row', 'order',
+                  'fastqscreen_mm10', 'unpaired_duplicate_reads', 'paired_mapped_reads', 'estimated_library_size',
+                  'paired_duplicate_reads', 'fastqscreen_salmon_multihit', 'total_properly_paired',
+                  'total_duplicate_reads', 'fastqscreen_salmon', 'unpaired_mapped_reads', 'unmapped_reads',
+                  'fastqscreen_grch37_multihit', 'total_reads', 'fastqscreen_nohit', 'total_mapped_reads',
+                  'fastqscreen_mm10_multihit', 'fastqscreen_grch37', ]
     compare_tables(metrics[exact_cols], refmetrics[exact_cols])
 
-
-    approx_cols = ['MSRSI_non_integerness', 'MBRSI_dispersion_non_integerness', 'MBRSM_dispersion', 'autocorrelation_hmmcopy', 'cv_hmmcopy', 'mad_hmmcopy', 'mean_hmmcopy_reads_per_bin', 'median_hmmcopy_reads_per_bin', 'std_hmmcopy_reads_per_bin', 'total_halfiness', 'scaled_halfiness', 'mean_state_mads', 'mean_state_vars', 'mad_neutral_state', 'mean_copy', 'log_likelihood', 'true_multiplier', 'is_s_phase_prob', 'quality', 'percent_duplicate_reads', 'mean_insert_size', 'coverage_breadth', 'standard_deviation_insert_size', 'coverage_depth', 'median_insert_size', ]
+    approx_cols = ['MSRSI_non_integerness', 'MBRSI_dispersion_non_integerness', 'MBRSM_dispersion',
+                   'autocorrelation_hmmcopy', 'cv_hmmcopy', 'mad_hmmcopy', 'mean_hmmcopy_reads_per_bin',
+                   'median_hmmcopy_reads_per_bin', 'std_hmmcopy_reads_per_bin', 'total_halfiness', 'scaled_halfiness',
+                   'mean_state_mads', 'mean_state_vars', 'mad_neutral_state', 'mean_copy', 'log_likelihood',
+                   'true_multiplier', 'is_s_phase_prob', 'quality', 'percent_duplicate_reads', 'mean_insert_size',
+                   'coverage_breadth', 'standard_deviation_insert_size', 'coverage_depth', 'median_insert_size', ]
 
     compare_tables(metrics[approx_cols], refmetrics[approx_cols], eps=0.02)
