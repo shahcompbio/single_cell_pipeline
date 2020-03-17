@@ -15,9 +15,9 @@ docker run -v $PWD:$PWD -w $PWD singlecellpipeline/azurecli:v0.0.1 \
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v /usr/bin/docker:/usr/bin/docker --rm \
   singlecellpipeline/single_cell_pipeline:$TAG \
-  single_cell infer_haps --input_yaml tests/jenkins/infer_haps/inputs.yaml \
+  single_cell infer_haps --input_yaml single_cell/tests/jenkins/infer_haps/inputs.yaml \
   --maxjobs 4 --nocleanup --sentinel_only  \
-  --context_config tests/jenkins/context_config.yaml \
+  --context_config single_cell/tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
   --tmpdir INFER_HAPS/temp \
   --pipelinedir INFER_HAPS/pipeline \
