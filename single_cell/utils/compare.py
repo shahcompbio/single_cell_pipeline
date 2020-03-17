@@ -13,31 +13,6 @@ import pysam
 from single_cell.utils import csvutils
 
 
-# class Comparer():
-#     def __init__(self, func, ref, to_compare):
-#         self.func = func
-#         self.ref = ref
-#         self.to_compare = to_compare
-#
-#     def compare(self):
-#         self.func(self.ref, self.to_compare)
-#
-# def run_comparisons(comparisons):
-#     output = ""
-#     error = False
-#
-#     for comparison in comparisons:
-#         func = comparison[0]
-#         ref = comparison[1]
-#         to_compare = comparison[2]
-#         try:
-#             Comparer(func, ref, to_compare).compare()
-#             output+= "\nsuccess: {}: {} {}".format(func, ref, to_compare)
-#         except AssertionError:
-#             error = True
-#             output+= "\nerror: {}: {} {}".format(func, ref, to_compare)
-#     return output, error
-
 def exact_compare_cols(data, reference, column_name):
     data_index = set(data.index)
     reference_index = set(reference.index)
