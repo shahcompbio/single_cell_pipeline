@@ -13,11 +13,11 @@ TAG="${TAG}.beta"
 
 COMMIT=`git rev-parse HEAD`
 
-cat tests/jenkins/build_docker/dockerfile_template \
+cat single_cell/tests/jenkins/build_docker/dockerfile_template \
  | sed "s/{git_commit}/$COMMIT/g" \
- > tests/jenkins/build_docker/dockerfile
+ > single_cell/tests/jenkins/build_docker/dockerfile
 
-docker build -t $REGISTRY/$ORG/single_cell_pipeline:$TAG -f tests/jenkins/build_docker/dockerfile . --no-cache
+docker build -t $REGISTRY/$ORG/single_cell_pipeline:$TAG -f single_cell/tests/jenkins/build_docker/dockerfile . --no-cache
 
 docker push $REGISTRY/$ORG/single_cell_pipeline:$TAG
 
