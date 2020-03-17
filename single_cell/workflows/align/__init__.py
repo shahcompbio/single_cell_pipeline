@@ -243,7 +243,7 @@ def create_alignment_workflow(
         args=(
             mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename, extensions=['.bai']),
             mgd.TempInputFile('organism_summary_count_per_cell.csv.gz', extensions=['.yaml']),
-            mgd.TempOutputFile(alignment_metrics, extensions=['.yaml']),
+            mgd.OutputFile(alignment_metrics, extensions=['.yaml']),
             mgd.OutputFile(gc_metrics, extensions=['.yaml']),
             mgd.TempOutputFile('markdups_metrics.txt', 'cell_id', axes_origin=[]),
             mgd.TempOutputFile('flagstat_metrics.txt', 'cell_id', axes_origin=[]),
