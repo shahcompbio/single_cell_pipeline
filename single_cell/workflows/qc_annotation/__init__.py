@@ -49,7 +49,7 @@ def create_qc_annotation_workflow(
         func="single_cell.workflows.qc_annotation.tasks.merge_metrics",
         args=(
             mgd.TempInputFile("hmmcopy_quality_metrics.csv.gz", extensions=['.yaml']),
-            mgd.InputFile(alignment_metrics, extenstions=['.yaml']),
+            mgd.InputFile(alignment_metrics, extensions=['.yaml']),
             mgd.TempOutputFile('merged_metrics.csv.gz', extensions=['.yaml'])
         )
     )
