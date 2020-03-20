@@ -1,6 +1,6 @@
 # Change Log
 
-### v0.5.22
+### v0.6.0
 
 ### Changes:
 1. jenkins refactor
