@@ -10,7 +10,7 @@
     this can be done through ssh keys on the cluster. We don't support ssh keys with a passphrase at the moment.
 3. access to dockerhub on all nodes
     ```
-    singularity pull docker://docker.io/singlecellpipeline/single_cell_pipeline:v{VERSION}
+    singularity run docker://docker.io/singlecellpipeline/single_cell_pipeline:v{VERSION}
     ```
 
 ### Download the reference data 
@@ -35,9 +35,6 @@ https://singlecellreference.blob.core.windows.net/refdata
 
 NOTE: Access to data on azure is restricted to the shahlab. To request access to the data please contact Diljot Grewal <grewald@mskcc.org.>
 
-### download the test data
-
-*see /docs/testdata for instructions on downloading testdata and test input yamls.*
 
 ### create the context configuration file
 
