@@ -383,9 +383,6 @@ def generate_html_report(tempdir, html, reference_gc, metrics, gc_metrics):
     gc_data = load_data(gc_metrics, gc=True)
 
     quality_df = generate_quality_qc_table(data)
-    #debug purpose
-    print("This is the test msg")
-    print(quality_df)
     contamination_df = generate_contamination_qc_table(data)
     library_df = generate_library_metrics(data, gc_data, reference_gc)
 
@@ -404,4 +401,3 @@ def generate_html_report(tempdir, html, reference_gc, metrics, gc_metrics):
         ],
         html
     )
-    print("html generated")
