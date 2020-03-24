@@ -102,10 +102,14 @@ def get_quality_pass_metrics(df):
 
     # Calculate cells pass by experimental condition and by cell call
     cells_pass = cells_pass_df.groupby(["experimental_condition", "cell_call"]).count()["cell_id"]
+
+    # Calculate mean cells pass
+    mean_cells_pass = cells_pass_df.groupby(["experimental_condition", "cell_call"]).mean()["quality"]
+
     # Calculate median coverage depth
     median_coverage_depth = cells_pass_df.groupby(["experimental_condition", "cell_call"]).median()["coverage_depth"]
 
-    return cells_pass, median_coverage_depth
+    return cells_pass, median_coverage_depth, mean_cells_pass
 
 
 def get_dropout_metrics(df):
@@ -197,7 +201,7 @@ def generate_contamination_qc_table(df):
 
 
 def generate_quality_qc_table(df):
-    cells_pass, median_cov_depth = get_quality_pass_metrics(df)
+    cells_pass, median_cov_depth, mean_cells_pass = get_quality_pass_metrics(df)
     cells_dropout, fraction_cells_dropout = get_dropout_metrics(df)
     cells_flagged, median_quality, fraction_cells_flagged = get_non_dropout_metrics(df)
 
@@ -208,8 +212,10 @@ def generate_quality_qc_table(df):
     # Calculate median reads
     median_reads = df.groupby(["experimental_condition", "cell_call"]).median()["total_reads"]
 
+
     metrics = [
         cells_pass.rename("cells_pass"),
+        mean_cells_pass.rename("mean_cells_pass"),
         total_breakdown.rename("total_breakdown"),
         fraction_cell_pass.rename("fraction_cell_pass"),
         cells_dropout.rename("cells_dropout"),
@@ -366,6 +372,7 @@ def generate_html(dataframes, pngs, html_file):
 
 
 def generate_html_report(tempdir, html, reference_gc, metrics, gc_metrics):
+    print("Start generating report")
     gc_plot = os.path.join(tempdir, "gc.png")
     heatmap = os.path.join(tempdir, 'heatmap.png')
 
@@ -376,6 +383,9 @@ def generate_html_report(tempdir, html, reference_gc, metrics, gc_metrics):
     gc_data = load_data(gc_metrics, gc=True)
 
     quality_df = generate_quality_qc_table(data)
+    #debug purpose
+    print("This is the test msg")
+    print(quality_df)
     contamination_df = generate_contamination_qc_table(data)
     library_df = generate_library_metrics(data, gc_data, reference_gc)
 
@@ -394,3 +404,4 @@ def generate_html_report(tempdir, html, reference_gc, metrics, gc_metrics):
         ],
         html
     )
+    print("html generated")
