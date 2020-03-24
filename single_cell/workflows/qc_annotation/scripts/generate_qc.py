@@ -372,7 +372,6 @@ def generate_html(dataframes, pngs, html_file):
 
 
 def generate_html_report(tempdir, html, reference_gc, metrics, gc_metrics):
-    print("Start generating report")
     gc_plot = os.path.join(tempdir, "gc.png")
     heatmap = os.path.join(tempdir, 'heatmap.png')
 
