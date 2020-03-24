@@ -130,7 +130,9 @@ For Alignment
 1.  Install Dependencies + Biowrappers \
 For the alignment part:
 ```
+conda install -c conda-forge cryptography
 conda install -c shahcompbio single_cell_pipeline_align
+conda update --all
 ```
 
 #### <a name="3.1.4"></a> 3.1.4 Build pipeline config file
