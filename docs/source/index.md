@@ -8,21 +8,19 @@ Welcome to the home page for the single cell pipelines documentation.
 ### Reference Data
 Before you can run a subpipeline you must acquire the necessary reference data. If you are working from `juno`, 
 reference data can be found at `/juno/work/shah/reference/singlecellpipeline`. If you are not working from juno, 
-you may mount the path locally, or download the reference data from the singlecelltestsets azure storage account. 
+you must download the data locally from microsoft azure. 
 
-Run the following command to download reference data from the account:
+Run the following command to download reference data from the account to a local path, replacing `{YOUR_REF_DATA_PATH}` with your preferred destination. To run a subpipeline, you will need to update the inputs with your chosen ref data path which is marked in the input files by `REF_DATA`:
 ```
-docker run -v /refdata:/refdata singlecellpipeline/azurecli:v0.0.1 az storage blob download-batch -s refdata -d /refdata --account-name singlecelltestsets --account-key {$ACCOUNT KEY}
+docker run -v /refdata:/refdata singlecellpipeline/azurecli:v0.0.1 az storage blob download-batch -s refdata -d {YOUR_REF_DATA_PATH} --account-name singlecelltestsets --account-key {$ACCOUNT KEY}
 ```
 Ask us for the storage account password and replace `{$ACCOUNT KEY}` with it.
 
-By default, the above command downloads the reference data to a directory named `/refdata`. 
-If you choose to change it, you will have to manually update the pipeline's internal configuration with your chosen directory, 
-found in a file named `config.yaml`, which is generated automatically when the pipeline is run.
 
 ### Test Data
-Test data for each of the subpipelines can be downloaded from azure storage. 
+Test data for each of the subpipelines can also be downloaded from azure storage. 
 Just execute the below commands for the subpipeline you which to run.
+
 #### Alignment
 Description: Aligns cell bam files, performs QC
 ```
@@ -78,18 +76,23 @@ wget https://singlecelltestsets.blob.core.windows.net/public-testdata/count-haps
 rm count-haps.tar.gz && cd count-haps
 ```
 
-At this point, you should be in a new working directory with all the testdata you need to run the pipeline and the necessary reference data ready to go.
-In addition to the test data, you will have two `yaml` files: `input.yaml`, and `context.yaml`. 
-<br/><br/>`input.yaml`: specifies the testdata files you are using.
-<br/><br/>`context.yaml`: specifies information used by the pipeline to run locally in docker.
+You should now be in a named directory with everything you need to run the pipeline.
 
-#### Running the pipeline 
-In addition to all the other files you will have had downloaded, there will be two `.sh` files.
-The first `final_run.sh` runs the pipeline within the pipeline docker container. The latter, `run_pipeline.sh`,
-specifies all the pipeline inputs.
+#### Customizing with your chosen paths
+
+Before you can run the pipeline, you need to specify your chosen ref data path in the input files. This happens in two files in particular which are needed to run all subpipelines: in `context_config.yaml` and in `final_run.sh`. In both, replace `REF_DATA` with your chosen path.
+Finally, replace `WORKING_DIR` with your working directory in `context_config.yaml`
+
+#### Executing a pipeline
 
 Simply run 
 ```
 sh final_run.sh
 ```
 To launch the pipeline.
+
+#### Verifying your setup
+
+Each downloadable `tar` files contains expected output from each pipeline in a directory labeled `expected_outputs`. You can use this to verify your local setup by comparing it with the result of your current pipeline run. Results from the current run can be found in a directory labeled `output`. 
+
+
