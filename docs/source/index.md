@@ -1,13 +1,13 @@
 # Single Cell Pipeline
 
-
 Welcome to the home page for the single cell pipelines documentation.
 
-
 ## Quick Setup
+The single cell pipeline is composed of 10 subpipelines that can be run individually. Here you will find everything you need to run any of the subpipelines with small testdata and expected outputs.
+
 ### Reference Data
-Before you can run a subpipeline you must acquire the necessary reference data. If you are working from `juno`, 
-reference data can be found at `/juno/work/shah/reference/singlecellpipeline`. If you are not working from juno, 
+Before you can run a subpipeline you must acquire the necessary reference data. If you are working from the `juno` cluster, 
+reference data sits in `/juno/work/shah/reference/singlecellpipeline`. If you are not working from juno, 
 you must download the data locally from microsoft azure. 
 
 Run the following command to download reference data from the account to a local path, replacing `{YOUR_REF_DATA_PATH}` with your preferred destination. To run a subpipeline, you will need to update the inputs with your chosen ref data path which is marked in the input files by `REF_DATA`:
