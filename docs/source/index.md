@@ -42,37 +42,37 @@ rm annotation.tar.gz && cd annotation
 #### Merge Bams
 Description: Merge cell bams into region-specific bams for downstream analysis
 ```
-wget https://singlecelltestsets.blob.core.windows.net/public-testdata/merge-bams.tar.gz && tar -xvf merge-bams.tar.gz 
+wget https://singlecelltestsets.blob.core.windows.net/public-testdata/merge_bams.tar.gz && tar -xvf merge-bams.tar.gz 
 rm merge-bams.tar.gz && cd merge-bams
 ```
 #### Split Bam
 Description: Split bulk wgs bam into region-specific bams for downstream analysis
 ```
-wget https://singlecelltestsets.blob.core.windows.net/public-testdata/split-bam.tar.gz && tar -xvf split-bam.tar.gz 
+wget https://singlecelltestsets.blob.core.windows.net/public-testdata/split_bam.tar.gz && tar -xvf split-bam.tar.gz 
 rm split-bam.tar.gz && cd split-bam
 ```
 #### Variant Calling
 Description: Generate consensus variant calls from strelka and museq, perform vcf annotation
 ```
-wget https://singlecelltestsets.blob.core.windows.net/public-testdata/variant-calling.tar.gz && tar -xvf variant-calling.tar.gz 
+wget https://singlecelltestsets.blob.core.windows.net/public-testdata/variant_calling.tar.gz && tar -xvf variant-calling.tar.gz 
 rm variant-calling.tar.gz && cd variant-calling
 ```
 #### Breakpoint Calling
 Description: Generate consensus breakpoint calls using destruct and lumpy
 ```
-wget https://singlecelltestsets.blob.core.windows.net/public-testdata/breakpoint-calling.tar.gz && tar -xvf breakpoint-calling.tar.gz 
+wget https://singlecelltestsets.blob.core.windows.net/public-testdata/breakpoint_calling.tar.gz && tar -xvf breakpoint-calling.tar.gz 
 rm breakpoint-calling.tar.gz && cd breakpoint-calling
 ```
 #### Infer Haps
 Description: Infer haplotypes.
 ```
-wget https://singlecelltestsets.blob.core.windows.net/public-testdata/infer-haps.tar.gz && tar -xvf infer-haps.tar.gz 
+wget https://singlecelltestsets.blob.core.windows.net/public-testdata/infer_haps.tar.gz && tar -xvf infer-haps.tar.gz 
 rm infer-haps.tar.gz && cd infer-haps
 ```
 #### Count Haps
 Description: Call haplotypes.
 ```
-wget https://singlecelltestsets.blob.core.windows.net/public-testdata/count-haps.tar.gz && tar -xvf count-haps.tar.gz 
+wget https://singlecelltestsets.blob.core.windows.net/public-testdata/count_haps.tar.gz && tar -xvf count-haps.tar.gz 
 rm count-haps.tar.gz && cd count-haps
 ```
 
