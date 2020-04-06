@@ -10,11 +10,12 @@ def create_variant_counting_workflow(args):
     """ Count variant reads for multiple sets of variants across cells.
     """
 
-    strelka_vcf, museq_vcf, tumour_cell_bams = inpututils.load_variant_counting_input(
+    strelka_vcf, museq_vcf, tumour_cell_bams, sample_library = inpututils.load_variant_counting_input(
         args['input_yaml']
     )
 
-    counts_output_template = os.path.join(args['out_dir'], "{sample_id}_{library_id}_counts.csv.gz")
+    counts_template = '{sample_id}_{library_id}_counts.csv.gz'
+    counts_output_template = os.path.join(args['out_dir'], counts_template)
 
     meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
     input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
@@ -72,7 +73,13 @@ def create_variant_counting_workflow(args):
         kwargs={
             'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
             'input_yaml': mgd.OutputFile(input_yaml_blob),
-            'metadata': {'type': 'snv_genotyping'}
+            'metadata': {
+                'type': 'snv_genotyping',
+                'counts': {
+                    'template': counts_template,
+                    'instances': sample_library,
+                }
+            }
         }
     )
 
