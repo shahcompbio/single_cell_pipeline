@@ -20,18 +20,18 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     workflow.setobj(
-        obj=mgd.OutputChunks('sample_id', 'library_id', 'cell_id'),
+        obj=mgd.OutputChunks('cell_id'),
         value=list(bam_files.keys()),
     )
 
     workflow.transform(
         name='get_snv_allele_counts_for_vcf_targets',
-        axes=('sample_id', 'library_id', 'cell_id'),
+        axes=('cell_id',),
         func="biowrappers.components.variant_calling.snv_allele_counts.tasks.get_snv_allele_counts_for_vcf_targets",
         args=(
-            mgd.InputFile('tumour.bam', 'sample_id', 'library_id', 'cell_id', fnames=bam_files, extensions=['.bai']),
+            mgd.InputFile('tumour.bam', 'cell_id', fnames=bam_files, extensions=['.bai']),
             mgd.InputFile(vcf_file),
-            mgd.TempOutputFile('counts.csv.gz', 'sample_id', 'library_id', 'cell_id', extensions=['.yaml']),
+            mgd.TempOutputFile('counts.csv.gz', 'cell_id', extensions=['.yaml']),
         ),
         kwargs={
             'count_duplicates': count_duplicates,
@@ -51,7 +51,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
         ctx={'mem': memory_cfg['high'], 'disk': 20},
         func="single_cell.utils.csvutils.concatenate_csv",
         args=(
-            mgd.TempInputFile('counts.csv.gz', 'sample_id', 'library_id', 'cell_id'),
+            mgd.TempInputFile('counts.csv.gz', 'cell_id'),
             mgd.OutputFile(out_file, extensions=['.yaml']),
         ),
     )
