@@ -7,6 +7,8 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
         bam_files,
         vcf_file,
         out_file,
+        sample_id,
+        library_id,
         memory_cfg,
         count_duplicates=False,
         min_bqual=0,
@@ -39,8 +41,8 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
             'min_mqual': min_mqual,
             'vcf_to_bam_chrom_map': vcf_to_bam_chrom_map,
             'cell_id': mgd.Instance('cell_id'),
-            'sample_id': mgd.Instance('sample_id'),
-            'library_id': mgd.Instance('library_id'),
+            'sample_id': sample_id,
+            'library_id': library_id,
             'report_zero_count_positions': False,
             'dtypes': dtypes()['snv_allele_counts']
         }

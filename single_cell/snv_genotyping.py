@@ -14,9 +14,7 @@ def create_variant_counting_workflow(args):
         args['input_yaml']
     )
 
-    # counts_output = os.path.join(args['out_dir'], "counts.csv.gz")
-    # Create counts output filenames by sample / library
-    counts_output_filenames
+    counts_output_template = os.path.join(args['out_dir'], "{sample_id}_{library_id}_counts.csv.gz")
 
     meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
     input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
@@ -55,19 +53,20 @@ def create_variant_counting_workflow(args):
             mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai'],
                           fnames=tumour_cell_bams, axes_origin=[]),
             mgd.TempInputFile('all.snv.vcf.gz', extensions=['.tbi', '.csi']),
-            mgd.OutputFile('counts.csv.gz', fnames=counts_output_filenames),
+            mgd.OutputFile('counts.csv.gz', 'sample_id', 'library_id', template=counts_output_template),
+            mgd.Instance('sample_id'),
+            mgd.Instance('library_id'),
             config['memory'],
         ),
     )
 
-    # Add sample ids / library ids to metadata
     workflow.transform(
         name='generate_meta_files_results',
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
             args['out_dir'],
-            counts_output_filenames.values(),
+            mgd.Template('counts.csv.gz', 'sample_id', 'library_id', template=counts_output_template),
             mgd.OutputFile(meta_yaml)
         ),
         kwargs={
