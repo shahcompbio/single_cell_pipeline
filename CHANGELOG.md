@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.6.1
+
+### Changes:
+1. per sample genotyping results
+
 ### v0.6.0
 
 ### Changes:
