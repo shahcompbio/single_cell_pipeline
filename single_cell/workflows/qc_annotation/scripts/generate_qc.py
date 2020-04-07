@@ -95,6 +95,10 @@ def get_fraction_unmapped(df):
     df["fraction_unmapped"] = np.divide(df["unmapped_reads"], df["total_reads"])
     return df
 
+def get_fraction_mapped_from_fastqscreen(df, species):
+    #calculate the mapped fraction of the given species using the fastqscreen value
+    df["fraction_mapped_fastqscreen_" + species] = np.divide(df["fastqscreen_" + species], df["total_reads"])
+    return df
 
 def get_quality_pass_metrics(df):
     cells_pass_df = df[df["quality"] >= 0.75]
@@ -148,7 +152,6 @@ def get_non_dropout_metrics(df):
 
 def get_cells_ref_species(df):
     cells_not_other_species_df = df[df["total_reads"] < 250000]
-
     if cells_not_other_species_df.empty:
         return pd.Series()
 
@@ -160,11 +163,45 @@ def get_cells_ref_species(df):
 
     return median_fraction_background
 
+def get_cells_ref_species_fastqscreen(df, confidence_level):
+    cells_not_other_species_df = df[df["total_reads"] < 250000]
+    species_list = ["salmon", "mm10", "grch37"]
+    median_fraction_background_fastqscreen = {}
+    for species in species_list:
+        cells_not_other_species = cells_not_other_species_df.apply(
+            get_fraction_mapped_from_fastqscreen, species=species, axis=1
+            )
+        cells_not_other_species = cells_not_other_species[cells_not_other_species["fraction_mapped_fastqscreen_" + species] >= confidence_level]
+        median_fraction_background_fastqscreen[species] = cells_not_other_species.groupby(["experimental_condition", "cell_call"]).median()[
+            "fraction_mapped_fastqscreen_" + species]
+    return median_fraction_background_fastqscreen
+
+def get_cells_species_df_fastqscreen(df, confidence_level):
+    # Calculate total breakdown
+    total_breakdown = df.groupby(["experimental_condition", "cell_call"]).count()["cell_id"]
+    # Filter out total reads < 250K
+    cells_other_species_df = df[df["total_reads"] >= 250000]
+    # Calculate cells_species and percent cells species using fastqscreen values
+    cells_species_fastqscreen = {}
+    fraction_cells_species_fastqscreen = {}
+    for species in ["salmon", "mm10", "grch37"]:
+        if cells_other_species_df.empty:
+            cells_species_fastqscreen[species] = pd.DataFrame()
+            fraction_cells_species_fastqscreen[species] = pd.DataFrame()
+            continue
+        mapped_df_fastqscreen = cells_other_species_df.apply(
+            get_fraction_mapped_from_fastqscreen, species=species, axis=1
+            )
+        cells_species_fastqscreen[species] = \
+            mapped_df_fastqscreen[mapped_df_fastqscreen["fraction_mapped_fastqscreen_" + species] >= confidence_level].groupby(["experimental_condition", "cell_call"]).count()["cell_id"]
+        fraction_cells_species_fastqscreen[species] = cells_species_fastqscreen[species].divide(total_breakdown, fill_value=0)
+    return cells_species_fastqscreen, fraction_cells_species_fastqscreen
+
 
 def get_cells_other_species_df(df):
     # Calculate total breakdown
     total_breakdown = df.groupby(["experimental_condition", "cell_call"]).count()["cell_id"]
-
+    # Filter out total reads < 250K
     cells_other_species_df = df[df["total_reads"] >= 250000]
     if cells_other_species_df.empty:
         return pd.DataFrame(), pd.DataFrame()
@@ -173,31 +210,48 @@ def get_cells_other_species_df(df):
     cells_other_species = \
         unmapped_df[unmapped_df["fraction_unmapped"] >= 0.5].groupby(["experimental_condition", "cell_call"]).count()[
             "cell_id"]
-
     # Calculate percent cells other species
     fraction_cells_other_species = cells_other_species.divide(total_breakdown, fill_value=0)
 
-    return cells_other_species, fraction_cells_other_species
-
+    return cells_other_species, fraction_cells_other_species 
 
 def generate_contamination_qc_table(df):
     median_fraction_bg = get_cells_ref_species(df)
     cells_other_species, fraction_cells_other_species = get_cells_other_species_df(df)
-
+    
     if cells_other_species.empty and fraction_cells_other_species.empty:
-        return pd.DataFrame()
+        metrics = pd.DataFrame()
+    else:
+        metrics = [
+            cells_other_species.rename("cells_other_species"),
+            fraction_cells_other_species.rename("fraction_cells_other_species"),
+            median_fraction_bg.rename("median_fraction_background")
+        ]
+        metrics = pd.concat(metrics, axis=1)
+        metrics = metrics.fillna(0)
 
-    metrics = [
-        cells_other_species.rename("cells_other_species"),
-        fraction_cells_other_species.rename("fraction_cells_other_species"),
-        median_fraction_bg.rename("median_fraction_background")
-    ]
+    metrics_fastqscreen_dict = {}
+    for confidence_level in [0.3, 0.5, 0.7]:
+        median_fraction_bg_fastqscreen_dict = get_cells_ref_species_fastqscreen(df, confidence_level)
+        cells_species_fastqscreen, fraction_cells_species_fastqscreen = get_cells_species_df_fastqscreen(df, confidence_level)
+    
+        metrics_fastqscreen = [
+            cells_species_fastqscreen["salmon"].rename("cells_species_salmon"),
+            fraction_cells_species_fastqscreen["salmon"].rename("fraction_cells_species_salmon"),
+            median_fraction_bg_fastqscreen_dict["salmon"].rename("median_fraction_background_salmon"),
 
-    # Create the output table
-    metrics = pd.concat(metrics, axis=1)
-    metrics = metrics.fillna(0)
-
-    return metrics
+            cells_species_fastqscreen["mm10"].rename("cells_species_mouse"),
+            fraction_cells_species_fastqscreen["mm10"].rename("fraction_cells_species_mouse"),
+            median_fraction_bg_fastqscreen_dict["mm10"].rename("median_fraction_background_mouse"),
+        
+            cells_species_fastqscreen["grch37"].rename("cells_species_human"),
+            fraction_cells_species_fastqscreen["grch37"].rename("fraction_cells_species_human"),
+            median_fraction_bg_fastqscreen_dict["grch37"].rename("median_fraction_background_human"),
+        ]
+        metrics_fastqscreen = pd.concat(metrics_fastqscreen, axis=1)
+        metrics_fastqscreen = metrics_fastqscreen.fillna(0)
+        metrics_fastqscreen_dict[confidence_level] = metrics_fastqscreen.T
+    return metrics.T, metrics_fastqscreen_dict
 
 
 def generate_quality_qc_table(df):
@@ -230,7 +284,7 @@ def generate_quality_qc_table(df):
     metrics = pd.concat(metrics, axis=1)
     metrics = metrics.fillna(0)
 
-    return metrics
+    return metrics.T
 
 
 def generate_library_metrics(df, gc_data, reference_gc):
@@ -382,7 +436,7 @@ def generate_html_report(tempdir, html, reference_gc, metrics, gc_metrics):
     gc_data = load_data(gc_metrics, gc=True)
 
     quality_df = generate_quality_qc_table(data)
-    contamination_df = generate_contamination_qc_table(data)
+    contamination_df, contamination_fastqscreen_df_dict = generate_contamination_qc_table(data)
     library_df = generate_library_metrics(data, gc_data, reference_gc)
 
     plot_gc_curve(gc_data, reference_gc, gc_plot)
@@ -392,6 +446,9 @@ def generate_html_report(tempdir, html, reference_gc, metrics, gc_metrics):
         [
             ('Metrics', quality_df),
             ('Contamination', contamination_df),
+            ('Contamination_fastqscreen (confidence_level=0.3)', contamination_fastqscreen_df_dict[0.3]),
+            ('Contamination_fastqscreen (confidence_level=0.5)', contamination_fastqscreen_df_dict[0.5]),
+            ('Contamination_fastqscreen (confidence_level=0.7)', contamination_fastqscreen_df_dict[0.7]),
             ('Other Metrics', library_df),
         ],
         [
