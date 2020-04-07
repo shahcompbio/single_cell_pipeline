@@ -82,11 +82,12 @@ def create_variant_counting_workflow(args):
     """ Count variant reads for multiple sets of variants across cells.
     """
 
-    strelka_vcf, museq_vcf, tumour_cell_bams = inpututils.load_variant_counting_input(
+    strelka_vcf, museq_vcf, tumour_cell_bams, sample_library = inpututils.load_variant_counting_input(
         args['input_yaml']
     )
 
-    counts_output = os.path.join(args['out_dir'], "counts.csv.gz")
+    counts_template = '{sample_id}_{library_id}_counts.csv.gz'
+    counts_output_template = os.path.join(args['out_dir'], counts_template)
 
     meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
     input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
@@ -119,12 +120,15 @@ def create_variant_counting_workflow(args):
 
     workflow.subworkflow(
         name='count_alleles',
-        func=create_snv_allele_counts_for_vcf_targets_workflow,
+        axes=('sample_id', 'library_id'),
+        func='single_cell.workflows.snv_allele_counts.create_snv_allele_counts_for_vcf_targets_workflow',
         args=(
             mgd.InputFile('tumour_cells.bam', 'sample_id', 'library_id', 'cell_id', extensions=['.bai'],
                           fnames=tumour_cell_bams, axes_origin=[]),
             mgd.TempInputFile('all.snv.vcf.gz', extensions=['.tbi', '.csi']),
-            mgd.OutputFile(counts_output),
+            mgd.OutputFile('counts.csv.gz', 'sample_id', 'library_id', template=counts_output_template),
+            mgd.Instance('sample_id'),
+            mgd.Instance('library_id'),
             config['memory'],
         ),
     )
@@ -135,13 +139,19 @@ def create_variant_counting_workflow(args):
         args=(
             sys.argv[0:],
             args['out_dir'],
-            [counts_output],
+            mgd.Template('counts.csv.gz', 'sample_id', 'library_id', template=counts_output_template),
             mgd.OutputFile(meta_yaml)
         ),
         kwargs={
             'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
             'input_yaml': mgd.OutputFile(input_yaml_blob),
-            'metadata': {'type': 'snv_genotyping'}
+            'metadata': {
+                'type': 'snv_genotyping',
+                'counts': {
+                    'template': counts_template,
+                    'instances': sample_library,
+                }
+            }
         }
     )
 
