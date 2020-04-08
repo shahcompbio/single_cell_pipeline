@@ -2,7 +2,7 @@
 
 REGISTRY=$1
 ORG=$2
-TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
+TAG=`git describe --tags`
 
 cat docker/single_cell_pipeline/dockerfile_template \
  | sed "s/{git_commit}/$TAG/g" \
