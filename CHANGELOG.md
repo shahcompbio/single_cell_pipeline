@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.5.22
+
+####Changes:
+1. separate snv genotyping results by sample
+
 ### V0.5.21
 
 #### Changes:
