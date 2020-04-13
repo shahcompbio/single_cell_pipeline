@@ -145,7 +145,7 @@ class CollectMetrics(object):
         outdata = (unprd_mpd_rds, prd_mpd_rds, unprd_dup_rds, prd_dup_rds,
                    unmpd_rds, perc_dup_reads, est_lib_size)
 
-        outdata = tuple(['nan' if val == '' else val for val in outdata])
+        outdata = tuple([0 if val == '' else val for val in outdata])
         return outdata
 
     def extract_insert_metrics(self):
