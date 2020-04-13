@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.6.2:
+
+#### Bug:
+1. collect metrics introduced nan into int columns
+
 ### v0.6.1
 
 ### Changes:
