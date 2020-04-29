@@ -3,7 +3,7 @@ from __future__ import division
 import matplotlib
 import numpy as np
 import pandas as pd
-
+import joblib
 matplotlib.use('Agg')
 
 from matplotlib import pyplot as plt
@@ -95,197 +95,204 @@ def get_fraction_unmapped(df):
     df["fraction_unmapped"] = np.divide(df["unmapped_reads"], df["total_reads"])
     return df
 
-def get_fraction_mapped_from_fastqscreen(df, species):
-    #calculate the mapped fraction of the given species using the fastqscreen value
-    df["fraction_mapped_fastqscreen_" + species] = np.divide(df["fastqscreen_" + species], df["total_reads"])
-    return df
-
-def get_quality_pass_metrics(df):
-    cells_pass_df = df[df["quality"] >= 0.75]
-    # Calculate total cells pass
-
-    # Calculate cells pass by experimental condition and by cell call
-    cells_pass = cells_pass_df.groupby(["experimental_condition", "cell_call"]).count()["cell_id"]
-
-    # Calculate mean cells pass
-    mean_cells_pass = cells_pass_df.groupby(["experimental_condition", "cell_call"]).mean()["quality"]
-
-    # Calculate median coverage depth
-    median_coverage_depth = cells_pass_df.groupby(["experimental_condition", "cell_call"]).median()["coverage_depth"]
-
-    return cells_pass, median_coverage_depth, mean_cells_pass
-
-
-def get_dropout_metrics(df):
-    cells_dropout_df = df[df["total_mapped_reads"] < 250000]
+def get_dropout_metrics(dropout_df, total_breakdown):
     # Calculate cells dropout
-    cells_dropout = cells_dropout_df.groupby(["experimental_condition", "cell_call"]).count()["cell_id"]
-
-    # Calculate total breakdown
-    total_breakdown = df.groupby(["experimental_condition", "cell_call"]).count()["cell_id"]
+    cells_dropout = dropout_df.groupby(["Experimental Condition", "Cell Call"]).count()["cell_id"]
 
     # Calculate fraction cells dropout
     fraction_cells_dropout = cells_dropout.divide(total_breakdown, fill_value=0)
 
-    return cells_dropout, fraction_cells_dropout
+    metrics = {
+        "cells_dropout": cells_dropout,
+        "fraction_cells_dropout": fraction_cells_dropout
+    }
 
+    return metrics
 
-def get_non_dropout_metrics(df):
-    cells_non_dropout_df = df[df["total_mapped_reads"] >= 250000]
-
-    # Calculate cells flagged
-    all_flagged_cells = cells_non_dropout_df[cells_non_dropout_df["quality"] < 0.75]
-
-    cells_flagged = all_flagged_cells.groupby(["experimental_condition", "cell_call"]).count()["cell_id"]
-
-    # Calculate median quality of non-dropouts
-    median_quality = cells_non_dropout_df.groupby(["experimental_condition", "cell_call"]).median()["quality"]
-
-    # Calculate total breakdown
-    total_breakdown = df.groupby(["experimental_condition", "cell_call"]).count()["cell_id"]
+def get_non_dropout_metrics(non_dropout_df, total_breakdown):
+    # Calculate cells flagged (Cells with >250k reads, but <0.75 quality (LQ cells))
+    all_flagged_cells = non_dropout_df[non_dropout_df["quality"] < 0.75]
+    count_cells_flagged = all_flagged_cells.groupby(["Experimental Condition", "Cell Call"]).count()["cell_id"]
 
     # Calculate fraction of cells flagged
-    fraction_cells_flagged = cells_flagged.divide(total_breakdown, fill_value=0)
+    fraction_cells_flagged = count_cells_flagged.divide(total_breakdown, fill_value=0)
 
-    return cells_flagged, median_quality, fraction_cells_flagged
+    non_dropout_cells = non_dropout_df.groupby(["Experimental Condition", "Cell Call"]).count()["cell_id"]
+   
+    human_groupped = non_dropout_df[non_dropout_df["species"]=="grch37"].groupby(["Experimental Condition", "Cell Call"])
+    mouse_groupped = non_dropout_df[non_dropout_df["species"]=="mm10"].groupby(["Experimental Condition", "Cell Call"])
+    salmon_groupped = non_dropout_df[non_dropout_df["species"]=="salmon"].groupby(["Experimental Condition", "Cell Call"])
 
+    human_count = human_groupped.count()["cell_id"]
+    mouse_count = mouse_groupped.count()["cell_id"]
+    salmon_count = salmon_groupped.count()["cell_id"]
 
-def get_cells_ref_species(df):
-    cells_not_other_species_df = df[df["total_reads"] < 250000]
-    if cells_not_other_species_df.empty:
-        return pd.Series()
+    human_ratio = human_count.divide(non_dropout_cells, fill_value=0)
+    mouse_ratio = mouse_count.divide(non_dropout_cells, fill_value=0)
+    salmon_ratio = salmon_count.divide(non_dropout_cells, fill_value=0)
 
-    # Calculate percent contamination
-    cells_not_other_species = cells_not_other_species_df.apply(get_fraction_unmapped, axis=1)
-    cells_not_other_species = cells_not_other_species[cells_not_other_species["fraction_unmapped"] < 0.5]
-    median_fraction_background = cells_not_other_species.groupby(["experimental_condition", "cell_call"]).median()[
-        "fraction_unmapped"]
+    metrics = {
+        "count_cells_flagged": count_cells_flagged,
+        "fraction_cells_flagged": fraction_cells_flagged,
+        "non_dropout_cells": non_dropout_cells,
+        "human_count": human_count,
+        "mouse_count": mouse_count,
+        "salmon_count": salmon_count,
+        "human_ratio": human_ratio,
+        "mouse_ratio": mouse_ratio,
+        "salmon_ratio": salmon_ratio
+    }
 
-    return median_fraction_background
+    return metrics
 
-def get_cells_ref_species_fastqscreen(df, confidence_level):
-    cells_not_other_species_df = df[df["total_reads"] < 250000]
-    species_list = ["salmon", "mm10", "grch37"]
-    median_fraction_background_fastqscreen = {}
-    for species in species_list:
-        cells_not_other_species = cells_not_other_species_df.apply(
-            get_fraction_mapped_from_fastqscreen, species=species, axis=1
-            )
-        cells_not_other_species = cells_not_other_species[cells_not_other_species["fraction_mapped_fastqscreen_" + species] >= confidence_level]
-        median_fraction_background_fastqscreen[species] = cells_not_other_species.groupby(["experimental_condition", "cell_call"]).median()[
-            "fraction_mapped_fastqscreen_" + species]
-    return median_fraction_background_fastqscreen
+def label_cells_fastqscreen(df):
+    features = ["fastqscreen_nohit_ratio", "fastqscreen_grch37_ratio", "fastqscreen_mm10_ratio", "fastqscreen_salmon_ratio"]
+    label_to_species = {0: "grch37", 1: "mm10", 2: "salmon"}
+    relative_path = os.path.dirname(__file__)
+    feature_transformer = joblib.load(os.path.join(relative_path, "robust_scaler.joblib"))
+    model = joblib.load(os.path.join(relative_path, "random_forest.joblib"))
+    # make the feature columns
+    for feature in features:
+        df[feature] = df[feature[:-6]].divide(df["total_reads"])
+    #scale the features
+    scaled_features = feature_transformer.transform(df[features])
+    df["species"] = model.predict(scaled_features)
+    df["species"].replace(label_to_species, inplace=True)
 
-def get_cells_species_df_fastqscreen(df, confidence_level):
-    # Calculate total breakdown
-    total_breakdown = df.groupby(["experimental_condition", "cell_call"]).count()["cell_id"]
-    # Filter out total reads < 250K
-    cells_other_species_df = df[df["total_reads"] >= 250000]
-    # Calculate cells_species and percent cells species using fastqscreen values
-    cells_species_fastqscreen = {}
-    fraction_cells_species_fastqscreen = {}
-    for species in ["salmon", "mm10", "grch37"]:
-        if cells_other_species_df.empty:
-            cells_species_fastqscreen[species] = pd.DataFrame()
-            fraction_cells_species_fastqscreen[species] = pd.DataFrame()
-            continue
-        mapped_df_fastqscreen = cells_other_species_df.apply(
-            get_fraction_mapped_from_fastqscreen, species=species, axis=1
-            )
-        cells_species_fastqscreen[species] = \
-            mapped_df_fastqscreen[mapped_df_fastqscreen["fraction_mapped_fastqscreen_" + species] >= confidence_level].groupby(["experimental_condition", "cell_call"]).count()["cell_id"]
-        fraction_cells_species_fastqscreen[species] = cells_species_fastqscreen[species].divide(total_breakdown, fill_value=0)
-    return cells_species_fastqscreen, fraction_cells_species_fastqscreen
+    return df
 
+def get_hq_metrics(hq_df, total_breakdown):
+    #get metrics of high quality cells
+    #group by experimental condition and cell call
+    hq_cell_groupped = hq_df.groupby(["Experimental Condition", "Cell Call"])
+    #number of HQ cells
+    hq_cell_count = hq_cell_groupped.count()["cell_id"]
+    #percentage of HQ cells
+    hq_cell_percentage = hq_cell_count.divide(total_breakdown, fill_value=0)
+    #mean quality
+    hq_mean_quality = hq_cell_groupped.mean()["quality"]
+    #median quality
+    hq_median_quality = hq_cell_groupped.median()["quality"]
+    #median reads
+    hq_median_reads = hq_cell_groupped.median()["total_reads"]
+    #median coverage depth
+    hq_median_coverage_depth = hq_cell_groupped.median()["coverage_depth"]
+    #species counts
+    salmon = hq_df[hq_df["species"]=="salmon"].groupby(["Experimental Condition", "Cell Call"]).count()["cell_id"]
+    human = hq_df[hq_df["species"]=="grch37"].groupby(["Experimental Condition", "Cell Call"]).count()["cell_id"]
+    mouse = hq_df[hq_df["species"]=="mm10"].groupby(["Experimental Condition", "Cell Call"]).count()["cell_id"]
+    #Median % of unmapped reads in HQ cells
+    median_unmapped_ratio = hq_cell_groupped.median()["fraction_unmapped"]
+    #Median % of unknown reads in HQ cells
+    median_unknown_reads_ratio = hq_cell_groupped.median()["fastqscreen_nohit_ratio"]
 
-def get_cells_other_species_df(df):
-    # Calculate total breakdown
-    total_breakdown = df.groupby(["experimental_condition", "cell_call"]).count()["cell_id"]
-    # Filter out total reads < 250K
-    cells_other_species_df = df[df["total_reads"] >= 250000]
-    if cells_other_species_df.empty:
-        return pd.DataFrame(), pd.DataFrame()
+    hq_metrics = {
+        "hq_cell_count": hq_cell_count,
+        "hq_cell_percentage": hq_cell_percentage,
+        "hq_mean_quality": hq_mean_quality,
+        "hq_median_quality": hq_median_quality,
+        "hq_median_reads": hq_median_reads,
+        "hq_median_coverage_depth": hq_median_coverage_depth,
+        "hq_salmon_count": salmon,
+        "hq_human_count": human,
+        "hq_mouse_count": mouse,
+        "median_unmapped_ratio": median_unmapped_ratio,
+        "median_unknown_reads_ratio": median_unknown_reads_ratio,
+    }
 
-    unmapped_df = cells_other_species_df.apply(get_fraction_unmapped, axis=1)
-    cells_other_species = \
-        unmapped_df[unmapped_df["fraction_unmapped"] >= 0.5].groupby(["experimental_condition", "cell_call"]).count()[
-            "cell_id"]
-    # Calculate percent cells other species
-    fraction_cells_other_species = cells_other_species.divide(total_breakdown, fill_value=0)
+    return hq_metrics
 
-    return cells_other_species, fraction_cells_other_species 
+def generate_qc_table(df):
+    #assign species labels to the cells
+    df = label_cells_fastqscreen(df)
+    df = get_fraction_unmapped(df)
+    df = df.rename(columns={"experimental_condition": "Experimental Condition", "cell_call": "Cell Call"})
+    #get high quality cells
+    hq_df = df[df["quality"] >= 0.75]
 
-def generate_contamination_qc_table(df):
-    median_fraction_bg = get_cells_ref_species(df)
-    cells_other_species, fraction_cells_other_species = get_cells_other_species_df(df)
+    #get low quality cells
+    lq_df = df[df["quality"] < 0.75]
+
+    #get dropout cells
+    dropout_df = df[df["total_mapped_reads"] < 250000]
+
+    #get non-dropout cells
+    non_dropout_df = df[df["total_mapped_reads"] >= 250000]
+
+    #total number of cells
+    total_breakdown = df.groupby(["Experimental Condition", "Cell Call"]).count()["cell_id"]
+
+    #manual place holder
+    place_holder = total_breakdown.copy().apply(lambda x: "place_holder")
     
-    if cells_other_species.empty and fraction_cells_other_species.empty:
-        metrics = pd.DataFrame()
-    else:
-        metrics = [
-            cells_other_species.rename("cells_other_species"),
-            fraction_cells_other_species.rename("fraction_cells_other_species"),
-            median_fraction_bg.rename("median_fraction_background")
+    ### metrics for high quality cells
+    hq_metrics = get_hq_metrics(hq_df, total_breakdown)
+    
+    ### metrics for dropout
+    dropout_metrics = get_dropout_metrics(dropout_df, total_breakdown)
+
+    ### metrics for non-dropout
+    non_dropout_metrics = get_non_dropout_metrics(non_dropout_df, total_breakdown)
+
+    metrics_lst = [
+        total_breakdown.rename("All cells"),
+        place_holder.rename("line_break_0"),
+
+        hq_metrics["hq_cell_count"].rename("HQ cells"),
+        hq_metrics["hq_cell_percentage"].astype(float).map("{:.2%}".format).rename("% of HQ cells"),
+        place_holder.rename("line_break_1"),
+
+        dropout_metrics["cells_dropout"].rename("Cells with <250k reads (Dropout cells)"),
+        dropout_metrics["fraction_cells_dropout"].astype(float).map("{:.2%}".format).rename("% of Dropout cells"),
+        place_holder.rename("line_break_2"),
+
+        non_dropout_metrics["count_cells_flagged"].rename("Cells with >250k reads, but <0.75 quality"),
+        non_dropout_metrics["fraction_cells_flagged"].astype(float).map("{:.2%}".format).rename(
+            "% of LQ cells of cells with >250k reads"),
+        place_holder.rename("line_break_3"),
+
+        hq_metrics["hq_mean_quality"].apply(lambda x: round(x, 2)).rename("Mean quality of HQ cells"),
+        hq_metrics["hq_median_quality"].apply(lambda x: round(x, 2)).rename("Median quality of HQ cells"),
+        hq_metrics["hq_median_reads"].apply(lambda x: "{}k".format(int(x/1000))).rename("Median reads of HQ cells"),
+        hq_metrics["hq_median_coverage_depth"].rename("Median coverge depth of HQ cells"),
         ]
-        metrics = pd.concat(metrics, axis=1)
-        metrics = metrics.fillna(0)
 
-    metrics_fastqscreen_dict = {}
-    for confidence_level in [0.3, 0.5, 0.7]:
-        median_fraction_bg_fastqscreen_dict = get_cells_ref_species_fastqscreen(df, confidence_level)
-        cells_species_fastqscreen, fraction_cells_species_fastqscreen = get_cells_species_df_fastqscreen(df, confidence_level)
-    
-        metrics_fastqscreen = [
-            cells_species_fastqscreen["salmon"].rename("cells_species_salmon"),
-            fraction_cells_species_fastqscreen["salmon"].rename("fraction_cells_species_salmon"),
-            median_fraction_bg_fastqscreen_dict["salmon"].rename("median_fraction_background_salmon"),
-
-            cells_species_fastqscreen["mm10"].rename("cells_species_mouse"),
-            fraction_cells_species_fastqscreen["mm10"].rename("fraction_cells_species_mouse"),
-            median_fraction_bg_fastqscreen_dict["mm10"].rename("median_fraction_background_mouse"),
+    fastqscreen_metrics_lst = [
+        place_holder.rename("HQ cells (with quality >0.75)"),
+        hq_metrics["hq_human_count"].rename("HQ human cells"),
+        hq_metrics["hq_mouse_count"].rename("HQ mouse cells"),
+        hq_metrics["hq_salmon_count"].rename("HQ salmon cells"),
         
-            cells_species_fastqscreen["grch37"].rename("cells_species_human"),
-            fraction_cells_species_fastqscreen["grch37"].rename("fraction_cells_species_human"),
-            median_fraction_bg_fastqscreen_dict["grch37"].rename("median_fraction_background_human"),
-        ]
-        metrics_fastqscreen = pd.concat(metrics_fastqscreen, axis=1)
-        metrics_fastqscreen = metrics_fastqscreen.fillna(0)
-        metrics_fastqscreen_dict[confidence_level] = metrics_fastqscreen.T
-    return metrics.T, metrics_fastqscreen_dict
+        place_holder.rename("line_break_0"),
+        place_holder.rename("Cells that have reads >250k"),
+        non_dropout_metrics["human_count"].rename("human cells"),
+        non_dropout_metrics["mouse_count"].rename("mouse cells"),
+        non_dropout_metrics["salmon_count"].rename("salmon cells"),
+        non_dropout_metrics["non_dropout_cells"].rename("Total cells that didn't drop out"),
+        
+        place_holder.rename("line_break_1"), 
+        place_holder.rename("% of cells that have reads >250k"),
+        non_dropout_metrics["human_ratio"].astype(float).map("{:.2%}".format).rename("% human cells"),
+        non_dropout_metrics["mouse_ratio"].astype(float).map("{:.2%}".format).rename("% mouse cells"),
+        non_dropout_metrics["salmon_ratio"].astype(float).map("{:.2%}".format).rename("% salmon cells"),
+        place_holder.copy().apply(lambda x: "100%").rename("Percentage of non-dropout cells"),
 
+        place_holder.rename("line_break_4"),
 
-def generate_quality_qc_table(df):
-    cells_pass, median_cov_depth, mean_cells_pass = get_quality_pass_metrics(df)
-    cells_dropout, fraction_cells_dropout = get_dropout_metrics(df)
-    cells_flagged, median_quality, fraction_cells_flagged = get_non_dropout_metrics(df)
+        hq_metrics["median_unmapped_ratio"].astype(float).map("{:.2%}".format).rename(
+            "Median % of unmapped reads in HQ cells"),
+        hq_metrics["median_unknown_reads_ratio"].astype(float).map("{:.2%}".format).rename(
+            "Median % of unknown reads in HQ cells"),
 
-    # Calculate total breakdown
-    total_breakdown = df.groupby(["experimental_condition", "cell_call"]).count()["cell_id"]
-    # Calculate percentage of cells pass
-    fraction_cell_pass = cells_pass.divide(total_breakdown, fill_value=0)
-    # Calculate median reads
-    median_reads = df.groupby(["experimental_condition", "cell_call"]).median()["total_reads"]
-
-
-    metrics = [
-        cells_pass.rename("cells_pass"),
-        mean_cells_pass.rename("mean_cells_pass"),
-        total_breakdown.rename("total_breakdown"),
-        fraction_cell_pass.rename("fraction_cell_pass"),
-        cells_dropout.rename("cells_dropout"),
-        fraction_cells_dropout.rename("fraction_cells_dropout"),
-        cells_flagged.rename("cells_flagged"),
-        fraction_cells_flagged.rename("fraction_cells_flagged"),
-        median_quality.rename("median_quality"),
-        median_reads.rename("median_reads"),
-        median_cov_depth.rename("median_coverage_depth"),
     ]
-    # Create the output table
-    metrics = pd.concat(metrics, axis=1)
+
+    metrics = pd.concat(metrics_lst, axis=1)
     metrics = metrics.fillna(0)
 
-    return metrics.T
-
+    fastqscreen_metrics = pd.concat(fastqscreen_metrics_lst, axis=1)
+    fastqscreen_metrics = fastqscreen_metrics.fillna(0)
+    
+    return metrics.T, fastqscreen_metrics.T
 
 def generate_library_metrics(df, gc_data, reference_gc):
     cells_pass_df = df[df["quality"] >= 0.75]
@@ -396,14 +403,19 @@ def pretty():
 
     return [
         hover(),
-        dict(selector="th", props=[('font-size', '11pt'), ("font-family", "Helvetica"),
+        dict(selector="th", props=[('font-size', '12pt'), ("font-family", "Helvetica"),
                                    ("color", 'black'),
                                    ('background-color', 'rgb(232, 232, 232)'),
-                                   ("text-align", "right")]),
+                                   ("text-align", "right"),
+                                   ]),
+
         dict(selector="td", props=[("font-family", "Helvetica"),
-                                   ("text-align", "right")]),
-        dict(selector="tr", props=[("line-height", "11px")]),
-        dict(selector="caption", props=[("caption-side", "bottom")])
+                                   ("text-align", "right"),
+                                   ('font-size', '11pt')
+                                  ]),
+
+        dict(selector="tr", props=[("line-height", "14px")]),
+        dict(selector="caption", props=[("caption-side", "bottom")]),
     ]
 
 
@@ -412,8 +424,10 @@ def generate_html(dataframes, pngs, html_file):
 
     for header, df in dataframes:
         html_elements.append("<h3>{}</h3>\n".format(header))
-        html_elements.append(df.style.set_table_styles(pretty()).render())
-
+        html_string = df.style.set_table_styles(pretty()).render()
+        for place_holder in ["place_holder", "line_break_0", "line_break_1", "line_break_2", "line_break_3", "line_break_4"]:
+            html_string = html_string.replace(place_holder, "<br>")
+        html_elements.append(html_string)
     for header, image in pngs:
         image = encode_as_base64(image)
         html_elements.append("<h3>{}</h3>\n".format(header))
@@ -435,21 +449,14 @@ def generate_html_report(tempdir, html, reference_gc, metrics, gc_metrics):
     data = load_data(metrics)
     gc_data = load_data(gc_metrics, gc=True)
 
-    quality_df = generate_quality_qc_table(data)
-    contamination_df, contamination_fastqscreen_df_dict = generate_contamination_qc_table(data)
-    library_df = generate_library_metrics(data, gc_data, reference_gc)
-
+    qc_df, fastqscreen_df = generate_qc_table(data)
     plot_gc_curve(gc_data, reference_gc, gc_plot)
     plot_heatmap(data, heatmap)
 
     generate_html(
         [
-            ('Metrics', quality_df),
-            ('Contamination', contamination_df),
-            ('Contamination_fastqscreen (confidence_level=0.3)', contamination_fastqscreen_df_dict[0.3]),
-            ('Contamination_fastqscreen (confidence_level=0.5)', contamination_fastqscreen_df_dict[0.5]),
-            ('Contamination_fastqscreen (confidence_level=0.7)', contamination_fastqscreen_df_dict[0.7]),
-            ('Other Metrics', library_df),
+            ('Metrics', qc_df),
+            ('', fastqscreen_df)
         ],
         [
             ('Heatmap', heatmap),
