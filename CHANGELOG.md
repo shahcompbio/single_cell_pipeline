@@ -1,4 +1,8 @@
 # Change Log
+### v0.6.3:
+
+#### Bug:
+1. issue with yaml missing in extensions for snv file
 
 ### v0.6.2:
 
