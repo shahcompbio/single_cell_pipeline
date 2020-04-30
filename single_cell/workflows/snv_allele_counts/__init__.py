@@ -53,7 +53,7 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
         ctx={'mem': memory_cfg['high'], 'disk': 20},
         func="single_cell.utils.csvutils.concatenate_csv",
         args=(
-            mgd.TempInputFile('counts.csv.gz', 'cell_id'),
+            mgd.TempInputFile('counts.csv.gz', 'cell_id', extensions=['.yaml']),
             mgd.OutputFile(out_file, extensions=['.yaml']),
         ),
     )
