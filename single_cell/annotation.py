@@ -75,15 +75,8 @@ def get_output_files(outdir, lib):
     data = {
         'merged_metrics_csvs': os.path.join(outdir, '{0}_metrics.csv.gz'.format(lib)),
         'qc_report': os.path.join(outdir, '{0}_QC_report.html'.format(lib)),
-        'corrupt_tree_newick': os.path.join(outdir, '{0}_corrupt_tree.newick'.format(lib)),
-        'consensus_tree_newick': os.path.join(outdir, '{0}_corrupt_tree_consensus.newick'.format(lib)),
-        'phylo_csv': os.path.join(outdir, '{0}_phylo.csv'.format(lib)),
-        'loci_rank_trees': os.path.join(outdir, '{0}_rank_loci_trees.csv'.format(lib)),
-        'filtered_data': os.path.join(outdir, '{0}_filtered_data.csv'.format(lib)),
-        'corrupt_tree_pdf': os.path.join(outdir, '{0}_corrupt_tree.pdf'.format(lib)),
         'segs_pass': os.path.join(outdir, '{0}_segs_pass.tar.gz'.format(lib)),
         'segs_fail': os.path.join(outdir, '{0}_segs_fail.tar.gz'.format(lib)),
-        'corrupt_heatmap_pdf': os.path.join(outdir, '{}_heatmap_corrupt_tree.pdf'.format(lib)),
         'heatmap_filt_pdf': os.path.join(outdir, '{}_heatmap_by_ec_filtered.pdf'.format(lib)),
     }
 
