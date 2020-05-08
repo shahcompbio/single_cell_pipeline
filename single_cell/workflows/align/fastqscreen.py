@@ -115,9 +115,10 @@ def write_detailed_counts(counts, outfile, cell_id, fastqscreen_params):
 
         for read_end, read_end_counts in counts.items():
 
-            if not read_end_counts:
+            if not read_end_counts and not header:
                 outstr = ['cell_id', 'readend'] + genomes + ['count']
                 writer.write(','.join(outstr) + '\n')
+                header = 1
                 continue
 
             if not header:
