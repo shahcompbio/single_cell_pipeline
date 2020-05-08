@@ -1,4 +1,11 @@
 # Change Log
+
+### v0.6.4:
+
+#### Bug:
+1. Issue with fastqscreen counts
+
+
 ### v0.6.3:
 
 #### Bug:
