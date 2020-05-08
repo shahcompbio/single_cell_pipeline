@@ -4,6 +4,7 @@
 
 #### Bug:
 1. Issue with fastqscreen counts
+2. remove corrupt tree files from metadata
 
 
 ### v0.6.3:
