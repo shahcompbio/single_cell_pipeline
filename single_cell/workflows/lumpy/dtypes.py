@@ -7,7 +7,7 @@ def dtypes():
 
     breakpoint = {
         "breakpoint_id": "int",
-        "chrom1": "int",
+        "chrom1": "str",
         "start1": "int",
         "end1": "int",
         "strand1": "str",
@@ -16,7 +16,7 @@ def dtypes():
         "confidence_interval_chr1": "int",
         "confidence_interval_start1": "int",
         "confidence_interval_end1": "int",
-        "chrom2": "int",
+        "chrom2": "str",
         "start2": "int",
         "end2": "int",
         "strand2": "str",
