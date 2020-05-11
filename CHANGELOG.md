@@ -5,7 +5,7 @@
 #### Bug:
 1. Issue with fastqscreen counts
 2. remove corrupt tree files from metadata
-
+3. dtype for chr is str not int in lumpy
 
 ### v0.6.3:
 
