@@ -7,10 +7,10 @@ The single cell pipeline is composed of 10 subpipelines that can be run individu
 
 ### Reference Data
 Before you can run a subpipeline you must acquire the necessary reference data. If you are working from the `juno` cluster, 
-reference data sits in `/juno/work/shah/reference/singlecellpipeline`. If you are not working from juno, 
+reference data can be found at `/juno/work/shah/reference/singlecellpipeline`. If you are not working from juno, 
 you must download the data locally from microsoft azure. 
 
-Run the following command to download reference data from the account to a local path, replacing `{YOUR_REF_DATA_PATH}` with your preferred destination. To run a subpipeline, you will need to update the inputs with your chosen ref data path which is marked in the input files by `REF_DATA`:
+Run the following command to download reference data from the account to a local path, replacing `{YOUR_REF_DATA_PATH}` with your preferred destination.
 ```
 docker run -v /refdata:/refdata singlecellpipeline/azurecli:v0.0.1 az storage blob download-batch -s refdata -d {YOUR_REF_DATA_PATH} --account-name singlecelltestsets --account-key {$ACCOUNT KEY}
 ```
@@ -74,6 +74,12 @@ Description: Call haplotypes.
 ```
 wget https://singlecelltestsets.blob.core.windows.net/public-testdata/count_haps.tar.gz && tar -xvf count-haps.tar.gz 
 rm count-haps.tar.gz && cd count-haps
+```
+
+#### SV Genotyping
+```buildoutcfg
+wget https://singlecelltestsets.blob.core.windows.net/public-testdata/sv_genotyping && tar -xvf sv_genotyping.tar 
+rm sv_genotyping.tar && cd sv_genotyping
 ```
 
 You should now be in a named directory with everything you need to run the pipeline.
