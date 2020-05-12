@@ -78,7 +78,7 @@ rm count-haps.tar.gz && cd count-haps
 
 #### SV Genotyping
 ```buildoutcfg
-wget https://singlecelltestsets.blob.core.windows.net/public-testdata/sv_genotyping && tar -xvf sv_genotyping.tar 
+wget https://singlecelltestsets.blob.core.windows.net/public-testdata/sv_genotyping.tar && tar -xvf sv_genotyping.tar 
 rm sv_genotyping.tar && cd sv_genotyping
 ```
 
