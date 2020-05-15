@@ -3,7 +3,7 @@ from single_cell.utils.validator import utils
 
 def validate_alignment_fastqs(data):
     for sample, sample_data in data.items():
-        for lane, lane_data in sample_data['fastqs']:
+        for lane, lane_data in sample_data['fastqs'].items():
             if not utils.get(lane_data, 'fastq_1') or not utils.get(lane_data, 'fastq_2'):
                 raise utils.MissingInput()
             utils.check_data_type(['sequencing_center', 'sequencing_instrument'], str, lane_data)
