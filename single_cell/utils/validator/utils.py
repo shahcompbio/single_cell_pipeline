@@ -56,9 +56,11 @@ def check_sequencing_instrument_type(instrument):
 
 
 def check_genomic_regions(region, sep='-'):
+    chroms = list(map(str,range(1, 23))) + ['X', 'Y']
+
     chrom, start, end = region.split(sep)
 
-    assert chrom in list(range(1, 23)) + ['X', 'Y'], '{} is not a valid chrom'.format(chrom)
+    assert chrom in chroms, '{} is not a valid chrom'.format(chrom)
 
 
 def check_cells_data(data):
