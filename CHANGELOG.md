@@ -1,5 +1,15 @@
 # Change Log
 
+### v0.6.5
+
+#### Bug:
+1. issues with missing yaml files
+
+#### Changes:
+1. add yaml validators
+2. added docs
+
+
 ### v0.6.4:
 
 #### Bug:
