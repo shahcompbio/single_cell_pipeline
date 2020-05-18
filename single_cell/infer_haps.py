@@ -89,7 +89,7 @@ def count_haps_workflow(args):
         name='extract_allele_readcounts',
         func='single_cell.workflows.extract_allele_readcounts.extract_allele_readcounts',
         args=(
-            mgd.InputFile(haplotypes_filename),
+            mgd.InputFile(haplotypes_filename, extensions=['.yaml']),
             mgd.InputFile('tumour_cells.bam', 'tumour_cell_id', extensions=['.bai'],
                           axes_origin=[], fnames=tumour_cells),
             mgd.OutputFile(allele_counts_filename),

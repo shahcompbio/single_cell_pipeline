@@ -1,5 +1,11 @@
 # Change Log
 
+### v0.6.6
+
+#### Bug:
+1. missing yaml extension for count haps input
+
+
 ### v0.6.5
 
 #### Bug:

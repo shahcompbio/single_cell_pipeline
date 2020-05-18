@@ -55,7 +55,7 @@ def extract_allele_readcounts(
         name='generate_haplotypes_tsv',
         func='single_cell.workflows.extract_allele_readcounts.tasks.convert_csv_to_tsv',
         args=(
-            mgd.InputFile(haplotypes_filename),
+            mgd.InputFile(haplotypes_filename, extensions=['.yaml']),
             mgd.TempOutputFile('haplotypes.tsv')
         )
     )
