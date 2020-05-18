@@ -1,0 +1,18 @@
+# build on top of out base image
+FROM singlecellpipeline/python_singlecell_qc:v0.1.2
+
+# Copy the current directory contents into the container at /app
+
+# Install any needed packages specified in requirements.txt
+RUN pip install -e git+https://github.com/shahcompbio/pypeliner.git@v0.5.17#egg=pypeliner
+RUN pip install -e git+https://github.com/shahcompbio/biowrappers.git@v0.2.4#egg=biowrappers
+RUN pip install -e git+https://github.com/shahcompbio/single_cell_pipeline.git@{git_commit}#egg=single-cell-pipeline
+
+# Make port 80 available to the world outside this container
+EXPOSE 80
+
+# Define environment variable
+ENV NAME scpipeline
+
+# Run app.py when the container launches
+CMD ["python"]

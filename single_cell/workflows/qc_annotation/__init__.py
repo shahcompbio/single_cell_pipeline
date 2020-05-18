@@ -10,10 +10,8 @@ import pypeliner.managed as mgd
 
 def create_qc_annotation_workflow(
         hmmcopy_metrics, hmmcopy_reads, alignment_metrics, gc_metrics, segs_tar,
-        merged_metrics, qc_report, corrupt_tree, consensus_tree, phylo_csv,
-        rank_trees, filtered_data, corrupt_tree_pdf, pass_segs, fail_segs,
-        corrupt_tree_heatmap_output, plot_heatmap_ec_filt_output, config,
-        alignment_config, library_id, no_corrupt_tree=False,
+        merged_metrics, qc_report, pass_segs, fail_segs,
+        plot_heatmap_ec_filt_output, config, alignment_config
 ):
     ctx = {'docker_image': config['docker']['single_cell_pipeline']}
 
@@ -51,7 +49,7 @@ def create_qc_annotation_workflow(
         func="single_cell.workflows.qc_annotation.tasks.merge_metrics",
         args=(
             mgd.TempInputFile("hmmcopy_quality_metrics.csv.gz", extensions=['.yaml']),
-            mgd.InputFile(alignment_metrics, extenstions=['.yaml']),
+            mgd.InputFile(alignment_metrics, extensions=['.yaml']),
             mgd.TempOutputFile('merged_metrics.csv.gz', extensions=['.yaml'])
         )
     )
@@ -63,7 +61,6 @@ def create_qc_annotation_workflow(
         args=(
             mgd.TempInputFile('merged_metrics.csv.gz', extensions=['.yaml']),
             mgd.TempOutputFile('merged_metrics_contamination.csv.gz', extensions=['.yaml']),
-            alignment_config['fastq_screen_params']
         ),
         kwargs={
             'reference': config['ref_type'],
@@ -116,74 +113,14 @@ def create_qc_annotation_workflow(
         }
     )
 
-    if no_corrupt_tree:
-        workflow.transform(
-            name='finalize_metrics',
-            ctx={'mem': config['memory']['med'], 'ncpus': 1, 'num_retry': 1},
-            func="single_cell.utils.csvutils.finalize_csv",
-            args=(
-                mgd.TempInputFile('merged_metrics_contamination.csv.gz', extensions=['.yaml']),
-                mgd.OutputFile(merged_metrics, extensions=['.yaml']),
-            ),
-        )
-    else:
-
-        workflow.transform(
-            name='finalize_metrics',
-            ctx={'mem': config['memory']['med'], 'ncpus': 1, 'num_retry': 1},
-            func="single_cell.utils.csvutils.finalize_csv",
-            args=(
-                mgd.TempInputFile('merged_metrics_contamination.csv.gz', extensions=['.yaml']),
-                mgd.TempOutputFile('merged_metrics_with_header.csv.gz', extensions=['.yaml'])
-            )
-        )
-
-        workflow.subworkflow(
-            name='corrupt_tree',
-            func='single_cell.workflows.corrupt_tree.create_corrupt_tree_workflow',
-            args=(
-                mgd.TempInputFile('merged_metrics_with_header.csv.gz', extensions=['.yaml']),
-                mgd.InputFile(hmmcopy_reads),
-                mgd.OutputFile(corrupt_tree),
-                mgd.OutputFile(consensus_tree),
-                mgd.OutputFile(phylo_csv),
-                mgd.OutputFile(rank_trees),
-                mgd.OutputFile(filtered_data),
-                mgd.OutputFile(corrupt_tree_pdf),
-                library_id,
-                config
-            )
-        )
-
-        workflow.transform(
-            name="add_corrupt_tree_order",
-            ctx={'mem': config['memory']['med'], 'ncpus': 1},
-            func="single_cell.workflows.qc_annotation.tasks.add_corrupt_tree_order",
-            args=(
-                mgd.InputFile(corrupt_tree),
-                mgd.TempInputFile('merged_metrics_with_header.csv.gz', extensions=['.yaml']),
-                mgd.OutputFile(merged_metrics, extensions=['.yaml'])
-            ),
-        )
-
-        workflow.transform(
-            name='plot_heatmap_corrupt_tree',
-            func="single_cell.workflows.qc_annotation.tasks.plot_pcolor",
-            args=(
-                mgd.InputFile(hmmcopy_reads, extensions=['.yaml']),
-                mgd.TempInputFile('merged_metrics_contamination.csv.gz', extensions=['.yaml']),
-                mgd.OutputFile(corrupt_tree_heatmap_output),
-            ),
-            kwargs={
-                'plot_title': 'QC pipeline metrics',
-                'column_name': 'state',
-                'plot_by_col': 'experimental_condition',
-                'color_by_col': 'cell_call',
-                'chromosomes': config['chromosomes'],
-                'max_cn': config['num_states'],
-                'scale_by_cells': False,
-                'corrupt_tree': mgd.InputFile(corrupt_tree),
-            }
-        )
+    workflow.transform(
+        name='finalize_metrics',
+        ctx={'mem': config['memory']['med'], 'ncpus': 1, 'num_retry': 1},
+        func="single_cell.utils.csvutils.rewrite_csv_file",
+        args=(
+            mgd.TempInputFile('merged_metrics_contamination.csv.gz', extensions=['.yaml']),
+            mgd.OutputFile(merged_metrics, extensions=['.yaml']),
+        ),
+    )
 
     return workflow

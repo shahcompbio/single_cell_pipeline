@@ -140,22 +140,22 @@ def run_hmmcopy(
 
     hmmcopy_outdir = os.path.join(hmmcopy_tempdir, str(0))
     
-    csvutils.prep_csv_files(
+    csvutils.rewrite_csv_file(
         os.path.join(hmmcopy_outdir, "reads.csv"), corrected_reads_filename,
         dtypes=dtypes()['reads']
     )
     
-    csvutils.prep_csv_files(
+    csvutils.rewrite_csv_file(
         os.path.join(hmmcopy_outdir, "params.csv"), parameters_filename,
         dtypes=dtypes()['params']
     )
  
-    csvutils.prep_csv_files(
+    csvutils.rewrite_csv_file(
         os.path.join(hmmcopy_outdir, "segs.csv"), segments_filename,
         dtypes=dtypes()['segs']
     )
     
-    csvutils.prep_csv_files(
+    csvutils.rewrite_csv_file(
         os.path.join(hmmcopy_outdir, "metrics.csv"), metrics_filename,
         dtypes=dtypes()['metrics']
     )
@@ -163,19 +163,12 @@ def run_hmmcopy(
     helpers.make_tarfile(hmmcopy_tar, hmmcopy_tempdir)
 
 
-def concatenate_csv(inputs, output, data_type, low_memory=False):
-    ref_dtypes = None
-    if data_type:
-        ref_dtypes = dtypes()[data_type]
-
-    if low_memory:
-        csvutils.concatenate_csv_files_quick_lowmem(
-            inputs, output, dtypes=ref_dtypes
-        )
-    else:
-        csvutils.concatenate_csv(
-            inputs, output, dtypes=ref_dtypes
-        )
+def concatenate_csv(inputs, output):
+    csvutils.concatenate_csv(
+        inputs,
+        output,
+        write_header=True
+    )
 
 
 def get_hierarchical_clustering_order(
@@ -237,7 +230,7 @@ def get_mappability_col(reads, annotated_reads):
     alldata = pd.concat(alldata)
 
     csvutils.write_dataframe_to_csv_and_yaml(
-        alldata, annotated_reads, write_header=True, dtypes=dtypes()['reads']
+        alldata, annotated_reads, dtypes()['reads'], write_header=True
     )
 
 
@@ -259,7 +252,7 @@ def add_clustering_order(
             sample_info[cell_id] = {}
         sample_info[cell_id]['order'] = order
 
-    csvutils.annotate_csv(metrics, sample_info, output, dtypes=dtypes()['metrics'])
+    csvutils.annotate_csv(metrics, sample_info, output, dtypes()['metrics'])
 
 def group_cells_by_row(cells, metrics, sort_by_col=False):
     metricsdata = pd.read_csv(metrics, compression='gzip')

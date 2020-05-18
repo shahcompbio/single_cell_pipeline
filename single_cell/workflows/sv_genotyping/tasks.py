@@ -333,7 +333,7 @@ def genotype(
 
     output['cell_id'] = cell_id
 
-    csvutils.write_dataframe_to_csv_and_yaml(output, output_csv, write_header=True)
+    csvutils.write_dataframe_to_csv_and_yaml(output, output_csv, {}, write_header=True)
 
 
 def write_svtyper_annotation(annotation, inputcsv, outfile):
@@ -394,7 +394,7 @@ def write_svtyper_annotations(csv, output_paths, tempdir):
             temp_output_path
         )
 
-        csvutils.finalize_csv(temp_output_path, output_paths[annotation])
+        csvutils.rewrite_csv_file(temp_output_path, output_paths[annotation])
 
 
 def merge_csvs(input_csvs, merged_csv):

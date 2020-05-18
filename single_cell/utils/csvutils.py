@@ -1,3 +1,4 @@
+import collections
 import gzip
 import logging
 import os
@@ -5,7 +6,38 @@ import shutil
 
 import pandas as pd
 import yaml
-from single_cell.utils import helpers
+import collections
+
+class CsvMergeDtypesEmptyMergeSet(Exception):
+    pass
+
+
+class CsvConcatNaNIntDtypeException(Exception):
+    pass
+
+
+class CsvMergeCommonColException(Exception):
+    pass
+
+
+class DtypesMergeException(Exception):
+    pass
+
+
+class CsvConcatException(Exception):
+    pass
+
+
+class CsvAnnotateError(Exception):
+    pass
+
+
+class CsvMergeException(Exception):
+    pass
+
+
+class CsvMergeColumnMismatchException(Exception):
+    pass
 
 
 class CsvParseError(Exception):
@@ -14,6 +46,26 @@ class CsvParseError(Exception):
 
 class CsvInputError(Exception):
     pass
+
+
+from single_cell.utils import helpers
+
+
+def pandas_to_std_types():
+    std_dict = {
+        "bool": "bool",
+        "int64": "int",
+        "int": "int",
+        "Int64": "int",
+        "float64": "float",
+        "float": "float",
+        "object": "str",
+        "str": "str",
+        "category": "str",
+        "NaN": "NaN",
+    }
+
+    return collections.defaultdict(lambda: "str", std_dict)
 
 
 class CsvWriterError(Exception):
@@ -32,65 +84,8 @@ class CsvTypeMismatch(Exception):
         return message
 
 
-def pandas_to_std_types():
-    return {
-        "bool": "bool",
-        "int64": "int",
-        "int": "int",
-        "Int64": "int",
-        "float64": "float",
-        "float": "float",
-        "object": "str",
-        "str": "str",
-        "category": "str",
-        "NA": "NA"
-    }
-
-
-def std_to_pandas_types():
-    return {
-        "bool": "bool",
-        "int": "Int64",
-        "float": "float64",
-        "str": "str",
-        "NA": "NA"
-    }
-
-
-def cast_dataframe(df, dtypes):
-    for column_name in df.columns.values:
-        dtype = dtypes[column_name]
-
-        if str(dtype) == 'bool' and df[column_name].isnull().any():
-            raise Exception('NaN found in bool column:{}'.format(column_name))
-
-        if 'NA' in df[column_name]:
-            if 'float' in str(dtype).lower() or 'int' in str(dtype).lower():
-                df[column_name] = df[column_name].replace('NA', float('nan'))
-
-        df[column_name] = df[column_name].astype(dtype)
-
-    return df
-
-
-def get_dtypes_from_df(df, na_rep='NA'):
-    type_converter = pandas_to_std_types()
-
-    typeinfo = {}
-    for column, dtype in df.dtypes.items():
-        if column in ['chr', 'chrom', 'chromosome']:
-            typeinfo[column] = 'str'
-        else:
-            if df.empty:
-                typeinfo[column] = na_rep
-            else:
-                typeinfo[column] = type_converter[str(dtype)]
-
-    return typeinfo
-
-
-class CsvInput(object):
-    def __init__(self, filepath, na_rep='NA', dtypes=None):
+class IrregularCsvInput(object):
+    def __init__(self, filepath, dtypes, na_rep='NaN'):
         """
         csv file and all related metadata
         :param filepath: path to csv
@@ -99,22 +94,53 @@ class CsvInput(object):
         :type na_rep: str
         """
         self.filepath = filepath
-        self.compression = self.__get_compression_type_pandas()
+
         self.na_rep = na_rep
 
-        if os.path.exists(self.yaml_file):
-            metadata = self.__parse_metadata()
-        else:
-            metadata = self.generate_metadata()
+        metadata = self.__generate_metadata()
 
         self.header, self.sep, self.dtypes, self.columns = metadata
 
-        if dtypes:
-            self.dtypes.update(dtypes)
+        self.dtypes = dtypes
 
     @property
     def yaml_file(self):
         return self.filepath + '.yaml'
+
+    def __get_compression_type_pandas(self):
+        filepath = self.filepath
+        if filepath.endswith('.tmp'):
+            filepath = filepath[:-4]
+
+        _, ext = os.path.splitext(filepath)
+
+        if ext == ".csv":
+            return None
+        elif ext == ".gz":
+            return "gzip"
+        elif ext == ".h5" or ext == ".hdf5":
+            raise CsvInputError("HDF is not supported")
+        else:
+            logging.getLogger("single_cell.utils.csv").warn(
+                "Couldn't detect output format. extension {}".format(ext)
+            )
+            return None
+
+    def get_dtypes_from_df(self, df):
+        type_converter = pandas_to_std_types()
+
+        typeinfo = {}
+        for column, dtype in df.dtypes.items():
+            if column in ['chr', 'chrom', 'chromosome']:
+                typeinfo[column] = 'str'
+                typeinfo[column] = 'str'
+            else:
+                if df.empty:
+                    typeinfo[column] = self.na_rep
+                else:
+                    typeinfo[column] = type_converter[str(dtype)]
+
+        return typeinfo
 
     def __detect_sep_from_header(self, header):
         """
@@ -135,40 +161,21 @@ class CsvInput(object):
         elif ',' in header:
             return ','
 
-    def __detect_sep_from_file(self):
-        with helpers.getFileHandle(self.filepath) as reader:
-            header = reader.readline().strip()
-            return self.__detect_sep_from_header(header)
+    def __generate_metadata(self):
 
-    def __get_compression_type_pandas(self):
-        filepath = self.filepath
-        if filepath.endswith('.tmp'):
-            filepath = filepath[:-4]
-
-        _, ext = os.path.splitext(filepath)
-
-        if ext == ".csv":
-            return None
-        elif ext == ".gz":
-            return "gzip"
-        elif ext == ".h5" or ext == ".hdf5":
-            raise CsvInputError("HDF is not supported")
-        else:
-            logging.getLogger("single_cell.utils.csv").warn(
-                "Couldn't detect output format. extension {}".format(ext)
-            )
-            return None
-
-    def __is_empty(self):
-        with open(self.filepath) as f:
-            first_line = f.readline()
-            if len(first_line) == 0:
-                logging.getLogger("single_cell.utils.csv").warn("empty csv file")
-                return True
+        with helpers.getFileHandle(self.filepath, 'rt') as inputfile:
+            header = inputfile.readline().strip()
+            sep = self.__detect_sep_from_header(header)
+            columns = header.split(sep)
+            header = True
+            dtypes = self.__generate_dtypes(sep=sep)
+            return header, sep, dtypes, columns
 
     def __generate_dtypes(self, columns=None, sep=','):
+        compression = self.__get_compression_type_pandas()
+
         data = pd.read_csv(
-            self.filepath, compression=self.compression, chunksize=10 ** 6,
+            self.filepath, compression=compression, chunksize=10 ** 6,
             sep=sep
         )
         data = next(data)
@@ -176,15 +183,87 @@ class CsvInput(object):
         if columns:
             data.columns = columns
 
-        typeinfo = get_dtypes_from_df(data)
+        typeinfo = self.get_dtypes_from_df(data)
         return typeinfo
 
+    def read_csv(self, chunksize=None):
+        def return_gen(df_iterator):
+            for df in df_iterator:
+                for col in df.columns.values:
+                    assert col in self.dtypes, col
+                yield df
+
+        dtypes = {k: v for k, v in self.dtypes.items() if v != "NA"}
+        # if header exists then use first line (0) as header
+        header = 0 if self.header else None
+        names = None if self.header else self.columns
+
+        compression = self.__get_compression_type_pandas()
+
+        try:
+            data = pd.read_csv(
+                self.filepath, compression=compression, chunksize=chunksize,
+                sep=self.sep, header=header, names=names, dtype=dtypes)
+        except pd.errors.EmptyDataError:
+            data = pd.DataFrame(columns=self.columns)
+
+        if chunksize:
+            return return_gen(data)
+        else:
+            for col in data.columns.values:
+                assert col in self.dtypes, col
+            return data
+
+
+class CsvInput(object):
+    def __init__(self, filepath, na_rep='NaN'):
+        """
+        csv file and all related metadata
+        :param filepath: path to csv
+        :type filepath: str
+        :param na_rep: replace na with this
+        :type na_rep: str
+        """
+        self.filepath = filepath
+
+        self.na_rep = na_rep
+
+        self.sep = ','
+
+        metadata = self.__parse_metadata()
+
+        self.header, self.dtypes, self.columns = metadata
+
+        self.__confirm_compression_type_pandas()
+
+    def cast_dataframe(self, df):
+        for column_name in df.columns.values:
+            dtype = self.dtypes[column_name]
+            df[column_name] = df[column_name].astype(dtype)
+        return df
+
+    @property
+    def yaml_file(self):
+        return self.filepath + '.yaml'
+
+    def __confirm_compression_type_pandas(self):
+        filepath = self.filepath
+        if filepath.endswith('.tmp'):
+            filepath = filepath[:-4]
+
+        _, ext = os.path.splitext(filepath)
+
+        if not ext == ".gz":
+            raise CsvInputError("{} is not supported".format(ext))
+
     def __parse_metadata(self):
-        with helpers.getFileHandle(self.filepath + '.yaml') as yamlfile:
+        with open(self.filepath + '.yaml') as yamlfile:
             yamldata = yaml.safe_load(yamlfile)
 
         header = yamldata['header']
-        sep = yamldata.get('sep', ',')
+        sep = yamldata['sep']
+
+        assert sep == self.sep
 
         dtypes = {}
         columns = []
@@ -195,20 +274,10 @@ class CsvInput(object):
 
             columns.append(colname)
 
-        return header, sep, dtypes, columns
-
-    def generate_metadata(self):
-        with helpers.getFileHandle(self.filepath) as inputfile:
-            header = inputfile.readline().strip()
-            sep = self.__detect_sep_from_header(header)
-            columns = header.split(sep)
-            header = True
-            dtypes = self.__generate_dtypes(sep=sep)
-            return header, sep, dtypes, columns
+        return header, dtypes, columns
 
     def __verify_data(self, df):
-        if not list(df.columns.values) == self.columns:
-            print(df.columns.values, self.columns)
+        if not set(list(df.columns.values)) == set(self.columns):
             raise CsvParseError("metadata mismatch in {}".format(self.filepath))
 
     def read_csv(self, chunksize=None):
@@ -222,16 +291,13 @@ class CsvInput(object):
         header = 0 if self.header else None
         names = None if self.header else self.columns
 
-        std_to_pandas = std_to_pandas_types()
-        dtypes = {k: std_to_pandas[v] for k, v in dtypes.items()}
-
         try:
             data = pd.read_csv(
-                self.filepath, compression=self.compression, chunksize=chunksize,
+                self.filepath, compression='gzip', chunksize=chunksize,
                 sep=self.sep, header=header, names=names, dtype=dtypes)
         except pd.errors.EmptyDataError:
             data = pd.DataFrame(columns=self.columns)
-            data = cast_dataframe(data, dtypes)
+            data = self.cast_dataframe(data)
 
         if chunksize:
             return return_gen(data)
@@ -242,15 +308,19 @@ class CsvInput(object):
 
 class CsvOutput(object):
     def __init__(
-            self, filepath, header=True, sep=',', columns=None, dtypes=None,
-            na_rep='NA'
+            self, filepath, dtypes, header=True,
+            na_rep='NaN', columns=None
     ):
         self.filepath = filepath
         self.header = header
-        self.columns = columns
-        self.sep = sep
-        self.dtypes = dtypes if dtypes else {}
+        self.dtypes = dtypes
         self.na_rep = na_rep
+
+        self.columns = columns
+
+        self.__confirm_compression_type_pandas()
+
+        self.sep = ','
 
     @property
     def yaml_file(self):
@@ -260,229 +330,235 @@ class CsvOutput(object):
     def header_line(self):
         return self.sep.join(self.columns) + '\n'
 
-    def __get_compression_type_pandas(self):
+    def __confirm_compression_type_pandas(self):
         filepath = self.filepath
         if filepath.endswith('.tmp'):
             filepath = filepath[:-4]
 
         _, ext = os.path.splitext(filepath)
 
-        if ext == ".csv":
-            return None
-        elif ext == ".gz":
-            return "gzip"
-        elif ext == ".h5" or ext == ".hdf5":
-            raise CsvInputError("HDF is not supported")
-        else:
-            logging.getLogger("single_cell.utils.csv").warn(
-                "Couldn't detect output format. extension {}".format(ext)
-            )
-            return None
+        if not ext == ".gz":
+            raise CsvWriterError("{} is not supported".format(ext))
 
     def write_yaml(self):
         type_converter = pandas_to_std_types()
 
         yamldata = {'header': self.header, 'sep': self.sep, 'columns': []}
-
         for column in self.columns:
             data = {'name': column, 'dtype': type_converter[self.dtypes[column]]}
             yamldata['columns'].append(data)
 
-        with helpers.getFileHandle(self.yaml_file, 'wt') as f:
+        with open(self.yaml_file, 'wt') as f:
             yaml.safe_dump(yamldata, f, default_flow_style=False)
 
-    def write_df(self, df):
-        if self.columns:
-            if not self.columns == df.columns.values:
-                raise CsvWriterError("Writer initialized with wrong col names")
+    def __get_dtypes_from_df(self, df):
+        dtypes = df.dtypes
+        dtypes_converter = pandas_to_std_types()
+        dtypes = {k: dtypes_converter[str(v)] for k, v in dtypes.items()}
+        return dtypes
 
-        header = df.columns.values if self.header else False
-        compression = self.__get_compression_type_pandas()
+    def __verify_df(self, df):
+        if self.columns:
+            assert set(list(df.columns.values)) == set(self.columns)
+        else:
+            self.columns = df.columns.values
+
+    def __cast_df(self, df):
+        for column_name in df.columns.values:
+            dtype = self.dtypes[column_name]
+
+            if str(dtype) == 'bool' and df[column_name].isnull().any():
+                raise Exception('NaN found in bool column:{}'.format(column_name))
+
+            df[column_name] = df[column_name].astype(dtype)
+
+        return df
+
+    def __write_df(self, df, header=True, mode='w'):
+        df = self.__cast_df(df)
+        if self.columns:
+            assert self.columns == list(df.columns.values)
+        else:
+            self.columns = list(df.columns.values)
+
         df.to_csv(
             self.filepath, sep=self.sep, na_rep=self.na_rep,
-            index=False, header=header, compression=compression
+            index=False, compression='gzip', mode=mode, header=header
         )
 
-        self.columns = list(df.columns.values)
+    def __write_df_chunks(self, dfs, header=True):
+        for i, df in enumerate(dfs):
+            if i == 0 and self.header:
+                self.__write_df(df, header=header, mode='w')
+            else:
+                self.__write_df(df, header=False, mode='a')
 
-        df_dtypes = get_dtypes_from_df(df)
-
-        if not self.dtypes:
-            self.dtypes = df_dtypes
-
-        type_converter = pandas_to_std_types()
-        for col, dtype in df_dtypes.items():
-            expected_dtype = type_converter[self.dtypes[col]]
-            dtype = type_converter[dtype]
-            if not dtype == 'NA' and not expected_dtype == dtype:
-                raise CsvTypeMismatch(col, expected_dtype, dtype)
+    def write_df(self, df, chunks=False):
+        if chunks:
+            self.__write_df_chunks(df, header=self.header)
+        else:
+            self.__write_df(df, self.header)
 
         self.write_yaml()
 
-    def write_csv_data(self, reader, writer):
-        reader_gzip = type(reader) == gzip.GzipFile
-        writer_gzip = type(writer) == gzip.GzipFile
+    def write_header(self, writer):
+        header = ','.join(self.columns)
+        header = header + '\n'
+        writer.write(header)
 
-        if reader_gzip == writer_gzip:
-            same_format = True
-        else:
-            same_format = False
+    def write_data_streams(self, csvfiles):
+        assert self.columns
+        assert self.dtypes
+        with gzip.open(self.filepath, 'wt') as writer:
 
-        if same_format:
-            shutil.copyfileobj(
-                reader, writer, length=16 * 1024 * 1024
-            )
-        else:
-            for line in reader:
+            if self.header:
+                self.write_header(writer)
+
+            for csvfile in csvfiles:
+                with gzip.open(csvfile, 'rt') as data_stream:
+                    shutil.copyfileobj(
+                        data_stream, writer, length=16 * 1024 * 1024
+                    )
+
+        self.write_yaml()
+
+    def rewrite_csv(self, csvfile):
+        assert self.columns
+        assert self.dtypes
+        with gzip.open(self.filepath, 'wt') as writer:
+            if self.header:
+                self.write_header(writer)
+
+            with gzip.open(csvfile, 'rt') as data_stream:
+                shutil.copyfileobj(
+                    data_stream, writer, length=16 * 1024 * 1024
+                )
+
+        self.write_yaml()
+
+    def write_text(self, text):
+        assert self.columns
+        assert self.dtypes
+
+        with gzip.open(self.filepath, 'wt') as writer:
+
+            if self.header:
+                self.write_header(writer)
+
+            for line in text:
                 writer.write(line)
 
-    def concatenate_files(self, infiles):
-        header = self.header_line if self.header else None
-
-        with helpers.getFileHandle(self.filepath, 'wt') as writer:
-            if header:
-                writer.write(header)
-            for infile in infiles:
-                with helpers.getFileHandle(infile) as reader:
-                    self.write_csv_data(reader, writer)
-
-        self.write_yaml()
-
-    def write_headerless_csv(self, infile):
-        with helpers.getFileHandle(self.filepath, 'wt') as writer:
-            with helpers.getFileHandle(infile) as reader:
-                if not reader.readline() == self.header_line:
-                    raise CsvWriterError("cannot write, wrong header")
-                self.write_csv_data(reader, writer)
-
-        self.write_yaml()
-
-    def write_csv_with_header(self, infile, headerless_input=False):
-        with helpers.getFileHandle(self.filepath, 'wt') as writer:
-            with helpers.getFileHandle(infile) as reader:
-                if headerless_input:
-                    writer.write(self.header_line)
-                self.write_csv_data(reader, writer)
-
         self.write_yaml()
 
 
-def annotate_csv(infile, annotation_data, outfile, on="cell_id", write_header=True, dtypes=None):
-    csvinput = CsvInput(infile)
+def write_metadata(infile, dtypes):
+    csvinput = IrregularCsvInput(infile, dtypes)
 
-    metrics_df = csvinput.read_csv()
-
-    merge_on = metrics_df[on]
-
-    for cell in merge_on:
-        col_data = annotation_data[cell]
-
-        for column, value in col_data.items():
-            metrics_df.loc[metrics_df[on] == cell, column] = value
-
-    metrics_df = cast_dataframe(metrics_df, dtypes)
-
-    df_dtypes = metrics_df.dtypes.to_dict()
-    if dtypes:
-        df_dtypes = {k: dtypes[k] if k in dtypes else str(v) for k, v in df_dtypes.items()}
-    else:
-        df_dtypes = {k: str(v) for k, v in df_dtypes.items()}
-
-    output = CsvOutput(outfile, sep=csvinput.sep, header=write_header, dtypes=df_dtypes)
-    output.write_df(metrics_df)
+    csvoutput = CsvOutput(
+        infile, csvinput.dtypes, header=csvinput.header,
+        columns=csvinput.columns
+    )
+    csvoutput.write_yaml()
 
 
-def concatenate_csv(in_filenames, out_filename, key_column=None, write_header=True, dtypes=None):
-    if not isinstance(in_filenames, dict):
-        in_filenames = dict(enumerate(in_filenames))
-
-    data = []
-    sep = None
-
-    for key, in_filename in in_filenames.items():
-        csvinput = CsvInput(in_filename)
-
-        if not sep:
-            sep = csvinput.sep
-        assert sep == csvinput.sep
-
-        df = csvinput.read_csv()
-
-        if key_column is not None:
-            df[key_column] = str(key)
-        data.append(df)
-    data = pd.concat(data, ignore_index=True)
-
-    df_dtypes = data.dtypes.to_dict()
-    if dtypes:
-        df_dtypes = {k: dtypes[k] if k in dtypes else str(v) for k, v in df_dtypes.items()}
-    else:
-        df_dtypes = {k: str(v) for k, v in df_dtypes.items()}
-
-    data = cast_dataframe(data, df_dtypes)
-
-    csvoutput = CsvOutput(out_filename, header=write_header, sep=sep, dtypes=df_dtypes)
-    csvoutput.write_df(data)
-
-
-def extrapolate_types_from_yaml_files(csv_files):
-    precedence = ['str', 'category', 'float', 'float64', 'int', 'int64', 'Int64', 'bool', 'NA']
-
-    csv_metadata = [CsvInput(csv_file) for csv_file in csv_files]
-
-    header = set([val.header for val in csv_metadata])
-    assert len(header) == 1, 'mismatched yaml files'
-    header = list(header)[0]
-
-    sep = set([val.sep for val in csv_metadata])
-    assert len(sep) == 1, 'mismatched yaml files'
-    sep = list(sep)[0]
-
-    cols = set([tuple(val.columns) for val in csv_metadata])
-    assert len(cols) == 1, 'mismatched yaml files'
-    cols = list(cols)[0]
-
-    dtypes = [val.dtypes for val in csv_metadata]
+def merge_dtypes(dtypes_all):
+    if dtypes_all == []:
+        raise CsvMergeDtypesEmptyMergeSet("must provide dtypes to merge")
 
     merged_dtypes = {}
-    for dtype_val in dtypes:
-        for col, dtype in dtype_val.items():
-            if col not in merged_dtypes:
-                merged_dtypes[col] = dtype
+
+    for dtypes in dtypes_all:
+        for k, v in dtypes.items():
+            if k in merged_dtypes:
+                if merged_dtypes[k] != v:
+                    raise DtypesMergeException("dtypes not mergeable")
             else:
-                og_index = precedence.index(merged_dtypes[col])
-                new_index = precedence.index(dtype)
-                if new_index < og_index:
-                    merged_dtypes[col] = dtype
+                merged_dtypes[k] = v
 
-    return header, sep, cols, merged_dtypes
+    return merged_dtypes
 
 
-def concatenate_csv_files_quick_lowmem(inputfiles, output, write_header=True, dtypes=None):
-    type_converter = pandas_to_std_types()
+def concatenate_csv(inputfiles, output, write_header=True):
+    if inputfiles == [] or inputfiles == {}:
+        raise CsvConcatException("nothing provided to concat")
 
     if isinstance(inputfiles, dict):
         inputfiles = inputfiles.values()
 
-    header, sep, cols, input_dtypes = extrapolate_types_from_yaml_files(inputfiles)
+    inputs = [CsvInput(infile) for infile in inputfiles]
 
-    if header:
-        raise CsvInputError("Attempting to concatenate files with header.")
+    dtypes = merge_dtypes([csvinput.dtypes for csvinput in inputs])
 
-    for col, type in input_dtypes.items():
-        if dtypes and col in dtypes:
-            expected_dtype = type_converter[dtypes[col]]
-            type = type_converter[type]
-            if not expected_dtype == type:
-                raise CsvTypeMismatch(col, expected_dtype, type)
+    headers = [csvinput.header for csvinput in inputs]
 
+    columns = [csvinput.columns for csvinput in inputs]
+
+    low_memory = True
+    if any(headers):
+        low_memory = False
+
+    if not all(columns[0] == elem for elem in columns):
+        low_memory = False
+
+    if low_memory:
+        columns = columns[0]
+        concatenate_csv_files_quick_lowmem(inputfiles, output, dtypes, columns, write_header=write_header)
+
+    else:
+        concatenate_csv_files_pandas(inputfiles, output, dtypes, write_header=write_header)
+
+
+def concatenate_csv_files_pandas(in_filenames, out_filename, dtypes, write_header=True):
+    if isinstance(in_filenames, dict):
+        in_filenames = in_filenames.values()
+
+    data = [
+        CsvInput(in_filename).read_csv() for in_filename in in_filenames
+    ]
+    data = pd.concat(data, ignore_index=True)
+    csvoutput = CsvOutput(out_filename, dtypes, header=write_header)
+    csvoutput.write_df(data)
+
+
+def concatenate_csv_files_quick_lowmem(inputfiles, output, dtypes, columns, write_header=True):
     csvoutput = CsvOutput(
-        output, header=write_header, sep=sep, columns=cols, dtypes=input_dtypes
+        output, dtypes, header=write_header, columns=columns
     )
-    csvoutput.concatenate_files(inputfiles)
+    csvoutput.write_data_streams(inputfiles)
 
 
-def prep_csv_files(filepath, outputfile, dtypes=None):
+# annotation_dtypes shouldnt be default, if it is None, it breaks
+def annotate_csv(infile, annotation_data, outfile, annotation_dtypes, on="cell_id", write_header=True):
+    csvinput = CsvInput(infile)
+    metrics_df = csvinput.read_csv()
+
+    ann = pd.DataFrame(annotation_data).T
+
+    # get annotation rows that correspond to rows in on
+    reformed_annotation = ann[ann.index.isin(metrics_df[on])]
+
+    # do nothing if the annotation df is empty
+    if reformed_annotation.empty:  # so we dont add NaNs
+        return write_dataframe_to_csv_and_yaml(metrics_df, outfile,
+                                               csvinput.dtypes,
+                                               write_header=write_header)
+
+    for new_col in reformed_annotation.columns:
+        metrics_df.loc[:, new_col] = reformed_annotation[new_col].values
+
+    csv_dtypes = csvinput.dtypes
+
+    for col, dtype in csv_dtypes.items():
+        if col in annotation_dtypes:
+            assert dtype == annotation_dtypes[col]
+
+    csv_dtypes.update(annotation_dtypes)
+
+    output = CsvOutput(outfile, csv_dtypes, header=write_header)
+    output.write_df(metrics_df)
+
+
+def rewrite_csv_file(filepath, outputfile, write_header=True, dtypes=None):
     """
     generate header less csv files
     :param filepath:
@@ -490,144 +566,127 @@ def prep_csv_files(filepath, outputfile, dtypes=None):
     :param outputfile:
     :type outputfile:
     """
-    type_converter = pandas_to_std_types()
 
-    csvinput = CsvInput(filepath, dtypes=dtypes)
+    if os.path.exists(filepath + '.yaml'):
+        csvinput = CsvInput(filepath)
+    else:
+        assert dtypes
+        csvinput = IrregularCsvInput(filepath, dtypes)
 
-    if csvinput.header is None:
-        raise CsvInputError("cannot prep csv file with no header")
+    if csvinput.header:
+        df = csvinput.read_csv()
 
-    for col, type in csvinput.dtypes.items():
-        if dtypes and col in dtypes:
-            expected_dtype = type_converter[dtypes[col]]
-            type = type_converter[type]
-            if not expected_dtype == type:
-                raise CsvTypeMismatch(col, expected_dtype, type)
+        csvoutput = CsvOutput(
+            outputfile, header=write_header, columns=csvinput.columns,
+            dtypes=csvinput.dtypes
+        )
+        csvoutput.write_df(df)
 
-    csvoutput = CsvOutput(
-        outputfile, header=False, columns=csvinput.columns,
-        sep=csvinput.sep, dtypes=csvinput.dtypes
-    )
-
-    csvoutput.write_headerless_csv(filepath)
-
-
-def finalize_csv(infile, outfile, dtypes=None):
-    type_converter = pandas_to_std_types()
-
-    csvinput = CsvInput(infile)
-
-    for col, type in csvinput.dtypes.items():
-        if dtypes and col in dtypes:
-            expected_dtype = type_converter[dtypes[col]]
-            type = type_converter[type]
-            if not expected_dtype == type:
-                raise CsvTypeMismatch(col, expected_dtype, type)
-
-    csvoutput = CsvOutput(
-        outfile, header=True, columns=csvinput.columns,
-        sep=csvinput.sep, dtypes=csvinput.dtypes
-    )
-
-    headerless_input = False if csvinput.header else True
-
-    csvoutput.write_csv_with_header(infile, headerless_input=headerless_input)
+    else:
+        csvoutput = CsvOutput(
+            outputfile, header=write_header, columns=csvinput.columns,
+            dtypes=csvinput.dtypes
+        )
+        csvoutput.rewrite_csv(filepath)
 
 
-def merge_csv(in_filenames, out_filename, how, on, nan_val='NA', suffixes=None, write_header=True, dtypes=None):
+def merge_csv(in_filenames, out_filename, how, on, write_header=True):
     if isinstance(in_filenames, dict):
         in_filenames = in_filenames.values()
 
-    data = []
-    sep = None
-    for in_filename in in_filenames:
-        csvinput = CsvInput(in_filename)
-        indata = csvinput.read_csv()
-        if not indata.empty:
-            data.append(indata)
+    data = [CsvInput(infile) for infile in in_filenames]
 
-        if not sep:
-            sep = csvinput.sep
-        assert sep == csvinput.sep
+    dfs = [csvinput.read_csv() for csvinput in data]
 
-    data = merge_frames(data, how, on, suffixes=suffixes)
+    dtypes = [csvinput.dtypes for csvinput in data]
 
-    df_dtypes = data.dtypes.to_dict()
-    if dtypes:
-        df_dtypes = {k: dtypes[k] if k in dtypes else str(v) for k, v in df_dtypes.items()}
-    else:
-        df_dtypes = {k: str(v) for k, v in df_dtypes.items()}
+    data = merge_frames(dfs, how, on)
 
-    data = cast_dataframe(data, df_dtypes)
+    dtypes = merge_dtypes(dtypes)
 
-    csvoutput = CsvOutput(out_filename, header=write_header, sep=sep, dtypes=df_dtypes, na_rep=nan_val)
+    columns = list(data.columns.values)
+
+    csvoutput = CsvOutput(out_filename, dtypes, header=write_header, columns=columns)
     csvoutput.write_df(data)
 
 
-def merge_frames(frames, how, on, suffixes=None):
+def _validate_merge_cols(frames, on):
     '''
-    annotates input_df using ref_df
+    make sure frames look good. raise relevant exceptions
+    :param frames: list of dfs to merge
+    :param on: list of common columns in frames on which to merge
+    :return: nothing
     '''
+    if on == []:
+        raise CsvMergeException("unable to merge if given nothing to merge on")
 
-    suff = ['', '']
+    # check that columns to be merged have identical values
+    standard = frames[0][on]
+    for frame in frames:
+        if not standard.equals(frame[on]):
+            raise CsvMergeColumnMismatchException("columns on which to merge must be identical")
+
+    # check that columns to be merged have same dtypes
+    for shared_col in on:
+        if len(set([frame[shared_col].dtypes for frame in frames])) != 1:
+            raise CsvMergeColumnMismatchException("columns on which to merge must have same dtypes")
+
+    common_cols = set.intersection(*[set(frame.columns) for frame in frames])
+    cols_to_check = list(common_cols - set(on))
+
+    for frame1, frame2 in zip(frames[:-1], frames[1:]):
+        if not frame1[cols_to_check].equals(frame2[cols_to_check]):
+            raise CsvMergeCommonColException("non-merged common cols must be identical")
+
+
+def merge_frames(frames, how, on):
+    """
+    annotates input_df using ref_df
+    :param frames:
+    :type frames:
+    :param how:
+    :type how:
+    :param on:
+    :type on:
+    :return:
+    :rtype:
+    """
 
     if ',' in on:
         on = on.split(',')
 
+    _validate_merge_cols(frames, on)
+
     if len(frames) == 1:
         return frames[0]
+
     else:
         left = frames[0]
         right = frames[1]
-
         cols_to_use = list(right.columns.difference(left.columns))
         cols_to_use += on
         cols_to_use = list(set(cols_to_use))
 
-        if suffixes:
-            suff = (suffixes[0], suffixes[1])
-
-        merged_frame = pd.merge(left, right[cols_to_use],
-                                how=how,
-                                on=on,
-                                suffixes=suff)
+        merged_frame = pd.merge(
+            left, right[cols_to_use], how=how, on=on,
+        )
         for i, frame in enumerate(frames[2:]):
-
-            if suffixes:
-                suff = (suffixes[i + 2], suffixes[i + 2])
-
-            merged_frame = pd.merge(merged_frame, frame,
-                                    how=how,
-                                    on=on,
-                                    suffixes=suff)
+            merged_frame = pd.merge(
+                merged_frame, frame, how=how, on=on,
+            )
         return merged_frame
+
+
+def write_dataframe_to_csv_and_yaml(df, outfile, dtypes, write_header=True):
+    csvoutput = CsvOutput(outfile, dtypes, header=write_header)
+
+    csvoutput.write_df(df)
 
 
 def read_csv_and_yaml(infile, chunksize=None):
     return CsvInput(infile).read_csv(chunksize=chunksize)
 
 
-def write_dataframe_to_csv_and_yaml(df, outfile, write_header=False, sep=',', dtypes=None):
-    df_dtypes = df.dtypes.to_dict()
-    if dtypes:
-        df_dtypes = {k: dtypes[k] if k in dtypes else str(v) for k, v in df_dtypes.items()}
-    else:
-        df_dtypes = {k: str(v) for k, v in df_dtypes.items()}
-
-    csvoutput = CsvOutput(outfile, header=write_header, sep=sep, dtypes=df_dtypes)
-    csvoutput.write_df(df)
-
-
-def get_metadata(infile):
-    csvinput = CsvInput(infile)
+def get_metadata(input):
+    csvinput = CsvInput(input)
     return csvinput.header, csvinput.dtypes, csvinput.columns
-
-
-def write_metadata(infile):
-    csvinput = CsvInput(infile)
-
-    csvoutput = CsvOutput(
-        infile, header=csvinput.header, sep=csvinput.sep, dtypes=csvinput.dtypes,
-        columns=csvinput.columns
-    )
-    csvoutput.write_yaml()

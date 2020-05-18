@@ -1,8 +1,10 @@
 import yaml
-
+from single_cell.utils.validator import validate
 
 def load_split_wgs_input(input_yaml):
     yamldata = load_yaml(input_yaml)
+
+    validate.validate_split_wgs_bam(yamldata)
 
     wgs_bams = yamldata['normal']
 
@@ -11,6 +13,8 @@ def load_split_wgs_input(input_yaml):
 
 def load_merge_cell_bams(input_yaml):
     yamldata = load_yaml(input_yaml)
+
+    validate.validate_merge_cell_bams(yamldata)
 
     cell_bams = yamldata['cell_bams']
 
@@ -21,6 +25,8 @@ def load_merge_cell_bams(input_yaml):
 
 def load_infer_haps_input(input_yaml):
     yamldata = load_yaml(input_yaml)
+
+    validate.validate_infer_haps(yamldata)
 
     normal = yamldata['normal']
 
@@ -35,6 +41,8 @@ def load_infer_haps_input(input_yaml):
 def load_count_haps_input(input_yaml):
     yamldata = load_yaml(input_yaml)
 
+    validate.validate_count_haps(yamldata)
+
     haplotypes = yamldata['haplotypes']
 
     tumours = yamldata['tumour']
@@ -46,6 +54,8 @@ def load_count_haps_input(input_yaml):
 
 def load_breakpoint_calling_input(input_yaml):
     yamldata = load_yaml(input_yaml)
+
+    validate.validate_breakpoint_calling(yamldata)
 
     normal = yamldata['normal']
 
@@ -68,6 +78,9 @@ def load_config(args):
 def load_variant_calling_input(input_yaml):
     yamldata = load_yaml(input_yaml)
 
+    validate.validate_variant_calling(yamldata)
+
+
     normals = yamldata['normal']
 
     tumours = yamldata['tumour']
@@ -83,6 +96,8 @@ def load_variant_calling_input(input_yaml):
 def load_germline_data(input_yaml):
     yamldata = load_yaml(input_yaml)
 
+    validate.validate_germline_calling(yamldata)
+
     normals = yamldata['normal']
     normals = {v: normals[v]['bam'] for v in normals}
 
@@ -91,6 +106,9 @@ def load_germline_data(input_yaml):
 
 def load_variant_counting_input(input_yaml):
     yamldata = load_yaml(input_yaml)
+
+    validate.validate_snv_genotyping(yamldata)
+
 
     vcf_files = yamldata['vcf_files']
 
@@ -103,17 +121,21 @@ def load_variant_counting_input(input_yaml):
 
     cells_data = yamldata['tumour_cells']
 
+    sample_library = []
     cells_data_out = {}
     for sample, sampledata in cells_data.items():
         for library, library_data in sampledata.items():
+            sample_library.append({'sample_id': sample, 'library_id': library})
             for cell, cell_data in library_data.items():
                 cells_data_out[(sample, library, cell)] = cell_data['bam']
 
-    return strelka_vcf_data, museq_vcf_data, cells_data_out
+    return strelka_vcf_data, museq_vcf_data, cells_data_out, sample_library
 
 
 def load_sv_genotyper_input(input_yaml):
     yamldata = load_yaml(input_yaml)
+
+    validate.validate_sv_genotyping(yamldata)
 
     sv_calls = yamldata['sv_calls']
     lumpy_csvs = {}
@@ -186,6 +208,8 @@ def get_sample_info(fastqs_file):
 
     data = load_yaml(fastqs_file)
 
+    validate.validate_sample_info(data)
+
     cells = data.keys()
 
     for cell in cells:
@@ -221,6 +245,8 @@ def get_bams(fastqs_file):
 
 def get_fastqs(fastqs_file):
     data = load_yaml(fastqs_file)
+
+    validate.validate_alignment_fastqs(data)
 
     for cell in data.keys():
         assert "fastqs" in data[

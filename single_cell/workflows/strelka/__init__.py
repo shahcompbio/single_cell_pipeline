@@ -1,8 +1,14 @@
 from pypeliner.workflow import Workflow
 
 import pypeliner
+from single_cell.workflows.strelka.dtypes import dtypes
+
 
 default_chromosomes = [str(x) for x in range(1, 23)] + ['X', 'Y']
+
+
+def strelka_snv_callback(record):
+    return record.INFO['QSS']
 
 
 def create_strelka_workflow(
@@ -11,6 +17,7 @@ def create_strelka_workflow(
         ref_genome_fasta_file,
         indel_vcf_file,
         snv_vcf_file,
+        snv_csv_file,
         config,
         chromosomes=default_chromosomes,
         split_size=int(1e7),
@@ -175,5 +182,29 @@ def create_strelka_workflow(
             vcftools_docker
         )
     )
+
+    workflow.transform(
+        name='convert_strelka_to_csv',
+        func="biowrappers.components.io.vcf.tasks.convert_vcf_to_csv",
+        ctx=ctx,
+        args=(
+            pypeliner.managed.InputFile(snv_vcf_file),
+            pypeliner.managed.TempOutputFile('strelka_snv.csv'),
+        ),
+        kwargs={
+            'score_callback': strelka_snv_callback,
+        }
+    )
+
+    workflow.transform(
+        name='prep_strelka_csv',
+        func='single_cell.utils.csvutils.rewrite_csv_file',
+        args=(
+            pypeliner.managed.TempInputFile('strelka_snv.csv'),
+            pypeliner.managed.OutputFile(snv_csv_file, extensions=['.yaml'])
+        ),
+        kwargs={'dtypes': dtypes()['snv_strelka']}
+    )
+
 
     return workflow

@@ -56,9 +56,16 @@ def generate_inputs(template, output, accountname):
 
 
 def compare_output(reads, metrics, ref_reads, ref_metrics, tempdir):
+    download_blob(reads+'.yaml', tempdir)
     reads = download_blob(reads, tempdir)
+
+    download_blob(metrics+'.yaml', tempdir)
     metrics = download_blob(metrics, tempdir)
+
+    download_blob(ref_reads+'.yaml', tempdir)
     ref_reads = download_blob(ref_reads, tempdir)
+
+    download_blob(ref_metrics+'.yaml', tempdir)
     ref_metrics = download_blob(ref_metrics, tempdir)
 
     compare.compare_metrics(ref_metrics, metrics)

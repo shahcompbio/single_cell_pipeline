@@ -7,7 +7,6 @@ import collections
 import copy
 
 import yaml
-
 from single_cell.config import config_reference
 
 
@@ -33,7 +32,8 @@ def get_config_params(override=None):
         "cluster": "azure", "aligner": "bwa-mem", "refdir": None,
         "reference": "grch37", "smoothing_function": "modal",
         "bin_size": 500000, "copynumber_bin_size": 1000,
-        'memory': {'high': 16, 'med': 6, 'low': 2}
+        'memory': {'high': 16, 'med': 6, 'low': 2},
+        'version': None
     }
 
     input_params = override_config(input_params, override)
@@ -46,10 +46,10 @@ def write_config(params, filepath):
         yaml.safe_dump(params, outputfile, default_flow_style=False)
 
 
-def get_hmmcopy_params(reference_dir, reference, binsize, smoothing_function):
+def get_hmmcopy_params(reference_dir, reference, binsize, smoothing_function, version):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
-    docker_containers = config_reference.containers()['docker']
+    docker_containers = config_reference.containers(version)['docker']
     docker_containers = {
         'single_cell_pipeline': docker_containers['single_cell_pipeline'],
         'hmmcopy': docker_containers['hmmcopy']
@@ -89,11 +89,11 @@ def get_hmmcopy_params(reference_dir, reference, binsize, smoothing_function):
     return {"hmmcopy": params}
 
 
-def get_align_params(reference_dir, reference, aligner):
+def get_align_params(reference_dir, reference, aligner, version):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
     refdata_callback = config_reference.get_cluster_reference_data
 
-    docker_containers = config_reference.containers()['docker']
+    docker_containers = config_reference.containers(version)['docker']
     docker_containers = {
         'single_cell_pipeline': docker_containers['single_cell_pipeline'],
         'fastqc': docker_containers['fastqc'],
@@ -133,10 +133,10 @@ def get_align_params(reference_dir, reference, aligner):
     return {"alignment": params}
 
 
-def get_annotation_params(reference_dir, reference):
+def get_annotation_params(reference_dir, reference, version):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
-    docker_containers = config_reference.containers()['docker']
+    docker_containers = config_reference.containers(version)['docker']
     docker_containers = {
         'single_cell_pipeline': docker_containers['single_cell_pipeline'],
         'cell_cycle_classifier': docker_containers['cell_cycle_classifier'],
@@ -171,10 +171,10 @@ def get_annotation_params(reference_dir, reference):
     return {"annotation": params}
 
 
-def get_aneufinder_params(reference_dir, reference):
+def get_aneufinder_params(reference_dir, reference, version):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
-    docker_containers = config_reference.containers()['docker']
+    docker_containers = config_reference.containers(version)['docker']
     params = {
         'memory': {'med': 6},
         'docker': {
@@ -188,7 +188,7 @@ def get_aneufinder_params(reference_dir, reference):
     return {'aneufinder': params}
 
 
-def get_merge_bams_params(reference_dir, reference, cluster):
+def get_merge_bams_params(reference_dir, reference, cluster, version):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
     if cluster in ['azure', 'aws']:
@@ -196,7 +196,7 @@ def get_merge_bams_params(reference_dir, reference, cluster):
     else:
         one_split_job = False
 
-    docker_containers = config_reference.containers()['docker']
+    docker_containers = config_reference.containers(version)['docker']
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 16},
         'max_cores': 8,
@@ -212,10 +212,10 @@ def get_merge_bams_params(reference_dir, reference, cluster):
     return {'merge_bams': params}
 
 
-def get_split_bam_params(reference_dir, reference):
+def get_split_bam_params(reference_dir, reference, version):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
-    docker_containers = config_reference.containers()['docker']
+    docker_containers = config_reference.containers(version)['docker']
 
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 16},
@@ -233,10 +233,10 @@ def get_split_bam_params(reference_dir, reference):
     return {'split_bam': params}
 
 
-def get_germline_calling_params(reference_dir, reference):
+def get_germline_calling_params(reference_dir, reference, version):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
-    docker_containers = config_reference.containers()['docker']
+    docker_containers = config_reference.containers(version)['docker']
 
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 16},
@@ -266,10 +266,10 @@ def get_germline_calling_params(reference_dir, reference):
     return {'germline_calling': params}
 
 
-def get_variant_calling_params(reference_dir, reference):
+def get_variant_calling_params(reference_dir, reference, version):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
-    docker_containers = config_reference.containers()['docker']
+    docker_containers = config_reference.containers(version)['docker']
 
     status_data = {
         'kwargs': {
@@ -343,10 +343,10 @@ def get_variant_calling_params(reference_dir, reference):
     return {'variant_calling': params}
 
 
-def get_copy_number_calling_params(reference_dir, reference, binsize):
+def get_copy_number_calling_params(reference_dir, reference, binsize, version):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
-    docker_containers = config_reference.containers()['docker']
+    docker_containers = config_reference.containers(version)['docker']
 
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 16},
@@ -375,10 +375,10 @@ def get_copy_number_calling_params(reference_dir, reference, binsize):
     return {'copy_number_calling': params}
 
 
-def get_infer_haps_params(reference_dir, reference):
+def get_infer_haps_params(reference_dir, reference, version):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
-    docker_containers = config_reference.containers()['docker']
+    docker_containers = config_reference.containers(version)['docker']
 
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 16},
@@ -398,10 +398,10 @@ def get_infer_haps_params(reference_dir, reference):
     return {'infer_haps': params}
 
 
-def get_count_haps_params(reference_dir, reference):
+def get_count_haps_params(reference_dir, reference, version):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
-    docker_containers = config_reference.containers()['docker']
+    docker_containers = config_reference.containers(version)['docker']
 
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 16},
@@ -421,10 +421,10 @@ def get_count_haps_params(reference_dir, reference):
     return {'count_haps': params}
 
 
-def get_breakpoint_params(reference_dir, reference):
+def get_breakpoint_params(reference_dir, reference, version):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
-    docker_containers = config_reference.containers()['docker']
+    docker_containers = config_reference.containers(version)['docker']
 
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 16},
@@ -445,8 +445,8 @@ def get_breakpoint_params(reference_dir, reference):
     return {'breakpoint_calling': params}
 
 
-def get_sv_genotyping_params(reference_dir, reference):
-    docker_containers = config_reference.containers()['docker']
+def get_sv_genotyping_params(reference_dir, reference, version):
+    docker_containers = config_reference.containers(version)['docker']
 
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
@@ -464,6 +464,7 @@ def get_sv_genotyping_params(reference_dir, reference):
 def get_singlecell_pipeline_config(config_params, override=None):
     reference = config_params["reference"]
     reference_dir = config_params['refdir']
+    version = config_params['version']
     cluster = config_params["cluster"]
     if not reference_dir:
         reference_dir = config_reference.get_reference_dir(cluster)
@@ -473,7 +474,7 @@ def get_singlecell_pipeline_config(config_params, override=None):
     params.update(
         get_hmmcopy_params(
             reference_dir, reference, config_params["bin_size"],
-            config_params["smoothing_function"]
+            config_params["smoothing_function"], version
         )
     )
 
@@ -481,32 +482,33 @@ def get_singlecell_pipeline_config(config_params, override=None):
         get_align_params(
             reference_dir, reference,
             config_params['aligner'],
-
+            version
         )
     )
 
-    params.update(get_annotation_params(reference_dir, reference))
+    params.update(get_annotation_params(reference_dir, reference, version))
 
-    params.update(get_aneufinder_params(reference_dir, reference))
+    params.update(get_aneufinder_params(reference_dir, reference, version))
 
-    params.update(get_merge_bams_params(reference_dir, reference, cluster))
+    params.update(get_merge_bams_params(reference_dir, reference, cluster, version))
 
-    params.update(get_split_bam_params(reference_dir, reference))
+    params.update(get_split_bam_params(reference_dir, reference, version))
 
-    params.update(get_germline_calling_params(reference_dir, reference))
+    params.update(get_germline_calling_params(reference_dir, reference, version))
 
-    params.update(get_variant_calling_params(reference_dir, reference))
+    params.update(get_variant_calling_params(reference_dir, reference, version))
 
-    params.update(get_copy_number_calling_params(reference_dir, reference,
-                                                 config_params['copynumber_bin_size']))
+    params.update(get_copy_number_calling_params(
+        reference_dir, reference, config_params['copynumber_bin_size'], version)
+    )
 
-    params.update(get_infer_haps_params(reference_dir, reference))
+    params.update(get_infer_haps_params(reference_dir, reference, version))
 
-    params.update(get_count_haps_params(reference_dir, reference))
+    params.update(get_count_haps_params(reference_dir, reference, version))
 
-    params.update(get_breakpoint_params(reference_dir, reference))
+    params.update(get_breakpoint_params(reference_dir, reference, version))
 
-    params.update(get_sv_genotyping_params(reference_dir, reference))
+    params.update(get_sv_genotyping_params(reference_dir, reference, version))
 
     params = override_config(params, override)
 

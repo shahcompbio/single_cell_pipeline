@@ -6,6 +6,7 @@ Created on Sep 8, 2015
 import logging
 import numpy as np
 import pandas as pd
+from single_cell.utils import csvutils
 
 class GenerateCNMatrix(object):
     '''
@@ -14,13 +15,14 @@ class GenerateCNMatrix(object):
     indices. use N/A for missing.
     '''
 
-    def __init__(self, infile, output, sep, colname, sample_id, typ):
+    def __init__(self, infile, output, sep, colname, sample_id, typ, dtypes):
         self.sep = sep
         self.output = output
         self.column_name = colname
         self.input = infile
         self.sample_id = sample_id
         self.type = typ
+        self.dtypes = dtypes
 
     @staticmethod
     def replace_missing_vals(input_df, nan_val='N/A'):
@@ -40,10 +42,9 @@ class GenerateCNMatrix(object):
             input_df = input_df.T
             input_df["cell_id"] = input_df.index
 
-        input_df.to_csv(self.output,
-                        na_rep='NA',
-                        sep=self.sep,
-                        index=False)
+        input_df.columns = input_df.columns.astype(str)
+        csvutils.write_dataframe_to_csv_and_yaml(input_df, self.output, self.dtypes)
+
 
     def read_hmmcopy_corrected_read_file(self, sample_id):
         """

@@ -9,8 +9,8 @@ SA1044-A90707B-R03-C39:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 34
-  index_i5: i7-39
-  index_i7: i5-03
+  index_i7: i7-39
+  index_i5: i5-03
   pick_met: C31
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -27,8 +27,8 @@ SA1044-A90707B-R04-C41:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 32
-  index_i5: i7-41
-  index_i7: i5-04
+  index_i7: i7-41
+  index_i5: i5-04
   pick_met: C31
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -45,8 +45,8 @@ SA1044-A90707B-R04-C42:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 31
-  index_i5: i7-42
-  index_i7: i5-04
+  index_i7: i7-42
+  index_i5: i5-04
   pick_met: C31
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -63,8 +63,8 @@ SA1044-A90707B-R05-C41:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 32
-  index_i5: i7-41
-  index_i7: i5-05
+  index_i7: i7-41
+  index_i5: i5-05
   pick_met: C31
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -81,8 +81,8 @@ SA1044-A90707B-R07-C33:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 40
-  index_i5: i7-33
-  index_i7: i5-07
+  index_i7: i7-33
+  index_i5: i5-07
   pick_met: C31
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -99,8 +99,8 @@ SA1044-A90707B-R10-C39:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 34
-  index_i5: i7-39
-  index_i7: i5-10
+  index_i7: i7-39
+  index_i5: i5-10
   pick_met: C31
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -117,8 +117,8 @@ SA922-A90707B-R03-C61:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 12
-  index_i5: i7-61
-  index_i7: i5-03
+  index_i7: i7-61
+  index_i5: i5-03
   pick_met: C41
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -135,8 +135,8 @@ SA922-A90707B-R03-C62:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 11
-  index_i5: i7-62
-  index_i7: i5-03
+  index_i7: i7-62
+  index_i5: i5-03
   pick_met: C41
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -153,8 +153,8 @@ SA922-A90707B-R03-C65:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 8
-  index_i5: i7-65
-  index_i7: i5-03
+  index_i7: i7-65
+  index_i5: i5-03
   pick_met: C41
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -171,8 +171,8 @@ SA922-A90707B-R04-C65:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 8
-  index_i5: i7-65
-  index_i7: i5-04
+  index_i7: i7-65
+  index_i5: i5-04
   pick_met: C41
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -189,8 +189,8 @@ SA922-A90707B-R06-C68:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 5
-  index_i5: i7-68
-  index_i7: i5-06
+  index_i7: i7-68
+  index_i5: i5-06
   pick_met: C41
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -207,8 +207,8 @@ SA922-A90707B-R07-C61:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 12
-  index_i5: i7-61
-  index_i7: i5-07
+  index_i7: i7-61
+  index_i5: i5-07
   pick_met: C41
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -225,8 +225,8 @@ SA922-A90707B-R07-C65:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 8
-  index_i5: i7-65
-  index_i7: i5-07
+  index_i7: i7-65
+  index_i5: i5-07
   pick_met: C41
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -243,8 +243,8 @@ SA922-A90707B-R08-C60:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 13
-  index_i5: i7-60
-  index_i7: i5-08
+  index_i7: i7-60
+  index_i5: i5-08
   pick_met: C41
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -261,8 +261,8 @@ SA922-A90707B-R11-C65:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 8
-  index_i5: i7-65
-  index_i7: i5-11
+  index_i7: i7-65
+  index_i5: i5-11
   pick_met: C41
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -279,8 +279,8 @@ SA922-A90707B-R11-C67:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 6
-  index_i5: i7-67
-  index_i7: i5-11
+  index_i7: i7-67
+  index_i5: i5-11
   pick_met: C43
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -297,8 +297,8 @@ SA922-A90707B-R12-C66:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 7
-  index_i5: i7-66
-  index_i7: i5-12
+  index_i7: i7-66
+  index_i5: i5-12
   pick_met: C41
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -315,8 +315,8 @@ SA928-A90707B-R03-C11:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 62
-  index_i5: i7-11
-  index_i7: i5-03
+  index_i7: i7-11
+  index_i5: i5-03
   pick_met: C13
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -333,8 +333,8 @@ SA928-A90707B-R03-C19:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 54
-  index_i5: i7-19
-  index_i7: i5-03
+  index_i7: i7-19
+  index_i5: i5-03
   pick_met: C23
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -351,8 +351,8 @@ SA928-A90707B-R03-C24:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 49
-  index_i5: i7-24
-  index_i7: i5-03
+  index_i7: i7-24
+  index_i5: i5-03
   pick_met: C23
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -369,8 +369,8 @@ SA928-A90707B-R04-C12:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 61
-  index_i5: i7-12
-  index_i7: i5-04
+  index_i7: i7-12
+  index_i5: i5-04
   pick_met: C11
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -387,8 +387,8 @@ SA928-A90707B-R05-C16:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 57
-  index_i5: i7-16
-  index_i7: i5-05
+  index_i7: i7-16
+  index_i5: i5-05
   pick_met: C11
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -405,8 +405,8 @@ SA928-A90707B-R05-C26:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 47
-  index_i5: i7-26
-  index_i7: i5-05
+  index_i7: i7-26
+  index_i5: i5-05
   pick_met: C23
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -423,8 +423,8 @@ SA928-A90707B-R05-C27:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 46
-  index_i5: i7-27
-  index_i7: i5-05
+  index_i7: i7-27
+  index_i5: i5-05
   pick_met: C21
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -441,8 +441,8 @@ SA928-A90707B-R06-C29:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 44
-  index_i5: i7-29
-  index_i7: i5-06
+  index_i7: i7-29
+  index_i5: i5-06
   pick_met: C21
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -459,8 +459,8 @@ SA928-A90707B-R07-C11:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 62
-  index_i5: i7-11
-  index_i7: i5-07
+  index_i7: i7-11
+  index_i5: i5-07
   pick_met: C11
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -477,8 +477,8 @@ SA928-A90707B-R07-C16:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 57
-  index_i5: i7-16
-  index_i7: i5-07
+  index_i7: i7-16
+  index_i5: i5-07
   pick_met: C11
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -495,8 +495,8 @@ SA928-A90707B-R07-C19:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 54
-  index_i5: i7-19
-  index_i7: i5-07
+  index_i7: i7-19
+  index_i5: i5-07
   pick_met: C23
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -513,8 +513,8 @@ SA928-A90707B-R07-C44:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 29
-  index_i5: i7-44
-  index_i7: i5-07
+  index_i7: i7-44
+  index_i5: i5-07
   pick_met: C14
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -531,8 +531,8 @@ SA928-A90707B-R08-C26:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 47
-  index_i5: i7-26
-  index_i7: i5-08
+  index_i7: i7-26
+  index_i5: i5-08
   pick_met: C23
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -549,8 +549,8 @@ SA928-A90707B-R08-C28:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 45
-  index_i5: i7-28
-  index_i7: i5-08
+  index_i7: i7-28
+  index_i5: i5-08
   pick_met: C23
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -567,8 +567,8 @@ SA928-A90707B-R08-C44:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 29
-  index_i5: i7-44
-  index_i7: i5-08
+  index_i7: i7-44
+  index_i5: i5-08
   pick_met: C14
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -585,8 +585,8 @@ SA928-A90707B-R09-C21:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 52
-  index_i5: i7-21
-  index_i7: i5-09
+  index_i7: i7-21
+  index_i5: i5-09
   pick_met: C21
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -603,8 +603,8 @@ SA928-A90707B-R09-C25:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 48
-  index_i5: i7-25
-  index_i7: i5-09
+  index_i7: i7-25
+  index_i5: i5-09
   pick_met: C23
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -621,8 +621,8 @@ SA928-A90707B-R10-C14:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 59
-  index_i5: i7-14
-  index_i7: i5-10
+  index_i7: i7-14
+  index_i5: i5-10
   pick_met: C13
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT
@@ -639,8 +639,8 @@ SA928-A90707B-R13-C11:
       sequencing_center: UBCBRC
       sequencing_instrument: N550
   img_col: 62
-  index_i5: i7-11
-  index_i7: i5-13
+  index_i7: i7-11
+  index_i5: i5-13
   pick_met: C11
   primer_i5: AACCGGTT
   primer_i7: ACGTACGT

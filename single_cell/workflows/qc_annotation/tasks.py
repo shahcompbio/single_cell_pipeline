@@ -19,23 +19,26 @@ from .scripts import generate_qc
 
 
 def _get_col_data(df, organism):
-    return df['fastqscreen_{}'.format(organism)] - df['fastqscreen_{}_multihit'.format(organism)]
+    return df['fastqscreen_{}'.format(organism)]
 
 
 def add_contamination_status(
-        infile, outfile, config,
+        infile, outfile,
         reference='grch37', threshold=0.05
 ):
     data = csvutils.read_csv_and_yaml(infile)
 
     data = data.set_index('cell_id', drop=False)
 
-    organisms = [genome['name'] for genome in config['genomes']]
+    fastqscreen_cols = [col for col in data.columns.values if col.startswith('fastqscreen_')]
+
+    organisms = [col.split('_')[1] for col in fastqscreen_cols]
+    organisms = sorted(set(organisms))
 
     if reference not in organisms:
         raise Exception("Could not find the fastq screen counts")
 
-    alts = [col for col in organisms if not col == reference]
+    alts = [col for col in organisms if col not in [reference, 'nohit']]
 
     data['is_contaminated'] = False
 
@@ -47,7 +50,7 @@ def add_contamination_status(
     data['is_contaminated'] = data['is_contaminated'].astype(col_type)
 
     csvutils.write_dataframe_to_csv_and_yaml(
-        data, outfile, write_header=True
+        data, outfile, dtypes()['metrics'], write_header=True
     )
 
 
@@ -79,7 +82,7 @@ def add_corrupt_tree_order(corrupt_tree, metrics, output):
     metrics['order_corrupt_tree'] = metrics['order_corrupt_tree'].astype(col_dtype)
 
     csvutils.write_dataframe_to_csv_and_yaml(
-        metrics, output, write_header=True, dtypes=dtypes()['metrics']
+        metrics, output, dtypes()['metrics'], write_header=True
     )
 
 
@@ -97,7 +100,7 @@ def annotate_metrics(
         for colname, value in cellinfo.items():
             metrics.loc[metrics["cell_id"] == cellid, colname] = value
 
-    csvutils.write_dataframe_to_csv_and_yaml(metrics, output, dtypes=dtypes()['metrics'])
+    csvutils.write_dataframe_to_csv_and_yaml(metrics, output, dtypes()['metrics'])
 
 
 def add_quality(hmmcopy_metrics, alignment_metrics, output, training_data, tempdir):
@@ -119,7 +122,7 @@ def add_quality(hmmcopy_metrics, alignment_metrics, output, training_data, tempd
         intermediate_output,
         predictions)
 
-    csvutils.prep_csv_files(intermediate_output, output, dtypes=dtypes()['metrics'])
+    csvutils.rewrite_csv_file(intermediate_output, output, dtypes=dtypes()['metrics'])
 
 
 def merge_metrics(hmmcopy_metrics, alignment_metrics, merged_output):
@@ -132,7 +135,6 @@ def merge_metrics(hmmcopy_metrics, alignment_metrics, merged_output):
         'outer',
         ['cell_id'],
         write_header=False,
-        dtypes=dtypes()['metrics']
     )
 
 
@@ -169,7 +171,7 @@ def cell_cycle_classifier(hmmcopy_reads, hmmcopy_metrics, alignment_metrics, out
     for colname in cols_cell_cycle:
         hmm_metrics_df[colname] = hmm_metrics_df[colname].astype(out_dtypes[colname])
 
-    csvutils.write_dataframe_to_csv_and_yaml(hmm_metrics_df, output, dtypes=out_dtypes)
+    csvutils.write_dataframe_to_csv_and_yaml(hmm_metrics_df, output, out_dtypes)
 
 
 def filter_plot_tar(metrics, src_tar, pass_tar, fail_tar, tempdir, filters):

@@ -1,0 +1,39 @@
+package:
+  name: single_cell_pipeline_align
+  version: '0.6.6'
+
+source:
+  git_url: https://github.com/shahcompbio/single_cell_pipeline.git
+  git_rev: v0.6.6
+
+build:
+  number: 1
+
+requirements:
+  build:
+    - python
+
+  run:
+    - python
+    - openssl=1.0
+    - matplotlib
+    - pandas=0.25.3
+    - pypdf2
+    - pypeliner
+    - pysam
+    - pyvcf
+    - pyyaml
+    - seaborn
+    - statsmodels
+    - scikit-learn
+    - fastq-screen
+    - bwa=0.7.17
+    - samtools
+    - cryptography
+    - fastqc
+    - picard
+    - trim-galore
+about:
+  home: http://shahlab.ca
+  summary: 'Bioinformatics pipeline for single cell analysis'
+

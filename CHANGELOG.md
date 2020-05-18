@@ -1,5 +1,64 @@
 # Change Log
 
+### v0.6.6
+
+#### Bug:
+1. missing yaml extension for count haps input
+
+
+### v0.6.5
+
+#### Bug:
+1. issues with missing yaml files
+
+#### Changes:
+1. add yaml validators
+2. added docs
+
+
+### v0.6.4:
+
+#### Bug:
+1. Issue with fastqscreen counts
+2. remove corrupt tree files from metadata
+3. dtype for chr is str not int in lumpy
+
+### v0.6.3:
+
+#### Bug:
+1. issue with yaml missing in extensions for snv file
+
+### v0.6.2:
+
+#### Bug:
+1. collect metrics introduced nan into int columns
+
+### v0.6.1
+
+### Changes:
+1. per sample genotyping results
+
+### v0.6.0
+
+### Changes:
+1. jenkins refactor
+2. csvutils refactor
+
+### V0.5.21
+
+#### Changes:
+1. upgraded remixt to v0.5.11
+
+### v0.5.20
+
+#### Changes:
+1. upgraded destruct and remixt to latest pypeliner.
+
+### v0.5.19
+
+####Changes:
+1. upgraded remixt and cell cycle classifier
+
 ### v0.5.18
 
 #### Changes:

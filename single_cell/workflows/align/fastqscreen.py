@@ -31,7 +31,7 @@ def merge_fastq_screen_counts(
     df = df.drop_duplicates(subset=index_cols)
 
     csvutils.write_dataframe_to_csv_and_yaml(
-        df, merged_detailed_counts, write_header=True, dtypes=dtypes()
+        df, merged_detailed_counts, dtypes()['fastqscreen_detailed'], write_header=True
     )
 
     if isinstance(all_summary_counts, dict):
@@ -49,7 +49,7 @@ def merge_fastq_screen_counts(
     df = df.drop_duplicates(subset=['cell_id'])
 
     csvutils.write_dataframe_to_csv_and_yaml(
-        df, merged_summary_counts, write_header=True, dtypes=dtypes()
+        df, merged_summary_counts, dtypes()['metrics'], write_header=True
     )
 
 
@@ -115,9 +115,10 @@ def write_detailed_counts(counts, outfile, cell_id, fastqscreen_params):
 
         for read_end, read_end_counts in counts.items():
 
-            if not read_end_counts:
+            if not read_end_counts and not header:
                 outstr = ['cell_id', 'readend'] + genomes + ['count']
                 writer.write(','.join(outstr) + '\n')
+                header = 1
                 continue
 
             if not header:

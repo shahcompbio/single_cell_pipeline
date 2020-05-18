@@ -31,14 +31,6 @@ def get_file_paths(root_dir):
     return data
 
 
-def museq_callback(record):
-    return record.INFO['PR']
-
-
-def strelka_snv_callback(record):
-    return record.INFO['QSS']
-
-
 def variant_calling_workflow(args):
     config = inpututils.load_config(args)
     config = config['variant_calling']
@@ -69,8 +61,8 @@ def variant_calling_workflow(args):
         args=(
             mgd.InputFile('normal_regions.bam', 'region', extensions=['.bai'], fnames=normal_bams),
             mgd.InputFile('tumour_regions.bam', 'region', extensions=['.bai'], fnames=tumour_bams),
-            config['ref_genome'],
             mgd.OutputFile(filepaths['museq_vcf'], extensions=['.tbi', '.csi']),
+            mgd.OutputFile(filepaths['museq_csv'], extensions=['.tbi', '.csi']),
             config,
         ),
     )
@@ -84,6 +76,7 @@ def variant_calling_workflow(args):
             config['ref_genome'],
             mgd.OutputFile(filepaths['strelka_indel'], extensions=['.tbi', '.csi']),
             mgd.OutputFile(filepaths['strelka_snv'], extensions=['.tbi', '.csi']),
+            mgd.OutputFile(filepaths['strelka_csv'], extensions=['.yaml']),
             config,
         ),
         kwargs={
@@ -135,49 +128,7 @@ def variant_calling_workflow(args):
         }
     )
 
-    workflow.transform(
-        name='convert_museq_to_csv',
-        func="biowrappers.components.io.vcf.tasks.convert_vcf_to_csv",
-        ctx=ctx,
-        args=(
-            mgd.InputFile(filepaths['museq_vcf']),
-            mgd.TempOutputFile('museq.csv'),
-        ),
-        kwargs={
-            'score_callback': museq_callback,
-        }
-    )
 
-    workflow.transform(
-        name='prep_museq_csv',
-        func='single_cell.utils.csvutils.finalize_csv',
-        args=(
-            mgd.TempInputFile('museq.csv'),
-            mgd.OutputFile(filepaths['museq_csv'], extensions=['.yaml'])
-        ),
-    )
-
-    workflow.transform(
-        name='convert_strelka_to_csv',
-        func="biowrappers.components.io.vcf.tasks.convert_vcf_to_csv",
-        ctx=ctx,
-        args=(
-            mgd.InputFile(filepaths['strelka_snv']),
-            mgd.TempOutputFile('strelka_snv.csv'),
-        ),
-        kwargs={
-            'score_callback': strelka_snv_callback,
-        }
-    )
-
-    workflow.transform(
-        name='prep_strelka_csv',
-        func='single_cell.utils.csvutils.finalize_csv',
-        args=(
-            mgd.TempInputFile('strelka_snv.csv'),
-            mgd.OutputFile(filepaths['strelka_csv'], extensions=['.yaml'])
-        ),
-    )
 
     workflow.transform(
         name='convert_h5_to_csv',
@@ -190,6 +141,30 @@ def variant_calling_workflow(args):
                 '/snv/mappability': mgd.OutputFile(filepaths['mappability_csv'], extensions=['.yaml']),
                 '/snv/snpeff': mgd.OutputFile(filepaths['snpeff_csv'], extensions=['.yaml']),
                 '/snv/tri_nucleotide_context': mgd.OutputFile(filepaths['trinuc_csv'], extensions=['.yaml']),
+            },
+            {
+                'cell_id': 'str',
+                'chrom': 'str',
+                'coord': 'int',
+                'ref': 'str',
+                'alt': 'str',
+                'db_id': 'str',
+                'exact_match': 'int',
+                'indel': 'int',
+                'mappability': 'float',
+                'effect': 'str',
+                'effect_impact': 'str',
+                'functional_class': 'str',
+                'codon_change': 'str',
+                'amino_acid_change': 'str',
+                'amino_acid_length': 'str',
+                'gene_name': 'str',
+                'transcript_biotype': 'str',
+                'gene_coding': 'str',
+                'transcript_id': 'str',
+                'exon_rank': 'str',
+                'genotype': 'str',
+                'tri_nucleotide_context': 'str',
             }
         )
     )
