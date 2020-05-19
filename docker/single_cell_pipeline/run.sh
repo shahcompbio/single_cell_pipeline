@@ -2,7 +2,7 @@
 
 REGISTRY=$1
 ORG=$2
-TAG=`git describe --tags`
+TAG=`git describe --tags | awk -F '-' '{print $1}'`
 
 cat docker/single_cell_pipeline/dockerfile_template \
  | sed "s/{git_commit}/$TAG/g" \
