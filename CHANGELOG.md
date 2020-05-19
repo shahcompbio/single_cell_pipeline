@@ -1,5 +1,14 @@
 # Change Log
 
+### v0.6.7
+
+#### Bug:
+1. issue with dtypes for lumpy
+
+#### Changes:
+1. updated biowrappers to v0.2.7
+
+
 ### v0.6.6
 
 #### Bug:
