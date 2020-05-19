@@ -19,26 +19,22 @@ from .scripts import generate_qc
 
 
 def _get_col_data(df, organism):
-    return df['fastqscreen_{}'.format(organism)]
+    return df['fastqscreen_{}'.format(organism)] - df['fastqscreen_{}_multihit'.format(organism)]
 
 
 def add_contamination_status(
-        infile, outfile,
+        infile, outfile, config,
         reference='grch37', threshold=0.05
 ):
     data = csvutils.read_csv_and_yaml(infile)
 
     data = data.set_index('cell_id', drop=False)
-
-    fastqscreen_cols = [col for col in data.columns.values if col.startswith('fastqscreen_')]
-
-    organisms = [col.split('_')[1] for col in fastqscreen_cols]
-    organisms = sorted(set(organisms))
+    organisms = [genome['name'] for genome in config['genomes']]
 
     if reference not in organisms:
         raise Exception("Could not find the fastq screen counts")
 
-    alts = [col for col in organisms if col not in [reference, 'nohit']]
+    alts = [col for col in organisms if not col == reference]
 
     data['is_contaminated'] = False
 
@@ -47,10 +43,10 @@ def add_contamination_status(
         data.loc[perc_alt > threshold, 'is_contaminated'] = True
 
     col_type = dtypes()['metrics']['is_contaminated']
-    data['is_contaminated'] = data['is_contaminated'].astype(col_type)
 
+    data['is_contaminated'] = data['is_contaminated'].astype(col_type)
     csvutils.write_dataframe_to_csv_and_yaml(
-        data, outfile, dtypes()['metrics'], write_header=True
+        data, outfile, write_header=True
     )
 
 
