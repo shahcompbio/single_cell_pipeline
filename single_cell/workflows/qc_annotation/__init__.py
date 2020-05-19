@@ -61,6 +61,7 @@ def create_qc_annotation_workflow(
         args=(
             mgd.TempInputFile('merged_metrics.csv.gz', extensions=['.yaml']),
             mgd.TempOutputFile('merged_metrics_contamination.csv.gz', extensions=['.yaml']),
+            alignment_config['fastq_screen_params']
         ),
         kwargs={
             'reference': config['ref_type'],
