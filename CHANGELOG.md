@@ -1,5 +1,15 @@
 # Change Log
 
+### v0.6.8
+
+#### Bug:
+1. incorrect rebase on is_contaminated flag code
+2. fixed issues with tag name in docker build
+
+#### Changes:
+1. updated QC generation code, added classifier
+2. updated docs: read the docs compatible
+
 ### v0.6.7
 
 #### Bug:
@@ -7,7 +17,6 @@
 
 #### Changes:
 1. updated biowrappers to v0.2.7
-
 
 ### v0.6.6
 
