@@ -3,7 +3,6 @@ from __future__ import division
 import matplotlib
 import numpy as np
 import pandas as pd
-import joblib
 matplotlib.use('Agg')
 
 from matplotlib import pyplot as plt
@@ -145,22 +144,6 @@ def get_non_dropout_metrics(non_dropout_df, total_breakdown):
 
     return metrics
 
-def label_cells_fastqscreen(df):
-    features = ["fastqscreen_nohit_ratio", "fastqscreen_grch37_ratio", "fastqscreen_mm10_ratio", "fastqscreen_salmon_ratio"]
-    label_to_species = {0: "grch37", 1: "mm10", 2: "salmon"}
-    relative_path = os.path.dirname(__file__)
-    feature_transformer = joblib.load(os.path.join(relative_path, "robust_scaler.joblib"))
-    model = joblib.load(os.path.join(relative_path, "random_forest.joblib"))
-    # make the feature columns
-    for feature in features:
-        df[feature] = df[feature[:-6]].divide(df["total_reads"])
-    #scale the features
-    scaled_features = feature_transformer.transform(df[features])
-    df["species"] = model.predict(scaled_features)
-    df["species"].replace(label_to_species, inplace=True)
-
-    return df
-
 def get_hq_metrics(hq_df, total_breakdown):
     #get metrics of high quality cells
     #group by experimental condition and cell call
@@ -204,7 +187,6 @@ def get_hq_metrics(hq_df, total_breakdown):
 
 def generate_qc_table(df):
     #assign species labels to the cells
-    df = label_cells_fastqscreen(df)
     df = get_fraction_unmapped(df)
     df = df.rename(columns={"experimental_condition": "Experimental Condition", "cell_call": "Cell Call"})
     #get high quality cells

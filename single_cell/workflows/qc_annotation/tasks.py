@@ -8,6 +8,7 @@ import shutil
 
 import pandas as pd
 import pypeliner
+import sklearn
 from ete3 import Tree
 from single_cell.utils import csvutils
 from single_cell.utils import helpers
@@ -16,7 +17,7 @@ from single_cell.workflows.qc_annotation.dtypes import dtypes
 
 from .scripts import classify
 from .scripts import generate_qc
-
+from .scripts import fastqscreen_classify
 
 def _get_col_data(df, organism):
     return df['fastqscreen_{}'.format(organism)] - df['fastqscreen_{}_multihit'.format(organism)]
@@ -136,7 +137,7 @@ def merge_metrics(hmmcopy_metrics, alignment_metrics, merged_output):
 
 def generate_qc_report(tempdir, reference_gc, metrics_df, gc_metrics_df, qc_report):
     helpers.makedirs(tempdir)
-
+    fastqscreen_classify.classify_fastqscreen(os.path.join(os.path.dirname(__file__), "scripts/fastqscreen_training_data.csv"), metrics_df)
     generate_qc.generate_html_report(tempdir, qc_report, reference_gc, metrics_df, gc_metrics_df)
 
 
