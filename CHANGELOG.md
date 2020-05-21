@@ -1,5 +1,13 @@
 # Change Log
 
+### v0.6.9
+
+#### Bug:
+1. fixed snv annotation issues
+
+#### Changes:
+1. biowrappers upgraded to v0.2.8
+
 ### v0.6.8
 
 #### Bug:

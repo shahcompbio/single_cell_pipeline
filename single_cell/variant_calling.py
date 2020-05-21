@@ -11,6 +11,7 @@ import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import inpututils
 from single_cell.workflows import mutationseq
+from single_cell.workflows import snv_annotate
 from single_cell.workflows import strelka
 
 
@@ -42,13 +43,13 @@ def variant_calling_workflow(args):
     meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
     input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
 
-    basedocker = {'docker_image': config['docker']['single_cell_pipeline']}
-    vcftools_docker = {'docker_image': config['docker']['vcftools']}
-
-    baseimage = config['docker']['single_cell_pipeline']
-
-    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
-           'mem': config["memory"]['low'], 'docker_image': baseimage}
+    ctx = {
+        'ncpus': 1,
+        'mem_retry_increment': 2,
+        'disk_retry_increment': 50,
+        'mem': config["memory"]['low'],
+        'docker_image': config['docker']['single_cell_pipeline']
+    }
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     workflow.setobj(
@@ -85,87 +86,20 @@ def variant_calling_workflow(args):
         }
     )
 
-    workflow.transform(
-        name='merge_snvs',
-        func='biowrappers.components.io.vcf.tasks.merge_vcfs',
-        ctx=ctx,
-        args=(
-            [
-                mgd.InputFile(filepaths['museq_vcf'], extensions=['.tbi', '.csi']),
-                mgd.InputFile(filepaths['strelka_snv'], extensions=['.tbi', '.csi']),
-            ],
-            mgd.TempOutputFile('all.snv.vcf')
-        ),
-    )
-
-    workflow.transform(
-        name='finalise_snvs',
-        func="biowrappers.components.io.vcf.tasks.finalise_vcf",
-        ctx=ctx,
-        args=(
-            mgd.TempInputFile('all.snv.vcf'),
-            mgd.TempOutputFile('all.snv.vcf.gz', extensions=['.tbi', '.csi'])
-        ),
-        kwargs={'docker_config': vcftools_docker}
-    )
-
     workflow.subworkflow(
-        name='annotate_snvs',
-        axes=(),
-        ctx=ctx,
-        func="biowrappers.pipelines.snv_call_and_annotate.create_annotation_workflow",
+        name='annotate_snv_vcf_files',
+        func=snv_annotate.create_snv_annotate_workflow,
         args=(
             config,
-            mgd.TempInputFile('all.snv.vcf.gz', extensions=['.tbi', '.csi']),
-            mgd.TempOutputFile('snv_annotations.h5'),
-            mgd.TempSpace('raw_data_dir_annotate'),
-        ),
-        kwargs={
-            'variant_type': 'snv',
-            'docker_config': basedocker,
-            'snpeff_docker': vcftools_docker,
-            'vcftools_docker': vcftools_docker
-        }
-    )
-
-
-
-    workflow.transform(
-        name='convert_h5_to_csv',
-        func='single_cell.utils.hdfutils.convert_hdf_to_csv',
-        args=(
-            mgd.TempInputFile('snv_annotations.h5'),
-            {
-                '/snv/cosmic_status': mgd.OutputFile(filepaths['cosmic_csv'], extensions=['.yaml']),
-                '/snv/dbsnp_status': mgd.OutputFile(filepaths['dbsnp_csv'], extensions=['.yaml']),
-                '/snv/mappability': mgd.OutputFile(filepaths['mappability_csv'], extensions=['.yaml']),
-                '/snv/snpeff': mgd.OutputFile(filepaths['snpeff_csv'], extensions=['.yaml']),
-                '/snv/tri_nucleotide_context': mgd.OutputFile(filepaths['trinuc_csv'], extensions=['.yaml']),
-            },
-            {
-                'cell_id': 'str',
-                'chrom': 'str',
-                'coord': 'int',
-                'ref': 'str',
-                'alt': 'str',
-                'db_id': 'str',
-                'exact_match': 'int',
-                'indel': 'int',
-                'mappability': 'float',
-                'effect': 'str',
-                'effect_impact': 'str',
-                'functional_class': 'str',
-                'codon_change': 'str',
-                'amino_acid_change': 'str',
-                'amino_acid_length': 'str',
-                'gene_name': 'str',
-                'transcript_biotype': 'str',
-                'gene_coding': 'str',
-                'transcript_id': 'str',
-                'exon_rank': 'str',
-                'genotype': 'str',
-                'tri_nucleotide_context': 'str',
-            }
+            mgd.InputFile(filepaths['museq_vcf'], extensions=['.tbi', '.csi']),
+            mgd.InputFile(filepaths['strelka_snv'], extensions=['.tbi', '.csi']),
+            mgd.OutputFile(filepaths['cosmic_csv'], extensions=['.yaml']),
+            mgd.OutputFile(filepaths['dbsnp_csv'], extensions=['.yaml']),
+            mgd.OutputFile(filepaths['mappability_csv'], extensions=['.yaml']),
+            mgd.OutputFile(filepaths['snpeff_csv'], extensions=['.yaml']),
+            mgd.OutputFile(filepaths['trinuc_csv'], extensions=['.yaml']),
+            config['docker'],
+            config['memory']
         )
     )
 
