@@ -1,5 +1,12 @@
 # Change Log
 
+### v0.6.11
+
+#### Changes:
+1. pypeliner version update to v0.5.19
+
+
+
 ### v0.6.10
 
 #### Bug:
