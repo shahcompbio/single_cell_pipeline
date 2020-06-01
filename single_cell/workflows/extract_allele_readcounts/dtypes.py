@@ -5,7 +5,8 @@ def dtypes():
         'end': 'int',
         'hap_label': 'str',
         'allele_id': 'str',
-        'readcount': 'int'
+        'readcount': 'int',
+        'cell_id': 'str'
     }
 
     dtypes = locals()

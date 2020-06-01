@@ -16,6 +16,9 @@ def extract_allele_readcounts(
     remixt_config = config.get('extract_seqdata', {})
     remixt_ref_data_dir = config['ref_data_dir']
 
+    chromosomes = config['chromosomes']
+    remixt_config['chromosomes'] = chromosomes
+
     workflow = pypeliner.workflow.Workflow(ctx=baseimage)
 
     workflow.set_filenames('cell.bam', 'cell_id', fnames=cell_bams)
@@ -74,21 +77,6 @@ def extract_allele_readcounts(
         ),
     )
 
-
-    workflow.transform(
-        name='readcounts_cell_id_annotate',
-        axes=('cell_id',),
-        ctx={'mem': 16, 'docker_image': remixt_image},
-        func='single_cell.utils.csvutils.add_col_from_dict',
-        args=(
-            mgd.TempInputFile('allele_counts.tsv', 'cell_id', axes_origin=[]),
-            {'cell_id': mgd.InputInstance('cell_id')},
-            mgd.TempOutputFile('allele_counts_annotate.tsv', 'cell_id', axes_origin=[]),
-            dtypes()['readcount'],
-        ),
-    )
-
-
     workflow.transform(
         name='prep_readcount_csv',
         axes=('cell_id',),
@@ -104,11 +92,24 @@ def extract_allele_readcounts(
     )
 
     workflow.transform(
+        name='readcounts_cell_id_annotate',
+        axes=('cell_id',),
+        func='single_cell.utils.csvutils.add_col_from_dict',
+        args=(
+            mgd.TempInputFile('allele_counts.csv.gz', 'cell_id', extensions=['.yaml']),
+            {'cell_id': mgd.InputInstance('cell_id')},
+            mgd.TempOutputFile('allele_counts_annotate.csv.gz', 'cell_id', extensions=['.yaml']),
+            dtypes()['readcount'],
+        ),
+    )
+
+
+    workflow.transform(
         name='merge_allele_readcount',
         ctx={'mem': 16},
         func='single_cell.utils.csvutils.concatenate_csv',
         args=(
-            mgd.TempInputFile('allele_counts.csv.gz', 'cell_id', extensions=['.yaml']),
+            mgd.TempInputFile('allele_counts_annotate.csv.gz', 'cell_id', extensions=['.yaml']),
             mgd.OutputFile(allele_counts_filename, extensions=['.yaml']),
         ),
         kwargs={

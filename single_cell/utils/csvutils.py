@@ -1,5 +1,4 @@
 import gzip
-import gzip
 import logging
 import os
 import shutil
@@ -7,6 +6,7 @@ import shutil
 import pandas as pd
 import yaml
 
+import collections
 
 class CsvMergeDtypesEmptyMergeSet(Exception):
     pass
@@ -558,12 +558,13 @@ def annotate_csv(infile, annotation_data, outfile, annotation_dtypes, on="cell_i
     output.write_df(metrics_df)
 
 
-def add_col_from_dict(infile, col_name, col_value, outfile, dtypes, write_header=True):
+def add_col_from_dict(infile, col_data, outfile, dtypes, write_header=True):
     csvinput = CsvInput(infile)
     csv_dtypes = csvinput.dtypes
     csvinput = csvinput.read_csv()
 
-    csvinput[col_name] = col_value
+    for col_name, col_value in col_data.items():
+        csvinput[col_name] = col_value
 
     for col, dtype in csv_dtypes.items():
         if col in dtypes:
