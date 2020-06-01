@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.6.10
+
+#### Bug:
+1. missing cell id in count haps
+
 ### v0.6.9
 
 #### Bug:
