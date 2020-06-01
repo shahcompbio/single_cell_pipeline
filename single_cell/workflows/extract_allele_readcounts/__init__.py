@@ -74,6 +74,21 @@ def extract_allele_readcounts(
         ),
     )
 
+
+    workflow.transform(
+        name='readcounts_cell_id_annotate',
+        axes=('cell_id',),
+        ctx={'mem': 16, 'docker_image': remixt_image},
+        func='single_cell.utils.csvutils.add_col_from_dict',
+        args=(
+            mgd.TempInputFile('allele_counts.tsv', 'cell_id', axes_origin=[]),
+            {'cell_id': mgd.InputInstance('cell_id')},
+            mgd.TempOutputFile('allele_counts_annotate.tsv', 'cell_id', axes_origin=[]),
+            dtypes()['readcount'],
+        ),
+    )
+
+
     workflow.transform(
         name='prep_readcount_csv',
         axes=('cell_id',),
