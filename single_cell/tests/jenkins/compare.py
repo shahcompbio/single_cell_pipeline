@@ -133,14 +133,14 @@ def _check_for_missing_cols(data, refdata):
 
 
 def compare_count_haps(haps, refhaps):
-    haps = pd.read_csv(haps, sep="\t")
-    refhaps = pd.read_csv(refhaps, sep="\t")
+    haps = pd.read_csv(haps)
+    refhaps = pd.read_csv(refhaps)
 
     if haps.empty and refhaps.empty:
         logging.getLogger('testing').warning("comparing empty hap counts")
         return
 
-    cols_must_match = ["chromosome", "position", "allele", "allele_id", "hap_label"]
+    cols_must_match = ["chromosome", "start", "end", "allele_id", "hap_label", "cell_id", "readcount"]
 
     for col in cols_must_match:
         _exact_compare_cols(haps, refhaps, col)
