@@ -147,17 +147,7 @@ def compare_count_haps(haps, refhaps):
 
 
 def compare_infer_haps(data, refdata):
-    data = _load(data, ["chromosome", "position"], reindex=True)
-    refdata = _load(refdata, ["chromosome", "position"], reindex=True)
-
-    similar, shared, diff = _call_positions_similar(data, refdata)
-
-    assert similar
-
-    data = data[data.index.isin(shared)]
-    refdata = refdata[refdata.index.isin(shared)]
-
-    compare_tables(data, refdata)
+    assert data.equals(refdata)
 
 
 def compare_tables(data, refdata, eps=None):

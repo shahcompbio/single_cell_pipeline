@@ -1,2 +1,2 @@
 normal:
-    bam: INFER_HAPS/bam/HCC1395BL_chr15.bam
+    bam: INFER_HAPS/ref_test_data/HCC1395BL_chr15.bam
