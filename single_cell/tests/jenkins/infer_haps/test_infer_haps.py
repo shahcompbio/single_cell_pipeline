@@ -4,7 +4,7 @@ import sys
 from single_cell.tests.jenkins import compare
 
 
-def compare_count_haps():
+def compare_infer_haps():
     output_path = sys.argv[1]
     ref_path = sys.argv[2]
 
@@ -15,4 +15,4 @@ def compare_count_haps():
 
 
 if __name__ == "__main__":
-    compare_count_haps()
+    compare_infer_haps()

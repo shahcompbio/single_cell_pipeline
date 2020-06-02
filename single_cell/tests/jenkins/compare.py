@@ -147,6 +147,9 @@ def compare_count_haps(haps, refhaps):
 
 
 def compare_infer_haps(data, refdata):
+    data = pd.read_csv(data)
+    refdata = pd.read_csv(refdata)
+
     assert data.equals(refdata)
 
 
