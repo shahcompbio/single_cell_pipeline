@@ -8,7 +8,7 @@ TAG="${TAG}.beta"
 mkdir -p COUNT_HAPS/ref_test_data
 
 docker run -v $PWD:$PWD -w $PWD singlecellpipeline/azurecli:v0.0.1 \
-  az storage blob download-batch -s count-haps  -d COUNT_HAPS/ref_test_data --account-name $1 --account-key $2
+  az storage blob download-batch -s count-haps-new  -d COUNT_HAPS/ref_test_data --account-name $1 --account-key $2
 
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
