@@ -55,7 +55,11 @@ def flag_outliers(df, upper_limit, lower_limit):
 
 
 def get_row_and_col(df):
-    sample, library, row, col = df["cell_id"].split("-")
+    information = df["cell_id"].split("-")
+    if len(information) == 4:
+        sample, library, row, col = information
+    else:
+        sample, library, row, col = information[0], "_".join(information[1:-2]) ,information[-2], information[-1]
     df["row"] = row
     df["col"] = col
     return df
@@ -117,30 +121,34 @@ def get_non_dropout_metrics(non_dropout_df, total_breakdown):
     fraction_cells_flagged = count_cells_flagged.divide(total_breakdown, fill_value=0)
 
     non_dropout_cells = non_dropout_df.groupby(["Experimental Condition", "Cell Call"]).count()["cell_id"]
-   
-    human_groupped = non_dropout_df[non_dropout_df["species"]=="grch37"].groupby(["Experimental Condition", "Cell Call"])
-    mouse_groupped = non_dropout_df[non_dropout_df["species"]=="mm10"].groupby(["Experimental Condition", "Cell Call"])
-    salmon_groupped = non_dropout_df[non_dropout_df["species"]=="salmon"].groupby(["Experimental Condition", "Cell Call"])
+    
+    human_count = salmon_count = mouse_count = None
+    human_ratio = salmon_ratio = mouse_ratio = None
+    
+    if "species" in non_dropout_df:   
+        human_groupped = non_dropout_df[non_dropout_df["species"]=="grch37"].groupby(["Experimental Condition", "Cell Call"])
+        mouse_groupped = non_dropout_df[non_dropout_df["species"]=="mm10"].groupby(["Experimental Condition", "Cell Call"])
+        salmon_groupped = non_dropout_df[non_dropout_df["species"]=="salmon"].groupby(["Experimental Condition", "Cell Call"])
 
-    human_count = human_groupped.count()["cell_id"]
-    mouse_count = mouse_groupped.count()["cell_id"]
-    salmon_count = salmon_groupped.count()["cell_id"]
+        human_count = human_groupped.count()["cell_id"]
+        mouse_count = mouse_groupped.count()["cell_id"]
+        salmon_count = salmon_groupped.count()["cell_id"]
 
-    human_ratio = human_count.divide(non_dropout_cells, fill_value=0)
-    mouse_ratio = mouse_count.divide(non_dropout_cells, fill_value=0)
-    salmon_ratio = salmon_count.divide(non_dropout_cells, fill_value=0)
+        human_ratio = human_count.divide(non_dropout_cells, fill_value=0)
+        mouse_ratio = mouse_count.divide(non_dropout_cells, fill_value=0)
+        salmon_ratio = salmon_count.divide(non_dropout_cells, fill_value=0)
 
     metrics = {
-        "count_cells_flagged": count_cells_flagged,
-        "fraction_cells_flagged": fraction_cells_flagged,
-        "non_dropout_cells": non_dropout_cells,
-        "human_count": human_count,
-        "mouse_count": mouse_count,
-        "salmon_count": salmon_count,
-        "human_ratio": human_ratio,
-        "mouse_ratio": mouse_ratio,
-        "salmon_ratio": salmon_ratio
-    }
+            "count_cells_flagged": count_cells_flagged,
+            "fraction_cells_flagged": fraction_cells_flagged,
+            "non_dropout_cells": non_dropout_cells,
+            "human_count": human_count,
+            "mouse_count": mouse_count,
+            "salmon_count": salmon_count,
+            "human_ratio": human_ratio,
+            "mouse_ratio": mouse_ratio,
+            "salmon_ratio": salmon_ratio
+        }
 
     return metrics
 
@@ -160,28 +168,35 @@ def get_hq_metrics(hq_df, total_breakdown):
     hq_median_reads = hq_cell_groupped.median()["total_reads"]
     #median coverage depth
     hq_median_coverage_depth = hq_cell_groupped.median()["coverage_depth"]
-    #species counts
-    salmon = hq_df[hq_df["species"]=="salmon"].groupby(["Experimental Condition", "Cell Call"]).count()["cell_id"]
-    human = hq_df[hq_df["species"]=="grch37"].groupby(["Experimental Condition", "Cell Call"]).count()["cell_id"]
-    mouse = hq_df[hq_df["species"]=="mm10"].groupby(["Experimental Condition", "Cell Call"]).count()["cell_id"]
     #Median % of unmapped reads in HQ cells
     median_unmapped_ratio = hq_cell_groupped.median()["fraction_unmapped"]
     #Median % of unknown reads in HQ cells
-    median_unknown_reads_ratio = hq_cell_groupped.median()["fastqscreen_nohit_ratio"]
+    median_unknown_reads_ratio = None
+    salmon = None
+    human = None
+    mouse = None
+    if "fastqscreen_nohit_ratio" in hq_df:
+        median_unknown_reads_ratio = hq_cell_groupped.median()["fastqscreen_nohit_ratio"]
 
+    if "species" in hq_df:
+        #species counts
+        salmon = hq_df[hq_df["species"]=="salmon"].groupby(["Experimental Condition", "Cell Call"]).count()["cell_id"]
+        human = hq_df[hq_df["species"]=="grch37"].groupby(["Experimental Condition", "Cell Call"]).count()["cell_id"]
+        mouse = hq_df[hq_df["species"]=="mm10"].groupby(["Experimental Condition", "Cell Call"]).count()["cell_id"]
+    
     hq_metrics = {
-        "hq_cell_count": hq_cell_count,
-        "hq_cell_percentage": hq_cell_percentage,
-        "hq_mean_quality": hq_mean_quality,
-        "hq_median_quality": hq_median_quality,
-        "hq_median_reads": hq_median_reads,
-        "hq_median_coverage_depth": hq_median_coverage_depth,
-        "hq_salmon_count": salmon,
-        "hq_human_count": human,
-        "hq_mouse_count": mouse,
-        "median_unmapped_ratio": median_unmapped_ratio,
-        "median_unknown_reads_ratio": median_unknown_reads_ratio,
-    }
+            "hq_cell_count": hq_cell_count,
+            "hq_cell_percentage": hq_cell_percentage,
+            "hq_mean_quality": hq_mean_quality,
+            "hq_median_quality": hq_median_quality,
+            "hq_median_reads": hq_median_reads,
+            "hq_median_coverage_depth": hq_median_coverage_depth,
+            "hq_salmon_count": salmon,
+            "hq_human_count": human,
+            "hq_mouse_count": mouse,
+            "median_unmapped_ratio": median_unmapped_ratio,
+            "median_unknown_reads_ratio": median_unknown_reads_ratio,
+        }
 
     return hq_metrics
 
@@ -238,8 +253,10 @@ def generate_qc_table(df):
         hq_metrics["hq_median_reads"].apply(lambda x: "{}k".format(int(x/1000))).rename("Median reads of HQ cells"),
         hq_metrics["hq_median_coverage_depth"].rename("Median coverge depth of HQ cells"),
         ]
-
-    fastqscreen_metrics_lst = [
+    metrics = pd.concat(metrics_lst, axis=1)
+    metrics = metrics.fillna(0)
+    if "species" in df:
+        fastqscreen_metrics_lst = [
         place_holder.rename("HQ cells (with quality >0.75)"),
         hq_metrics["hq_human_count"].rename("HQ human cells"),
         hq_metrics["hq_mouse_count"].rename("HQ mouse cells"),
@@ -266,15 +283,15 @@ def generate_qc_table(df):
         hq_metrics["median_unknown_reads_ratio"].astype(float).map("{:.2%}".format).rename(
             "Median % of unknown reads in HQ cells"),
 
-    ]
+        ]
 
-    metrics = pd.concat(metrics_lst, axis=1)
-    metrics = metrics.fillna(0)
 
-    fastqscreen_metrics = pd.concat(fastqscreen_metrics_lst, axis=1)
-    fastqscreen_metrics = fastqscreen_metrics.fillna(0)
+        fastqscreen_metrics = pd.concat(fastqscreen_metrics_lst, axis=1)
+        fastqscreen_metrics = fastqscreen_metrics.fillna(0)
     
-    return metrics.T, fastqscreen_metrics.T
+        return metrics.T, fastqscreen_metrics.T
+    else:
+        return metrics.T, pd.DataFrame()
 
 def generate_library_metrics(df, gc_data, reference_gc):
     cells_pass_df = df[df["quality"] >= 0.75]
@@ -434,11 +451,22 @@ def generate_html_report(tempdir, html, reference_gc, metrics, gc_metrics):
     qc_df, fastqscreen_df = generate_qc_table(data)
     plot_gc_curve(gc_data, reference_gc, gc_plot)
     plot_heatmap(data, heatmap)
-
-    generate_html(
+    if not fastqscreen_df.empty:
+        generate_html(
         [
             ('Metrics', qc_df),
-            ('', fastqscreen_df)
+            ('', fastqscreen_df),
+        ],
+        [
+            ('Heatmap', heatmap),
+            ('GC plot', gc_plot)
+        ],
+        html
+    )
+    else:
+        generate_html(
+        [
+            ('Metrics', qc_df),
         ],
         [
             ('Heatmap', heatmap),

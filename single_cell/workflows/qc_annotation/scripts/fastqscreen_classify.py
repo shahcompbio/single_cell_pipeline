@@ -32,13 +32,15 @@ def classify_fastqscreen(training_data_path, metrics_path):
 
     features = ["fastqscreen_nohit_ratio", "fastqscreen_grch37_ratio", "fastqscreen_mm10_ratio", "fastqscreen_salmon_ratio"]
     label_to_species = {0: "grch37", 1: "mm10", 2: "salmon"}
-    
-    # make the feature columns
-    for feature in features:
-        df[feature] = df[feature[:-6]].divide(df["total_reads"])
-    #scale the features
-    scaled_features = feature_transformer.transform(df[features])
-    df["species"] = model.predict(scaled_features)
-    df["species"].replace(label_to_species, inplace=True)
+    # check if all the features exists, if yes, make predictions, else create an empty species column.
+    exist = all([feature[:-6] in df for feature in features])    
+    if exist:
+        # make the feature columns
+        for feature in features:
+            df[feature] = df[feature[:-6]].divide(df["total_reads"])
+        #scale the features
+        scaled_features = feature_transformer.transform(df[features])
+        df["species"] = model.predict(scaled_features)
+        df["species"].replace(label_to_species, inplace=True)
 
     df.to_csv(metrics_path, index=False)
