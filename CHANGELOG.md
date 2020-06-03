@@ -1,5 +1,16 @@
 # Change Log
 
+### v0.6.12
+
+#### Bug:
+1. .tmp in input.yaml file path in  metadata yaml file
+
+#### Changes:
+1. test data set for count haps
+2. updated infer haps testing
+3. removed hardcoded genomes in HTML report
+
+
 ### v0.6.11
 
 #### Changes:
