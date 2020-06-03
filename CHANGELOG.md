@@ -9,7 +9,7 @@
 1. test data set for count haps
 2. updated infer haps testing
 3. removed hardcoded genomes in HTML report
-
+4. infer and count haps use proper chromosomes
 
 ### v0.6.11
 
