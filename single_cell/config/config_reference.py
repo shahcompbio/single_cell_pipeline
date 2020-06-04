@@ -23,7 +23,7 @@ def containers(version=None):
         'vcftools': 'vcftools:v0.0.2',
         'snpeff': 'vcftools:v0.0.2',
         'titan': 'titan:v0.0.1',
-        'remixt': 'remixt:v0.0.6',
+        'remixt': 'remixt:v0.0.7',
         'destruct': 'destruct:v0.0.5',
         'trimgalore': 'trimgalore:v0.0.2',
         'lumpy': 'lumpy:v0.0.3',
