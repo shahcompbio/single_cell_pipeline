@@ -150,7 +150,9 @@ def get_non_dropout_metrics(non_dropout_df, total_breakdown):
             "salmon_ratio": salmon_ratio
         }
 
+
     return metrics
+
 
 def get_hq_metrics(hq_df, total_breakdown):
     #get metrics of high quality cells
@@ -253,8 +255,11 @@ def generate_qc_table(df):
         hq_metrics["hq_median_reads"].apply(lambda x: "{}k".format(int(x/1000))).rename("Median reads of HQ cells"),
         hq_metrics["hq_median_coverage_depth"].rename("Median coverge depth of HQ cells"),
         ]
+
+
     metrics = pd.concat(metrics_lst, axis=1)
     metrics = metrics.fillna(0)
+
     if "species" in df:
         fastqscreen_metrics_lst = [
         place_holder.rename("HQ cells (with quality >0.75)"),
@@ -451,6 +456,7 @@ def generate_html_report(tempdir, html, reference_gc, metrics, gc_metrics):
     qc_df, fastqscreen_df = generate_qc_table(data)
     plot_gc_curve(gc_data, reference_gc, gc_plot)
     plot_heatmap(data, heatmap)
+
     if not fastqscreen_df.empty:
         generate_html(
         [

@@ -59,8 +59,8 @@ def generate_and_upload_metadata(
 
         if not input_yaml.startswith(root_dir) and root_dir in input_yaml:
             input_yaml = input_yaml[input_yaml.index(root_dir):]
-            if input_yaml.endswith('.tmp'):
-                input_yaml = input_yaml[:-4]
+        if input_yaml.endswith('.tmp'):
+            input_yaml = input_yaml[:-4]
 
         metadata['input_yaml'] = os.path.relpath(input_yaml, root_dir)
         filepaths.append(input_yaml)

@@ -55,11 +55,11 @@ pipeline{
                   sh 'bash single_cell/tests/jenkins/breakpoint_calling/breakpoint_calling.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
                }
            }
-           //  stage('infer_haps'){
-           //      steps{
-           //        sh 'bash single_cell/tests/jenkins/infer_haps/infer_haps.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
-           //     }
-           // }
+           stage('infer_haps'){
+                steps{
+                  sh 'bash single_cell/tests/jenkins/infer_haps/infer_haps.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'
+               }
+           }
             stage('count_haps'){
                 steps{
                   sh 'bash single_cell/tests/jenkins/count_haps/count_haps.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest'

@@ -1,5 +1,42 @@
 # Change Log
 
+### v0.6.13
+
+#### Changes:
+1. updated remixt
+
+
+### v0.6.12
+
+#### Bug:
+1. .tmp in input.yaml file path in  metadata yaml file
+
+#### Changes:
+1. test data set for count haps
+2. updated infer haps testing
+3. removed hardcoded genomes in HTML report
+4. infer and count haps use proper chromosomes
+
+### v0.6.11
+
+#### Changes:
+1. pypeliner version update to v0.5.19
+
+
+
+### v0.6.10
+
+#### Bug:
+1. missing cell id in count haps
+
+### v0.6.9
+
+#### Bug:
+1. fixed snv annotation issues
+
+#### Changes:
+1. biowrappers upgraded to v0.2.8
+
 ### v0.6.8
 
 #### Bug:

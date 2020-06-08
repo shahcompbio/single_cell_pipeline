@@ -1,4 +1,3 @@
-import collections
 import gzip
 import logging
 import os
@@ -6,6 +5,7 @@ import shutil
 
 import pandas as pd
 import yaml
+
 import collections
 
 class CsvMergeDtypesEmptyMergeSet(Exception):
@@ -556,6 +556,22 @@ def annotate_csv(infile, annotation_data, outfile, annotation_dtypes, on="cell_i
 
     output = CsvOutput(outfile, csv_dtypes, header=write_header)
     output.write_df(metrics_df)
+
+
+def add_col_from_dict(infile, col_data, outfile, dtypes, write_header=True):
+    csvinput = CsvInput(infile)
+    csv_dtypes = csvinput.dtypes
+    csvinput = csvinput.read_csv()
+
+    for col_name, col_value in col_data.items():
+        csvinput[col_name] = col_value
+
+    for col, dtype in csv_dtypes.items():
+        if col in dtypes:
+            assert dtype == dtypes[col]
+
+    output = CsvOutput(outfile, dtypes, header=write_header)
+    output.write_df(csvinput)
 
 
 def rewrite_csv_file(filepath, outputfile, write_header=True, dtypes=None):
