@@ -43,6 +43,7 @@ def get_reference_data(reference, rootdir):
         ref_genome = os.path.join(rootdir, 'salmon/GCF_002021735.1_Okis_V1_genomic.fna')
     elif reference == "grch37":
         classifier_training_data = os.path.join(rootdir, 'human/classifier_training_data.h5')
+        fastqscreen_training_data = os.path.join(rootdir, 'human/fastqscreen_training_data.csv')
         gc_wig_file = {
             500000: os.path.join(rootdir, 'human/GRCh37-lite.gc.ws_500000.wig'),
             1000: os.path.join(rootdir, 'human/GRCh37-lite.gc.ws_1000.wig'),
