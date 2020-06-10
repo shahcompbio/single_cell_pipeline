@@ -19,6 +19,7 @@ requirements:
     - seaborn
     - statsmodels
     - scikit-learn
+    - pytables
     - ete3
     - cell_cycle_classifier
     - click
