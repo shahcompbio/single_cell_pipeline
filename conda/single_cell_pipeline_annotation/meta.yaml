@@ -21,7 +21,7 @@ requirements:
     - scikit-learn
     - pytables
     - ete3
-    - cell_cycle_classifier
+    - cell_cycle_classifier=0.0.2
     - click
 about:
   home: http://shahlab.ca
