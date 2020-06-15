@@ -1,13 +1,13 @@
 package:
-  name: single_cell_pipeline
-  version: '0.6.8'
+  name: single_cell_pipeline_hmmcopy
+  version: '0.6.4'
 
 source:
   git_url: https://github.com/shahcompbio/single_cell_pipeline.git
-  git_rev: v0.6.8
+  git_rev: v0.6.4
 
 build:
-  number: 4
+  number: 1
 
 requirements:
   build:
@@ -16,6 +16,7 @@ requirements:
   run:
     - python
     - matplotlib
+    - pandas=0.25.3
     - pypdf2
     - pypeliner
     - pysam
@@ -24,6 +25,8 @@ requirements:
     - seaborn
     - statsmodels
     - scikit-learn
+    - ete3
+    - bioconductor-hmmcopy-single-cell
 about:
   home: http://shahlab.ca
   summary: 'Bioinformatics pipeline for single cell analysis'
