@@ -147,6 +147,7 @@ def get_annotation_params(reference_dir, reference, version):
         'docker': docker_containers,
         'memory': {'med': 6},
         'classifier_training_data': referencedata['classifier_training_data'],
+        'fastqscreen_training_data': referencedata['fastqscreen_training_data'],
         'reference_gc': referencedata['reference_gc_qc'],
         'chromosomes': referencedata['chromosomes'],
         'num_states': 12,

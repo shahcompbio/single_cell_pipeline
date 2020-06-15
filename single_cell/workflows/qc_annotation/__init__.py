@@ -74,6 +74,7 @@ def create_qc_annotation_workflow(
         args=(
             mgd.TempSpace("QC_report_singlecellpipeline"),
             config['reference_gc'],
+            config['fastqscreen_training_data'],
             mgd.TempInputFile('merged_metrics_contamination.csv.gz', extensions=['.yaml']),
             mgd.InputFile(gc_metrics, extensions=['.yaml']),
             mgd.OutputFile(qc_report)
