@@ -1,5 +1,11 @@
 # Change Log
 
+### v0.6.14
+
+### Changes:
+1. removed joblib files from repo
+2. added conda recipes
+
 ### v0.6.13
 
 #### Changes:
