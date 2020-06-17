@@ -63,8 +63,8 @@ def dtypes():
         'total_mapped_reads': 'Int64',
         'total_properly_paired': 'Int64',
         'paired_mapped_reads': 'Int64',
-        'order_corrupt_tree': 'Int64'
-
+        'order_corrupt_tree': 'Int64',
+        'species': 'str',
     }
 
     dtypes = locals()

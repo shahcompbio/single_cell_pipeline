@@ -77,7 +77,8 @@ def create_qc_annotation_workflow(
             config['fastqscreen_training_data'],
             mgd.TempInputFile('merged_metrics_contamination.csv.gz', extensions=['.yaml']),
             mgd.InputFile(gc_metrics, extensions=['.yaml']),
-            mgd.OutputFile(qc_report)
+            mgd.OutputFile(qc_report),
+            mgd.TempOutputFile('merged_metrics_contamination_species.csv.gz', extensions=['.yaml']),
         )
     )
 
@@ -85,7 +86,7 @@ def create_qc_annotation_workflow(
         name='filter_segs_plots',
         func="single_cell.workflows.qc_annotation.tasks.filter_plot_tar",
         args=(
-            mgd.TempInputFile('merged_metrics_contamination.csv.gz', extensions=['.yaml']),
+            mgd.TempInputFile('merged_metrics_contamination_species.csv.gz', extensions=['.yaml']),
             mgd.InputFile(segs_tar),
             mgd.OutputFile(pass_segs),
             mgd.OutputFile(fail_segs),
@@ -99,7 +100,7 @@ def create_qc_annotation_workflow(
         func="single_cell.workflows.qc_annotation.tasks.plot_pcolor",
         args=(
             mgd.InputFile(hmmcopy_reads, extensions=['.yaml']),
-            mgd.TempInputFile('merged_metrics_contamination.csv.gz', extensions=['.yaml']),
+            mgd.TempInputFile('merged_metrics_contamination_species.csv.gz', extensions=['.yaml']),
             mgd.OutputFile(plot_heatmap_ec_filt_output),
         ),
         kwargs={
@@ -120,7 +121,7 @@ def create_qc_annotation_workflow(
         ctx={'mem': config['memory']['med'], 'ncpus': 1, 'num_retry': 1},
         func="single_cell.utils.csvutils.rewrite_csv_file",
         args=(
-            mgd.TempInputFile('merged_metrics_contamination.csv.gz', extensions=['.yaml']),
+            mgd.TempInputFile('merged_metrics_contamination_species.csv.gz', extensions=['.yaml']),
             mgd.OutputFile(merged_metrics, extensions=['.yaml']),
         ),
     )

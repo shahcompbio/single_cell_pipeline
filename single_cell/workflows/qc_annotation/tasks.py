@@ -135,9 +135,9 @@ def merge_metrics(hmmcopy_metrics, alignment_metrics, merged_output):
     )
 
 
-def generate_qc_report(tempdir, reference_gc, fastqscreen_training_data, metrics_df, gc_metrics_df, qc_report):
+def generate_qc_report(tempdir, reference_gc, fastqscreen_training_data, metrics_df, gc_metrics_df, qc_report, metrics_df_annotated):
     helpers.makedirs(tempdir)
-    fastqscreen_classify.classify_fastqscreen(fastqscreen_training_data, metrics_df)
+    fastqscreen_classify.classify_fastqscreen(fastqscreen_training_data, metrics_df, metrics_df_annotated)
     generate_qc.generate_html_report(tempdir, qc_report, reference_gc, metrics_df, gc_metrics_df)
 
 
