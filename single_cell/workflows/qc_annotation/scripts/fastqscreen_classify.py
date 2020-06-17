@@ -1,5 +1,5 @@
 import pandas as pd
-
+from single_cell.utils import csvutils
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import *
 
@@ -28,8 +28,8 @@ def train(training_data_path):
     return transformer, rf
 
 
-def classify_fastqscreen(training_data_path, metrics_path, metrics_output):
-    df = pd.read_csv(metrics_path)
+def classify_fastqscreen(training_data_path, metrics_path, metrics_output, dtypes):
+    df = csvutils.read_csv_and_yaml(metrics_path)
     feature_transformer, model = train(training_data_path)
 
     features = ["fastqscreen_nohit_ratio", "fastqscreen_grch37_ratio", "fastqscreen_mm10_ratio",
@@ -46,4 +46,4 @@ def classify_fastqscreen(training_data_path, metrics_path, metrics_output):
         df["species"] = model.predict(scaled_features)
         df["species"].replace(label_to_species, inplace=True)
 
-    df.to_csv(metrics_output, index=False)
+    csvutils.write_dataframe_to_csv_and_yaml(df, metrics_output, dtypes, write_header=True)

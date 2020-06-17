@@ -8,7 +8,6 @@ import shutil
 
 import pandas as pd
 import pypeliner
-import sklearn
 from ete3 import Tree
 from single_cell.utils import csvutils
 from single_cell.utils import helpers
@@ -16,8 +15,9 @@ from single_cell.utils.singlecell_copynumber_plot_utils import PlotPcolor
 from single_cell.workflows.qc_annotation.dtypes import dtypes
 
 from .scripts import classify
-from .scripts import generate_qc
 from .scripts import fastqscreen_classify
+from .scripts import generate_qc
+
 
 def _get_col_data(df, organism):
     return df['fastqscreen_{}'.format(organism)] - df['fastqscreen_{}_multihit'.format(organism)]
@@ -135,9 +135,14 @@ def merge_metrics(hmmcopy_metrics, alignment_metrics, merged_output):
     )
 
 
-def generate_qc_report(tempdir, reference_gc, fastqscreen_training_data, metrics_df, gc_metrics_df, qc_report, metrics_df_annotated):
+def generate_qc_report(
+        tempdir, reference_gc, fastqscreen_training_data,
+        metrics_df, gc_metrics_df, qc_report, metrics_df_annotated
+):
     helpers.makedirs(tempdir)
-    fastqscreen_classify.classify_fastqscreen(fastqscreen_training_data, metrics_df, metrics_df_annotated)
+    fastqscreen_classify.classify_fastqscreen(
+        fastqscreen_training_data, metrics_df, metrics_df_annotated, dtypes()['metrics']
+    )
     generate_qc.generate_html_report(tempdir, qc_report, reference_gc, metrics_df, gc_metrics_df)
 
 
