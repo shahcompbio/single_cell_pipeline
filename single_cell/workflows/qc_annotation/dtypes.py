@@ -65,6 +65,10 @@ def dtypes():
         'paired_mapped_reads': 'Int64',
         'order_corrupt_tree': 'Int64',
         'species': 'str',
+        'fastqscreen_nohit_ratio': 'float',
+        "fastqscreen_grch37_ratio": 'float',
+        "fastqscreen_mm10_ratio": 'float',
+        "fastqscreen_salmon_ratio": 'float',
     }
 
     dtypes = locals()
