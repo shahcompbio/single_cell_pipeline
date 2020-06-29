@@ -159,6 +159,10 @@ def write_summary_counts(counts, outfile, cell_id, fastqscreen_params):
             columns += ['fastqscreen_nohit']
             header = ','.join(columns) + '\n'
             writer.write(header)
+            data = [0] * len(columns)
+            data[0] = cell_id
+            data = ','.join(data) + '\n'
+            writer.write(data)
             return
 
         keys = sorted(summary_counts.keys())
