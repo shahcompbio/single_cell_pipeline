@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.6.15
+
+### Bug:
+1. there were no counts for cells with no data in fastqscreen summary
+
 ### v0.6.14
 
 ### Changes:
