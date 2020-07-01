@@ -4,7 +4,7 @@ set -o pipefail
 
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
 TAG="${TAG}.beta"
-
+DOCKER=`which docker`
 
 mkdir -p HMMCOPY/ref_test_data
 
@@ -12,7 +12,7 @@ docker run -v $PWD:$PWD -w $PWD $3/azurecli:v0.0.1 \
   az storage blob download-batch -s hmmcopy -d HMMCOPY/ref_test_data --account-name $1 --account-key $2
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
-  -v /usr/bin/docker:/usr/bin/docker --rm \
+  -v $DOCKER:$DOCKER --rm \
   $3/single_cell_pipeline:$TAG \
   single_cell hmmcopy \
   --input_yaml single_cell/tests/jenkins/hmmcopy/inputs.yaml \
@@ -30,7 +30,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   --out_dir HMMCOPY/output
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
-  -v /usr/bin/docker:/usr/bin/docker --rm \
+  -v $DOCKER:$DOCKER --rm \
   $3/single_cell_pipeline:$TAG \
   python single_cell/tests/jenkins/hmmcopy/test_hmmcopy.py HMMCOPY/output A97318A  HMMCOPY/ref_test_data/refdata
 

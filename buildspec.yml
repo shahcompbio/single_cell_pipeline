@@ -1,0 +1,18 @@
+version: 0.2
+
+phases:
+  build:
+    commands:
+      - which docker
+      - bash single_cell/tests/jenkins/build_docker/build.sh $DOCKERHUB_USR $DOCKERHUB_PSW docker.io singlecellpipelinetest
+      - bash single_cell/tests/jenkins/refdata/download.sh singlecelltestsets $SINGLECELLTESTSETS
+      - bash single_cell/tests/jenkins/align/align.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest
+      - bash single_cell/tests/jenkins/hmmcopy/hmmcopy.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest
+      - bash single_cell/tests/jenkins/annotation/annotation.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest
+      - bash single_cell/tests/jenkins/merge_cell_bams/merge_cell_bams.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest
+      - bash single_cell/tests/jenkins/split_wgs_bam/split_wgs_bam.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest
+      - bash single_cell/tests/jenkins/variant_calling/variant_calling.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest
+      - bash single_cell/tests/jenkins/breakpoint_calling/breakpoint_calling.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest
+      - bash single_cell/tests/jenkins/infer_haps/infer_haps.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest
+      - bash single_cell/tests/jenkins/count_haps/count_haps.sh singlecelltestsets $SINGLECELLTESTSETS singlecellpipelinetest
+
