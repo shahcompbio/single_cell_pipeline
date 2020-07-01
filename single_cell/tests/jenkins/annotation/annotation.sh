@@ -4,6 +4,7 @@ set -o pipefail
 
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
 TAG="${TAG}.beta"
+DOCKER=`which docker`
 
 mkdir -p ANNOTATION/ref_test_data
 
@@ -12,7 +13,7 @@ docker run -v $PWD:$PWD -w $PWD $3/azurecli:v0.0.1 \
 
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
-  -v /usr/bin/docker:/usr/bin/docker --rm \
+  -v $DOCKER:$DOCKER --rm \
   $3/single_cell_pipeline:$TAG \
   single_cell annotation --input_yaml single_cell/tests/jenkins/annotation/inputs.yaml \
   --library_id A97318A --maxjobs 4 --nocleanup --sentinel_only  \
@@ -26,7 +27,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   --no_corrupt_tree
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
-  -v /usr/bin/docker:/usr/bin/docker --rm \
+  -v $DOCKER:$DOCKER --rm \
   $3/single_cell_pipeline:$TAG \
   python single_cell/tests/jenkins/annotation/test_annotation.py ANNOTATION/output A97318A  ANNOTATION/ref_test_data/refdata
 

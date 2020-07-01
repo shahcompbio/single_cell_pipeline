@@ -4,7 +4,7 @@ set -o pipefail
 
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
 TAG="${TAG}.beta"
-
+DOCKER=`which docker`
 
 mkdir -p INFER_HAPS/ref_test_data
 
@@ -13,7 +13,7 @@ docker run -v $PWD:$PWD -w $PWD singlecellpipeline/azurecli:v0.0.1 \
 
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
-  -v /usr/bin/docker:/usr/bin/docker --rm \
+  -v $DOCKER:$DOCKER --rm \
   $3/single_cell_pipeline:$TAG \
   single_cell infer_haps --input_yaml single_cell/tests/jenkins/infer_haps/inputs.yaml \
   --maxjobs 4 --nocleanup --sentinel_only  \
@@ -27,7 +27,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
 
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
-  -v /usr/bin/docker:/usr/bin/docker --rm \
+  -v $DOCKER:$DOCKER --rm \
   $3/single_cell_pipeline:$TAG \
   python single_cell/tests/jenkins/infer_haps/test_infer_haps.py INFER_HAPS/output INFER_HAPS/ref_test_data
 
