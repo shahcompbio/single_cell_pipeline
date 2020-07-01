@@ -4,29 +4,27 @@ set -o pipefail
 
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
 TAG="${TAG}.beta"
+DOCKER=`which docker`
 
-WKDIR=$PWD
-cd /mnt
+mkdir -p VARIANT_CALLING/ref_test_data
 
-sudo mkdir -p VARIANT_CALLING/ref_test_data
-
-sudo docker run -v $PWD:$PWD -w $PWD $3/azurecli:v0.0.1 \
+docker run -v $PWD:$PWD -w $PWD $3/azurecli:v0.0.1 \
   az storage blob download-batch -s variant-calling  -d VARIANT_CALLING/ref_test_data/ --account-name $1 --account-key $2
 
-sudo docker run -w $PWD -v $PWD:$PWD -v $WKDIR:$WKDIR -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
-  -v /usr/bin/docker:/usr/bin/docker --rm \
+docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
+  -v $DOCKER:$DOCKER --rm \
   $3/single_cell_pipeline:$TAG \
-  single_cell variant_calling --input_yaml $WKDIR/single_cell/tests/jenkins/variant_calling/inputs.yaml \
+  single_cell variant_calling --input_yaml single_cell/tests/jenkins/variant_calling/inputs.yaml \
   --maxjobs 4 --nocleanup --sentinel_only  \
-  --context_config $WKDIR/single_cell/tests/jenkins/context_config.yaml \
+  --context_config single_cell/tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
   --tmpdir VARIANT_CALLING/temp \
-  --pipelinedir $WKDIR/VARIANT_CALLING/pipeline --submit local --out_dir $WKDIR/VARIANT_CALLING/output \
+  --pipelinedir VARIANT_CALLING/pipeline --submit local --out_dir VARIANT_CALLING/output \
   --config_override '{"variant_calling": {"chromosomes": ["6", "8", "17"]}, "version": '\"$TAG\"'}'
 
-docker run -w $PWD -v $PWD:$PWD -v $WKDIR:$WKDIR -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
-  -v /usr/bin/docker:/usr/bin/docker --rm \
+docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
+  -v $DOCKER:$DOCKER --rm \
   $3/single_cell_pipeline:$TAG \
-  python $WKDIR/single_cell/tests/jenkins/variant_calling/test_variant_calling.py $WKDIR/VARIANT_CALLING/output $PWD/VARIANT_CALLING/ref_test_data/refdata
+  python single_cell/tests/jenkins/variant_calling/test_variant_calling.py VARIANT_CALLING/output VARIANT_CALLING/ref_test_data/refdata
 
 docker run -w $PWD -v $PWD:$PWD --rm $3/single_cell_pipeline:$TAG rm -rf VARIANT_CALLING
