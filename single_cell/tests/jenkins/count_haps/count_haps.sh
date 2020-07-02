@@ -7,13 +7,12 @@ DOCKER=`which docker`
 
 mkdir -p COUNT_HAPS/ref_test_data
 
-docker run -v $PWD:$PWD -w $PWD singlecellpipeline/azurecli:v0.0.1 \
-  az storage blob download-batch -s count-haps-new  -d COUNT_HAPS/ref_test_data --account-name $1 --account-key $2
-
+docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_DEFAULT_REGION -v $PWD:$PWD -w $PWD $1/awscli:v0.0.1 \
+  aws s3 cp s3://singlecelltestsets/TESTDATA_CODEBUILD/count-haps-new COUNT_HAPS/ref_test_data --recursive
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v $DOCKER:$DOCKER --rm \
-  $3/single_cell_pipeline:$TAG \
+  $1/single_cell_pipeline:$TAG \
   single_cell count_haps \
   --input_yaml single_cell/tests/jenkins/count_haps/inputs.yaml \
   --maxjobs 4 \
@@ -30,7 +29,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v $DOCKER:$DOCKER --rm \
-  $3/single_cell_pipeline:$TAG \
+  $1/single_cell_pipeline:$TAG \
   python single_cell/tests/jenkins/count_haps/test_count_haps.py COUNT_HAPS/output COUNT_HAPS/ref_test_data
 
-docker run -w $PWD -v $PWD:$PWD --rm $3/single_cell_pipeline:$TAG rm -rf COUNT_HAPS
+docker run -w $PWD -v $PWD:$PWD --rm $1/single_cell_pipeline:$TAG rm -rf COUNT_HAPS
