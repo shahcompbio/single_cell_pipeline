@@ -9,6 +9,8 @@ docker login -u $1 --password $2
 REGISTRY=$3
 ORG=$4
 
+git pull
+
 echo "$$$$"
 ls
 
