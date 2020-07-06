@@ -9,19 +9,6 @@ docker login -u $1 --password $2
 REGISTRY=$3
 ORG=$4
 
-git fetch origin
-
-echo "$$$$"
-ls
-
-git rev-parse HEAD
-
-git describe --tags
-
-git rev-list --tags --max-count=1
-
-echo "####"
-
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
 
 COMMIT=`git rev-parse HEAD`
