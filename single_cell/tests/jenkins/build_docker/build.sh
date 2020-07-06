@@ -9,7 +9,7 @@ docker login -u $1 --password $2
 REGISTRY=$3
 ORG=$4
 
-git pull
+git pull origin `git rev-parse HEAD`
 
 echo "$$$$"
 ls
