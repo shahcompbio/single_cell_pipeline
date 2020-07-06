@@ -14,6 +14,10 @@ ls
 
 git rev-parse HEAD
 
+git describe --tags
+
+git rev-list --tags --max-count=1
+
 echo "####"
 
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
