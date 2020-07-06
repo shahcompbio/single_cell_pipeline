@@ -3,7 +3,6 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - bash single_cell/tests/jenkins/preflight/preflight.sh
       - bash single_cell/tests/jenkins/build_docker/build.sh $DOCKERHUB_USR $DOCKERHUB_PSW docker.io singlecellpipelinetest
   build:
     commands:
