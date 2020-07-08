@@ -1,0 +1,7 @@
+metadata: "metadata/test.csv"
+#metadata: "metadata/spectrum_pseudobulk_april2.csv"
+#metadata: "metadata/fitness_pseudobulk_march17.csv"
+tantalus: "/work/shah/tantalus/"
+log_dir: "logs/"
+vepdata: "/work/shah/reference/vep/"
+genomeref: "/work/shah/reference/genomes/GRCh37-lite/GRCh37-lite.fa"

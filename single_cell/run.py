@@ -17,7 +17,7 @@ from single_cell.snv_genotyping import snv_genotyping_pipeline
 from single_cell.split_bam import split_bam_pipeline
 from single_cell.sv_genotyping import sv_genotyping_pipeline
 from single_cell.variant_calling import variant_calling_pipeline
-
+from single_cell.QC import qc_workflow
 
 def main():
     args = parse_args()
@@ -70,6 +70,8 @@ def main():
     if args["which"] == "sv_genotyping":
         sv_genotyping_pipeline(args)
 
+    if args["which"] ==  "qc":
+        qc_workflow(args)
 
 if __name__ == "__main__":
     main()

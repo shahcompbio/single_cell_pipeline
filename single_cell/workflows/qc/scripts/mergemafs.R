@@ -1,0 +1,39 @@
+library(tidyverse)
+library(data.table)
+
+print("Read in files:")
+print("Files:")
+print(snakemake@input)
+
+maf <- data.frame()
+for (f in snakemake@input){
+  print(paste0("Sample: ",str_split(basename(f), "[.]")[[1]][1]))
+  #maftemp <- read_delim(f, delim = "\t", guess_max = 10^7, col_types = list(PHENO = "c", SOMATIC = "c", Chromosome = "c")) %>%
+  maftemp <- data.table::fread(f, colClasses = list(character=c("Chromosome","PHENO","SOMATIC","PUBMED"))) %>% as_tibble() %>%
+    mutate(id = str_split(basename(f), "[.]")[[1]][1]) %>%
+    filter(t_alt_count > 2)
+  maf <- bind_rows(maf, maftemp)
+}
+
+write_delim(maf, snakemake@output[[1]], delim = "\t")
+
+print("Filter for high impact variants")
+
+filtmaf <- filter(maf, str_detect(Consequence, "frameshift|stop") | IMPACT == "HIGH") %>%
+    group_by_at(vars(-contains("depth"), -contains("count"))) %>%
+    summarise(t_depth = sum(t_depth),
+           t_ref_count = sum(t_ref_count),
+           t_alt_count = sum(t_alt_count),
+           n_depth = sum(n_depth),
+           n_ref_count = sum(n_ref_count),
+           n_alt_count = sum(n_alt_count),
+           nlibrary = n()
+         ) %>%
+    ungroup() %>%
+    mutate(tVAF = t_alt_count / t_depth, nVAF = n_alt_count / n_depth) %>%
+    dplyr::select(id, Hugo_Symbol, Chromosome, Start_Position,
+      Reference_Allele, Variant_Type, Tumor_Seq_Allele1,
+      Tumor_Seq_Allele2, Consequence, IMPACT, tVAF, nVAF, nlibrary) %>%
+    dplyr::arrange(id, Chromosome, Start_Position)
+
+write_delim(filtmaf, snakemake@output[[2]], delim = "\t")

@@ -199,6 +199,13 @@ def parse_args():
         subparsers.add_parser("sv_genotyping"))
     sv_genotyping.set_defaults(which='sv_genotyping')
 
+    # ================
+    # qc
+    # ================
+    qc = add_global_args(
+        subparsers.add_parser("qc"))
+    qc.set_defaults(which='QC')
+
     # ======================================
     # generates pipeline and batch configs
     # ======================================
