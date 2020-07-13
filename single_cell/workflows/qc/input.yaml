@@ -1,2 +1,15 @@
-cluster_info: cluster.yaml
-config: config.yaml
+# cluster_info: cluster.yaml
+# config: config.yaml
+
+# SA532X1XB00118:
+#   library_id: A96157C 
+#   jira_id: SC-3041
+#   snv_genotyping_jira_id: SC-3339
+SA532X1XB00118:
+   library_id: A96157C 
+   jira_id: SC-3041
+   snv_genotyping_jira_id: SC-3339
+SA1049AX1XB01417:
+  library_id: A95652B
+  jira_id: SC-3349
+  snv_genotyping_jira_id: SC-3609

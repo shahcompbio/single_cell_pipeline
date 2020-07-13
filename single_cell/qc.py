@@ -12,19 +12,73 @@ import sys
 
 
 def qc_workflow(args):
-    print("here")
-    yamldata = yaml.safe_load(open(args['input_yaml']))
+    yaml = inpututils.load_yaml(args["input_yaml"])
+    config = inpututils.load_config(args)
+    
+    config = config["sv_genotyping"]
 
-    cluster_yaml = yamldata["cluster_info"]
-    config_yaml = yamldata["config"]
 
-    cmd = ["snakemake", "--jobs", "50",   "--use-singularity",   "--cluster-config cluster.yaml",   "--cluster", "\"${CLUSTER_CMD}\"",   "--singularity-args", 
-    "\"--bind ${vepdata}", "--bind" "${genomeref}", "--bind" "${tantalusdir}\"", "--keep-going"]
+    #inputs
+    jira_ids =  {k: v["jira_id"] for k, v in yaml.items()}
+    snv_jira_ids = {k: v["snv_genotyping_jira_id"]  for k,v in yaml.items()}
+    library_ids = {k: v["library_id"] for k, v in yaml.items()}
+    cell_ids = {k: k for k, v in yaml.items()}
+    # pseudobulk_groups = {k: cell + "_" + lib for (k, cell), (k,lib) in zip(cell_ids, library_ids) }
+    out_dir = args["out_dir"]
+    tmp_dir = args["tmpdir"]
+    #outputs
+    reporthtmls = {k: os.path.join(out_dir, k + "_main_report.html") for k, v in yaml.items()}
+    mutationreporthtmls = {k: os.path.join(out_dir, k + "_mutation_report.html") for k, v in yaml.items()}
+    mafs = {k: os.path.join(out_dir, k + "_maf.maf") for k, v in yaml.items()}
 
-    docker_image = ""
 
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
 
+    workflow = pypeliner.workflow.Workflow(
+        ctx={'docker_image': config['docker']['single_cell_pipeline']}
+    )
+
+    workflow.setobj(
+        obj=mgd.OutputChunks('cell_id'),
+        value=list(yaml.keys()),
+    )
+
+    workflow.subworkflow(
+        name='create_qc_workflow',
+        ctx={'mem':450, 'docker_image': config['docker']['single_cell_pipeline']},
+        func="single_cell.workflows.qc.create_qc_workflow",
+        axes=('cell_id',),
+        args=(
+            mgd.InputFile('cell_id', 'cell_id', fnames=cell_ids),
+            mgd.InputFile('jira_id', 'cell_id', fnames=jira_ids),
+            mgd.InputFile('snv_jira_id', 'cell_id', fnames=snv_jira_ids),
+            mgd.InputFile('library_id', 'cell_id', fnames=library_ids),
+            tmp_dir,
+            out_dir,
+            mgd.InputFile('reporthtmls', 'cell_id', fnames=reporthtmls),
+            mgd.InputFile('mutationreporthtmls', 'cell_id', fnames=mutationreporthtmls),
+            mgd.InputFile('mafs', 'cell_id', fnames=mafs),
+        ),
+    )
+    # workflow.subworkflow(
+    #     name='create_qc_workflow',
+    #     ctx={'mem':450, 'docker_image': config['docker']['single_cell_pipeline']},
+    #     func="single_cell.workflows.qc.create_qc_workflow",
+    #     args=(
+    #         cell_ids,
+    #         library_ids,
+    #         snv_jira_ids,
+    #         library_ids,
+    #         pseudobulk_groups,xw
+    #         pseudobulk_groups,
+    #         tmp_dir,
+    #         out_dir,
+    #         reporthtmls,
+    #         mutationreporthtmls,
+    #         mafs,
+    #     ),
+    # )
+
+    
 
     # workflow.transform(
     #     name='generate_meta_files_results',
@@ -122,3 +176,10 @@ def qc_workflow(args):
     #     workflow = qc_workflow(args)
 
     #     pyp.run(workflow)
+    return workflow
+def qc_pipeline(args):
+    pyp = pypeliner.app.Pypeline(config=args)
+
+    workflow = qc_workflow(args)
+
+    pyp.run(workflow)

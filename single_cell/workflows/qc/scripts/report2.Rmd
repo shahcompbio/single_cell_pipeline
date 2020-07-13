@@ -2,6 +2,26 @@
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   html_document
+params:
+  sample_id: ""
+  cn_plot_png: ""
+  mutations_per_cell_png: ""
+  summary_csv: ""
+  snvs_high_impact_csv: ""
+  snvs_all_csv: ""
+  trinuc_csv: ""
+  snv_adjacent_distance_png: ""
+  snv_genome_count_png: ""
+  snv_cell_counts_png: ""
+  snv_alt_counts_png: ""
+  rearranegementtype_distribution_png: ""
+  chromosome_types_png: ""
+  BAFplot_png: ""
+  datatype_summary_csv: ""
+
+---
+---
+title: `r params$sample_id`
 ---
 
 ```{r setup, include=FALSE}
@@ -12,39 +32,37 @@ library(tidyr)
 library(dplyr)
 library(ggplot2)
 ```
-```{r, include=FALSE}
-title_var <- snakemake@params["sample_id"]
-```
----
-title: `r title_var`
----
+
 
 # Cells per datatype
 ```{r datatype, echo = FALSE}
 # All defaults
-read.csv(snakemake@params[["abs_datatype_summary"]]) %>%
+#abs datatype
+read.csv(params$datatype_summary_csv) %>%
   knitr::kable()
 ```
 
 # SNV
 ```{r printsummary, echo = FALSE}
 # All defaults
-df <- read.csv(snakemake@params[["abs_summary"]])
+df <- read.csv(params$summary_csv)
 ```
 Total number of cells: `r df$ncells`.
 
 Total number of mutations: `r df$nmutations`.
 
 ## SNV cell counts + alt counts
-![](`r snakemake@params[["abs_snvcellcounts"]]`) ![](`r snakemake@params[["abs_snvaltcounts"]]`)
+![](`r params$snv_alt_counts_png`) ![](`r params$snv_alt_counts_png`)
 
 ## SNVs per cell
-![](`r snakemake@params[["abs_muts_per_cell"]]`)
+![](`r params$mutations_per_cell_png`)
 
 Number of mutations per chromosome:
+
+
 ```{r perchr, fig.height = 3, fig.width = 10, echo = FALSE}
 # All defaults
-snvs <- read.csv(snakemake@params[["abs_allsnvs"]])
+snvs <- read.csv(params$snvs_all_csv)
 chridx <- data.frame(chrom = c(paste0(1:22), "X", "Y"), idx = seq(1:24))
 snvs %>%
   left_join(., chridx) %>%
@@ -59,13 +77,13 @@ snvs %>%
 ## Rainfall plot
 ```{r adjdist, echo = FALSE}
 # All defaults
-include_graphics(snakemake@params[["abs_adj_distance"]])
+include_graphics(params$snv_adjacent_distance_png)
 ```
 
 ## SNV density
 ```{r genomecount, echo = FALSE}
 # All defaults
-include_graphics(snakemake@params[["abs_genome_count"]])
+include_graphics(params$snv_genome_count_png)
 ```
 
 ## Mutation signatures
@@ -75,7 +93,7 @@ library(stringr)
 library(dplyr)
 library(tidyr)
 
-df <- readr::read_csv(snakemake@params[["abs_trinuc"]])
+df <- readr::read_csv(params$trinuc_csv)
 
 sigs <- data.frame(trinuc_context = c(
     "ACAA", "ACAC", "ACAG", "ACAT", "CCAA", "CCAC", "CCAG", "CCAT",
@@ -118,46 +136,31 @@ df %>%
   facet_wrap(~num_cells_class, ncol = 1, scales = "free_y")
 ```
 
+
 ## High impact + non-synonymous mutations
 ```{r, echo = FALSE}
-df <- read.csv(snakemake@params[["abs_highimpact"]])
+df <- read.csv(params$snvs_high_impact_csv)
 subset(df, select = -c(X, max_museq_score, max_strelka_score)) %>%
     mutate(gene_name = paste0('<a href="',"https://www.genecards.org/cgi-bin/carddisp.pl?gene=",gene_name,'">',gene_name ,"</a>")) %>%
   datatable(., filter = 'top', options = list(pageLength = 10,lengthMenu = list(c(10, 25, 50, 100, -1), list('10', '25', '50','100', 'All')) ), escape = FALSE)
 ```
 
-# Indels
-```{r printsummaryindels, echo = FALSE}
-# All defaults
-maf <- readr::read_delim(snakemake@params[["abs_indels"]], delim = "\t", guess_max = 10^6)
-nindels <- length(unique(maf$Start_Position))
-```
 
-Total number of mutations: `r nindels`
-
-## High impact
-```{r, echo = FALSE}
-filter(maf, str_detect(Consequence, "frameshift|stop") | IMPACT == "HIGH") %>%
-    mutate(tVAF = t_alt_count / t_depth, nVAF = n_alt_count / n_depth) %>%
-    dplyr::select(Hugo_Symbol, Chromosome, Start_Position, Reference_Allele, Variant_Type, Tumor_Seq_Allele1, Tumor_Seq_Allele2, Consequence, IMPACT, tVAF, nVAF) %>%
-    dplyr::rename(chrom = Chromosome, coord = Start_Position, gene_name = Hugo_Symbol) %>%
-    mutate(gene_name = paste0('<a href="',"https://www.genecards.org/cgi-bin/carddisp.pl?gene=",gene_name,'">',gene_name ,"</a>")) %>%
-    dplyr::select(chrom, coord, gene_name, dplyr::everything()) %>%
-    datatable(filter = 'top', options = list(pageLength = 10, lengthMenu = list(c(10, 25, 50, 100, -1), list('10', '25', '50','100', 'All'))), escape = FALSE)
-```
 
 # CN plots
 
 ## CN plot
 ```{r CNplot, echo = FALSE}
 # All defaults
-include_graphics(snakemake@params[["abs_CNplot"]])
+include_graphics(params$cn_plot_png)
 ```
+
 
 ## BAF plot
 ```{r BAFplot, echo = FALSE}
-# All defaults
-include_graphics(snakemake@params[["abs_BAFplot"]])
+# All defaultp
+include_graphics(params$BAFplot_png)
+
 ```
 
 # Structural variation
@@ -165,5 +168,6 @@ include_graphics(snakemake@params[["abs_BAFplot"]])
 ## Distribution of rearrangement types
 ```{r breakpointdistribution, echo = FALSE}
 # All defaults
-include_graphics(snakemake@params[["abs_breakpoint_dist"]])
+include_graphics(params$rearranegementtype_distribution_png)
 ```
+

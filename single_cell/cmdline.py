@@ -204,7 +204,7 @@ def parse_args():
     # ================
     qc = add_global_args(
         subparsers.add_parser("qc"))
-    qc.set_defaults(which='QC')
+    qc.set_defaults(which='qc')
 
     # ======================================
     # generates pipeline and batch configs

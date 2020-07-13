@@ -2,7 +2,13 @@
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   html_document
+params:
+  output_name:
+    value: x
 ---
+
+title_var: "`r commandArgs(trailingOnly=T)[1]`"
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE, fig.align = 'center')
@@ -11,9 +17,14 @@ library(DT)
 library(tidyr)
 library(dplyr)
 library(ggplot2)
+
 ```
+
 ```{r, include=FALSE}
-title_var <- snakemake@params["sample_id"]
+#sample_id
+#title_var: "`r commandArgs(trailingOnly=T)[1]`"
+
+#title_var <- snakemake@params["sample_id"]
 ```
 ---
 title: `r title_var`
@@ -22,6 +33,7 @@ title: `r title_var`
 # Cells per datatype
 ```{r datatype, echo = FALSE}
 # All defaults
+#abs datatype
 read.csv(snakemake@params[["abs_datatype_summary"]]) %>%
   knitr::kable()
 ```
@@ -157,7 +169,6 @@ include_graphics(snakemake@params[["abs_CNplot"]])
 ## BAF plot
 ```{r BAFplot, echo = FALSE}
 # All defaults
-include_graphics(snakemake@params[["abs_BAFplot"]])
 ```
 
 # Structural variation
