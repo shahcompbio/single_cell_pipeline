@@ -1,5 +1,11 @@
 # Change Log
 
+#### v0.6.17
+
+#### Bugs:
+1. missing fastqscreen training data for mouse in config
+2. data type bug in fastqscreen summary
+
 ### v0.6.16
 
 #### Changes:

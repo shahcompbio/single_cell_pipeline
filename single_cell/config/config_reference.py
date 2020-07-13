@@ -78,6 +78,7 @@ def get_reference_data(reference, rootdir):
 
     else:
         classifier_training_data = os.path.join(rootdir, 'mouse/classifier_training_data.h5')
+        fastqscreen_training_data = os.path.join(rootdir, 'human/fastqscreen_training_data.csv')
         gc_wig_file = {
             500000: os.path.join(rootdir, 'mouse/mm10_build38_mouse.gc.ws_500000.wig'),
             1000: '/data/not/available',

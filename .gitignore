@@ -3,5 +3,6 @@
 *.egg-info
 *.project
 *.pydevproject
+*.swp
 build
 dist
