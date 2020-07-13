@@ -161,6 +161,7 @@ def write_summary_counts(counts, outfile, cell_id, fastqscreen_params):
             writer.write(header)
             data = [0] * len(columns)
             data[0] = cell_id
+            data = [str(v) for v in data]
             data = ','.join(data) + '\n'
             writer.write(data)
             return
