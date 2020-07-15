@@ -38,6 +38,7 @@ def alignment_workflow(args):
     alignment_meta = os.path.join(alignment_dir, 'metadata.yaml')
 
     bam_files_template = os.path.join(bams_dir, '{cell_id}.bam')
+    mt_bam_files_template = os.path.join(bams_dir, '{cell_id}_MT.bam')
     bams_meta = os.path.join(bams_dir, 'metadata.yaml')
 
     lanes = sorted(set([v[1] for v in fastq1_files.keys()]))
@@ -62,6 +63,10 @@ def alignment_workflow(args):
             mgd.InputFile('fastq_2', 'cell_id', 'lane', fnames=fastq2_files, axes_origin=[]),
             mgd.OutputFile(
                 'bam_markdups', 'cell_id', template=bam_files_template,
+                axes_origin=[], extensions=['.bai']
+            ),
+            mgd.OutputFile(
+                'mt_bam_markdups', 'cell_id', template=mt_bam_files_template,
                 axes_origin=[], extensions=['.bai']
             ),
             mgd.OutputFile(alignment_files['alignment_metrics_csv']),
