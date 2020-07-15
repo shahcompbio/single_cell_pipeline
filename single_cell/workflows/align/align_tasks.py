@@ -1,6 +1,7 @@
 import logging
 import os
 
+import pypeliner
 import single_cell.workflows.align.fastqscreen as fastqscreen
 from single_cell.utils import bamutils
 from single_cell.utils import helpers
@@ -185,13 +186,17 @@ def align_pe(
     bamutils.bam_flagstat(output, metrics, docker_image=containers['samtools'])
 
 
+def extract_mt_chromosome(input_bam, mt_bam, docker_image=None, mt_chrom='MT'):
+    cmd = ['samtools', 'view', '-h', input_bam, mt_chrom, '>', mt_bam]
+    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+
+
 def align_lanes(
-        fastq1, fastq2, output, reports, tempdir, reference, laneinfo,
+        fastq1, fastq2, output, output_mt, reports, tempdir, reference, laneinfo,
         sample_info, cell_id, library_id, aligner, containers, adapter,
         adapter2, fastqscreen_detailed_metrics,
-        fastqscreen_summary_metrics, fastqscreen_params
+        fastqscreen_summary_metrics, fastqscreen_params, mt_chrom_name='MT'
 ):
-
     lane_bams = []
     detailed_counts = []
     summary_counts = []
@@ -228,3 +233,5 @@ def align_lanes(
         detailed_counts, summary_counts,
         fastqscreen_detailed_metrics, fastqscreen_summary_metrics
     )
+
+    extract_mt_chromosome(output, output_mt, docker_image=containers['samtools'], mt_chrom_name=mt_chrom_name)
