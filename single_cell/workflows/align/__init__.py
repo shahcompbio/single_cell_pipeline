@@ -8,6 +8,7 @@ import pypeliner
 import pypeliner.managed as mgd
 from single_cell.workflows.align.dtypes import dtypes
 
+
 def bam_metrics_workflow(
         bam_filename,
         summary_fastq_screen_count_per_cell,
@@ -172,13 +173,15 @@ def create_alignment_workflow(
         metrics_tar,
         library_id,
 ):
-
     baseimage = config['docker']['single_cell_pipeline']
 
     ctx = {'mem': 7, 'ncpus': 1, 'docker_image': baseimage, 'mem_retry_factor': 1}
 
     bam_filename = dict([(cellid, bam_filename[cellid])
                          for cellid in cell_ids])
+
+    mt_bam_filename = dict([(cellid, mt_bam_filename[cellid])
+                            for cellid in cell_ids])
 
     chromosomes = config["chromosomes"]
 
