@@ -2,6 +2,11 @@
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   html_document
+params:
+  pseudobulk_group: ""
+  merged_filt_snvs: ""
+  merged_maf: ""
+  high_impact_maf: ""
 ---
 
 ```{r setup, include=FALSE}
@@ -14,7 +19,7 @@ library(tidyr)
 library(tidyverse)
 ```
 ```{r, include=FALSE}
-title_var <- snakemake@wildcards["pseudobulk_group"]
+title_var <- params$pseudobulk_group
 ```
 ---
 title: `r title_var`
@@ -23,9 +28,9 @@ title: `r title_var`
 # Pseudobulk mutation data
 ```{r readindata, echo = FALSE}
 # All defaults
-snv <- readr::read_delim(snakemake@params[["abs_snvs"]], delim = "\t", col_types = list(chrom = "c"), guess_max = 10^6)
-maf <- readr::read_delim(snakemake@params[["abs_indels"]], delim = "\t", guess_max = 10^6)
-mafhighimpact <- readr::read_delim(snakemake@params[["abs_indels_highimpact"]], delim = "\t", guess_max = 10^6)
+snv <- readr::read_delim(params$merged_filt_snvs, delim = "\t", col_types = list(chrom = "c"), guess_max = 10^6)
+maf <- readr::read_delim(params$merged_maf, delim = "\t", guess_max = 10^6)
+mafhighimpact <- readr::read_delim(params$high_impact_maf, delim = "\t", guess_max = 10^6)
 ```
 
 ## Tables of high impact mutations {.tabset .tabset-fade .tabset-pills}

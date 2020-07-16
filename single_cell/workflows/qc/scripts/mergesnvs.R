@@ -1,19 +1,12 @@
 library(tidyverse)
 
-print("Read in files:")
-print("Files:")
-print(snakemake@input)
+args <- commandArgs(TRUE)
+input = data.table::fread(args[1])
+print(input)
+output = args[2]
 
-snvs <- data.frame()
-for (f in snakemake@input){
-  print(paste0("Sample: ",str_split(basename(f), "[.]")[[1]][1]))
-  snvstemp <- read_csv(f, guess_max = 10^7, col_types = list(chrom = "c")) %>%
-    mutate(id = str_split(basename(f), "[.]")[[1]][1]) %>%
-    filter(alt_counts > 1)
-  snvs <- bind_rows(snvs, snvstemp)
-}
 
-filtsnvs <- snvs %>%
+filtsnvs <- input %>%
     group_by_at(vars(-contains("counts"), -num_cells)) %>%
     summarise(alt_counts = sum(alt_counts),
            ref_counts = sum(ref_counts),
@@ -28,4 +21,4 @@ filtsnvs <- snvs %>%
       id, tVAF, nlibrary) %>%
     dplyr::arrange(id, chrom, coord)
 
-write_delim(filtsnvs, snakemake@output[[1]], delim = "\t")
+write_delim(filtsnvs, output, delim = "\t")

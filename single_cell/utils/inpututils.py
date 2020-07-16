@@ -166,6 +166,17 @@ def load_yaml(path):
             'Unable to open file: {0}'.format(path))
     return data
 
+def load_qc_input(path):
+    data= {}
+    yaml = load_yaml(path)
+    for pseudobulk_group, pseudobulk_group_data in yaml.items():
+        data[pseudobulk_group] = {}
+        for sample, sample_data in pseudobulk_group_data.items():
+            for library, library_data in sample_data.items():
+                data[pseudobulk_group][(sample, library)] = {"jira_id": library_data["jira_id"], 
+                "snv_genotyping_jira_id": library_data["snv_genotyping_jira_id"]}
+    return data
+
 
 def get_lane_info(fastqs_file):
     data = load_yaml(fastqs_file)

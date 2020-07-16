@@ -1,4 +1,4 @@
-def scgenome_analysis(sample_id, ticket, snv_genotyping_ticket, library_id, dir, prefix, out_dir, mutations_per_cell, summary, 
+def scgenome_analysis(sample_id, ticket, snv_genotyping_ticket, library_id, dir, prefix, outprefix, mutations_per_cell, summary, 
                      snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count, 
                      snv_cell_counts, snv_alt_counts, rearranegementtype_distribution, chromosome_types,
                      BAFplot, CNplot, datatype_summary):
@@ -399,15 +399,14 @@ def scgenome_analysis(sample_id, ticket, snv_genotyping_ticket, library_id, dir,
 
 
     plots = [os.path.join(prefix, f) for f in os.listdir(prefix)]
-
-    pseudobulk_group = sample_id + "_" + library_id
-    os.makedirs(os.path.join(out_dir, pseudobulk_group))
+    
     for plot in plots:
-        # os.rename(plot, os.path.join(out_dir, pseudobulk_group, os.path.basename(plot)))
-        copyfile(plot, os.path.join(out_dir, pseudobulk_group, os.path.basename(plot) + ".tmp"))
-        copyfile(plot,plot+ ".tmp")
-        copyfile(plot, os.path.join(out_dir, pseudobulk_group, os.path.basename(plot)))
+        copyfile(plot, os.path.join(outprefix, os.path.basename(plot) + ".tmp"))
+        copyfile(plot, plot + ".tmp")
+        copyfile(plot, os.path.join(outprefix, os.path.basename(plot)))
 
-
+    plots = [os.path.join(outprefix, f) for f in os.listdir(outprefix)]
+    for plot in plots:
+        copyfile(plot, plot + ".tmp")
     return
 

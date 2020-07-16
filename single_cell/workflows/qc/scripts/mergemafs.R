@@ -1,23 +1,11 @@
 library(tidyverse)
 library(data.table)
+args <- commandArgs(TRUE)
 
-print("Read in files:")
-print("Files:")
-print(snakemake@input)
-
-maf <- data.frame()
-for (f in snakemake@input){
-  print(paste0("Sample: ",str_split(basename(f), "[.]")[[1]][1]))
-  #maftemp <- read_delim(f, delim = "\t", guess_max = 10^7, col_types = list(PHENO = "c", SOMATIC = "c", Chromosome = "c")) %>%
-  maftemp <- data.table::fread(f, colClasses = list(character=c("Chromosome","PHENO","SOMATIC","PUBMED"))) %>% as_tibble() %>%
-    mutate(id = str_split(basename(f), "[.]")[[1]][1]) %>%
-    filter(t_alt_count > 2)
-  maf <- bind_rows(maf, maftemp)
-}
-
-write_delim(maf, snakemake@output[[1]], delim = "\t")
-
-print("Filter for high impact variants")
+input = args[1]
+output = args[2]
+maf = data.table::fread(input)
+# maf = filter(maf, t_alt_count > 2)
 
 filtmaf <- filter(maf, str_detect(Consequence, "frameshift|stop") | IMPACT == "HIGH") %>%
     group_by_at(vars(-contains("depth"), -contains("count"))) %>%
@@ -36,4 +24,4 @@ filtmaf <- filter(maf, str_detect(Consequence, "frameshift|stop") | IMPACT == "H
       Tumor_Seq_Allele2, Consequence, IMPACT, tVAF, nVAF, nlibrary) %>%
     dplyr::arrange(id, Chromosome, Start_Position)
 
-write_delim(filtmaf, snakemake@output[[2]], delim = "\t")
+write_delim(filtmaf, output, delim = "\t")
