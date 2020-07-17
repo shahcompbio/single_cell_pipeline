@@ -33,6 +33,8 @@ requirements:
     - fastqc
     - picard
     - trim-galore
+    - ete3
+    - R
 about:
   home: http://shahlab.ca
   summary: 'Bioinformatics pipeline for single cell analysis'
