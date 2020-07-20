@@ -23,6 +23,7 @@ requirements:
     - ete3
     - cell_cycle_classifier=0.0.2
     - click
+    - jinja2
 about:
   home: http://shahlab.ca
   summary: 'Bioinformatics pipeline for single cell analysis'
