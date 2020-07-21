@@ -13,11 +13,11 @@ TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
 
 COMMIT=`git rev-parse HEAD`
 
-cat single_cell/tests/jenkins/build_docker/dockerfile_template \
+cat single_cell/tests/jenkins/build_docker_master/dockerfile_template \
  | sed "s/{git_commit}/$COMMIT/g" \
- > single_cell/tests/jenkins/build_docker/dockerfile
+ > single_cell/tests/jenkins/build_docker_master/dockerfile
 
-docker build -t $REGISTRY/$ORG/single_cell_pipeline:$TAG -f single_cell/tests/jenkins/build_docker/dockerfile . --no-cache
+docker build -t $REGISTRY/$ORG/single_cell_pipeline:$TAG -f single_cell/tests/jenkins/build_docker_master/dockerfile . --no-cache
 
 docker push $REGISTRY/$ORG/single_cell_pipeline:$TAG
 
