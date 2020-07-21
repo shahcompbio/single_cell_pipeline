@@ -8,7 +8,7 @@ ADD . /app
 # Install any needed packages specified in requirements.txt
 RUN pip install -e git+https://github.com/shahcompbio/pypeliner.git@v0.5.18#egg=pypeliner
 RUN pip install -e git+https://github.com/shahcompbio/biowrappers.git@v0.2.8#egg=biowrappers
-RUN python setup.py install
+RUN cd /app && python setup.py install
 
 # Make port 80 available to the world outside this container
 EXPOSE 80
