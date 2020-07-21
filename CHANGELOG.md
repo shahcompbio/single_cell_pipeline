@@ -1,5 +1,16 @@
 # Change Log
 
+#### v0.6.18
+
+#### Bugs:
+1. missing data error in species classifier
+2. build: pip cannot install from commits in a PR coming from a fork
+
+#### Changes:
+1. conda: annotation pipeline requires jinja2 dependency
+2. conda: align requires ete3 and R
+2. added a quickstart guide based on conda
+
 #### v0.6.17
 
 #### Bugs:
