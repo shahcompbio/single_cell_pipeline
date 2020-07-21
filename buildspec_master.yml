@@ -4,7 +4,7 @@ phases:
   pre_build:
     commands:
       - bash single_cell/tests/jenkins/preflight/preflight.sh
-      - bash single_cell/tests/jenkins/build_docker/build.sh $DOCKERHUB_USR $DOCKERHUB_PSW docker.io singlecellpipelinetest
+      - bash single_cell/tests/jenkins/build_docker_master/build.sh $DOCKERHUB_USR $DOCKERHUB_PSW docker.io singlecellpipelinetest
   build:
     commands:
       - bash single_cell/tests/jenkins/refdata/download.sh
