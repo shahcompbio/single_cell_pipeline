@@ -19,5 +19,5 @@ phases:
       - bash single_cell/tests/jenkins/count_haps/count_haps.sh singlecellpipelinetest
   post_build:
     commands:
-      - if [ $CODEBUILD_BUILD_SUCCEEDING = 1 ]; then bash single_cell/tests/jenkins/build_docker/build.sh $DOCKERHUB_USR $DOCKERHUB_PSW docker.io singlecellpipeline; fi
+      - if [ $CODEBUILD_BUILD_SUCCEEDING = 1 ]; then bash single_cell/tests/jenkins/build_docker_master/build.sh $DOCKERHUB_USR $DOCKERHUB_PSW docker.io singlecellpipeline; fi
       - if [ $CODEBUILD_BUILD_SUCCEEDING = 1 ]; then bash single_cell/tests/jenkins/conda_builds/build.sh; fi
