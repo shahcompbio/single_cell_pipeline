@@ -200,3 +200,50 @@ segs_pdf_tar: testdata/A96213A_segs.tar.gz
  --config_override '{"refdir": "refdata", "annotation": {"chromosomes": ["6", "8", "17"]}}'
  ```
 
+
+
+### Switching to production runs:
+
+#### Reference data
+Before you switch over to production and start running the real datasets, please download the full reference dataset and replace the test dataset from step 1.
+
+```
+wget https://singlecelltestsets.s3.amazonaws.com/refdata_full_genome.tar.gz
+tar -xvf refdata_full_genome.tar.gz
+```
+
+#### Config override
+update the config overrides to run the pipeline over the full genome
+
+for Hmmcopy and Annotation, the config override in the launch section should be:
+ ```
+--config_override '{"refdir": "refdata"}'
+```
+
+#### Run with HPC batch submit systems
+
+##### nativespec
+We need to figure out the nativespec first. This is a string that specifies the format for job submission.
+
+for instance, the following LSF (for juno cluster at MSKCC) job request
+```
+bsub -n 1 -W 4:00 -R "rusage[mem=5]span[ptile=1]select[type==CentOS7]"
+```
+
+will ask for 1 core, 5 gigs and a runtime of 4 hours
+
+the corresponding pipeline nativespec is
+```
+-n {ncpus} -W {walltime} -R "rusage[mem={mem}]span[ptile={ncpus}]select[type==CentOS7]"
+```
+
+
+##### launch arguments
+please add the following arguments to the launch command
+
+###### Juno cluster (LSF):
+```
+--submit lsf --nativespec ' -n {ncpus} -W {walltime} -R "rusage[mem={mem}]span[ptile={ncpus}]select[type==CentOS7]"'
+```
+
+the pipeline supports *SGE* with `--submit asyncqsub` and *LSF* with `--submit lsf`
