@@ -187,7 +187,10 @@ def align_pe(
 
 
 def extract_mt_chromosome(input_bam, mt_bam, docker_image=None, mt_chrom_name='MT'):
-    cmd = ['samtools', 'view', '-h', input_bam, mt_chrom_name, '>', mt_bam]
+    cmd = ['samtools', 'view', '-bh', input_bam, mt_chrom_name, '>', mt_bam]
+    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+
+    cmd = ['samtools', 'index', mt_bam, mt_bam + '.bai']
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
 
 
