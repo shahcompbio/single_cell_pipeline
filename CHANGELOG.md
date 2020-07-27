@@ -1,6 +1,13 @@
 # Change Log
 
-#### v0.6.18
+### v0.6.19
+
+#### Changes:
+1. produces a MT bam file
+2. setup doc also includes information to switch pipeline to production datasets
+
+
+### v0.6.18
 
 #### Bugs:
 1. missing data error in species classifier
