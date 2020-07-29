@@ -1,5 +1,14 @@
 # Change Log
 
+### v0.6.20
+
+### Changes:
+1. conda packages are now built on top on py 3.8
+
+### Bug:
+1. minor heatmap axis labeling bug (assumes chrom1 is starting point)
+
+
 ### v0.6.19
 
 #### Changes:
