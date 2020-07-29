@@ -58,7 +58,7 @@ class ClusterMap(object):
         # chr 1 starts at beginning
         chr_idxs = [0]
 
-        chrom = '1'
+        chrom = bins[0][0]
         for i, bin_v in enumerate(bins):
             if bin_v[0] != chrom:
                 chr_idxs.append(i)
