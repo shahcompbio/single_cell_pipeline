@@ -2,9 +2,46 @@
 SA1049:
   SA1049AX1XB01417:
     A95652B:
-      jira_id: SC-3349
-      snv_genotyping_jira_id: SC-3609
+      # jira_id: SC-3349
+      # snv_genotyping_jira_id: SC-3609
+      mappability: /work/shah/tantalus/SC-3349/results/variant_calling/sample_SA1049AX1XB01417/snv_mappability.csv.gz
+      strelka: /work/shah/tantalus/SC-3349/results/variant_calling/sample_SA1049AX1XB01417/snv_strelka.csv.gz
+      museq: /work/shah/tantalus/SC-3349/results/variant_calling/sample_SA1049AX1XB01417/snv_museq.csv.gz
+      cosmic_status: /work/shah/tantalus/SC-3349/results/variant_calling/sample_SA1049AX1XB01417/snv_cosmic_status.csv.gz
+      snpeff: /work/shah/tantalus/SC-3349/results/variant_calling/sample_SA1049AX1XB01417/snv_snpeff.csv.gz
+      dbsnp_status: /work/shah/tantalus/SC-3349/results/variant_calling/sample_SA1049AX1XB01417/snv_dbsnp_status.csv.gz
+      trinuc: /work/shah/tantalus/SC-3349/results/variant_calling/sample_SA1049AX1XB01417/snv_trinuc.csv.gz
+      counts: /work/shah/tantalus/SC-3609/results/snv_genotyping/counts.csv.gz
+      breakpoint_annotation: /work/shah/tantalus/SC-3349/results/breakpoint_calling/sample_SA1049AX1XB01417/destruct_breakpoints.csv.gz
+      breakpoint_counts: /work/shah/tantalus/SC-3349/results/breakpoint_calling/sample_SA1049AX1XB01417/destruct_cell_counts.csv.gz
+      haplotype_allele_data: /work/shah/tantalus/SC-3349/results/count_haps/sample_SA1049AX1XB01417/allele_counts.tsv
+      annotation_metrics: /work/shah/tantalus/SC-3349/results/annotation/A95652B_metrics.csv.gz
+      hmmcopy_reads: /work/shah/tantalus/SC-3349/results/hmmcopy/A95652B_reads.csv.gz
+      hmmcopy_segs: /work/shah/tantalus/SC-3349/results/hmmcopy/A95652B_segments.csv.gz
+      hmmcopy_metrics: /work/shah/tantalus/SC-3349/results/hmmcopy/A95652B_hmmcopy_metrics.csv.gz
+      alignment_metrics: /work/shah/tantalus/SC-3349/results/align/A95652B_alignment_metrics.csv.gz
+      gc_metrics: /work/shah/tantalus/SC-3349/results/align/A95652B_gc_metrics.csv.gz
+      indel_file: /work/shah/tantalus/SC-3349/results/variant_calling/sample_SA1049AX1XB01417/strelka_indel.vcf.gz
+
+# from scgenome.loaders import hmmcopy
+# ann_metrics = "/work/shah/tantalus/SC-3349/results/annotation/A95652B_metrics.csv.gz"
+# hmm_reads = "/work/shah/tantalus/SC-3804/results/hmmcopy/A108833A_reads.csv.gz"
+# hmm_segs = "/work/shah/tantalus/SC-3804/results/hmmcopy/A108833A_segments.csv.gz"
+# hmm_metrics = "/work/shah/tantalus/SC-3804/results/hmmcopy/A108833A_hmmcopy_metrics.csv.gz"
+# align_metrics = "/work/shah/tantalus/SC-3804/results/align/A108833A_alignment_metrics.csv.gz"
+# gc_metrics = "/work/shah/tantalus/SC-3804/results/align/A108833A_gc_metrics.csv.gz"
+# import scgenome.db.qc
+# sample_id="SA1049AX1XB01417"
+# annotation_metrics ="/work/shah/tantalus/SC-3349/results/annotation/A95652B_metrics.csv.gz"
+# hmmcopy_reads ="/work/shah/tantalus/SC-3349/results/hmmcopy/A95652B_reads.csv.gz"
+# hmmcopy_segs ="/work/shah/tantalus/SC-3349/results/hmmcopy/A95652B_segments.csv.gz"
+# hmmcopy_metrics ="/work/shah/tantalus/SC-3349/results/hmmcopy/A95652B_hmmcopy_metrics.csv.gz"
+# alignment_metrics ="/work/shah/tantalus/SC-3349/results/align/A95652B_alignment_metrics.csv.gz"
+# gc_metrics ="/work/shah/tantalus/SC-3349/results/align/A95652B_gc_metrics.csv.gz"
     # A96113A:
     #   jira_id: SC-3365
     #   snv_genotyping_jira_id: SC-3609
+# a
+
+
 

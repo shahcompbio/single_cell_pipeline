@@ -70,8 +70,26 @@ def pseudobulk_group_level_qc_workflow(pseudobulk_group, data,  mutationreport, 
 
     sample_ids = {samplegroup: samplegroup[0] for samplegroup in samplegroups}
     library_ids = {samplegroup: samplegroup[1] for samplegroup in samplegroups}
-    jira_ids =  {samplegroup: data["jira_id"] for samplegroup, data in sampledata.items()}
-    snv_jira_ids =  {samplegroup: data["snv_genotyping_jira_id"] for samplegroup, data in sampledata.items()}
+
+    mappability_files =  {samplegroup: data["mappability"] for samplegroup, data in sampledata.items()}
+    strelka_files =  {samplegroup: data["strelka"] for samplegroup, data in sampledata.items()}   
+    museq_files =  {samplegroup: data["museq"] for samplegroup, data in sampledata.items()}
+    cosmic_status_files =  {samplegroup: data["cosmic_status"] for samplegroup, data in sampledata.items()}
+    snpeff_files =  {samplegroup: data["snpeff"] for samplegroup, data in sampledata.items()}
+    dbsnp_status_files =  {samplegroup: data["dbsnp_status"] for samplegroup, data in sampledata.items()}
+    trinuc_files =  {samplegroup: data["trinuc"] for samplegroup, data in sampledata.items()}
+    counts_files =  {samplegroup: data["counts"] for samplegroup, data in sampledata.items()}
+    breakpoint_counts =  {samplegroup: data["breakpoint_counts"] for samplegroup, data in sampledata.items()}
+    breakpoint_annotation =  {samplegroup: data["breakpoint_annotation"] for samplegroup, data in sampledata.items()}
+    haplotype_allele_data =  {samplegroup: data["haplotype_allele_data"] for samplegroup, data in sampledata.items()}
+    annotation_metrics =  {samplegroup: data["annotation_metrics"] for samplegroup, data in sampledata.items()}
+    hmmcopy_reads =  {samplegroup: data["hmmcopy_reads"] for samplegroup, data in sampledata.items()}
+    hmmcopy_segs =  {samplegroup: data["hmmcopy_segs"] for samplegroup, data in sampledata.items()}
+    hmmcopy_metrics =  {samplegroup: data["hmmcopy_metrics"] for samplegroup, data in sampledata.items()}
+    alignment_metrics =  {samplegroup: data["alignment_metrics"] for samplegroup, data in sampledata.items()}
+    gc_metrics =  {samplegroup: data["gc_metrics"] for samplegroup, data in sampledata.items()}
+    indel_files =  {samplegroup: data["indel_file"] for samplegroup, data in sampledata.items()}
+
     sample_level_report_htmls =  {samplegroup: os.path.join(out_dir, pseudobulk_group, samplegroup[0], samplegroup[1], "mainreport.html") for samplegroup in samplegroups}
     mafs =  {samplegroup: os.path.join(out_dir, pseudobulk_group, samplegroup[0], samplegroup[1], "samplelevelmaf.maf") for samplegroup in samplegroups}
     snvs_all =  {samplegroup: os.path.join(out_dir, pseudobulk_group, samplegroup[0], samplegroup[1], "snvs_all.csv") for samplegroup in samplegroups}
@@ -86,27 +104,41 @@ def pseudobulk_group_level_qc_workflow(pseudobulk_group, data,  mutationreport, 
         value=list(samplegroups),
     )
 
+
     workflow.subworkflow(
-        name='create_sample_level_qc_workflow',
+        name='create_sample_level_plots',
         ctx={'mem':450, 'docker_image': config['docker']['single_cell_pipeline']},
-        func="single_cell.workflows.qc.create_sample_level_qc_workflow",
+        func="single_cell.workflows.qc.create_sample_level_plots",
         axes=('sample_id', 'library_id', ),
         args=(
             mgd.InputFile('sample_ids', 'sample_id', 'library_id', fnames=sample_ids),
-            mgd.InputFile('library_ids', 'sample_id', 'library_id', fnames=library_ids),
-            mgd.InputFile('jira_id', 'sample_id', 'library_id', fnames=jira_ids),
-            mgd.InputFile('snv_jira_id', 'sample_id', 'library_id', fnames=snv_jira_ids),
+            mgd.InputFile('library_ids', 'sample_id', 'library_id', fnames=library_ids),     
+            mgd.InputFile('mappability', 'sample_id', 'library_id', fnames=mappability_files),
+            mgd.InputFile('strelka', 'sample_id', 'library_id', fnames=strelka_files),
+            mgd.InputFile('museq', 'sample_id', 'library_id', fnames=museq_files),
+            mgd.InputFile('cosmic_status', 'sample_id', 'library_id', fnames=cosmic_status_files),
+            mgd.InputFile('snpeff', 'sample_id', 'library_id', fnames=snpeff_files),
+            mgd.InputFile('dbsnp_status', 'sample_id', 'library_id', fnames=dbsnp_status_files),
+            mgd.InputFile('trinuc', 'sample_id', 'library_id', fnames=trinuc_files),
+            mgd.InputFile('counts', 'sample_id', 'library_id', fnames=counts_files),
+            mgd.InputFile('breakpoint_annotation', 'sample_id', 'library_id', fnames=breakpoint_annotation),
+            mgd.InputFile('breakpoint_counts', 'sample_id', 'library_id', fnames=breakpoint_counts),
+            mgd.InputFile('haplotype_allele_data', 'sample_id', 'library_id', fnames=haplotype_allele_data),
+            mgd.InputFile('annotation_metrics', 'sample_id', 'library_id', fnames=annotation_metrics),
+            mgd.InputFile('hmmcopy_reads', 'sample_id', 'library_id', fnames=hmmcopy_reads),
+            mgd.InputFile('hmmcopy_segs', 'sample_id', 'library_id', fnames=hmmcopy_segs),
+            mgd.InputFile('hmmcopy_metrics', 'sample_id', 'library_id', fnames=hmmcopy_metrics),
+            mgd.InputFile('alignment_metrics', 'sample_id', 'library_id', fnames=alignment_metrics),
+            mgd.InputFile('gc_metrics', 'sample_id', 'library_id', fnames=gc_metrics),       
+            mgd.InputFile('indel_files', 'sample_id', 'library_id', fnames=indel_files),       
             mgd.OutputFile('sample_level_report_htmls', 'sample_id', 'library_id', fnames=sample_level_report_htmls),
             mgd.OutputFile('mafs', 'sample_id', 'library_id', fnames=mafs),
             mgd.OutputFile('snvs_all', 'sample_id', 'library_id', fnames=snvs_all),
             tmp_dir,
             out_dir,
             mgd.InputFile('outpaths', 'sample_id', 'library_id', fnames=outpaths),
-
         ),
     )
-
-    # sample_all_snv_csvs = tasks.get_snv_all_csvs(os.path.join(out_dir, pseudobulk_group))
     
     workflow.subworkflow(
         name='create_pseudobulk_group_workflow',

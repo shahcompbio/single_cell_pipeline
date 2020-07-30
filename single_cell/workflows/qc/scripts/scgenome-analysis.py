@@ -1,10 +1,12 @@
-def scgenome_analysis(sample_id, ticket, snv_genotyping_ticket, library_id, dir, prefix, outprefix, mutations_per_cell, summary, 
-                     snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count, 
-                     snv_cell_counts, snv_alt_counts, rearranegementtype_distribution, chromosome_types,
-                     BAFplot, CNplot, datatype_summary):
-
-
-# def scgenome_analysis(sample_id, ticket, snv_genotyping_ticket, library_id, dir, prefix, out_dir, CNplot):  
+def scgenome_analysis(sample_id,  mappability_file, strelka_file, 
+    museq_file, cosmic_status_file, snpeff_file, dbsnp_status_file, trinuc_file, counts_file,
+    breakpoint_annotation, breakpoint_count, haplotype_allele_data, annotation_metrics,
+    hmmcopy_reads, hmmcopy_segs, hmmcopy_metrics, alignment_metrics, gc_metrics,
+    library_id, dir, prefix, outprefix, mutations_per_cell, summary, 
+    snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count, 
+    snv_cell_counts, snv_alt_counts, rearranegementtype_distribution, chromosome_types,
+    BAFplot, CNplot, datatype_summary
+):
     import matplotlib
     matplotlib.use('Agg')
     from scgenome.snvdata import filter_snv_data
@@ -14,11 +16,9 @@ def scgenome_analysis(sample_id, ticket, snv_genotyping_ticket, library_id, dir,
     import scgenome.utils
     import csv
 
-    import logging
 
     import os
     import sys
-    import logging
     import numpy as np
     import matplotlib.pyplot as plt
     import pandas as pd
@@ -37,6 +37,7 @@ def scgenome_analysis(sample_id, ticket, snv_genotyping_ticket, library_id, dir,
 
     from scgenome.loaders.qc import load_qc_data
     import scgenome.loaders.snv
+    import wgs_analysis.plots.rearrangement
     
     #get rid of .tmp
     mutations_per_cell = mutations_per_cell[:-4]
@@ -55,18 +56,45 @@ def scgenome_analysis(sample_id, ticket, snv_genotyping_ticket, library_id, dir,
     datatype_summary=datatype_summary[:-4]
 
 
+    # snv_results = scgenome.loaders.snv.load_snv_data_from_files(        
+    #     [mappability_file], 
+    #     [strelka_file], 
+    #     [museq_file], 
+    #     [cosmic_status_file], 
+    #     [snpeff_file], 
+    #     [dbsnp_status_file], 
+    #     [trinuc_file],
+    #     [counts_file],
+    #     snv_annotation=True
+    # )
+
 
     snv_results = scgenome.loaders.snv.load_snv_data(
-        dir + ticket,
+        "/work/shah/tantalus/SC-3349"
     )
         
     snv_data = snv_results["snv_data"]
-    logging.info(dir + snv_genotyping_ticket)
 
     
+    # snv_results = scgenome.loaders.snv.load_snv_data_from_files(        
+    #     [mappability_file], 
+    #     [strelka_file], 
+    #     [museq_file], 
+    #     [cosmic_status_file], 
+    #     [snpeff_file], 
+        # [dbsnp_status_file], 
+        # [trinuc_file],
+        # [counts_file],
+        # snv_counts=True,
+        # positions=snv_data[['chrom', 'coord', 'ref', 'alt']].drop_duplicates(),
+        # filter_sample_id=sample_id, 
+        # filter_library_id=library_id
+
+    # )
+
     snv_results = scgenome.loaders.snv.load_snv_data(
-        dir + snv_genotyping_ticket, positions=snv_data[['chrom', 'coord', 'ref', 'alt']].drop_duplicates(),
-        filter_sample_id=sample_id, filter_library_id=library_id,
+        "/work/shah/tantalus/SC-3609", positions=snv_data[['chrom', 'coord', 'ref', 'alt']].drop_duplicates(),
+        filter_sample_id=sample_id, filter_library_id=library_id
     )
     snv_count_data = snv_results["snv_count_data"]
 
@@ -201,8 +229,13 @@ def scgenome_analysis(sample_id, ticket, snv_genotyping_ticket, library_id, dir,
     import scgenome.loaders.breakpoint
 
     breakpoint_results = scgenome.loaders.breakpoint.load_breakpoint_data(
-        os.path.join(dir, ticket)
+        "/work/shah/tantalus/SC-3349"
     )
+
+    # breakpoint_results = scgenome.loaders.breakpoint.load_breakpoint_data_from_files(
+    #     [breakpoint_annotation],
+    #     [breakpoint_count]
+    # )
 
     import scgenome.breakpointdata
 
@@ -233,7 +266,7 @@ def scgenome_analysis(sample_id, ticket, snv_genotyping_ticket, library_id, dir,
         ('homology', 'sequence homology'),
         ('log_num_cells', 'log number of cells'),
     ]
-    print("wqokncon")
+
     if len(breakpoint_data.sample_id) == 0:
         fig = plt.figure(figsize=(8, 12))
         fig.savefig(rearranegementtype_distribution, bbox_inches='tight')
@@ -303,9 +336,12 @@ def scgenome_analysis(sample_id, ticket, snv_genotyping_ticket, library_id, dir,
     # # ########################################
 
     import scgenome.loaders.allele
-    allele_results = scgenome.loaders.allele.load_haplotype_allele_data(
-        dir + ticket,
-    )
+
+    allele_results = scgenome.loaders.allele.load_haplotype_allele_data("/work/shah/tantalus/SC-3349")
+
+    # allele_results = scgenome.loaders.allele.load_haplotype_allele_data_from_file([haplotype_allele_data])
+
+
     allele_data = allele_results['allele_counts']
     index_cols = [
         'chromosome',
@@ -346,17 +382,23 @@ def scgenome_analysis(sample_id, ticket, snv_genotyping_ticket, library_id, dir,
     import scgenome.cnfilter
     import scgenome.cnclones
 
-    results_tables = scgenome.db.qc.get_qc_data(
-        [ticket],
-        dir,
-        sample_ids=[sample_id],
+
+    # results_tables_new = scgenome.db.qc.get_qc_data_from_filenames( [annotation_metrics], [hmmcopy_reads], 
+    #     [hmmcopy_segs], 
+    #     [hmmcopy_metrics], [alignment_metrics], [gc_metrics], 
+    #     sample_ids=["SA1049AX1XB01417"], additional_hmmcopy_reads_cols=None
+    # )
+
+
+    results_tables_new = scgenome.db.qc.get_qc_data(
+        ["SC-3349"],
+        "/work/shah/tantalus",
+        sample_ids=["SA1049AX1XB01417"],
         do_caching=False,
     )
 
-    cn_data, metrics_data = (
-        results_tables['hmmcopy_reads'],
-        results_tables['annotation_metrics'],
-    )
+    cn_data = results_tables_new['hmmcopy_reads']
+    metrics_data = results_tables_new['annotation_metrics']
 
     metrics_data = scgenome.cnfilter.calculate_filter_metrics(
         metrics_data,
@@ -367,9 +409,6 @@ def scgenome_analysis(sample_id, ticket, snv_genotyping_ticket, library_id, dir,
         metrics_data['filter_is_s_phase'] &
         metrics_data['filter_quality'],
         ['cell_id']]
-
-    logging.info('filtering {} of {} cells'.format(
-        len(filtered_cells.index), len(metrics_data.index)))
 
     cn_data_filt = cn_data.merge(filtered_cells[['cell_id']].drop_duplicates())
 

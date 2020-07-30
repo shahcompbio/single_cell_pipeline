@@ -74,4 +74,6 @@ def main():
         qc_pipeline(args)
 
 if __name__ == "__main__":
-    main()
+    #main()
+    import fire
+    fire.Fire()

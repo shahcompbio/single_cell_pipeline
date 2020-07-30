@@ -61,7 +61,13 @@ def create_pseudobulk_group_workflow(pseudobulk_group, mafs, sample_all_snv_csvs
     return workflow
 
 
-def create_sample_level_qc_workflow(cell_id, library_id, jira_id, snv_jira_id, reporthtml, maf, snvs_all_csv, tmp_dir, out_dir, outpath):
+def create_sample_level_plots(cell_id, library_id, mappability_file, 
+    strelka_file, museq_file, cosmic_status_file, snpeff_file, dbsnp_status_file, trinuc_file, 
+    counts_file, breakpoint_annotation, breakpoint_counts, haplotype_allele_data, annotation_metrics,
+    hmmcopy_reads, hmmcopy_segs, hmmcopy_metrics, alignment_metrics, gc_metrics, indel_file, reporthtml, maf, 
+    snvs_all_csv, tmp_dir, out_dir, outpath
+):
+
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1, }
 
     tantalus = "/work/shah/tantalus/"
@@ -83,9 +89,6 @@ def create_sample_level_qc_workflow(cell_id, library_id, jira_id, snv_jira_id, r
     CNplot_png =  os.path.join(prefix,  "CNplot.png") 
     datatype_summary_csv =  os.path.join(prefix,  "datatype_summary.csv")
     
-    indelvcfs = tasks._get_indelvcfs(tantalus + jira_id)    
-    outputmafs = [os.path.join(outprefix, vcf + "_to_maf.maf") for vcf in  indelvcfs]
-
     #hardcoded for now
     vepdata = "/work/shah/reference/vep/"
     genomeref = "/work/shah/reference/genomes/GRCh37-lite/GRCh37-lite.fa"
@@ -93,51 +96,64 @@ def create_sample_level_qc_workflow(cell_id, library_id, jira_id, snv_jira_id, r
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
     
 
-    if len(indelvcfs) > 1:
-        for indelvcf, outputmaf in zip(indelvcfs, outputmafs):
-            workflow.transform(
-                name='vcf2maf',
-                func='single_cell.workflows.qc.tasks.vcf2maf',
-                args=(
-                    mgd.InputFile(indelvcf),
-                    mgd.TempOutputFile(outputmaf),
-                    mgd.TempSpace('vcf2maf_temp'),
-                    genomeref,
-                    vepdata,
-                ),
-            )
-        workflow.transform(
-            name='merge_mafs',
-            func='single_cell.workflows.qc.tasks.merge_mafs',
-            args=(
-                outputmafs,
-                mgd.OutputFile(maf),
-            ),
-        )
+    # if len(indelvcfs) > 1:
+    #     for indelvcf, outputmaf in zip(indelvcfs, outputmafs):
+    #         workflow.transform(
+    #             name='vcf2maf',
+    #             func='single_cell.workflows.qc.tasks.vcf2maf',
+    #             args=(
+    #                 mgd.InputFile(indelvcf),
+    #                 mgd.TempOutputFile(outputmaf),
+    #                 mgd.TempSpace('vcf2maf_temp'),
+    #                 genomeref,
+    #                 vepdata,
+    #             ),
+    #         )
+    #     workflow.transform(
+    #         name='merge_mafs',
+    #         func='single_cell.workflows.qc.tasks.merge_mafs',
+    #         args=(
+    #             outputmafs,
+    #             mgd.OutputFile(maf),
+    #         ),
+    #     )
 
-    else:
-        indelvcf = indelvcfs[0]
-        outputmaf = outputmafs[0]
-        workflow.transform(
-            name='vcf2maf',
-            func='single_cell.workflows.qc.tasks.vcf2maf',
-            args=(
-                mgd.InputFile(indelvcf),
-                mgd.OutputFile(maf),
-                mgd.TempSpace('vcf2maf_temp'),
-                genomeref,
-                vepdata,
-            ),
-        )
+    # else:
 
+    workflow.transform(
+        name='vcf2maf',
+        func='single_cell.workflows.qc.tasks.vcf2maf',
+        args=(
+            mgd.InputFile(indel_file),
+            mgd.OutputFile(maf),
+            mgd.TempSpace('vcf2maf_temp'),
+            genomeref,
+            vepdata,
+        ),
+    )
 
     workflow.transform(
         name='scgenome_plots',
         func="single_cell.workflows.qc.scripts.scgenome-analysis.scgenome_analysis",
         args=( 
             cell_id,
-            jira_id,
-            snv_jira_id,
+            mgd.InputFile(mappability_file),
+            mgd.InputFile(strelka_file),
+            mgd.InputFile(museq_file),
+            mgd.InputFile(cosmic_status_file),
+            mgd.InputFile(snpeff_file),
+            mgd.InputFile(dbsnp_status_file),
+            mgd.InputFile(trinuc_file),
+            mgd.InputFile(counts_file),
+            mgd.InputFile(breakpoint_annotation),
+            mgd.InputFile(breakpoint_counts),      
+            mgd.InputFile(haplotype_allele_data),     
+            mgd.InputFile(annotation_metrics),  
+            mgd.InputFile(hmmcopy_reads),  
+            mgd.InputFile(hmmcopy_segs),  
+            mgd.InputFile(hmmcopy_metrics),  
+            mgd.InputFile(alignment_metrics),  
+            mgd.InputFile(gc_metrics),  
             library_id,
             tantalus,
             prefix,
