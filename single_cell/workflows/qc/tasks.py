@@ -6,6 +6,7 @@ import shutil
 from single_cell.utils import helpers
 import pandas as pd
 
+
 def merge_mafs(mafs, merged_maf, id_colname=False):
     assert isinstance(mafs, dict)
     preppedmafs = []
@@ -20,8 +21,8 @@ def merge_mafs(mafs, merged_maf, id_colname=False):
     output = output[output.t_alt_count > 2]
     output.to_csv(merged_maf, sep="\t", index=False, header=True)
 
+
 def merge_snvs(snv_files, merged_snv, id_colname=False):
-    
     assert isinstance(snv_files, dict)
     preppednsvs = []
     for samplegroup, snv_file in snv_files.items():
@@ -35,13 +36,14 @@ def merge_snvs(snv_files, merged_snv, id_colname=False):
 
 
 def filter_snvs_for_high_impact(snv, filtsnv):
-    
     cmd = ["mergesnvs.R", snv, filtsnv]    
-    pypeliner.commandline.execute(*cmd, docker_image="rocker/tidyverse")
+    pypeliner.commandline.execute(*cmd)
+
 
 def filter_maf_for_high_impact(maf, filtmaf):
     cmd = ["mergemafs.R", maf, filtmaf]
-    pypeliner.commandline.execute(*cmd, docker_image="rocker/tidyverse")
+    pypeliner.commandline.execute(*cmd)
+
 
 def _get_indelvcfs(dir):
     indel_vcfs = []
@@ -50,12 +52,6 @@ def _get_indelvcfs(dir):
     indel_vcfs += sorted(glob.glob(dir + "/results/variant_calling/*/" + "*indel.vcf.gz" ))
     return indel_vcfs
 
-#dummie outputs for testing
-def dummie(files):
-    for file in files:
-        df = pd.DataFrame([1], [1])
-        df.to_csv(file)
-    return
 
 def get_snv_all_csvs(dir):
     output = {}
@@ -68,61 +64,49 @@ def get_snv_all_csvs(dir):
         output[tuple(samplelabel)] = filename
     return output
 
-def gunzip_file(infile, outfile):
-    with gzip.open(infile, 'rb') as f_in:
-        with open(outfile, 'wb') as f_out:
-            shutil.copyfileobj(f_in, f_out)
 
-# def merge_mafs(mafs, mergedmaf):
-
-#     cmd = " awk '(NR == 2) || (FNR > 2)' {} > {}".format(*mafs, mergedmaf)
-#     pypeliner.commandline.execute(cmd, docker_image="shub://rdmorin/cancer_docker_singularity:vcf2maf")
-
-def vcf2maf(vcf_file, output_maf, tempdir, reference, vepdata):
+def vcf2maf(vcf_file, output_maf, tempdir, reference, docker_image):
 
     if vcf_file.endswith('.gz'):
         helpers.makedirs(tempdir)
         vcf_unzipped = os.path.join(tempdir, 'unzipped_vcf.vcf')
-        gunzip_file(vcf_file, vcf_unzipped)
+        helpers.gunzip_file(vcf_file, vcf_unzipped)
     else:
         vcf_unzipped = vcf_file
 
-    cmd = ["vcf2maf.pl", "--input-vcf", vcf_unzipped, "--output-maf", output_maf,
-           "--ref-fasta", reference, "--filter-vcf", "0", "--vep-path", "/home/abramsd/miniconda3/envs/r-environment/bin", 
-           "--vep-data", vepdata]
+    # cmd = ['/opt/local/singularity/3.6.0/bin/singularity', 'run', '--bind', '/juno/work/shah', '{}'.format(docker_image), 
+    #     'vcf2maf.pl', '--input-vcf', vcf_unzipped, '--output-maf', output_maf,
+    #     '--vep-path', '/usr/local/bin',
+    #     '--ref-fasta',
+    #     os.path.join(reference, 'homo_sapiens', '99_GRCh37', 'Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz'),
+    #     '--filter-vcf', os.path.join(reference, 'ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz'),
+    #     '--vep-data', reference,
+    # ]
+    cmd = [  'vcf2maf.pl', '--input-vcf', vcf_unzipped, '--output-maf', output_maf,
+        '--vep-path', '/usr/local/bin',
+        '--ref-fasta',
+        os.path.join(reference, 'homo_sapiens', '99_GRCh37', 'Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz'),
+        '--filter-vcf', os.path.join(reference, 'ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz'),
+        '--vep-data', reference,
+    ]
 
-    pypeliner.commandline.execute(*cmd, docker_image="shub://rdmorin/cancer_docker_singularity:vcf2maf")
+    pypeliner.commandline.execute(*cmd, docker_image = docker_image)
 
 
 def sample_level_report(mutations_per_cell, summary, 
     snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count, 
     snv_cell_counts, snv_alt_counts, rearranegementtype_distribution, chromosome_types,
-    BAFplot, CNplot, datatype_summary, maf, html_file, out_dir, sample_id
+    baf_plot, cn_plot, datatype_summary, maf, html_file, out_dir, sample_id
 ):
 
-    # shell_code = "run_report.sh {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {}".format(
-    #     html_file, sample_id, mutations_per_cell, summary, 
-    #     snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count, 
-    #     snv_cell_counts, snv_alt_counts, rearranegementtype_distribution, chromosome_types,
-    #     BAFplot, CNplot, datatype_summary, maf       
-    # )
-
-    # cmd = [shell_code]
     cmd = ['run_report.sh', html_file, sample_id, mutations_per_cell, summary, 
         snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count, 
         snv_cell_counts, snv_alt_counts, rearranegementtype_distribution, chromosome_types,
-        BAFplot, CNplot, datatype_summary, maf]
+        baf_plot, cn_plot, datatype_summary, maf]
     pypeliner.commandline.execute(*cmd)
 
     
 def create_mutation_report(pseudobulk_group, merged_maf, high_impact_maf, high_impact_snvs, report_html):
-
-    # shell_code = "run_mutationreport.sh {} {} {} {} {}".format(        
-    #     report_html,
-    #     pseudobulk_group,
-    #     high_impact_snvs,
-    #     merged_maf,
-    #     high_impact_maf)
 
     cmd = [ "run_mutationreport.sh", report_html,
         pseudobulk_group,

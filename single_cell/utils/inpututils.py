@@ -169,22 +169,12 @@ def load_yaml(path):
 def load_qc_input(path):
     data= {}
     yaml = load_yaml(path)
-    for pseudobulk_group, pseudobulk_group_data in yaml.items():
-        data[pseudobulk_group] = {}
-        for sample, sample_data in pseudobulk_group_data.items():
+    for patient, patient_data in yaml.items():
+        for sample, sample_data in patient_data.items():
             for library, library_data in sample_data.items():
-                data[pseudobulk_group][(sample, library)] = {data_label: data for data_label, data in library_data.items()}
-                # {"jira_id": library_data["jira_id"], 
-                # "snv_genotyping_jira_id": library_data["snv_genotyping_jira_id"],
-                # "mappability": library_data["mappability"],
-                # "strelka": library_data["strelka"],
-                # "museq": library_data["museq"],
-                # "cosmic_status": library_data["cosmic_status"],
-                # "snpeff": library_data["snpeff"],
-                # "dbsnp_status": library_data["dbsnp_status"],
-                # "trinuc": library_data["trinuc"],
-                # "counts": library_data["counts"]}
-
+                data[(patient, sample, library)] = {data_label: data 
+                    for data_label, data in library_data.items()
+                }
     return data
 
 

@@ -459,3 +459,9 @@ def tar_files(infiles, tar_output, tempdir):
             shutil.copyfile(infile, tempdir)
 
     make_tarfile(tar_output, tempdir)
+
+
+def gunzip_file(infile, outfile):
+    with gzip.open(infile, 'rb') as f_in:
+        with open(outfile, 'wb') as f_out:
+            shutil.copyfileobj(f_in, f_out)
