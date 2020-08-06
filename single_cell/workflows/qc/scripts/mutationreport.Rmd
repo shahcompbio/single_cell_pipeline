@@ -1,0 +1,141 @@
+---
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document
+params:
+  pseudobulk_group: ""
+  merged_filt_snvs: ""
+  merged_maf: ""
+  high_impact_maf: ""
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE, fig.align = 'center')
+library(knitr)
+library(ggplot2)
+library(stringr)
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+```
+```{r, include=FALSE}
+title_var <- params$pseudobulk_group
+```
+---
+title: `r title_var`
+---
+
+# Pseudobulk mutation data
+```{r readindata, echo = FALSE}
+# All defaults
+snv <- readr::read_delim(params$merged_filt_snvs, delim = "\t", col_types = list(chrom = "c"), guess_max = 10^6)
+maf <- readr::read_delim(params$merged_maf, delim = "\t", guess_max = 10^6)
+mafhighimpact <- readr::read_delim(params$high_impact_maf, delim = "\t", guess_max = 10^6)
+```
+
+## Tables of high impact mutations {.tabset .tabset-fade .tabset-pills}
+
+### SNVs
+```{r, echo = FALSE}
+snv %>%
+filter((effect_impact == "HIGH") | ((effect_impact == "MODERATE") & str_detect(effect, "NON_SYNONYMOUS_CODING|STOP_GAINED"))) %>%
+  dplyr::mutate(id2 = unlist(purrr::map(id, ~stringr::str_split(., "_snvs")[[1]][1]))) %>%
+  #mutate(tVAF = round(tVAF, 3)) %>%
+  #mutate(nVAF = round(nVAF, 3)) %>%
+  mutate(gene_name = paste0('<a href="',"https://www.genecards.org/cgi-bin/carddisp.pl?gene=",gene_name,'">',gene_name ,"</a>")) %>%
+  group_by(chrom, coord, ref, alt, gene_name, effect, effect_impact, is_cosmic, amino_acid_change) %>%
+  summarize(nlibrary = n(),
+            ids = paste(id2, collapse = ","),
+            meancells = round(mean(num_cells, na.rm = T), 2),
+            num_cells = paste(num_cells, collapse = ","),
+            alt_counts = paste(alt_counts, collapse = ","),
+            ref_counts = paste(ref_counts, collapse = ","),
+            mean_tVAF = round(mean(tVAF, na.rm = T), 3),
+            tVAF = paste(round(tVAF, 3), collapse = ",")) %>%
+  DT::datatable(., filter = 'top', options = list(pageLength = 10,lengthMenu = list(c(10, 25, 50, 100, -1), list('10', '25', '50','100', 'All'))), escape = FALSE)
+```
+
+### Indels
+```{r, echo = FALSE}
+
+mafhighimpact %>%
+  dplyr::mutate(id2 = unlist(purrr::map(id, ~stringr::str_split(., "_snvs")[[1]][1]))) %>%
+  dplyr::rename(chrom = Chromosome, coord = Start_Position, gene_name = Hugo_Symbol) %>%
+    mutate(gene_name = paste0('<a href="',"https://www.genecards.org/cgi-bin/carddisp.pl?gene=",gene_name,'">',gene_name ,"</a>")) %>%
+  group_by(chrom, coord, Reference_Allele, Tumor_Seq_Allele1, Tumor_Seq_Allele2, Variant_Type, gene_name, Consequence, IMPACT) %>%
+  summarize(nlibrary = n(),
+            ids = paste(id2, collapse = ","),
+            mean_tVAF = round(mean(tVAF, na.rm = T), 3),
+            tVAF = paste(round(tVAF, 3), collapse = ","),
+            nVAF = paste(round(nVAF, 3), collapse = ",")) %>%
+DT::datatable(., filter = 'top', options = list(pageLength = 10,lengthMenu = list(c(10, 25, 50, 100, -1), list('10', '25', '50','100', 'All'))), escape = FALSE)
+```
+
+## Mutations per sample {.tabset .tabset-fade .tabset-pills}
+
+### SNV
+```{r, echo = FALSE, fig.height=10}
+# All defaults
+snv %>%
+  group_by(id) %>%
+  summarize(n = n()) %>%
+  ungroup() %>%
+  dplyr::mutate(id2 = unlist(purrr::map(id, ~stringr::str_split(., "_snvs")[[1]][1]))) %>%
+  ggplot(aes(y = n, x = forcats::fct_reorder(id2, n))) +
+  geom_col(fill = "deepskyblue4") +
+  coord_flip() +
+  scale_y_log10() +
+  xlab("") +
+  ylab("# Mutations") +
+  theme_classic()
+```
+
+### Indels
+```{r, echo = FALSE, fig.height=10}
+# All defaults
+maf %>%
+  group_by(id) %>%
+  summarize(n = n()) %>%
+  ggplot(aes(y = n, x = forcats::fct_reorder(id, n))) +
+  geom_col(fill = "deepskyblue4") +
+  coord_flip() +
+  scale_y_log10() +
+  xlab("") +
+  ylab("# Mutations") +
+  theme_classic()
+```
+
+## High impact mutations per sample {.tabset .tabset-fade .tabset-pills}
+
+### SNV
+```{r, echo = FALSE, fig.height=10}
+# All defaults
+snv %>%
+  dplyr::filter((effect_impact == "HIGH") | ((effect_impact == "MODERATE") & str_detect(effect, "NON_SYNONYMOUS_CODING|STOP_GAINED"))) %>%
+  group_by(id) %>%
+  summarize(n = n()) %>%
+  ungroup() %>%
+  dplyr::mutate(id2 = unlist(purrr::map(id, ~stringr::str_split(., "_snvs")[[1]][1]))) %>%
+  ggplot(aes(y = n, x = forcats::fct_reorder(id2, n))) +
+  geom_col(fill = "deepskyblue4") +
+  coord_flip() +
+  scale_y_log10() +
+  xlab("") +
+  ylab("# Mutations") +
+  theme_classic()
+```
+
+### Indels
+```{r, echo = FALSE, fig.height=10}
+# All defaults
+mafhighimpact %>%
+  group_by(id) %>%
+  summarize(n = n()) %>%
+  ggplot(aes(y = n, x = forcats::fct_reorder(id, n))) +
+  geom_col(fill = "deepskyblue4") +
+  coord_flip() +
+  scale_y_log10() +
+  xlab("") +
+  ylab("# Mutations") +
+  theme_classic()
+```
