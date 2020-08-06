@@ -48,7 +48,6 @@ def qc_workflow(args):
         args=(
             mgd.InputFile('pseudobulk_group', 'pseudobulk_group', fnames={psg: psg for psg in pseudobulk_groups}),
             data,
-            # mgd.OutputFile('indelreport', 'pseudobulk_group', fnames=indelreports),
             mgd.OutputFile('mutationreport', 'pseudobulk_group', fnames=mutationreports),
             mgd.OutputFile('grouplevelmaf', 'pseudobulk_group', fnames=grouplevelmafs),
             mgd.OutputFile('grouplevel_high_impact_maf', 'pseudobulk_group', fnames=grouplevel_high_impact_mafs),

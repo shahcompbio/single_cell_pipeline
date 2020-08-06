@@ -21,7 +21,6 @@ def merge_mafs(mafs, merged_maf, id_colname=False):
     output.to_csv(merged_maf, sep="\t", index=False, header=True)
 
 def merge_snvs(snv_files, merged_snv, id_colname=False):
-    print(snv_files)
     
     assert isinstance(snv_files, dict)
     preppednsvs = []
@@ -36,11 +35,12 @@ def merge_snvs(snv_files, merged_snv, id_colname=False):
 
 
 def filter_snvs_for_high_impact(snv, filtsnv):
-    cmd = ["Rscript", "/juno/work/shah/abramsd/CODE/single_cell_pipeline/single_cell/workflows/qc/scripts/mergesnvs.R", snv, filtsnv]
+    
+    cmd = ["mergesnvs.R", snv, filtsnv]    
     pypeliner.commandline.execute(*cmd, docker_image="rocker/tidyverse")
 
 def filter_maf_for_high_impact(maf, filtmaf):
-    cmd = ["Rscript", "/juno/work/shah/abramsd/CODE/single_cell_pipeline/single_cell/workflows/qc/scripts/mergemafs.R", maf, filtmaf]
+    cmd = ["mergemafs.R", maf, filtmaf]
     pypeliner.commandline.execute(*cmd, docker_image="rocker/tidyverse")
 
 def _get_indelvcfs(dir):
@@ -53,8 +53,6 @@ def _get_indelvcfs(dir):
 #dummie outputs for testing
 def dummie(files):
     for file in files:
-        print(file)
-        cc
         df = pd.DataFrame([1], [1])
         df.to_csv(file)
     return
@@ -63,15 +61,11 @@ def get_snv_all_csvs(dir):
     output = {}
     dir_len = len(dir.split("/"))
     filenames =  sorted(glob.glob(dir + "/*/*/*snv*all*csv", recursive=True))
-    print(filenames)
-    print(glob.glob(dir + "/*/*/*", recursive=True))
-    print(dir)
     for filename in filenames:
 
         name_len = len(filename.split("/"))
         samplelabel = filename.split("/")[dir_len : name_len - 1]
         output[tuple(samplelabel)] = filename
-        print(output)
     return output
 
 def gunzip_file(infile, outfile):
@@ -96,34 +90,43 @@ def vcf2maf(vcf_file, output_maf, tempdir, reference, vepdata):
     cmd = ["vcf2maf.pl", "--input-vcf", vcf_unzipped, "--output-maf", output_maf,
            "--ref-fasta", reference, "--filter-vcf", "0", "--vep-path", "/home/abramsd/miniconda3/envs/r-environment/bin", 
            "--vep-data", vepdata]
-    print(cmd)
 
     pypeliner.commandline.execute(*cmd, docker_image="shub://rdmorin/cancer_docker_singularity:vcf2maf")
 
 
 def sample_level_report(mutations_per_cell, summary, 
-                      snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count, 
-                      snv_cell_counts, snv_alt_counts, rearranegementtype_distribution, chromosome_types,
-                      BAFplot, CNplot, datatype_summary, maf, html_file, out_dir, sample_id):
+    snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count, 
+    snv_cell_counts, snv_alt_counts, rearranegementtype_distribution, chromosome_types,
+    BAFplot, CNplot, datatype_summary, maf, html_file, out_dir, sample_id
+):
 
+    # shell_code = "run_report.sh {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {}".format(
+    #     html_file, sample_id, mutations_per_cell, summary, 
+    #     snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count, 
+    #     snv_cell_counts, snv_alt_counts, rearranegementtype_distribution, chromosome_types,
+    #     BAFplot, CNplot, datatype_summary, maf       
+    # )
 
-	rcode = "rmarkdown::render('/juno/work/shah/abramsd/CODE/single_cell_pipeline/single_cell/workflows/qc/scripts/report2.Rmd',output_file = '{}',  params=list( sample_id='{}', mutations_per_cell_png='{}', summary_csv='{}', snvs_high_impact_csv='{}', snvs_all_csv='{}', trinuc_csv='{}', snv_adjacent_distance_png='{}', snv_genome_count_png='{}', snv_cell_counts_png='{}', snv_alt_counts_png='{}', rearranegementtype_distribution_png='{}', chromosome_types_png='{}', BAFplot_png='{}', cn_plot_png='{}', datatype_summary_csv='{}', maf='{}'))".format(
-					html_file, sample_id, mutations_per_cell, summary, 
-					snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count, 
-					snv_cell_counts, snv_alt_counts, rearranegementtype_distribution, chromosome_types,
-					BAFplot, CNplot, datatype_summary, maf)
-	cmd = ["R", "-e",  rcode]
-	pypeliner.commandline.execute(*cmd, docker_image="rocker/tidyverse")
+    # cmd = [shell_code]
+    cmd = ['run_report.sh', html_file, sample_id, mutations_per_cell, summary, 
+        snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count, 
+        snv_cell_counts, snv_alt_counts, rearranegementtype_distribution, chromosome_types,
+        BAFplot, CNplot, datatype_summary, maf]
+    pypeliner.commandline.execute(*cmd)
 
     
 def create_mutation_report(pseudobulk_group, merged_maf, high_impact_maf, high_impact_snvs, report_html):
 
-    rcode = "rmarkdown::render('/juno/work/shah/abramsd/CODE/single_cell_pipeline/single_cell/workflows/qc/scripts/mutationreport.Rmd',output_file = '{}',  params=list(pseudobulk_group='{}', merged_filt_snvs='{}', merged_maf='{}',high_impact_maf='{}'))".format(
-        report_html,
+    # shell_code = "run_mutationreport.sh {} {} {} {} {}".format(        
+    #     report_html,
+    #     pseudobulk_group,
+    #     high_impact_snvs,
+    #     merged_maf,
+    #     high_impact_maf)
+
+    cmd = [ "run_mutationreport.sh", report_html,
         pseudobulk_group,
         high_impact_snvs,
         merged_maf,
-        high_impact_maf
-    )
-    cmd = ["R", "-e",  rcode]
-    pypeliner.commandline.execute(*cmd, docker_image="rocker/tidyverse")
+        high_impact_maf]
+    pypeliner.commandline.execute(*cmd)

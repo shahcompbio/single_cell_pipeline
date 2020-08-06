@@ -56,46 +56,38 @@ def scgenome_analysis(sample_id,  mappability_file, strelka_file,
     datatype_summary=datatype_summary[:-4]
 
 
-    # snv_results = scgenome.loaders.snv.load_snv_data_from_files(        
-    #     [mappability_file], 
-    #     [strelka_file], 
-    #     [museq_file], 
-    #     [cosmic_status_file], 
-    #     [snpeff_file], 
-    #     [dbsnp_status_file], 
-    #     [trinuc_file],
-    #     [counts_file],
-    #     snv_annotation=True
-    # )
-
-
-    snv_results = scgenome.loaders.snv.load_snv_data(
-        "/work/shah/tantalus/SC-3349"
+    snv_results = scgenome.loaders.snv.load_snv_data_from_files(        
+        [mappability_file], 
+        [strelka_file], 
+        [museq_file], 
+        [cosmic_status_file], 
+        [snpeff_file], 
+        [dbsnp_status_file], 
+        [trinuc_file],
+        [counts_file],
+        snv_annotation=True
     )
         
     snv_data = snv_results["snv_data"]
 
     
-    # snv_results = scgenome.loaders.snv.load_snv_data_from_files(        
-    #     [mappability_file], 
-    #     [strelka_file], 
-    #     [museq_file], 
-    #     [cosmic_status_file], 
-    #     [snpeff_file], 
-        # [dbsnp_status_file], 
-        # [trinuc_file],
-        # [counts_file],
-        # snv_counts=True,
-        # positions=snv_data[['chrom', 'coord', 'ref', 'alt']].drop_duplicates(),
-        # filter_sample_id=sample_id, 
-        # filter_library_id=library_id
+    snv_results = scgenome.loaders.snv.load_snv_data_from_files(        
+        [mappability_file], 
+        [strelka_file], 
+        [museq_file], 
+        [cosmic_status_file], 
+        [snpeff_file], 
+        [dbsnp_status_file], 
+        [trinuc_file],
+        [counts_file],
+        snv_counts=True,
+        positions=snv_data[['chrom', 'coord', 'ref', 'alt']].drop_duplicates(),
+        filter_sample_id=sample_id, 
+        filter_library_id=library_id
 
-    # )
-
-    snv_results = scgenome.loaders.snv.load_snv_data(
-        "/work/shah/tantalus/SC-3609", positions=snv_data[['chrom', 'coord', 'ref', 'alt']].drop_duplicates(),
-        filter_sample_id=sample_id, filter_library_id=library_id
     )
+
+
     snv_count_data = snv_results["snv_count_data"]
 
 
@@ -228,14 +220,10 @@ def scgenome_analysis(sample_id,  mappability_file, strelka_file,
 
     import scgenome.loaders.breakpoint
 
-    breakpoint_results = scgenome.loaders.breakpoint.load_breakpoint_data(
-        "/work/shah/tantalus/SC-3349"
+    breakpoint_results = scgenome.loaders.breakpoint.load_breakpoint_data_from_files(
+        [breakpoint_annotation],
+        [breakpoint_count]
     )
-
-    # breakpoint_results = scgenome.loaders.breakpoint.load_breakpoint_data_from_files(
-    #     [breakpoint_annotation],
-    #     [breakpoint_count]
-    # )
 
     import scgenome.breakpointdata
 
@@ -337,9 +325,7 @@ def scgenome_analysis(sample_id,  mappability_file, strelka_file,
 
     import scgenome.loaders.allele
 
-    allele_results = scgenome.loaders.allele.load_haplotype_allele_data("/work/shah/tantalus/SC-3349")
-
-    # allele_results = scgenome.loaders.allele.load_haplotype_allele_data_from_file([haplotype_allele_data])
+    allele_results = scgenome.loaders.allele.load_haplotype_allele_data_from_file([haplotype_allele_data])
 
 
     allele_data = allele_results['allele_counts']
@@ -383,18 +369,10 @@ def scgenome_analysis(sample_id,  mappability_file, strelka_file,
     import scgenome.cnclones
 
 
-    # results_tables_new = scgenome.db.qc.get_qc_data_from_filenames( [annotation_metrics], [hmmcopy_reads], 
-    #     [hmmcopy_segs], 
-    #     [hmmcopy_metrics], [alignment_metrics], [gc_metrics], 
-    #     sample_ids=["SA1049AX1XB01417"], additional_hmmcopy_reads_cols=None
-    # )
-
-
-    results_tables_new = scgenome.db.qc.get_qc_data(
-        ["SC-3349"],
-        "/work/shah/tantalus",
-        sample_ids=["SA1049AX1XB01417"],
-        do_caching=False,
+    results_tables_new = scgenome.db.qc.get_qc_data_from_filenames( [annotation_metrics], [hmmcopy_reads], 
+        [hmmcopy_segs], 
+        [hmmcopy_metrics], [alignment_metrics], [gc_metrics], 
+        sample_ids=[sample_id], additional_hmmcopy_reads_cols=None
     )
 
     cn_data = results_tables_new['hmmcopy_reads']

@@ -6,6 +6,7 @@ import re
 import os
 from single_cell.workflows.qc import tasks
 
+
 def create_pseudobulk_group_workflow(pseudobulk_group, mafs, sample_all_snv_csvs,  mutationreport, merged_maf, high_impact_maf, merged_snvs, merged_high_impact_snvs):
 
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1, }
@@ -77,7 +78,6 @@ def create_sample_level_plots(cell_id, library_id, mappability_file,
     mutations_per_cell_png =  os.path.join(prefix, "mutations_per_cell.png")
     summary_csv =  os.path.join(prefix, "summary.csv")
     snvs_high_impact_csv =  os.path.join(prefix, "snvs_high_impact.csv")
-    # snvs_all_csv =  os.path.join(prefix, "snvs_all.csv")
     trinuc_csv =  os.path.join(prefix, "trinuc.csv")
     snv_adjacent_distance_png =  os.path.join(prefix, "snv_adjacent_distance.png")
     snv_genome_count_png =  os.path.join(prefix,  "snv_genome_count.png")  
@@ -193,7 +193,6 @@ def create_sample_level_plots(cell_id, library_id, mappability_file,
 
     workflow.transform(
         name='create_main_report',
-        # ctx={'io': 1, 'mem': 8, 'disk': 100},
         func="single_cell.workflows.qc.tasks.sample_level_report",
         args=(
             mgd.InputFile(mutations_per_cell_png), 
