@@ -79,6 +79,11 @@ class PlotKernelDensity(object):
         if np.isnan(data).all():
             return 0
 
+        # if there's just one value in the data, fit breaks
+        uniq_values = data.unique()
+        if len(uniq_values) == 1:
+            return uniq_values[0]
+
         kde = smnp.KDEUnivariate(data)
         kde.fit()
 
