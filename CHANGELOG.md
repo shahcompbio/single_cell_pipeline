@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.6.21
+
+### Bug:
+1. KDE plot can't handle bad data
+
 ### v0.6.20
 
 ### Changes:
