@@ -1,20 +1,30 @@
+
 ###  Download reference data for test datasets
 ```
 wget https://singlecelltestsets.s3.amazonaws.com/refdata.tar.gz
 tar -xvf refdata.tar.gz
 ```
 
+we recommend starting from a blank slate with a fresh conda install for each app. We'll have 3 independent conda installs at the end of this guide, each with their corresponding single cell pipeline app.
 
 ### Align
 
-we recommend starting from a blank slate with a fresh conda install or a new conda environment. 
-
 #### setup conda environment
+
+create a separate directory for alignment:
+```
+mkdir ALIGN && cd ALIGN
+```
+
+and install miniconda:
 ```
 wget https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.3-Linux-x86_64.sh
-bash Miniconda3-py37_4.8.3-Linux-x86_64.sh
+bash Miniconda3-py37_4.8.3-Linux-x86_64.sh -b -p $PWD/miniconda3
 ```
+
+install single cell pipeline (alignment) app under the miniconda install:
 ```
+export PATH=$PWD/miniconda3/bin:$PATH
 conda update -n base -c defaults conda -y   
 conda install -c shahcompbio -c bioconda -c conda-forge  single_cell_pipeline_align
 ```
@@ -82,6 +92,7 @@ the testdata path must change to point it to the correct output data directory.
 #### launch the pipeline:
 
 ```
+export PATH=$PWD/miniconda3/bin:$PATH
 single_cell alignment --input_yaml inputs.yaml \
 --library_id A1234A --maxjobs 4 --nocleanup --sentinel_only \
 --submit local --loglevel DEBUG \
@@ -92,14 +103,22 @@ single_cell alignment --input_yaml inputs.yaml \
 
 ### Hmmcopy
 
-we recommend starting from a blank slate with a fresh conda install or a new conda environment. 
-
 #### setup conda environment
+
+create a separate directory for hmmcopy:
+```
+mkdir HMMCOPY && cd HMMCOPY
+```
+
+and install miniconda:
 ```
 wget https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.3-Linux-x86_64.sh
-bash Miniconda3-py37_4.8.3-Linux-x86_64.sh
+bash Miniconda3-py37_4.8.3-Linux-x86_64.sh -b -p $PWD/miniconda3
 ```
+
+install single cell pipeline (hmmcopy) app under the miniconda install:
 ```
+export PATH=$PWD/miniconda3/bin:$PATH
 conda update -n base -c defaults conda -y   
 conda install -c conda-forge -c bioconda -c shahcompbio single_cell_pipeline_hmmcopy 
 ```
@@ -151,6 +170,7 @@ SA1090-A96213A-R22-C43:
 #### launch the pipeline:
 
 ```
+export PATH=$PWD/miniconda3/bin:$PATH
  single_cell hmmcopy \
  --input_yaml inputs.yaml \
  --library_id A1234A --maxjobs 4 --nocleanup \
@@ -162,14 +182,22 @@ SA1090-A96213A-R22-C43:
 
 ### Annotation
 
-we recommend starting from a blank slate with a fresh conda install or a new conda environment. 
-
 #### setup conda environment
+
+create a separate directory for annotation:
+```
+mkdir ANNOTATION && cd ANNOTATION
+```
+
+and install miniconda:
 ```
 wget https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.3-Linux-x86_64.sh
-bash Miniconda3-py37_4.8.3-Linux-x86_64.sh
+bash Miniconda3-py37_4.8.3-Linux-x86_64.sh -b -p $PWD/miniconda3
 ```
+
+install single cell pipeline (annotation) app under the miniconda install:
 ```
+export PATH=$PWD/miniconda3/bin:$PATH
 conda update -n base -c defaults conda -y   
 conda install -c conda-forge -c bioconda -c shahcompbio single_cell_pipeline_annotation 
 ```
@@ -192,6 +220,7 @@ segs_pdf_tar: testdata/A96213A_segs.tar.gz
 #### launch the pipeline:
 
 ```
+export PATH=$PWD/miniconda3/bin:$PATH
  single_cell annotation \
  --input_yaml inputs.yaml \
  --library_id A1234A --maxjobs 4 --nocleanup \
