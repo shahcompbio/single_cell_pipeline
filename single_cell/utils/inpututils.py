@@ -166,6 +166,17 @@ def load_yaml(path):
             'Unable to open file: {0}'.format(path))
     return data
 
+def load_qc_input(path):
+    data= {}
+    yaml = load_yaml(path)
+    for patient, patient_data in yaml.items():
+        for sample, sample_data in patient_data.items():
+            for library, library_data in sample_data.items():
+                data[(patient, sample, library)] = {data_label: data 
+                    for data_label, data in library_data.items()
+                }
+    return data
+
 
 def get_lane_info(fastqs_file):
     data = load_yaml(fastqs_file)
