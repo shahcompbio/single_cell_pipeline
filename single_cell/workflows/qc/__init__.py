@@ -67,7 +67,8 @@ def create_patient_workflow(pseudobulk_group, mafs, sample_all_snv_csvs,
 
 def create_sample_level_plots(patient, cell_id, library_id, mappability_file, 
     strelka_file, museq_file, cosmic_status_file, snpeff_file, dbsnp_status_file, 
-    trinuc_file, counts_file, breakpoint_annotation, breakpoint_counts, 
+    trinuc_file, counts_file, destruct_breakpoint_annotation, destruct_breakpoint_counts, 
+    lumpy_breakpoint_annotation, lumpy_breakpoint_evidence,
     haplotype_allele_data, annotation_metrics, hmmcopy_reads, hmmcopy_segs, 
     hmmcopy_metrics, alignment_metrics, gc_metrics, indel_file, reporthtml, maf, 
     snvs_all_csv, out_dir, config
@@ -88,8 +89,16 @@ def create_sample_level_plots(patient, cell_id, library_id, mappability_file,
     snv_genome_count_png =  os.path.join(prefix,  "snv_genome_count.png")  
     snv_cell_counts_png =  os.path.join(prefix,  "snv_cell_counts.png")  
     snv_alt_counts_png =  os.path.join(prefix,  "snv_alt_counts.png")  
-    rearranegementtype_distribution_png =  os.path.join(prefix,  "rearranegementtype_distribution.png")  
-    chromosome_types_png =  os.path.join(prefix,  "chromosome_types.png") 
+
+    rearranegementtype_distribution_destruct_unfiltered_png =  os.path.join(prefix,  "rearranegementtype_distribution_destruct_unfiltered.png")  
+    chromosome_types_destruct_unfiltered_png =  os.path.join(prefix,  "chromosome_types_destruct_unfiltered.png") 
+
+    rearranegementtype_distribution_destruct_filtered_png =  os.path.join(prefix,  "rearranegementtype_distribution_destruct_filtered.png")  
+    chromosome_types_destruct_filtered_png =  os.path.join(prefix,  "chromosome_types_destruct_filtered.png") 
+
+    rearranegementtype_distribution_lumpy_unfiltered_png =  os.path.join(prefix,  "rearranegementtype_distribution_lumpy_unfiltered.png")  
+    chromosome_types_lumpy_unfiltered_png =  os.path.join(prefix,  "chromosome_types_lumpy_unfiltered.png") 
+
     baf_plot_png =  os.path.join(prefix,  "BAFplot.png") 
     cn_plot_png =  os.path.join(prefix,  "CNplot.png") 
     datatype_summary_csv =  os.path.join(prefix,  "datatype_summary.csv")
@@ -123,8 +132,10 @@ def create_sample_level_plots(patient, cell_id, library_id, mappability_file,
             mgd.InputFile(dbsnp_status_file),
             mgd.InputFile(trinuc_file),
             mgd.InputFile(counts_file),
-            mgd.InputFile(breakpoint_annotation),
-            mgd.InputFile(breakpoint_counts),      
+            mgd.InputFile(destruct_breakpoint_annotation),
+            mgd.InputFile(destruct_breakpoint_counts), 
+            mgd.InputFile(lumpy_breakpoint_annotation),
+            mgd.InputFile(lumpy_breakpoint_evidence),     
             mgd.InputFile(haplotype_allele_data),     
             mgd.InputFile(annotation_metrics),  
             mgd.InputFile(hmmcopy_reads),  
@@ -143,8 +154,16 @@ def create_sample_level_plots(patient, cell_id, library_id, mappability_file,
             mgd.OutputFile(snv_genome_count_png), 
             mgd.OutputFile(snv_cell_counts_png), 
             mgd.OutputFile(snv_alt_counts_png), 
-            mgd.OutputFile(rearranegementtype_distribution_png), 
-            mgd.OutputFile(chromosome_types_png),
+
+            mgd.OutputFile(rearranegementtype_distribution_destruct_unfiltered_png), 
+            mgd.OutputFile(chromosome_types_destruct_unfiltered_png),
+
+            mgd.OutputFile(rearranegementtype_distribution_destruct_filtered_png), 
+            mgd.OutputFile(chromosome_types_destruct_filtered_png),
+
+            mgd.OutputFile(rearranegementtype_distribution_lumpy_unfiltered_png), 
+            mgd.OutputFile(chromosome_types_lumpy_unfiltered_png),  
+
             mgd.OutputFile(baf_plot_png), 
             mgd.OutputFile(cn_plot_png), 
             mgd.OutputFile(datatype_summary_csv),
@@ -164,8 +183,12 @@ def create_sample_level_plots(patient, cell_id, library_id, mappability_file,
             mgd.InputFile(snv_genome_count_png), 
             mgd.InputFile(snv_cell_counts_png), 
             mgd.InputFile(snv_alt_counts_png), 
-            mgd.InputFile(rearranegementtype_distribution_png), 
-            mgd.InputFile(chromosome_types_png),
+            mgd.InputFile(rearranegementtype_distribution_destruct_unfiltered_png), 
+            mgd.InputFile(chromosome_types_destruct_unfiltered_png),
+            mgd.InputFile(rearranegementtype_distribution_destruct_filtered_png), 
+            mgd.InputFile(chromosome_types_destruct_filtered_png),
+            mgd.InputFile(rearranegementtype_distribution_lumpy_unfiltered_png), 
+            mgd.InputFile(chromosome_types_lumpy_unfiltered_png),  
             mgd.InputFile(baf_plot_png), 
             mgd.InputFile(cn_plot_png), 
             mgd.InputFile(datatype_summary_csv),

@@ -74,34 +74,40 @@ def vcf2maf(vcf_file, output_maf, tempdir, reference, docker_image):
     else:
         vcf_unzipped = vcf_file
 
-    # cmd = ['/opt/local/singularity/3.6.0/bin/singularity', 'run', '--bind', '/juno/work/shah', '{}'.format(docker_image), 
-    #     'vcf2maf.pl', '--input-vcf', vcf_unzipped, '--output-maf', output_maf,
+    cmd = ['/opt/local/singularity/3.6.0/bin/singularity', 'run', '--bind', '/juno/work/shah', '{}'.format(docker_image), 
+        'vcf2maf.pl', '--input-vcf', vcf_unzipped, '--output-maf', output_maf,
+        '--vep-path', '/usr/local/bin',
+        '--ref-fasta',
+        os.path.join(reference, 'homo_sapiens', '99_GRCh37', 'Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz'),
+        '--filter-vcf', os.path.join(reference, 'ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz'),
+        '--vep-data', reference
+    ]
+    # cmd = [  'vcf2maf.pl', '--input-vcf', vcf_unzipped, '--output-maf', output_maf,
     #     '--vep-path', '/usr/local/bin',
     #     '--ref-fasta',
     #     os.path.join(reference, 'homo_sapiens', '99_GRCh37', 'Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz'),
     #     '--filter-vcf', os.path.join(reference, 'ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz'),
     #     '--vep-data', reference,
     # ]
-    cmd = [  'vcf2maf.pl', '--input-vcf', vcf_unzipped, '--output-maf', output_maf,
-        '--vep-path', '/usr/local/bin',
-        '--ref-fasta',
-        os.path.join(reference, 'homo_sapiens', '99_GRCh37', 'Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz'),
-        '--filter-vcf', os.path.join(reference, 'ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz'),
-        '--vep-data', reference,
-    ]
 
     pypeliner.commandline.execute(*cmd, docker_image = docker_image)
 
 
 def sample_level_report(mutations_per_cell, summary, 
     snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count, 
-    snv_cell_counts, snv_alt_counts, rearranegementtype_distribution, chromosome_types,
+    snv_cell_counts, snv_alt_counts, rearranegementtype_distribution_destruct_unfiltered, 
+    chromosome_types_destruct_unfiltered,rearranegementtype_distribution_destruct_filtered, 
+    chromosome_types_destruct_filtered,rearranegementtype_distribution_lumpy_unfiltered, 
+    chromosome_types_lumpy_unfiltered,
     baf_plot, cn_plot, datatype_summary, maf, html_file, out_dir, sample_id
 ):
 
     cmd = ['run_report.sh', html_file, sample_id, mutations_per_cell, summary, 
         snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count, 
-        snv_cell_counts, snv_alt_counts, rearranegementtype_distribution, chromosome_types,
+        snv_cell_counts, snv_alt_counts, rearranegementtype_distribution_destruct_unfiltered, 
+        chromosome_types_destruct_unfiltered,rearranegementtype_distribution_destruct_filtered, 
+        chromosome_types_destruct_filtered,rearranegementtype_distribution_lumpy_unfiltered, 
+        chromosome_types_lumpy_unfiltered,
         baf_plot, cn_plot, datatype_summary, maf]
     pypeliner.commandline.execute(*cmd)
 
