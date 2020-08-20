@@ -87,13 +87,19 @@ def vcf2maf(vcf_file, output_maf, tempdir, reference, docker_image):
 
 def sample_level_report(mutations_per_cell, summary, 
     snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count, 
-    snv_cell_counts, snv_alt_counts, rearranegementtype_distribution, chromosome_types,
+    snv_cell_counts, snv_alt_counts, rearranegementtype_distribution_destruct_unfiltered, 
+    chromosome_types_destruct_unfiltered,rearranegementtype_distribution_destruct_filtered, 
+    chromosome_types_destruct_filtered,rearranegementtype_distribution_lumpy_unfiltered, 
+    chromosome_types_lumpy_unfiltered,
     baf_plot, cn_plot, datatype_summary, maf, html_file, out_dir, sample_id
 ):
 
     cmd = ['run_report.sh', html_file, sample_id, mutations_per_cell, summary, 
         snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count, 
-        snv_cell_counts, snv_alt_counts, rearranegementtype_distribution, chromosome_types,
+        snv_cell_counts, snv_alt_counts, rearranegementtype_distribution_destruct_unfiltered, 
+        chromosome_types_destruct_unfiltered,rearranegementtype_distribution_destruct_filtered, 
+        chromosome_types_destruct_filtered,rearranegementtype_distribution_lumpy_unfiltered, 
+        chromosome_types_lumpy_unfiltered,
         baf_plot, cn_plot, datatype_summary, maf]
     pypeliner.commandline.execute(*cmd)
 
