@@ -44,16 +44,10 @@ def qc_workflow(args):
     dbsnp_status_files = {label:paths["dbsnp_status"] for label, paths in data.items()}
     trinuc_files = {label:paths["trinuc"] for label, paths in data.items()}
     counts_files = {label:paths["counts"] for label, paths in data.items()}
-<<<<<<< HEAD
-    breakpoint_counts_files = {label:paths["breakpoint_counts"] for label, paths in data.items()}
-    breakpoint_annotation_files = {label:paths["breakpoint_annotation"] for label, paths in data.items()}
-=======
     breakpoint_counts_files = {label:paths["destruct_breakpoint_counts"] for label, paths in data.items()}
     destruct_breakpoint_annotation_files = {label:paths["destruct_breakpoint_annotation"] for label, paths in data.items()}
     lumpy_breakpoint_annotation_files = {label:paths["lumpy_breakpoint_annotation"] for label, paths in data.items()}
     lumpy_breakpoint_evidence_files = {label:paths["lumpy_breakpoint_evidence"] for label, paths in data.items()}
-
->>>>>>> qc_merge
     haplotype_allele_data_files = {label:paths["haplotype_allele_data"] for label, paths in data.items()}
     annotation_metrics_files = {label:paths["annotation_metrics"] for label, paths in data.items()}
     hmmcopy_reads_files = {label:paths["hmmcopy_reads"] for label, paths in data.items()}
@@ -97,12 +91,6 @@ def qc_workflow(args):
             mgd.InputFile('dbsnp_status', 'patient', 'sample_id', 'library_id', fnames=dbsnp_status_files),
             mgd.InputFile('trinuc', 'patient', 'sample_id', 'library_id', fnames=trinuc_files),
             mgd.InputFile('counts', 'patient', 'sample_id', 'library_id', fnames=counts_files),
-<<<<<<< HEAD
-            mgd.InputFile('breakpoint_annotation', 'patient', 'sample_id', 'library_id', 
-                fnames=breakpoint_annotation_files),
-            mgd.InputFile('breakpoint_counts','patient',  'sample_id', 'library_id', 
-                fnames=breakpoint_counts_files),
-=======
             mgd.InputFile('destruct_breakpoint_annotation', 'patient', 'sample_id', 'library_id', 
                 fnames=destruct_breakpoint_annotation_files),
             mgd.InputFile('destruct_breakpoint_counts','patient',  'sample_id', 'library_id', 
@@ -111,7 +99,6 @@ def qc_workflow(args):
                 fnames=lumpy_breakpoint_annotation_files),
             mgd.InputFile('lumpy_breakpoint_evidence','patient',  'sample_id', 'library_id', 
                 fnames=lumpy_breakpoint_evidence_files),
->>>>>>> qc_merge
             mgd.InputFile('haplotype_allele_data', 'patient', 'sample_id', 'library_id', 
                 fnames=haplotype_allele_data_files),
             mgd.InputFile('annotation_metrics', 'patient', 'sample_id', 'library_id', fnames=annotation_metrics_files),
