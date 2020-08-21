@@ -70,8 +70,8 @@ def main():
     if args["which"] == "sv_genotyping":
         sv_genotyping_pipeline(args)
 
-    if args["which"] == "pseudobulk_qc":
-        pseudobulk_qc_pipeline(args)
+    if args["which"] == "pseudo_bulk_qc":
+        pseudo_bulk_qc_pipeline(args)
 
 
 if __name__ == "__main__":

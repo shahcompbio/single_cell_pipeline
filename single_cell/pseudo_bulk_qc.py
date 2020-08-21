@@ -5,7 +5,7 @@ import pypeliner.managed as mgd
 from single_cell.utils import inpututils
 
 
-def pseudobulk_qc_workflow(args):
+def pseudo_bulk_qc_workflow(args):
     data = inpututils.load_qc_input(args["input_yaml"])
     config = inpututils.load_config(args)
     config = config["qc"]
@@ -78,7 +78,7 @@ def pseudobulk_qc_workflow(args):
 
     workflow.subworkflow(
         name='create_sample_level_plots',
-        func="single_cell.workflows.qc.create_sample_level_plots",
+        func="single_cell.workflows.pseudo_bulk_qc.create_sample_level_plots",
         axes=('patient', 'sample_id', 'library_id',),
         args=(
             mgd.InputInstance('patient'),
@@ -127,7 +127,7 @@ def pseudobulk_qc_workflow(args):
     )
     workflow.subworkflow(
         name='create_patient_workflow',
-        func="single_cell.workflows.qc.create_patient_workflow",
+        func="single_cell.workflows.pseudo_bulk_qc.create_patient_workflow",
         axes=('patient',),
         args=(
             mgd.InputInstance('patient'),
@@ -150,9 +150,9 @@ def pseudobulk_qc_workflow(args):
     return workflow
 
 
-def pseudobulk_qc_pipeline(args):
+def pseudo_bulk_qc_pipeline(args):
     pyp = pypeliner.app.Pypeline(config=args)
 
-    workflow = pseudobulk_qc_workflow(args)
+    workflow = pseudo_bulk_qc_workflow(args)
 
     pyp.run(workflow)

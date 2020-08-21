@@ -5,7 +5,7 @@ import pypeliner.managed as mgd
 
 
 def create_patient_workflow(
-        pseudobulk_group, mafs, sample_all_snv_csvs,
+        pseudo_bulk_group, mafs, sample_all_snv_csvs,
         mutationreport, merged_maf, high_impact_maf, merged_snvs,
         merged_high_impact_snvs
 ):
@@ -14,7 +14,7 @@ def create_patient_workflow(
 
     workflow.transform(
         name='merge_mafs',
-        func='single_cell.workflows.qc.tasks.merge_mafs',
+        func='single_cell.workflows.pseudo_bulk_qc.tasks.merge_mafs',
         args=(
             mafs,
             mgd.OutputFile(merged_maf),
@@ -23,7 +23,7 @@ def create_patient_workflow(
     )
     workflow.transform(
         name='filter_merged_maf',
-        func='single_cell.workflows.qc.tasks.filter_maf_for_high_impact',
+        func='single_cell.workflows.pseudo_bulk_qc.tasks.filter_maf_for_high_impact',
         args=(
             mgd.InputFile(merged_maf),
             mgd.OutputFile(high_impact_maf),
@@ -31,7 +31,7 @@ def create_patient_workflow(
     )
     workflow.transform(
         name='merge_snvs',
-        func='single_cell.workflows.qc.tasks.merge_snvs',
+        func='single_cell.workflows.pseudo_bulk_qc.tasks.merge_snvs',
         args=(
             sample_all_snv_csvs,
             mgd.OutputFile(merged_snvs),
@@ -40,7 +40,7 @@ def create_patient_workflow(
     )
     workflow.transform(
         name='filter_snvs',
-        func='single_cell.workflows.qc.tasks.filter_snvs_for_high_impact',
+        func='single_cell.workflows.pseudo_bulk_qc.tasks.filter_snvs_for_high_impact',
         args=(
             mgd.InputFile(merged_snvs),
             mgd.OutputFile(merged_high_impact_snvs),
@@ -49,9 +49,9 @@ def create_patient_workflow(
 
     workflow.transform(
         name='mutationreport',
-        func='single_cell.workflows.qc.tasks.create_mutation_report',
+        func='single_cell.workflows.pseudo_bulk_qc.tasks.create_mutation_report',
         args=(
-            pseudobulk_group,
+            pseudo_bulk_group,
             mgd.InputFile(merged_maf),
             mgd.InputFile(high_impact_maf),
             mgd.InputFile(merged_high_impact_snvs),
@@ -88,7 +88,7 @@ def create_sample_level_plots(
 
     workflow.transform(
         name='vcf2maf',
-        func='single_cell.workflows.qc.tasks.vcf2maf',
+        func='single_cell.workflows.pseudo_bulk_qc.tasks.vcf2maf',
         args=(
             mgd.InputFile(indel_file),
             mgd.OutputFile(maf),
@@ -102,7 +102,7 @@ def create_sample_level_plots(
 
     workflow.transform(
         name='qc_plots',
-        func="single_cell.workflows.qc.scripts.single_cell_qc_plots.qc_plots",
+        func="single_cell.workflows.pseudo_bulk_qc.scripts.single_cell_qc_plots.qc_plots",
         args=(
             cell_id,
             mgd.InputFile(mappability_file),
@@ -149,7 +149,7 @@ def create_sample_level_plots(
 
     workflow.transform(
         name='create_main_report',
-        func="single_cell.workflows.qc.tasks.sample_level_report",
+        func="single_cell.workflows.pseudo_bulk_qc.tasks.sample_level_report",
         args=(
             mgd.TempInputFile('mutations_per_cell.png'),
             mgd.InputFile(summary_csv),

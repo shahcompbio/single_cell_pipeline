@@ -86,10 +86,10 @@ def sample_level_report(
 
 
 def create_mutation_report(
-        pseudobulk_group, merged_maf, high_impact_maf, high_impact_snvs, report_html
+        pseudo_bulk_group, merged_maf, high_impact_maf, high_impact_snvs, report_html
 ):
     cmd = [
-        "run_mutationreport.sh", report_html, pseudobulk_group,
+        "run_mutationreport.sh", report_html, pseudo_bulk_group,
         high_impact_snvs, merged_maf, high_impact_maf
     ]
     pypeliner.commandline.execute(*cmd)
