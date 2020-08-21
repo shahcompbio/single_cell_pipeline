@@ -113,8 +113,8 @@ def write_high_impact_snvs(snv_data, snv_count_data, snvs_high_impact, snvs_all)
     snv_count_data = snv_count_data.groupby(['chrom', 'coord', 'ref', 'alt'], observed=True)
 
     high_impact = high_impact.merge(snv_count_data['alt_counts'].sum().reset_index())
-    high_impact = high_impact.merge(snv_count_data)['ref_counts'].sum().reset_index()
-    high_impact = high_impact.merge(snv_count_data)['total_counts'].sum().reset_index()
+    high_impact = high_impact.merge(snv_count_data['ref_counts'].sum().reset_index())
+    high_impact = high_impact.merge(snv_count_data['total_counts'].sum().reset_index())
     high_impact = high_impact.sort_values(by=['is_cosmic', "gene_name", 'num_cells'])
     high_impact.to_csv(snvs_high_impact)
 

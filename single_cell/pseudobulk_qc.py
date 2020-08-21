@@ -5,7 +5,7 @@ import pypeliner.managed as mgd
 from single_cell.utils import inpututils
 
 
-def qc_workflow(args):
+def pseudobulk_qc_workflow(args):
     data = inpututils.load_qc_input(args["input_yaml"])
     config = inpututils.load_config(args)
     config = config["qc"]
@@ -150,9 +150,9 @@ def qc_workflow(args):
     return workflow
 
 
-def qc_pipeline(args):
+def pseudobulk_qc_pipeline(args):
     pyp = pypeliner.app.Pypeline(config=args)
 
-    workflow = qc_workflow(args)
+    workflow = pseudobulk_qc_workflow(args)
 
     pyp.run(workflow)
