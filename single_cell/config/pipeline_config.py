@@ -469,11 +469,11 @@ def get_qc_params(reference_dir, reference, version):
 
     params = {
         'ref_genome': referencedata['ref_genome'],
-        'vep_reference_dir': "/juno/work/shah/users/grewald/TWINS_NEW_DATA/WGS_REFERENCE/vep",
+        'vep_reference_dir': referencedata['vep_ref_dir'],
         'memory': {'low': 4, 'med': 6, 'high': 16},
         'docker': {
             'single_cell_pipeline': docker_containers['single_cell_pipeline'],
-            'vcf2maf': 'docker://docker.io/wgspipeline/vcf2maf:v0.0.1', #hardcoded until we make this container for scp
+            'vcf2maf': docker_containers['vcf2maf'],
         },
     }
     return {'qc': params}

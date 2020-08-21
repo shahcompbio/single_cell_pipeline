@@ -48,7 +48,7 @@ def generate_and_upload_metadata(
         template_path = os.path.relpath(template_path, root_dir)
         metadata['bams'] = {}
         metadata['bams']['template'] = template_path
-        instances = [{instance_key:instance} for instance in instances]
+        instances = [{instance_key: instance} for instance in instances]
         metadata['bams']['instances'] = instances
 
     if input_yaml_data:

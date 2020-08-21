@@ -31,7 +31,8 @@ def containers(version=None):
         'biobloom': 'biobloom:v0.0.2',
         'corrupt_tree': 'corrupt_tree:v0.0.1',
         'fastq_screen': 'fastq_screen:v0.0.2',
-        'svtyper': 'svtyper:v0.0.1'
+        'svtyper': 'svtyper:v0.0.1',
+        'vcf2maf': 'vcf2maf:v0.0.1'
     }
 
     return {'docker': docker_images}
@@ -42,6 +43,16 @@ def get_reference_data(reference, rootdir):
     if reference == 'GCF_002021735':
         ref_genome = os.path.join(rootdir, 'salmon/GCF_002021735.1_Okis_V1_genomic.fna')
     elif reference == "grch37":
+        vep = {
+            'reference_dir': os.path.join(rootdir, 'human', 'vep'),
+            'reference_fasta': os.path.join(
+                rootdir, 'human', 'vep', 'homo_sapiens', '99_GRCh37',
+                'Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz'
+            ),
+            'reference_filter_vcf': os.path.join(
+                rootdir, 'human', 'vep', 'ExAC_nonTCGA.r0.3.1.sites.vep.vcf.gz'
+            )
+        }
         classifier_training_data = os.path.join(rootdir, 'human/classifier_training_data.h5')
         fastqscreen_training_data = os.path.join(rootdir, 'human/fastqscreen_training_data.csv')
         gc_wig_file = {
@@ -77,6 +88,11 @@ def get_reference_data(reference, rootdir):
         }
 
     else:
+        vep = {
+            'reference_dir': None,
+            'reference_fasta': None,
+            'reference_filter_vcf': None
+        }
         classifier_training_data = os.path.join(rootdir, 'mouse/classifier_training_data.h5')
         fastqscreen_training_data = os.path.join(rootdir, 'human/fastqscreen_training_data.csv')
         gc_wig_file = {
