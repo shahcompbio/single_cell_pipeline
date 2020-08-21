@@ -320,9 +320,13 @@ def load_allele_data(haplotype_allele_data):
 
 
 def plotbaf(allele_data, baf_plot):
-    merged_allele_data = (
-        allele_data.groupby(['chromosome', 'hap_label', 'end', 'start'])[['allele_1', 'allele_2', 'total_counts']]
-        .aggregate({'allele_1': sum, 'allele_2': sum, 'total_counts': sum}).reset_index())
+
+    merged_allele_data = allele_data.groupby(['chromosome', 'hap_label', 'end', 'start'])
+    merged_allele_data = merged_allele_data[['allele_1', 'allele_2', 'total_counts']]
+    merged_allele_data = merged_allele_data.aggregate({'allele_1': sum, 
+        'allele_2': sum, 
+        'total_counts': sum}).reset_index()
+    )
 
     merged_allele_data['baf'] = np.minimum(merged_allele_data['allele_1'], 
         merged_allele_data['allele_2']) / merged_allele_data['total_counts'].astype(float)
@@ -343,7 +347,9 @@ def load_qc_data(sample_id, annotation_metrics, hmmcopy_reads, hmmcopy_segs, hmm
     alignment_metrics, gc_metrics
 ):
 
-    results_tables_new = scgenome.db.qc_from_files.get_qc_data_from_filenames( [annotation_metrics], [hmmcopy_reads], 
+    results_tables_new = scgenome.db.qc_from_files.get_qc_data_from_filenames( 
+        [annotation_metrics], 
+        [hmmcopy_reads], 
         [hmmcopy_segs], 
         [hmmcopy_metrics], [alignment_metrics], [gc_metrics], 
         sample_ids=[sample_id], additional_hmmcopy_reads_cols=None
@@ -387,19 +393,21 @@ def plot_cn(cn_data_filt, cn_plot):
 
 def qc_plots(sample_id,  mappability_file, strelka_file, 
     museq_file, cosmic_status_file, snpeff_file, dbsnp_status_file, trinuc_file, counts_file,
-    destruct_breakpoint_annotation, destruct_breakpoint_count, lumpy_breakpoint_annotation, lumpy_breakpoint_evidence,
-    haplotype_allele_data, annotation_metrics,
+    destruct_breakpoint_annotation, destruct_breakpoint_count, lumpy_breakpoint_annotation, 
+    lumpy_breakpoint_evidence, haplotype_allele_data, annotation_metrics,
     hmmcopy_reads, hmmcopy_segs, hmmcopy_metrics, alignment_metrics, gc_metrics,
-    library_id, prefix, mutations_per_cell, summary, 
-    snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count, 
-    snv_cell_counts, snv_alt_counts, rearranegementtype_distribution_destruct_unfiltered, chromosome_types_destruct_unfiltered,
+    library_id, prefix, mutations_per_cell, summary, snvs_high_impact, snvs_all, trinuc, 
+    snv_adjacent_distance, snv_genome_count, snv_cell_counts, snv_alt_counts, 
+    rearranegementtype_distribution_destruct_unfiltered, chromosome_types_destruct_unfiltered,
     rearranegementtype_distribution_destruct_filtered, chromosome_types_destruct_filtered,
     rearranegementtype_distribution_lumpy_unfiltered, chromosome_types_lumpy_unfiltered,
     baf_plot, cn_plot, datatype_summary
 ):
 
-    snv_data, snv_count_data = load_snv_data(sample_id, library_id, prefix, mappability_file, strelka_file, 
-        museq_file, cosmic_status_file, snpeff_file, dbsnp_status_file, trinuc_file, counts_file
+    snv_data, snv_count_data = load_snv_data(sample_id, library_id, 
+        prefix, mappability_file, strelka_file, 
+        museq_file, cosmic_status_file, snpeff_file, 
+        dbsnp_status_file, trinuc_file, counts_file
     )
 
     plot_mutations_per_cell(snv_data, snv_count_data, mutations_per_cell, prefix)
@@ -447,25 +455,27 @@ def qc_plots(sample_id,  mappability_file, strelka_file,
     # # ########################################
 
 
-    destruct_breakpoint_data_unfiltered = load_breakpoint_data(sample_id, library_id, destruct_breakpoint_annotation, 
-        destruct_breakpoint_count)
+    destruct_breakpoint_data_unfiltered = load_breakpoint_data(sample_id, library_id, 
+        destruct_breakpoint_annotation, destruct_breakpoint_count)
 
-    plot_breakpoint_distribution(sample_id, destruct_breakpoint_data_unfiltered, rearranegementtype_distribution_destruct_unfiltered, 
+    plot_breakpoint_distribution(sample_id, destruct_breakpoint_data_unfiltered, 
+        rearranegementtype_distribution_destruct_unfiltered, 
         chromosome_types_destruct_unfiltered)
 
-    destruct_breakpoint_data_filtered = load_breakpoint_data(sample_id, library_id, destruct_breakpoint_annotation, 
-        destruct_breakpoint_count, filter=True)
+    destruct_breakpoint_data_filtered = load_breakpoint_data(sample_id, library_id, 
+        destruct_breakpoint_annotation, destruct_breakpoint_count, filter=True)
 
-    plot_breakpoint_distribution(sample_id, destruct_breakpoint_data_filtered, rearranegementtype_distribution_destruct_filtered, 
+    plot_breakpoint_distribution(sample_id, destruct_breakpoint_data_filtered, 
+        rearranegementtype_distribution_destruct_filtered, 
         chromosome_types_destruct_filtered)
 
-    lumpy_breakpoint_data_unfiltered = load_breakpoint_data(sample_id, library_id, lumpy_breakpoint_annotation, 
-        lumpy_breakpoint_evidence, lumpy=True)
+    lumpy_breakpoint_data_unfiltered = load_breakpoint_data(sample_id, library_id, 
+        lumpy_breakpoint_annotation, lumpy_breakpoint_evidence, lumpy=True)
         
-    plot_breakpoint_distribution(sample_id, lumpy_breakpoint_data_unfiltered, rearranegementtype_distribution_lumpy_unfiltered, 
+    plot_breakpoint_distribution(sample_id, lumpy_breakpoint_data_unfiltered, 
+        rearranegementtype_distribution_lumpy_unfiltered, 
         chromosome_types_lumpy_unfiltered, is_lumpy=True)
 
-    # ########################################
     # # Analyse SNP data
     # # ########################################
 
