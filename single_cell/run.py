@@ -22,7 +22,7 @@ from single_cell.qc import qc_pipeline
 
 def main():
     args = parse_args()
-
+    
     if args["which"] == "generate_config":
         generate_config(args)
         return

@@ -21,7 +21,7 @@ import wgs_analysis.annotation.position
 from scgenome.loaders.qc import load_qc_data
 from scgenome.snvdata import run_bulk_snv_analysis
 import scgenome
-import scgenome.db.qc
+import scgenome.db.qc_from_files
 import scgenome.cnplot
 import scgenome.cnfilter
 import scgenome.cnclones
@@ -181,13 +181,15 @@ def plot_snv_alt_counts(snv_count_data, snv_alt_counts):
     fig.savefig(snv_alt_counts, bbox_inches='tight', format="png")
 
 
-def load_breakpoint_data(sample_id, library_id, breakpoint_annotation, breakpoint_count):
+
+def load_breakpoint_data(sample_id, library_id, breakpoint_annotation, breakpoint_count, 
+    lumpy=False, filter=False):
 
     breakpoint_results = scgenome.loaders.breakpoint.load_breakpoint_data_from_files(
         [breakpoint_annotation],
-        [breakpoint_count]
+        [breakpoint_count],
+        lumpy=lumpy
     )
-
 
     breakpoint_data = breakpoint_results['breakpoint_data']
     breakpoint_data["library_id"] = library_id
@@ -199,18 +201,22 @@ def load_breakpoint_data(sample_id, library_id, breakpoint_annotation, breakpoin
     breakpoint_data, breakpoint_count_data = scgenome.breakpointdata.annotate_breakpoint_data(
         breakpoint_data,
         breakpoint_count_data,
+
+        is_lumpy=lumpy
     )
 
-    breakpoint_data, breakpoint_count_data = scgenome.breakpointdata.filter_breakpoint_data(
-        breakpoint_data,
-        breakpoint_count_data,
-    )
-
+    if filter:
+        breakpoint_data, breakpoint_count_data = scgenome.breakpointdata.filter_breakpoint_data(
+            breakpoint_data,
+            breakpoint_count_data,
+        )
+ 
     return breakpoint_data
 
 
+
 def plot_breakpoint_distribution(sample_id, breakpoint_data, 
-    rearranegementtype_distribution, chromosome_types
+    rearranegementtype_distribution, chromosome_types, is_lumpy=False
 ):
     features = [
         ('log_num_reads', 'log discordant read counts'),
@@ -220,23 +226,32 @@ def plot_breakpoint_distribution(sample_id, breakpoint_data,
         ('log_num_cells', 'log number of cells'),
     ]
 
+
+    type_col="rearrangement_type"
+    if is_lumpy:
+        breakpoint_data = breakpoint_data.rename(columns={'breakpoint_id':"prediction_id",
+            'chrom1': "chromosome_1", 'strand1': "strand_1", 'start1':"position_1",
+            'chrom2': "chromosome_2", 'strand2': "strand_2", 
+            'start2':"position_2", "type":"rearrangement_type"})
+
     if len(breakpoint_data.sample_id) == 0:
         fig = plt.figure(figsize=(8, 12))
         fig.savefig(rearranegementtype_distribution, bbox_inches='tight', format="png")
         fig.savefig(chromosome_types, bbox_inches='tight', format="png")
     elif (len(breakpoint_data.sample_id) < 20) & (len(breakpoint_data.sample_id) > 0):
         order = breakpoint_data['library_id'].unique()
-        hue_order = breakpoint_data['rearrangement_type'].unique()
+
+        hue_order = breakpoint_data[type_col].unique()
 
         fig = plt.figure(figsize=(8, 12))
         ax = fig.add_subplot(len(features) + 1, 1, 1)
         plot_data = (
             breakpoint_data
-            .groupby(['rearrangement_type'])
+            .groupby([type_col])
             .size().rename('count').reset_index())
         seaborn.barplot(
             ax=ax, data=plot_data,
-            x='rearrangement_type', y='count',
+            x=type_col, y='count',
             hue_order=hue_order)
         ax.set_title(f'Counts by rearrangement type')
         #ax.set_xticklabels([])
@@ -250,17 +265,17 @@ def plot_breakpoint_distribution(sample_id, breakpoint_data,
         fig.savefig(chromosome_types, bbox_inches='tight', format="png")
     else:
         order = breakpoint_data['library_id'].unique()
-        hue_order = breakpoint_data['rearrangement_type'].unique()
+        hue_order = breakpoint_data[type_col].unique()
 
         fig = plt.figure(figsize=(8, 12))
         ax = fig.add_subplot(len(features) + 1, 1, 1)
         plot_data = (
             breakpoint_data
-            .groupby(['rearrangement_type'])
+            .groupby([type_col])
             .size().rename('count').reset_index())
         seaborn.barplot(
             ax=ax, data=plot_data,
-            x='rearrangement_type', y='count',
+            x=type_col, y='count',
             hue_order=hue_order)
         ax.set_title(f'Counts by rearrangement type')
         #ax.set_xticklabels([])
@@ -272,13 +287,15 @@ def plot_breakpoint_distribution(sample_id, breakpoint_data,
 
         # Plot rearrangement type distribution across the genome per library
         fig = plt.figure(figsize=(10, 3))
+        
         breakends = wgs_analysis.plots.rearrangement.create_breakends(
-            breakpoint_data, data_cols=['rearrangement_type'])
+            breakpoint_data, data_cols=[type_col])
         ax = fig.add_subplot(1, 1, 1)
         wgs_analysis.plots.rearrangement.chromosome_type_plot(
-            ax, breakends)
+            ax, breakends, rearrangement_types=hue_order)
         ax.set_title(f'Chromosome types')
         plt.tight_layout()
+
         fig.savefig(chromosome_types, bbox_inches='tight', format="png")
 
 
@@ -303,9 +320,13 @@ def load_allele_data(haplotype_allele_data):
 
 
 def plotbaf(allele_data, baf_plot):
-    merged_allele_data = (
-        allele_data.groupby(['chromosome', 'hap_label', 'end', 'start'])[['allele_1', 'allele_2', 'total_counts']]
-        .aggregate({'allele_1': sum, 'allele_2': sum, 'total_counts': sum}).reset_index())
+
+    merged_allele_data = allele_data.groupby(['chromosome', 'hap_label', 'end', 'start'])
+    merged_allele_data = merged_allele_data[['allele_1', 'allele_2', 'total_counts']]
+    merged_allele_data = merged_allele_data.aggregate({'allele_1': sum, 
+        'allele_2': sum, 
+        'total_counts': sum}).reset_index()
+    )
 
     merged_allele_data['baf'] = np.minimum(merged_allele_data['allele_1'], 
         merged_allele_data['allele_2']) / merged_allele_data['total_counts'].astype(float)
@@ -326,7 +347,9 @@ def load_qc_data(sample_id, annotation_metrics, hmmcopy_reads, hmmcopy_segs, hmm
     alignment_metrics, gc_metrics
 ):
 
-    results_tables_new = scgenome.db.qc.get_qc_data_from_filenames( [annotation_metrics], [hmmcopy_reads], 
+    results_tables_new = scgenome.db.qc_from_files.get_qc_data_from_filenames( 
+        [annotation_metrics], 
+        [hmmcopy_reads], 
         [hmmcopy_segs], 
         [hmmcopy_metrics], [alignment_metrics], [gc_metrics], 
         sample_ids=[sample_id], additional_hmmcopy_reads_cols=None
@@ -370,16 +393,21 @@ def plot_cn(cn_data_filt, cn_plot):
 
 def qc_plots(sample_id,  mappability_file, strelka_file, 
     museq_file, cosmic_status_file, snpeff_file, dbsnp_status_file, trinuc_file, counts_file,
-    breakpoint_annotation, breakpoint_count, haplotype_allele_data, annotation_metrics,
+    destruct_breakpoint_annotation, destruct_breakpoint_count, lumpy_breakpoint_annotation, 
+    lumpy_breakpoint_evidence, haplotype_allele_data, annotation_metrics,
     hmmcopy_reads, hmmcopy_segs, hmmcopy_metrics, alignment_metrics, gc_metrics,
-    library_id, prefix, mutations_per_cell, summary, 
-    snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count, 
-    snv_cell_counts, snv_alt_counts, rearranegementtype_distribution, chromosome_types,
+    library_id, prefix, mutations_per_cell, summary, snvs_high_impact, snvs_all, trinuc, 
+    snv_adjacent_distance, snv_genome_count, snv_cell_counts, snv_alt_counts, 
+    rearranegementtype_distribution_destruct_unfiltered, chromosome_types_destruct_unfiltered,
+    rearranegementtype_distribution_destruct_filtered, chromosome_types_destruct_filtered,
+    rearranegementtype_distribution_lumpy_unfiltered, chromosome_types_lumpy_unfiltered,
     baf_plot, cn_plot, datatype_summary
 ):
 
-    snv_data, snv_count_data = load_snv_data(sample_id, library_id, prefix, mappability_file, strelka_file, 
-        museq_file, cosmic_status_file, snpeff_file, dbsnp_status_file, trinuc_file, counts_file
+    snv_data, snv_count_data = load_snv_data(sample_id, library_id, 
+        prefix, mappability_file, strelka_file, 
+        museq_file, cosmic_status_file, snpeff_file, 
+        dbsnp_status_file, trinuc_file, counts_file
     )
 
     plot_mutations_per_cell(snv_data, snv_count_data, mutations_per_cell, prefix)
@@ -421,19 +449,33 @@ def qc_plots(sample_id,  mappability_file, strelka_file,
 
     plot_snv_alt_counts(snv_count_data, snv_alt_counts)
 
-    # ########################################
-    # # Analyse breakpoint data
-    # ########################################
+
+    # # ########################################
+    # # # Analyse breakpoint data
+    # # ########################################
 
 
-    breakpoint_data = load_breakpoint_data(sample_id, library_id, breakpoint_annotation, 
-        breakpoint_count)
+    destruct_breakpoint_data_unfiltered = load_breakpoint_data(sample_id, library_id, 
+        destruct_breakpoint_annotation, destruct_breakpoint_count)
 
-    plot_breakpoint_distribution(sample_id, breakpoint_data, rearranegementtype_distribution, 
-        chromosome_types)
+    plot_breakpoint_distribution(sample_id, destruct_breakpoint_data_unfiltered, 
+        rearranegementtype_distribution_destruct_unfiltered, 
+        chromosome_types_destruct_unfiltered)
 
+    destruct_breakpoint_data_filtered = load_breakpoint_data(sample_id, library_id, 
+        destruct_breakpoint_annotation, destruct_breakpoint_count, filter=True)
 
-    # ########################################
+    plot_breakpoint_distribution(sample_id, destruct_breakpoint_data_filtered, 
+        rearranegementtype_distribution_destruct_filtered, 
+        chromosome_types_destruct_filtered)
+
+    lumpy_breakpoint_data_unfiltered = load_breakpoint_data(sample_id, library_id, 
+        lumpy_breakpoint_annotation, lumpy_breakpoint_evidence, lumpy=True)
+        
+    plot_breakpoint_distribution(sample_id, lumpy_breakpoint_data_unfiltered, 
+        rearranegementtype_distribution_lumpy_unfiltered, 
+        chromosome_types_lumpy_unfiltered, is_lumpy=True)
+
     # # Analyse SNP data
     # # ########################################
 
