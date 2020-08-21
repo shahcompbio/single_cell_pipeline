@@ -469,7 +469,7 @@ def get_qc_params(reference_dir, reference, version):
 
     params = {
         'ref_genome': referencedata['ref_genome'],
-        'vep_reference_dir': referencedata['vep'],
+        'vep': referencedata['vep'],
         'memory': {'low': 4, 'med': 6, 'high': 16},
         'docker': {
             'single_cell_pipeline': docker_containers['single_cell_pipeline'],
