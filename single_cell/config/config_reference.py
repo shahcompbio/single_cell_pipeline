@@ -32,7 +32,8 @@ def containers(version=None):
         'corrupt_tree': 'corrupt_tree:v0.0.1',
         'fastq_screen': 'fastq_screen:v0.0.2',
         'svtyper': 'svtyper:v0.0.1',
-        'vcf2maf': 'vcf2maf:v0.0.1'
+        'vcf2maf': 'vcf2maf:v0.0.1',
+        'pseudo_bulk_qc_html_report': 'pseudo_bulk_qc_html_report:v0.0.1'
     }
 
     return {'docker': docker_images}
