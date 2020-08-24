@@ -7,8 +7,11 @@ import pypeliner.managed as mgd
 def create_patient_workflow(
         pseudo_bulk_group, mafs, sample_all_snv_csvs,
         mutationreport, merged_maf, high_impact_maf, merged_snvs,
-        merged_high_impact_snvs
+        merged_high_impact_snvs, config
 ):
+
+    scp_qc_docker = config["docker"]
+
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1, }
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
@@ -28,6 +31,7 @@ def create_patient_workflow(
             mgd.InputFile(merged_maf),
             mgd.OutputFile(high_impact_maf),
         ),
+        kwargs={'docker_image': scp_qc_docker['pseudo_bulk_qc_html_report']}
     )
     workflow.transform(
         name='merge_snvs',
@@ -44,7 +48,8 @@ def create_patient_workflow(
         args=(
             mgd.InputFile(merged_snvs),
             mgd.OutputFile(merged_high_impact_snvs),
-        )
+        ),
+        kwargs={'docker_image': scp_qc_docker['pseudo_bulk_qc_html_report']}
     )
 
     workflow.transform(
@@ -57,6 +62,7 @@ def create_patient_workflow(
             mgd.InputFile(merged_high_impact_snvs),
             mgd.OutputFile(mutationreport),
         ),
+        kwargs={'docker_image': scp_qc_docker['pseudo_bulk_qc_html_report']}
     )
 
     return workflow
@@ -173,6 +179,7 @@ def create_sample_level_plots(
             mgd.OutputFile(reporthtml),
             cell_id + "_" + library_id,
         ),
+        kwargs={'docker_image': scp_qc_docker['pseudo_bulk_qc_html_report']}
     )
 
     return workflow

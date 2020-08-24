@@ -144,6 +144,7 @@ def pseudo_bulk_qc_workflow(args):
             mgd.OutputFile('grouplevel_high_impact_merged_snvs', 'patient',
                            fnames=grouplevel_high_impact_merged_snvs
                            ),
+            config,
         ),
     )
 

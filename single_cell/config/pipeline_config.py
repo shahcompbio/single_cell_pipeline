@@ -474,6 +474,7 @@ def get_qc_params(reference_dir, reference, version):
         'docker': {
             'single_cell_pipeline': docker_containers['single_cell_pipeline'],
             'vcf2maf': docker_containers['vcf2maf'],
+            'pseudo_bulk_qc_html_report': docker_containers['pseudo_bulk_qc_html_report'],
         },
     }
     return {'qc': params}

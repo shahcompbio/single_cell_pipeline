@@ -36,17 +36,17 @@ def merge_snvs(snv_files, merged_snv, id_colname=False):
     output.to_csv(merged_snv, sep="\t", index=False, header=True)
 
 
-def filter_snvs_for_high_impact(snv, filtsnv):
+def filter_snvs_for_high_impact(snv, filtsnv, docker_image=None):
     cmd = ["mergesnvs.R", snv, filtsnv]
-    pypeliner.commandline.execute(*cmd)
+    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
 
 
-def filter_maf_for_high_impact(maf, filtmaf):
+def filter_maf_for_high_impact(maf, filtmaf, docker_image=None):
     cmd = ["mergemafs.R", maf, filtmaf]
-    pypeliner.commandline.execute(*cmd)
+    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
 
 
-def vcf2maf(vcf_file, output_maf, tempdir, vep_ref, docker_image):
+def vcf2maf(vcf_file, output_maf, tempdir, vep_ref, docker_image=None):
     if vcf_file.endswith('.gz'):
         helpers.makedirs(tempdir)
         vcf_unzipped = os.path.join(tempdir, 'unzipped_vcf.vcf')
@@ -71,8 +71,8 @@ def sample_level_report(
         snv_cell_counts, snv_alt_counts, rearranegementtype_distribution_destruct_unfiltered,
         chromosome_types_destruct_unfiltered, rearranegementtype_distribution_destruct_filtered,
         chromosome_types_destruct_filtered, rearranegementtype_distribution_lumpy_unfiltered,
-        chromosome_types_lumpy_unfiltered,
-        baf_plot, cn_plot, datatype_summary, maf, html_file, sample_id
+        chromosome_types_lumpy_unfiltered, baf_plot, cn_plot, datatype_summary, maf, html_file,
+        sample_id, docker_image=None
 ):
     cmd = [
         'run_report.sh', html_file, sample_id, mutations_per_cell, summary,
@@ -82,14 +82,15 @@ def sample_level_report(
         chromosome_types_destruct_filtered, rearranegementtype_distribution_lumpy_unfiltered,
         chromosome_types_lumpy_unfiltered, baf_plot, cn_plot, datatype_summary, maf
     ]
-    pypeliner.commandline.execute(*cmd)
+    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
 
 
 def create_mutation_report(
-        pseudo_bulk_group, merged_maf, high_impact_maf, high_impact_snvs, report_html
+        pseudo_bulk_group, merged_maf, high_impact_maf, high_impact_snvs, report_html,
+        docker_image=None
 ):
     cmd = [
         "run_mutationreport.sh", report_html, pseudo_bulk_group,
         high_impact_snvs, merged_maf, high_impact_maf
     ]
-    pypeliner.commandline.execute(*cmd)
+    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
