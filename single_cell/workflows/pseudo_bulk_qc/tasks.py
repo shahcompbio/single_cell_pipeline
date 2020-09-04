@@ -55,11 +55,10 @@ def vcf2maf(vcf_file, output_maf, tempdir, vep_ref, docker_image=None):
         vcf_unzipped = vcf_file
 
     cmd = [
-        'vcf2maf.pl', '--input-vcf', vcf_unzipped, '--output-maf', output_maf,
-        '--vep-path', '/usr/local/bin',
-        '--ref-fasta', vep_ref['reference_fasta'],
-        '--filter-vcf', vep_ref['reference_filter_vcf'],
-        '--vep-data', vep_ref['reference_dir'],
+        'vcf2maf',  vcf_unzipped,  output_maf,
+        vep_ref['reference_fasta'],
+        vep_ref['reference_filter_vcf'],
+        vep_ref['reference_dir'],
     ]
 
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
