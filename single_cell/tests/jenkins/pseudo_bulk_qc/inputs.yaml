@@ -15,8 +15,8 @@ SA123:
       lumpy_breakpoint_evidence: PSEUDO_BULK_QC/ref_test_data/testdata/lumpy_breakpoints_evidence.csv.gz
       haplotype_allele_data: PSEUDO_BULK_QC/ref_test_data/testdata/allele_counts.tsv
       annotation_metrics: PSEUDO_BULK_QC/ref_test_data/testdata/annotation_metrics.csv.gz
-      hmmcopy_reads: PSEUDO_BULK_QC/ref_test_data/testdata/reads.csv.gz
-      hmmcopy_segs: PSEUDO_BULK_QC/ref_test_data/testdata/segments.csv.gz
+      hmmcopy_reads: PSEUDO_BULK_QC/ref_test_data/testdata/hmmcopy_reads.csv.gz
+      hmmcopy_segs: PSEUDO_BULK_QC/ref_test_data/testdata/hmmcopy_segments.csv.gz
       hmmcopy_metrics: PSEUDO_BULK_QC/ref_test_data/testdata/hmmcopy_metrics.csv.gz
       alignment_metrics: PSEUDO_BULK_QC/ref_test_data/testdata/alignment_metrics.csv.gz
       gc_metrics: PSEUDO_BULK_QC/ref_test_data/testdata/gc_metrics.csv.gz

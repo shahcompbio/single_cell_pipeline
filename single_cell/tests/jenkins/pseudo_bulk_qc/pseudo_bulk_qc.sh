@@ -14,7 +14,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   -v $DOCKER:$DOCKER --rm \
   $1/single_cell_pipeline:$TAG \
   single_cell pseudo_bulk_qc --input_yaml single_cell/tests/jenkins/pseudo_bulk_qc/inputs.yaml \
-  --library_id A97318A --maxjobs 4 --nocleanup --sentinel_only  \
+  --maxjobs 4 --nocleanup --sentinel_only  \
   --context_config single_cell/tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
   --tmpdir PSEUDO_BULK_QC/temp \
@@ -22,6 +22,5 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   --submit local \
   --out_dir PSEUDO_BULK_QC/output \
   --config_override '{"annotation": {"chromosomes": ["6", "8", "17"]}, "version": '\"$TAG\"'}' \
-  --no_corrupt_tree
 
 docker run -w $PWD -v $PWD:$PWD --rm $1/single_cell_pipeline:$TAG rm -rf PSEUDO_BULK_QC
