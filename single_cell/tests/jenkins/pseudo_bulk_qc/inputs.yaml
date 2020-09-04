@@ -1,5 +1,5 @@
 SA123:
-  SA123-A123:
+  SA123X1:
     A123:
       mappability: PSEUDO_BULK_QC/ref_test_data/testdata/snv_mappability.csv.gz
       strelka: PSEUDO_BULK_QC/ref_test_data/testdata/snv_strelka.csv.gz
