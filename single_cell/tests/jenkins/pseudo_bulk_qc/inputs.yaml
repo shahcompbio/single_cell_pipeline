@@ -1,0 +1,23 @@
+SA123:
+  SA123-A123:
+    A123:
+      mappability: PSEUDO_BULK_QC/ref_test_data/testdata/snv_mappability.csv.gz
+      strelka: PSEUDO_BULK_QC/ref_test_data/testdata/snv_strelka.csv.gz
+      museq: PSEUDO_BULK_QC/ref_test_data/testdata/snv_museq.csv.gz
+      cosmic_status: PSEUDO_BULK_QC/ref_test_data/testdata/snv_cosmic_status.csv.gz
+      snpeff: PSEUDO_BULK_QC/ref_test_data/testdata/snv_snpeff.csv.gz
+      dbsnp_status: PSEUDO_BULK_QC/ref_test_data/testdata/snv_dbsnp_status.csv.gz
+      trinuc: PSEUDO_BULK_QC/ref_test_data/testdata/snv_trinuc.csv.gz
+      counts: PSEUDO_BULK_QC/ref_test_data/testdata/snv_genotyping_counts.csv.gz
+      destruct_breakpoint_annotation: PSEUDO_BULK_QC/ref_test_data/testdata/destruct_breakpoints.csv.gz
+      destruct_breakpoint_counts: PSEUDO_BULK_QC/ref_test_data/testdata/destruct_cell_counts.csv.gz
+      lumpy_breakpoint_annotation: PSEUDO_BULK_QC/ref_test_data/testdata/lumpy_breakpoints.csv.gz
+      lumpy_breakpoint_evidence: PSEUDO_BULK_QC/ref_test_data/testdata/lumpy_breakpoints_evidence.csv.gz
+      haplotype_allele_data: PSEUDO_BULK_QC/ref_test_data/testdata/allele_counts.tsv
+      annotation_metrics: PSEUDO_BULK_QC/ref_test_data/testdata/annotation_metrics.csv.gz
+      hmmcopy_reads: PSEUDO_BULK_QC/ref_test_data/testdata/hmmcopy_reads.csv.gz
+      hmmcopy_segs: PSEUDO_BULK_QC/ref_test_data/testdata/hmmcopy_segments.csv.gz
+      hmmcopy_metrics: PSEUDO_BULK_QC/ref_test_data/testdata/hmmcopy_metrics.csv.gz
+      alignment_metrics: PSEUDO_BULK_QC/ref_test_data/testdata/alignment_metrics.csv.gz
+      gc_metrics: PSEUDO_BULK_QC/ref_test_data/testdata/gc_metrics.csv.gz
+      indel_file: PSEUDO_BULK_QC/ref_test_data/testdata/strelka_indel.vcf.gz
