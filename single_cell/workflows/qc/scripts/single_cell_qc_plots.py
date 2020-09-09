@@ -496,7 +496,7 @@ def qc_plots(
     plot_breakpoint_distribution(destruct_breakpoint_data_filtered, os.path.join(tempspace, "destruct_filt"))
 
     
-     = load_breakpoint_data(
+    lumpy_breakpoint_data_unfiltered = load_breakpoint_data(
         sample_id, library_id,
         lumpy_breakpoint_annotation, lumpy_breakpoint_evidence,
         lumpy=True)
