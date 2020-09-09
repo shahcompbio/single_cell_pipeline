@@ -121,14 +121,11 @@ def qc_workflow(args):
                 fnames=alignment_metrics_files),
             mgd.InputFile('gc_metrics','patient',  'sample_id', 'library_id', fnames=gc_metrics_files),       
             mgd.InputFile('indel_files','patient', 'sample_id', 'library_id', fnames=indel_files),  
-            
             mgd.OutputFile('sample_level_report_htmls', 'patient', 'sample_id', 'library_id', 
                 fnames=sample_level_report_htmls),
             mgd.OutputFile('mafs', 'patient', 'sample_id', 'library_id', fnames=sample_level_maf),
             mgd.OutputFile('snvs_all', 'patient', 'sample_id', 'library_id',fnames=snvs_all),
-
             out_dir,
-            # outpaths,
             config  
 
 

@@ -24,13 +24,17 @@ import scgenome.loaders.breakpoint
 import scgenome.breakpointdata
 import scgenome.utils
 from scgenome.snvdata import filter_snv_data
-
+import matplotlib.backends.backend_pdf
+import os.path
+from single_cell.utils import helpers
 
 def load_snv_data(
         sample_id, library_id, prefix, mappability_file, strelka_file,
         museq_file, cosmic_status_file, snpeff_file, dbsnp_status_file,
         trinuc_file, counts_file
 ):
+
+        
     snv_results = scgenome.loaders.snv.load_snv_data_from_files(
         [mappability_file],
         [strelka_file],
@@ -62,6 +66,7 @@ def load_snv_data(
 
     snv_count_data = snv_results["snv_count_data"]
 
+    print(snv_data, "\n", snv_count_data)
     filtered_data = filter_snv_data(
         snv_data,
         snv_count_data,
@@ -98,29 +103,34 @@ def write_summary_csv(snv_data, snv_count_data, summary):
 
 
 def write_high_impact_snvs(snv_data, snv_count_data, snvs_high_impact, snvs_all):
-    # Get high impact mutations and write to file
-    filter_query = 'effect_impact == "HIGH"| effect == "NON_SYNONYMOUS_CODING" | effect == "STOP_GAINED"'
-    relevant_cols = [
-        'chrom', 'coord', 'ref', 'alt',
-        'gene_name', 'effect', 'effect_impact',
-        'is_cosmic', 'max_museq_score', 'max_strelka_score',
-        'amino_acid_change', 'num_cells',
-    ]
 
-    high_impact = snv_data.query(filter_query)
-    high_impact = high_impact[relevant_cols].drop_duplicates()
+    # snv_data.to_csv(snvs_all)
+    high_impact = (snv_data.query('effect_impact == "HIGH" \
+        | effect == "NON_SYNONYMOUS_CODING" \
+        | effect == "STOP_GAINED"')
+        [[
+            'chrom', 'coord', 'ref', 'alt',
+            'gene_name', 'effect', 'effect_impact',
+            'is_cosmic', 'max_museq_score', 'max_strelka_score',
+            'amino_acid_change', 'num_cells',
+        ]]
+        .drop_duplicates())
+    high_impact = high_impact.merge(
+        snv_count_data.groupby(['chrom', 'coord', 'ref', 'alt'], observed=True)['alt_counts'].sum().reset_index())
+    high_impact = high_impact.merge(
+        snv_count_data.groupby(['chrom', 'coord', 'ref', 'alt'], observed=True)['ref_counts'].sum().reset_index())
+    high_impact = high_impact.merge(
+        snv_count_data.groupby(['chrom', 'coord', 'ref', 'alt'], observed=True)['total_counts'].sum().reset_index())
 
-    snv_count_data = snv_count_data.groupby(['chrom', 'coord', 'ref', 'alt'], observed=True)
-
-    high_impact = high_impact.merge(snv_count_data['alt_counts'].sum().reset_index())
-    high_impact = high_impact.merge(snv_count_data)['ref_counts'].sum().reset_index()
-    high_impact = high_impact.merge(snv_count_data)['total_counts'].sum().reset_index()
     high_impact = high_impact.sort_values(by=['is_cosmic', "gene_name", 'num_cells'])
     high_impact.to_csv(snvs_high_impact)
 
-    snv_data = snv_data.merge(snv_count_data['alt_counts'].sum().reset_index())
-    snv_data = snv_data.merge(snv_count_data['ref_counts'].sum().reset_index())
-    snv_data = snv_data.merge(snv_count_data['total_counts'].sum().reset_index())
+    snv_data = snv_data.merge(
+        snv_count_data.groupby(['chrom', 'coord', 'ref', 'alt'], observed=True)['alt_counts'].sum().reset_index())
+    snv_data = snv_data.merge(
+        snv_count_data.groupby(['chrom', 'coord', 'ref', 'alt'], observed=True)['ref_counts'].sum().reset_index())
+    snv_data = snv_data.merge(
+        snv_count_data.groupby(['chrom', 'coord', 'ref', 'alt'], observed=True)['total_counts'].sum().reset_index())
 
     snv_data.to_csv(snvs_all)
 
@@ -195,99 +205,127 @@ def load_breakpoint_data(
         breakpoint_data, breakpoint_count_data = scgenome.breakpointdata.filter_breakpoint_data(
             breakpoint_data, breakpoint_count_data,
         )
-
     return breakpoint_data
 
 
 def plot_breakpoint_distribution(
-        breakpoint_data, rearranegementtype_distribution, chromosome_types, is_lumpy=False
+        breakpoint_data, output_dir
 ):
-    features = [
-        ('log_num_reads', 'log discordant read counts'),
-        ('log_num_split', 'log split read counts'),
-        ('template_length_min', 'prediction sequence length'),
-        ('homology', 'sequence homology'),
-        ('log_num_cells', 'log number of cells'),
-    ]
-    type_col = "rearrangement_type"
 
-    if is_lumpy:
-        breakpoint_data = breakpoint_data.rename(
-            columns={
-                'breakpoint_id': "prediction_id",
-                'chrom1': "chromosome_1", 'strand1': "strand_1",
-                'start1': "position_1",
-                'chrom2': "chromosome_2", 'strand2': "strand_2",
-                'start2': "position_2", "type": "rearrangement_type"
-            }
-        )
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
 
-    hue_order = breakpoint_data[type_col].unique()
 
-    if len(breakpoint_data.sample_id) == 0:
-        fig = plt.figure(figsize=(8, 12))
-        fig.savefig(rearranegementtype_distribution, bbox_inches='tight', format="png")
-        fig.savefig(chromosome_types, bbox_inches='tight', format="png")
-    elif (len(breakpoint_data.sample_id) < 20) and (len(breakpoint_data.sample_id) > 0):
+    type_distribution = plot_type_distribution(breakpoint_data, "type")
+    rearrangement_type_distribution = plot_type_distribution(breakpoint_data, "rearrangement_type")
 
-        fig = plt.figure(figsize=(8, 12))
-        ax = fig.add_subplot(len(features) + 1, 1, 1)
-        plot_data = (
-            breakpoint_data.groupby([type_col]).size().rename('count').reset_index()
-        )
-        seaborn.barplot(
-            ax=ax, data=plot_data, x=type_col, y='count', hue_order=hue_order
-        )
+    type_genome_distribution = plot_genome_type_distribution(breakpoint_data, "type")
+    rearrangement_type_genome_didstribution = plot_genome_type_distribution(breakpoint_data, "rearrangement_type")
 
-        ax.set_title(f'Counts by rearrangement type')
-        ax.set_xlabel('', visible=False)
-        ax.set_ylabel('Counts', visible=False)
-        ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+    type_size_distribution = plot_type_size_distribution(breakpoint_data, "type")
+    rearrangement_type_size_distribution = plot_type_size_distribution(breakpoint_data, "rearrangement_type")
 
-        fig.savefig(rearranegementtype_distribution, bbox_inches='tight', format="png")
-        fig = plt.figure(figsize=(8, 12))
-        fig.savefig(chromosome_types, bbox_inches='tight', format="png")
-    else:
-        fig = plt.figure(figsize=(8, 12))
-        ax = fig.add_subplot(len(features) + 1, 1, 1)
-        plot_data = breakpoint_data.groupby([type_col]).size().rename('count').reset_index()
+    type_distribution.savefig(
+        os.path.join(output_dir, "type_distribution.png"), 
+        format="png"
+    )
+    rearrangement_type_distribution.savefig(
+        os.path.join(output_dir, "rearrangement_type_distribution.png"), 
+        format="png"
+    )
+    type_genome_distribution.savefig(
+        os.path.join(output_dir, "type_genome_distribution.png"), 
+        format="png"
+    )
+    rearrangement_type_genome_didstribution.savefig(
+        os.path.join(output_dir, "rearrangement_type_genome_distribution.png"), 
+        format="png"
+    )
+    type_size_distribution.savefig(
+        os.path.join(output_dir, "type_size_distribution.png"), 
+        format="png"
+    )
+    rearrangement_type_size_distribution.savefig(os.path.join(output_dir, 
+                                                            "rearrangement_type_size_distribution.png"), 
+        format="png"
+    )
 
-        seaborn.barplot(
-            ax=ax, data=plot_data, x=type_col, y='count', hue_order=hue_order
-        )
 
-        ax.set_title('Counts by rearrangement type')
-        ax.set_xlabel('', visible=False)
-        ax.set_ylabel('Counts', visible=False)
-        ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+def plot_genome_type_distribution(breakpoint_data, type_col):
+    genome_distribution, axis = plt.subplots(1,1, figsize=(30, 5))
+    breakends = wgs_analysis.plots.rearrangement.create_breakends(
+        breakpoint_data, data_cols=[type_col]
+    )
+    breakends.rename(columns={type_col: "rearrangement_type"}, inplace=True)
+    wgs_analysis.plots.rearrangement.chromosome_type_plot(
+        axis, breakends, rearrangement_types=breakpoint_data[type_col].unique()
+    )
+    axis.set_title(f'Chromosome types')
+    plt.tight_layout()
+    return genome_distribution
 
-        fig.savefig(rearranegementtype_distribution, bbox_inches='tight', format="png")
 
-        # Plot rearrangement type distribution across the genome per library
-        fig = plt.figure(figsize=(10, 3))
+def plot_type_distribution(breakpoint_data, type_col):
+    type_distribution, axis = plt.subplots(1,1, figsize=(30, 3))
+    seaborn.countplot(x=type_col, data=breakpoint_data,  ax=axis, palette = "Dark2")
+    axis.set_ylabel("count inter and intra chromosomal")
+    axis.set_title('Counts by rearrangement type')
+    axis.set_xlabel('', visible=False)
+    return type_distribution
 
-        breakends = wgs_analysis.plots.rearrangement.create_breakends(
-            breakpoint_data, data_cols=[type_col]
-        )
-        ax = fig.add_subplot(1, 1, 1)
-        wgs_analysis.plots.rearrangement.chromosome_type_plot(
-            ax, breakends, rearrangement_types=hue_order
-        )
-        ax.set_title(f'Chromosome types')
-        plt.tight_layout()
-        fig.savefig(chromosome_types, bbox_inches='tight', format="png")
+
+def plot_type_size_distribution(breakpoint_data, type_col):
+    ntypes = len(breakpoint_data[type_col].unique())
+
+    breakpoint_data["break_dist"] = abs(breakpoint_data.position_1 - breakpoint_data.position_2)
+    breakpoint_data["interchrom"] = breakpoint_data.chromosome_1 != breakpoint_data.chromosome_2
+    intrachrom_data = breakpoint_data[~breakpoint_data.interchrom]
+    interchrom_data = breakpoint_data[breakpoint_data.interchrom]
+
+    colors = seaborn.color_palette('Dark2', len(breakpoint_data[type_col].unique()))
+
+    typesizes = plt.figure(figsize=(20, 2))
+    gs = typesizes.add_gridspec(1, ntypes + 1, width_ratios=[1]*(ntypes) + [0.2])
+    axes=[]
+    
+    for i, gs in  enumerate(gs):
+        if i == 0:
+            axes.append(typesizes.add_subplot(gs))
+        if i > 0:
+            axes.append(typesizes.add_subplot(gs, sharey=axes[0]))
+
+    for ax, group, color in zip(axes[:ntypes], breakpoint_data[type_col].unique(), colors):
+        pltdata = intrachrom_data[intrachrom_data[type_col] == group]
+        ax.hist(pltdata.break_dist, color=color)
+        ax.set_title(group)
+
+    axes[ntypes].bar(1, len(interchrom_data.index), color="black")
+    axes[ntypes].set_title("interchromosomal")
+    axes[ntypes].set_xticklabels([])
+    axes[0].set_xlabel("size of breakpoint")
+    axes[0].set_ylabel("count")
+
+    return typesizes
 
 
 def load_allele_data(haplotype_allele_data):
+    
     allele_results = scgenome.loaders.allele.load_haplotype_allele_data_from_file([haplotype_allele_data])
 
     allele_data = allele_results['allele_counts']
+
     index_cols = [
         'chromosome', 'start', 'end', 'hap_label',
     ]
     allele_data = allele_data.set_index(index_cols + ['cell_id', 'allele_id'])['readcount'].unstack(fill_value=0)
-    allele_data.rename(columns={0: 'allele_1', 1: 'allele_2'}, inplace=True)
+    if '0' in allele_data.columns:
+        
+        allele_data.astype({"0": "str", "1":"str"}, inplace=True)
+
+    allele_data = allele_data.rename(columns={0: 'allele_1', 1: 'allele_2'})
+
     allele_data.reset_index(inplace=True)
+
     allele_data['total_counts'] = allele_data['allele_1'] + allele_data['allele_2']
     allele_data = allele_data.astype({"chromosome": "str", "cell_id": "str"})
 
@@ -378,18 +416,34 @@ def qc_plots(
         counts_file, destruct_breakpoint_annotation, destruct_breakpoint_count,
         lumpy_breakpoint_annotation, lumpy_breakpoint_evidence, haplotype_allele_data,
         annotation_metrics, hmmcopy_reads, hmmcopy_segs, hmmcopy_metrics, alignment_metrics,
-        gc_metrics, library_id, prefix, mutations_per_cell, summary, snvs_high_impact, snvs_all,
-        trinuc, snv_adjacent_distance, snv_genome_count, snv_cell_counts, snv_alt_counts,
-        rearranegementtype_distribution_destruct_unfiltered, chromosome_types_destruct_unfiltered,
-        rearranegementtype_distribution_destruct_filtered, chromosome_types_destruct_filtered,
-        rearranegementtype_distribution_lumpy_unfiltered, chromosome_types_lumpy_unfiltered,
-        baf_plot, cn_plot, datatype_summary
+        gc_metrics, library_id, prefix, snvs_all, tempspace, qc_plots_tar 
 ):
+    
+    if not os.path.isdir(tempspace):
+        helpers.makedirs(tempspace)
+
+    mutations_per_cell = os.path.join(tempspace, "mutations_per_cell.png")
+    summary = os.path.join(tempspace, "summary.csv")
+    snvs_high_impact = os.path.join(tempspace, "snvs_high_impact.csv")
+    trinuc = os.path.join(tempspace, "trinuc.csv")
+    snv_adjacent_distance = os.path.join(tempspace, "snv_adjacent_distance.png")
+    snv_genome_count = os.path.join(tempspace, "snv_genome_count.png")
+    snv_cell_counts = os.path.join(tempspace, "snv_cell_counts.png")
+
+    snv_alt_counts = os.path.join(tempspace, "snv_alt_counts.png")
+    baf_plot = os.path.join(tempspace, "baf_plot.png")
+    cn_plot = os.path.join(tempspace, "cn_plot.png")
+    datatype_summary = os.path.join(tempspace, "datatype_summary.csv")
+    snv_adjacent_distance = os.path.join(tempspace, "snv_adjacent_distance.png")
+    snv_genome_count = os.path.join(tempspace, "snv_genome_count.png")
+    snv_cell_counts = os.path.join(tempspace, "snv_cell_counts.png")
+
+
     snv_data, snv_count_data = load_snv_data(
         sample_id, library_id, prefix, mappability_file, strelka_file, museq_file,
         cosmic_status_file, snpeff_file, dbsnp_status_file, trinuc_file, counts_file
     )
-
+    print(snv_data, "\n", snv_count_data)
     plot_mutations_per_cell(snv_data, snv_count_data, mutations_per_cell, prefix)
 
     write_summary_csv(snv_data, snv_count_data, summary)
@@ -432,30 +486,30 @@ def qc_plots(
         destruct_breakpoint_annotation,
         destruct_breakpoint_count)
 
-    plot_breakpoint_distribution(
-        destruct_breakpoint_data_unfiltered,
-        rearranegementtype_distribution_destruct_unfiltered,
-        chromosome_types_destruct_unfiltered)
+    plot_breakpoint_distribution(destruct_breakpoint_data_unfiltered, os.path.join(tempspace, "destruct_unfilt"))
 
     destruct_breakpoint_data_filtered = load_breakpoint_data(
         sample_id, library_id,
         destruct_breakpoint_annotation, destruct_breakpoint_count,
         filter_data=True)
 
-    plot_breakpoint_distribution(
-        destruct_breakpoint_data_filtered,
-        rearranegementtype_distribution_destruct_filtered,
-        chromosome_types_destruct_filtered)
+    plot_breakpoint_distribution(destruct_breakpoint_data_filtered, os.path.join(tempspace, "destruct_filt"))
 
-    lumpy_breakpoint_data_unfiltered = load_breakpoint_data(
+    
+     = load_breakpoint_data(
         sample_id, library_id,
         lumpy_breakpoint_annotation, lumpy_breakpoint_evidence,
         lumpy=True)
-
-    plot_breakpoint_distribution(
-        lumpy_breakpoint_data_unfiltered,
-        rearranegementtype_distribution_lumpy_unfiltered,
-        chromosome_types_lumpy_unfiltered, is_lumpy=True)
+        
+    lumpy_breakpoint_data_unfiltered = lumpy_breakpoint_data_unfiltered.rename(columns={
+            'breakpoint_id': "prediction_id",
+            'chrom1': "chromosome_1", 'strand1': "strand_1",
+            'start1': "position_1",
+            'chrom2': "chromosome_2", 'strand2': "strand_2",
+            'start2': "position_2"
+        }
+    )
+    plot_breakpoint_distribution(lumpy_breakpoint_data_unfiltered, os.path.join(tempspace, "lumpy_unfilt"))
 
     # Analyse SNP data
     allele_data = load_allele_data(haplotype_allele_data)
@@ -479,3 +533,6 @@ def qc_plots(
     }
     df = pd.DataFrame(df)
     df.to_csv(datatype_summary)
+
+    helpers.make_tarfile(qc_plots_tar, tempspace)
+

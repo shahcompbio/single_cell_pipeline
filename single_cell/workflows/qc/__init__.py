@@ -72,17 +72,15 @@ def create_sample_level_plots(
         hmmcopy_segs, hmmcopy_metrics, alignment_metrics, gc_metrics,
         indel_file, reporthtml, maf, snvs_all_csv, out_dir, config
 ):
+
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1, }
 
-    vep_reference = config['vep']
+    # vep_reference = config['vep']
     scp_qc_docker = config["docker"]
 
     prefix = os.path.join(out_dir, patient, cell_id, library_id)
 
-    summary_csv = os.path.join(prefix, "summary.csv")
-    snvs_high_impact_csv = os.path.join(prefix, "snvs_high_impact.csv")
-    trinuc_csv = os.path.join(prefix, "trinuc.csv")
-    datatype_summary_csv = os.path.join(prefix, "datatype_summary.csv")
+    plots_tar = os.path.join(prefix, "qc_plots.tar")
 
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
@@ -93,13 +91,13 @@ def create_sample_level_plots(
             mgd.InputFile(indel_file),
             mgd.OutputFile(maf),
             mgd.TempSpace('vcf2maf_temp'),
-            vep_reference,
+            "vep_reference",
         ),
         kwargs=(
             {"docker_image": scp_qc_docker["vcf2maf"]}
         )
     )
-
+    print(out_dir, os.path.isdir(out_dir), maf, os.path.exists(maf))
     workflow.transform(
         name='qc_plots',
         func="single_cell.workflows.qc.scripts.single_cell_qc_plots.qc_plots",
@@ -126,24 +124,9 @@ def create_sample_level_plots(
             mgd.InputFile(gc_metrics),
             library_id,
             prefix,
-            mgd.TempOutputFile('mutations_per_cell.png'),
-            mgd.OutputFile(summary_csv),
-            mgd.OutputFile(snvs_high_impact_csv),
             mgd.OutputFile(snvs_all_csv),
-            mgd.OutputFile(trinuc_csv),
-            mgd.TempOutputFile('snv_adjacent_distance.png'),
-            mgd.TempOutputFile('snv_genome_count.png'),
-            mgd.TempOutputFile('snv_cell_counts.png'),
-            mgd.TempOutputFile('snv_alt_counts.png'),
-            mgd.TempOutputFile('rearranegementtype_distribution_destruct_unfiltered.png'),
-            mgd.TempOutputFile('chromosome_types_destruct_unfiltered.png'),
-            mgd.TempOutputFile('rearranegementtype_distribution_destruct_filtered.png'),
-            mgd.TempOutputFile('chromosome_types_destruct_filtered.png'),
-            mgd.TempOutputFile('rearranegementtype_distribution_lumpy_unfiltered.png'),
-            mgd.TempOutputFile('chromosome_types_lumpy_unfiltered.png'),
-            mgd.TempOutputFile('baf_plot.png'),
-            mgd.TempOutputFile('cn_plot.png'),
-            mgd.OutputFile(datatype_summary_csv),
+            mgd.TempSpace("qc_plots"),
+            mgd.OutputFile(plots_tar)
         ),
     )
 
@@ -151,28 +134,13 @@ def create_sample_level_plots(
         name='create_main_report',
         func="single_cell.workflows.qc.tasks.sample_level_report",
         args=(
-            mgd.TempInputFile('mutations_per_cell.png'),
-            mgd.InputFile(summary_csv),
-            mgd.InputFile(snvs_high_impact_csv),
+
             mgd.InputFile(snvs_all_csv),
-            mgd.InputFile(trinuc_csv),
-            mgd.TempInputFile('snv_adjacent_distance.png'),
-            mgd.TempInputFile('snv_genome_count.png'),
-            mgd.TempInputFile('snv_cell_counts.png'),
-            mgd.TempInputFile('snv_alt_counts.png'),
-            mgd.TempInputFile('rearranegementtype_distribution_destruct_unfiltered.png'),
-            mgd.TempInputFile('chromosome_types_destruct_unfiltered.png'),
-            mgd.TempInputFile('rearranegementtype_distribution_destruct_filtered.png'),
-            mgd.TempInputFile('chromosome_types_destruct_filtered.png'),
-            mgd.TempInputFile('rearranegementtype_distribution_lumpy_unfiltered.png'),
-            mgd.TempInputFile('chromosome_types_lumpy_unfiltered.png'),
-            mgd.TempInputFile('baf_plot.png'),
-            mgd.TempInputFile('cn_plot.png'),
-            mgd.InputFile(datatype_summary_csv),
+            mgd.InputFile(plots_tar),
             mgd.InputFile(maf),
             mgd.OutputFile(reporthtml),
             cell_id + "_" + library_id,
         ),
     )
-
+    print(out_dir, os.path.isdir(out_dir), maf, os.path.exists(maf))
     return workflow
