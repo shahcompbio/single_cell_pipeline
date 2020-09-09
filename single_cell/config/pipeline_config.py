@@ -470,10 +470,12 @@ def get_qc_params(reference_dir, reference, version):
     params = {
         'ref_genome': referencedata['ref_genome'],
         'vep_reference_dir': referencedata['vep_ref_dir'],
+        #'vep': referencedata['vep'], #INCOMING
         'memory': {'low': 4, 'med': 6, 'high': 16},
         'docker': {
             'single_cell_pipeline': docker_containers['single_cell_pipeline'],
             'vcf2maf': docker_containers['vcf2maf'],
+            'pseudo_bulk_qc_html_report': docker_containers['pseudo_bulk_qc_html_report'],
         },
     }
     return {'qc': params}

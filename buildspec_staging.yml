@@ -16,3 +16,4 @@ phases:
       - bash single_cell/tests/jenkins/breakpoint_calling/breakpoint_calling.sh singlecellpipelinetest
       - bash single_cell/tests/jenkins/infer_haps/infer_haps.sh singlecellpipelinetest
       - bash single_cell/tests/jenkins/count_haps/count_haps.sh singlecellpipelinetest
+      - bash single_cell/tests/jenkins/pseudo_bulk_qc/pseudo_bulk_qc.sh  singlecellpipelinetest
