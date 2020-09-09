@@ -4,6 +4,7 @@ set -o pipefail
 
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
 DOCKER=`which docker`
+NUMCORES=`nproc --all`
 
 mkdir -p MERGE_CELL_BAMS/ref_test_data
 
@@ -16,7 +17,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   $1/single_cell_pipeline:$TAG \
   single_cell merge_cell_bams \
   --input_yaml single_cell/tests/jenkins/merge_cell_bams/inputs.yaml \
-  --maxjobs 4 --nocleanup --sentinel_only  \
+  --maxjobs $NUMCORES --nocleanup --sentinel_only  \
   --context_config single_cell/tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
   --tmpdir MERGE_CELL_BAMS/temp \

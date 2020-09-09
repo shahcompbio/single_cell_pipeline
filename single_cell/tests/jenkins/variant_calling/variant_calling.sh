@@ -4,6 +4,7 @@ set -o pipefail
 
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
 DOCKER=`which docker`
+NUMCORES=`nproc --all`
 
 mkdir -p VARIANT_CALLING/ref_test_data
 
@@ -14,7 +15,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   -v $DOCKER:$DOCKER --rm \
   $1/single_cell_pipeline:$TAG \
   single_cell variant_calling --input_yaml single_cell/tests/jenkins/variant_calling/inputs.yaml \
-  --maxjobs 4 --nocleanup --sentinel_only  \
+  --maxjobs $NUMCORES --nocleanup --sentinel_only  \
   --context_config single_cell/tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
   --tmpdir VARIANT_CALLING/temp \

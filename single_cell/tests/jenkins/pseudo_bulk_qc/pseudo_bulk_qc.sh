@@ -4,6 +4,7 @@ set -o pipefail
 
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
 DOCKER=`which docker`
+NUMCORES=`nproc --all`
 
 mkdir -p PSEUDO_BULK_QC/ref_test_data
 
@@ -14,7 +15,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   -v $DOCKER:$DOCKER --rm \
   $1/single_cell_pipeline:$TAG \
   single_cell pseudo_bulk_qc --input_yaml single_cell/tests/jenkins/pseudo_bulk_qc/inputs.yaml \
-  --maxjobs 4 --nocleanup --sentinel_only  \
+  --maxjobs $NUMCORES --nocleanup --sentinel_only  \
   --context_config single_cell/tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
   --tmpdir PSEUDO_BULK_QC/temp \
