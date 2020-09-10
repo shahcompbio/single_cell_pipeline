@@ -1,5 +1,11 @@
 # Change Log
 
+### v0.6.22
+
+### Changes:
+1. pseudo bulk QC pipeline
+
+
 ### v0.6.21
 
 ### Bug:
