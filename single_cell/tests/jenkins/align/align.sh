@@ -5,6 +5,7 @@ set -o pipefail
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
 
 DOCKER=`which docker`
+NUMCORES=`nproc --all`
 
 mkdir -p ALIGN/ref_test_data
 
@@ -18,7 +19,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   -v $DOCKER:$DOCKER --rm \
   $1/single_cell_pipeline:$TAG \
   single_cell alignment --input_yaml single_cell/tests/jenkins/align/inputs.yaml \
-  --library_id A97318A --maxjobs 4 --nocleanup --sentinel_only  \
+  --library_id A97318A --maxjobs $NUMCORES --nocleanup --sentinel_only  \
   --context_config single_cell/tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
   --tmpdir ALIGN/temp \

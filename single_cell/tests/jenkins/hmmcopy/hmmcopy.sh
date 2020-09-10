@@ -4,6 +4,7 @@ set -o pipefail
 
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
 DOCKER=`which docker`
+NUMCORES=`nproc --all`
 
 mkdir -p HMMCOPY/ref_test_data
 
@@ -16,7 +17,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   single_cell hmmcopy \
   --input_yaml single_cell/tests/jenkins/hmmcopy/inputs.yaml \
   --library_id A97318A \
-  --maxjobs 4 \
+  --maxjobs $NUMCORES \
   --nocleanup \
   --sentinel_only  \
   --context_config single_cell/tests/jenkins/context_config.yaml \
