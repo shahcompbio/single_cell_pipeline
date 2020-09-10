@@ -4,7 +4,8 @@
 
 ### Changes:
 1. pseudo bulk QC pipeline
-
+2. remove ete3 dependency
+3. updated conda recipe. removed ete3 added drmaa
 
 ### v0.6.21
 
