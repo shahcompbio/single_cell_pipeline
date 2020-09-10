@@ -2,13 +2,13 @@
 This directory contains recipes for building conda packages. Here are the steps of building, uploading and installing the conda packages.
 
 #### 1. Launch a docker shell:
-Cd into the current directory (```single_cell_pipeline/conda```) and launch a docker shell by running: 
+cd into the current directory (```single_cell_pipeline/conda```) and launch a docker shell by running: 
 ```docker run -it -v $PWD:$PWD -w $PWD singlecellpipeline/conda_build:v0.0.1 bash```
 
 #### 2. To build: 
 ##### 2.1 For alignement workflow: 
 
-```conda build single_cell_pipeline_align -c conda-forge -c bioconda -c shahcompbio```
+```conda build single_cell_pipeline_align -c bioconda -c shahcompbio```
 
 ##### 2.2 For hmmcopy workflow: 
 
