@@ -1,4 +1,5 @@
-# Single Cell Pipeline 
+
+# Single Cell Pipeline
 
 For a detailed guide see [INSTALL](docs/INSTALL)
 
@@ -204,7 +205,7 @@ Hmmcopy:
 1. generate read count wig files from the bam files
 2. perform  GC correction
 3. Run Hmmcopy to predict copynumber states
-4. generate segment and bias plots, kernel density plot and heatmaps 
+4. generate segment and bias plots, kernel density plot and heatmaps
 
 ### Input
 
@@ -298,7 +299,7 @@ gc_metrics: results/alignment/A12345_gc_metrics.csv.gz
 segs_pdf_tar: results/hmmcopy/A12345_segs.tar.gz```
 ```
 
-### Run 
+### Run
 
 ```
 single_cell annotation \
@@ -527,7 +528,7 @@ meta:
 The breakpoint analysis takes in per cell bam yaml in addition to the unsplit matched normal bam filename.
 
 ### Input:
- 
+
 #### yaml file format with a single normal bam
 ```
 normal_wgs:
@@ -583,7 +584,7 @@ single_cell breakpoint_calling \
 ...
 ```
 
-NOTE: The input bam files for lumpy must be aligned with bwa mem. 
+NOTE: The input bam files for lumpy must be aligned with bwa mem.
 
 ### Outputs
 
@@ -609,7 +610,7 @@ meta:
 The haplotype analysis takes in per cell bam yaml in addition to the unsplit matched normal bam filename.
 
 ### Input:
- 
+
 #### yaml file format with a single normal bam
 ```
 normal_wgs:
@@ -780,9 +781,78 @@ meta:
   version: v0.0.0
 ```
 
+## 11. Pseudobulk QC:
+
+### Input:
+
+```
+SA123:
+  SA123X1:
+    A123:
+      mappability: PSEUDO_BULK_QC/ref_test_data/snv_mappability.csv.gz
+      strelka: PSEUDO_BULK_QC/ref_test_data/snv_strelka.csv.gz
+      museq: PSEUDO_BULK_QC/ref_test_data/snv_museq.csv.gz
+      cosmic_status: PSEUDO_BULK_QC/ref_test_data/snv_cosmic_status.csv.gz
+      snpeff: PSEUDO_BULK_QC/ref_test_data/snv_snpeff.csv.gz
+      dbsnp_status: PSEUDO_BULK_QC/ref_test_data/snv_dbsnp_status.csv.gz
+      trinuc: PSEUDO_BULK_QC/ref_test_data/snv_trinuc.csv.gz
+      counts: PSEUDO_BULK_QC/ref_test_data/snv_genotyping_counts.csv.gz
+      destruct_breakpoint_annotation: PSEUDO_BULK_QC/ref_test_data/destruct_breakpoints.csv.gz
+      destruct_breakpoint_counts: PSEUDO_BULK_QC/ref_test_data/destruct_cell_counts.csv.gz
+      lumpy_breakpoint_annotation: PSEUDO_BULK_QC/ref_test_data/lumpy_breakpoints.csv.gz
+      lumpy_breakpoint_evidence: PSEUDO_BULK_QC/ref_test_data/lumpy_breakpoints_evidence.csv.gz
+      haplotype_allele_data: PSEUDO_BULK_QC/ref_test_data/allele_counts.csv.gz
+      annotation_metrics: PSEUDO_BULK_QC/ref_test_data/annotation_metrics.csv.gz
+      hmmcopy_reads: PSEUDO_BULK_QC/ref_test_data/hmmcopy_reads.csv.gz
+      hmmcopy_segs: PSEUDO_BULK_QC/ref_test_data/hmmcopy_segments.csv.gz
+      hmmcopy_metrics: PSEUDO_BULK_QC/ref_test_data/hmmcopy_metrics.csv.gz
+      alignment_metrics: PSEUDO_BULK_QC/ref_test_data/alignment_metrics.csv.gz
+      gc_metrics: PSEUDO_BULK_QC/ref_test_data/gc_metrics.csv.gz
+      indel_file: PSEUDO_BULK_QC/ref_test_data/strelka_indel.vcf.gz
+```
+
+### Run:
+
+```
+single_cell pseudo_bulk_qc \
+ --input_yaml inputs/SC-1234/variant_counting.yaml \
+ --tmpdir temp/SC-1234/tmp \
+ --pipelinedir pipeline/SC-1234  \
+ --out_dir results/SC-1234/results \
+...
+```
+
+### Outputs
+
+The metadata file is structured as follows:
+
+```
+filenames:
+./{patient_id}/{sample_id}/{library_id}_snvs_high_impact.csv
+./{patient_id}/{sample_id}/{library_id}_num_cells_class_top10_mutsig.pdf
+./{patient_id}/{sample_id}/{library_id}_num_cells_class_mutsig.pdf
+./{patient_id}/{sample_id}/{library_id}/snvs_high_impact.csv
+./{patient_id}/{sample_id}/{library_id}/samplelevelmaf.maf
+./{patient_id}/{sample_id}/{library_id}/snv_alt_counts.pdf
+./{patient_id}/{sample_id}/{library_id}/snvs_all.csv
+./{patient_id}/{sample_id}/{library_id}/summary.csv
+./{patient_id}/{sample_id}/{library_id}/datatype_summary.csv
+./{patient_id}/{sample_id}/{library_id}/snv_cell_counts.pdf
+./{patient_id}/{sample_id}/{library_id}/trinuc.csv
+./{patient_id}/{sample_id}/{library_id}_snv_genome_count.pdf
+./{patient_id}/{sample_id}/{library_id}_adjacent_distance_class_mutsig.pdf
+./{patient_id}/{sample_id}/{library_id}_adjacent_distance_class_top10_mutsig.pdf
+./{patient_id}/{sample_id}/{library_id}_snv_adjacent_distance.pdf
+meta:
+  command: 'single_cell pseudo_bulk_qc ...'
+  input_yaml: input.yaml
+  type: pseudo_bulk_qc
+  version: v0.0.0
+```
 
 
-## 11. Generate Config 
+
+## 11. Generate Config
 
 The pipeline auto generates a config file with the default parameters before every run. Some of the values in the config file can be updated by using the ``--config_override`` option.  ```generate_config``` option allows users to generate the config files. These configs can then be specified as input to the pipeline after making the required changes.
 ```
