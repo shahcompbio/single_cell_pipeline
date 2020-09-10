@@ -1,9 +1,8 @@
 import os
 
 import pandas as pd
-from single_cell.utils import helpers
-
 import pypeliner.commandline
+from single_cell.utils import helpers
 
 
 def merge_mafs(mafs, merged_maf, id_colname=False):
@@ -55,7 +54,7 @@ def vcf2maf(vcf_file, output_maf, tempdir, vep_ref, docker_image=None):
         vcf_unzipped = vcf_file
 
     cmd = [
-        'vcf2maf',  vcf_unzipped,  output_maf,
+        'vcf2maf', vcf_unzipped, output_maf,
         vep_ref['reference_fasta'],
         vep_ref['reference_filter_vcf'],
         vep_ref['reference_dir'],
@@ -65,22 +64,31 @@ def vcf2maf(vcf_file, output_maf, tempdir, vep_ref, docker_image=None):
 
 
 def sample_level_report(
-        mutations_per_cell, summary,
-        snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count,
-        snv_cell_counts, snv_alt_counts, rearranegementtype_distribution_destruct_unfiltered,
-        chromosome_types_destruct_unfiltered, rearranegementtype_distribution_destruct_filtered,
-        chromosome_types_destruct_filtered, rearranegementtype_distribution_lumpy_unfiltered,
-        chromosome_types_lumpy_unfiltered, baf_plot, cn_plot, datatype_summary, maf, html_file,
+        mutations_per_cell, summary, snvs_high_impact, snvs_all,
+        trinuc, snv_adjacent_distance, snv_genome_count,
+        snv_cell_counts, snv_alt_counts,
+        rearranegementtype_distribution_destruct_unfiltered,
+        chromosome_types_destruct_unfiltered,
+        rearranegementtype_distribution_destruct_filtered,
+        chromosome_types_destruct_filtered,
+        rearranegementtype_distribution_lumpy_unfiltered,
+        chromosome_types_lumpy_unfiltered,
+        baf_plot, cn_plot, datatype_summary, maf, html_file,
         sample_id, docker_image=None
 ):
-    cmd = [
-        'run_report.sh', html_file, sample_id, mutations_per_cell, summary,
+    files_args = [
+        html_file, sample_id, mutations_per_cell, summary,
         snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count,
         snv_cell_counts, snv_alt_counts, rearranegementtype_distribution_destruct_unfiltered,
         chromosome_types_destruct_unfiltered, rearranegementtype_distribution_destruct_filtered,
         chromosome_types_destruct_filtered, rearranegementtype_distribution_lumpy_unfiltered,
         chromosome_types_lumpy_unfiltered, baf_plot, cn_plot, datatype_summary, maf
     ]
+
+    files_args = [os.path.abspath(v) for v in files_args]
+
+    cmd = ['run_report.sh'] + files_args
+
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
 
 
@@ -89,7 +97,11 @@ def create_mutation_report(
         docker_image=None
 ):
     cmd = [
-        "run_mutationreport.sh", report_html, pseudo_bulk_group,
-        high_impact_snvs, merged_maf, high_impact_maf
+        "run_mutationreport.sh",
+        os.path.abspath(report_html),
+        os.path.abspath(pseudo_bulk_group),
+        os.path.abspath(high_impact_snvs),
+        os.path.abspath(merged_maf),
+        os.path.abspath(high_impact_maf)
     ]
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
