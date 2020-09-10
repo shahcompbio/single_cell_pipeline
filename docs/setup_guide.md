@@ -26,7 +26,7 @@ install single cell pipeline (alignment) app under the miniconda install:
 ```
 export PATH=$PWD/miniconda3/bin:$PATH
 conda update -n base -c defaults conda -y   
-conda install -c shahcompbio -c bioconda -c conda-forge  single_cell_pipeline_align
+conda install -c bioconda -c shahcompbio  single_cell_pipeline_align
 ```
 
 #### download test dataset:
