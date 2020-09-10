@@ -4,10 +4,10 @@ Created on Sep 8, 2015
 @author: dgrewal
 '''
 import argparse
-import math
 import os
 import sys
 
+import math
 import matplotlib
 
 matplotlib.use("Agg")
@@ -21,9 +21,6 @@ import logging
 from single_cell.utils import helpers
 from single_cell.utils import csvutils
 from .heatmap import ClusterMap
-
-from ete3 import Tree
-from itertools import combinations
 
 sys.setrecursionlimit(2000)
 
@@ -85,45 +82,6 @@ class PlotPcolor(object):
         self.metrics_tablename = kwargs.get('metrics_tablename')
 
         self.cells = kwargs.get("cells")
-
-        self.corrupt_tree = self.load_corrupt_tree(kwargs.get('corrupt_tree'))
-
-    def load_corrupt_tree(self, corrupt_tree):
-        if not corrupt_tree:
-            return
-
-        with open(corrupt_tree) as newickfile:
-            newickdata = newickfile.readline()
-            assert newickfile.readline() == ''
-
-        tree = Tree(newickdata, format=1)
-
-        return tree
-
-    def get_corrupt_tree_cells(self):
-        leaves = self.corrupt_tree.get_leaf_names()
-        leaves = [val[len('cell_'):] for val in leaves if val.startswith("cell_")]
-        return leaves
-
-    def build_tree_distance_matrix(self, cell_ids):
-        if not self.corrupt_tree:
-            return None
-
-        leaves = self.corrupt_tree.get_leaf_names()
-        leaves = [val[len('cell_'):] for val in leaves if val.startswith("cell_")]
-
-        cell_ids = [v for v in cell_ids if v in leaves]
-
-        leaves_idx = {val: i for i, val in enumerate(cell_ids)}
-
-        dmat = np.zeros((len(cell_ids), len(cell_ids)))
-
-        for l1, l2 in combinations(cell_ids, 2):
-            d = self.corrupt_tree.get_distance('cell_' + l1, 'cell_' + l2)
-            dmat[leaves_idx[l1], leaves_idx[l2]] = d
-            dmat[leaves_idx[l2], leaves_idx[l1]] = d
-
-        return dmat
 
     def build_label_indices(self, header):
         '''
@@ -488,11 +446,6 @@ class PlotPcolor(object):
         """
 
         def genplot(data, samples):
-            distance_matrix = self.build_tree_distance_matrix(samples)
-
-            if self.corrupt_tree and distance_matrix.size == 0:
-                return
-
             pltdata = data.loc[samples]
 
             title = ' (%s) n=%s/%s' % (sep, len(samples), num_samples)
@@ -500,7 +453,6 @@ class PlotPcolor(object):
 
             self.plot_heatmap(
                 pltdata, colordata, title, lims, pdfout,
-                distance_matrix=distance_matrix
             )
 
         if not self.output:
@@ -524,9 +476,6 @@ class PlotPcolor(object):
 
             samples = set(samples).intersection(set(data.index))
 
-            if self.corrupt_tree:
-                samples = set(samples).intersection(set(self.get_corrupt_tree_cells()))
-
             if len(samples) < 2:
                 continue
 
@@ -539,7 +488,7 @@ class PlotPcolor(object):
                 # plot in groups of 1000
                 sample_sets = [samples[x:x + 1000]
                                for x in range(0, len(samples), 1000)]
-                if len(sample_sets[-1]) ==1:
+                if len(sample_sets[-1]) == 1:
                     sample_sets[-2] += sample_sets[-1]
                     del sample_sets[-1]
 
