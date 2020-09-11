@@ -1,16 +1,22 @@
 package:
   name: single_cell_pipeline_annotation
-  version: '0.6.22'
+  version: '0.6.23'
 source:
-  git_url: https://github.com/shahcompbio/single_cell_pipeline.git
-  git_rev: v0.6.22
+  - git_url: https://github.com/shahcompbio/single_cell_pipeline.git
+    git_rev: v0.6.23
+    folder: single_cell_pipeline
+  - git_url: https://github.com/shahcompbio/cell_cycle_classifier.git
+    git_rev: v0.0.2
+    folder: cell_cycle_classifier
 build:
   number: 1
 requirements:
   build:
     - python
+    - click
   run:
     - python
+    - drmaa
     - matplotlib
     - pandas=0.25.3
     - pypdf2
@@ -20,8 +26,7 @@ requirements:
     - statsmodels
     - scikit-learn
     - pytables
-    - ete3
-    - cell_cycle_classifier=0.0.2
+    #- cell_cycle_classifier=0.0.2
     - click
     - jinja2
 about:
