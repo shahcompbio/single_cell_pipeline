@@ -8,7 +8,6 @@ import shutil
 
 import pandas as pd
 import pypeliner
-from ete3 import Tree
 from single_cell.utils import csvutils
 from single_cell.utils import helpers
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotPcolor
@@ -50,37 +49,6 @@ def add_contamination_status(
         data, outfile, dtypes()['metrics']
     )
 
-
-def add_corrupt_tree_order(corrupt_tree, metrics, output):
-    """
-    adds corrupt tree order to metrics
-    """
-
-    with open(corrupt_tree) as newickfile:
-        newickdata = newickfile.readline()
-        assert newickfile.readline() == ''
-
-    tree = Tree(newickdata, format=1)
-
-    leaves = [node.name for node in tree.traverse("levelorder")]
-    leaves = [val[len('cell_'):] for val in leaves if val.startswith("cell_")]
-
-    ordering = {val: i for i, val in enumerate(leaves)}
-
-    metrics = csvutils.read_csv_and_yaml(metrics)
-
-    cells = metrics.cell_id
-
-    for cellid in cells:
-        order = ordering.get(cellid, float('nan'))
-        metrics.loc[metrics["cell_id"] == cellid, "order_corrupt_tree"] = order
-
-    col_dtype = dtypes()['metrics']['order_corrupt_tree']
-    metrics['order_corrupt_tree'] = metrics['order_corrupt_tree'].astype(col_dtype)
-
-    csvutils.write_dataframe_to_csv_and_yaml(
-        metrics, output, dtypes()['metrics'], write_header=True
-    )
 
 
 def annotate_metrics(
