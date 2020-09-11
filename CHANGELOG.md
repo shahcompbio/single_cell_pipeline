@@ -1,5 +1,14 @@
 # Change Log
 
+### v0.6.24
+
+### Changes:
+1. clean up pseudobulk QC
+2. add pseudoculk QC to master build
+
+### BUG:
+1. unused ete3 code
+
 ### v0.6.23
 
 ### Changes:

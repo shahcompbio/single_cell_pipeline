@@ -116,9 +116,9 @@ def pseudo_bulk_qc_workflow(args):
         args=(
             mgd.InputInstance('patient'),
             mgd.InputFile("mafs", "patient", "sample_id", "library_id",
-                          fnames=sample_level_maf, axes_origin=[]),
+                          template=sample_level_maf, axes_origin=[]),
             mgd.InputFile("snvs_all", "patient", "sample_id", "library_id",
-                          fnames=snvs_all, axes_origin=[]),
+                          template=snvs_all, axes_origin=[]),
             mgd.OutputFile('mutationreport', 'patient', template=mutationreports),
             mgd.OutputFile('grouplevelmaf', 'patient', template=grouplevelmafs),
             mgd.OutputFile('grouplevel_high_impact_maf', 'patient',
