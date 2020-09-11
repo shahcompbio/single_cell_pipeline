@@ -12,11 +12,11 @@ cd into the current directory (```single_cell_pipeline/conda```) and launch a do
 
 ##### 2.2 For hmmcopy workflow: 
 
-```conda update -n base -c defaults conda -y && conda build single_cell_pipeline_hmmcopy -c conda-forge -c bioconda -c shahcompbio``` 
+```conda update -n base -c defaults conda -y && conda build single_cell_pipeline_hmmcopy -c bioconda -c shahcompbio``` 
 
 ##### 2.3 For annotation workflow: 
 
-```conda update -n base -c defaults conda -y && conda build single_cell_pipeline_annotation -c conda-forge -c bioconda -c shahcompbio``` 
+```conda update -n base -c defaults conda -y && conda build single_cell_pipeline_annotation -c shahcompbio``` 
 
 #### 3. To upload: 
 Copy and run the command printed in the console. It looks like:

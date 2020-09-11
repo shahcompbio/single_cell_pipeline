@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.6.23
+
+### Changes:
+1. conda packages: added drmaa, simpler recipes
+
 ### v0.6.22
 
 ### Changes:
