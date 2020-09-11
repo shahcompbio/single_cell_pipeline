@@ -76,7 +76,7 @@ def create_sample_level_plots(
         lumpy_breakpoint_annotation, lumpy_breakpoint_evidence,
         haplotype_allele_data, annotation_metrics, hmmcopy_reads,
         hmmcopy_segs, hmmcopy_metrics, alignment_metrics, gc_metrics,
-        indel_file, reporthtml, maf, snvs_all_csv, out_dir, config
+        indel_file, reporthtml, maf, snvs_all_csv, plot_tar, out_dir, config
 ):
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1, }
 
@@ -132,24 +132,9 @@ def create_sample_level_plots(
             mgd.InputFile(gc_metrics),
             library_id,
             prefix,
-            mgd.TempOutputFile('mutations_per_cell.png'),
-            mgd.OutputFile(summary_csv),
-            mgd.OutputFile(snvs_high_impact_csv),
             mgd.OutputFile(snvs_all_csv),
-            mgd.OutputFile(trinuc_csv),
-            mgd.TempOutputFile('snv_adjacent_distance.png'),
-            mgd.TempOutputFile('snv_genome_count.png'),
-            mgd.TempOutputFile('snv_cell_counts.png'),
-            mgd.TempOutputFile('snv_alt_counts.png'),
-            mgd.TempOutputFile('rearranegementtype_distribution_destruct_unfiltered.png'),
-            mgd.TempOutputFile('chromosome_types_destruct_unfiltered.png'),
-            mgd.TempOutputFile('rearranegementtype_distribution_destruct_filtered.png'),
-            mgd.TempOutputFile('chromosome_types_destruct_filtered.png'),
-            mgd.TempOutputFile('rearranegementtype_distribution_lumpy_unfiltered.png'),
-            mgd.TempOutputFile('chromosome_types_lumpy_unfiltered.png'),
-            mgd.TempOutputFile('baf_plot.png'),
-            mgd.TempOutputFile('cn_plot.png'),
-            mgd.OutputFile(datatype_summary_csv),
+            mgd.TempSpace("qc_plots"),
+            mgd.OutputFile(plot_tar)
         ),
     )
 
@@ -157,29 +142,12 @@ def create_sample_level_plots(
         name='create_main_report',
         func="single_cell.workflows.pseudo_bulk_qc.tasks.sample_level_report",
         args=(
-            mgd.TempInputFile('mutations_per_cell.png'),
-            mgd.InputFile(summary_csv),
-            mgd.InputFile(snvs_high_impact_csv),
             mgd.InputFile(snvs_all_csv),
-            mgd.InputFile(trinuc_csv),
-            mgd.TempInputFile('snv_adjacent_distance.png'),
-            mgd.TempInputFile('snv_genome_count.png'),
-            mgd.TempInputFile('snv_cell_counts.png'),
-            mgd.TempInputFile('snv_alt_counts.png'),
-            mgd.TempInputFile('rearranegementtype_distribution_destruct_unfiltered.png'),
-            mgd.TempInputFile('chromosome_types_destruct_unfiltered.png'),
-            mgd.TempInputFile('rearranegementtype_distribution_destruct_filtered.png'),
-            mgd.TempInputFile('chromosome_types_destruct_filtered.png'),
-            mgd.TempInputFile('rearranegementtype_distribution_lumpy_unfiltered.png'),
-            mgd.TempInputFile('chromosome_types_lumpy_unfiltered.png'),
-            mgd.TempInputFile('baf_plot.png'),
-            mgd.TempInputFile('cn_plot.png'),
-            mgd.InputFile(datatype_summary_csv),
+            mgd.InputFile(plot_tar),
             mgd.InputFile(maf),
             mgd.OutputFile(reporthtml),
             cell_id + "_" + library_id,
         ),
         kwargs={'docker_image': scp_qc_docker['pseudo_bulk_qc_html_report']}
     )
-
     return workflow
