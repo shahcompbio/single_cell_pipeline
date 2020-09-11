@@ -239,7 +239,7 @@ def plot_breakpoint_distribution(
             ax=ax, data=plot_data, x=type_col, y='count', hue_order=hue_order
         )
 
-        ax.set_title(f'Counts by rearrangement type')
+        ax.set_title('Counts by rearrangement type')
         ax.set_xlabel('', visible=False)
         ax.set_ylabel('Counts', visible=False)
         ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
@@ -273,7 +273,7 @@ def plot_breakpoint_distribution(
         wgs_analysis.plots.rearrangement.chromosome_type_plot(
             ax, breakends, rearrangement_types=hue_order
         )
-        ax.set_title(f'Chromosome types')
+        ax.set_title('Chromosome types')
         plt.tight_layout()
         fig.savefig(chromosome_types, bbox_inches='tight', format="png")
 

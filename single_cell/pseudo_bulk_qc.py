@@ -12,26 +12,11 @@ def pseudo_bulk_qc_workflow(args):
 
     out_dir = args["out_dir"]
 
-    patients = [k[0] for k in data.keys()]
-
-    # outputs
-    mutationreports = {patient: os.path.join(out_dir, patient, "mutationreport.html")
-                       for patient in patients
-                       }
-    grouplevelmafs = {patient: os.path.join(out_dir, patient, "grouplevelmaf.maf")
-                      for patient in patients
-                      }
-    grouplevel_high_impact_mafs = {patient: os.path.join(out_dir, patient,
-                                                         "grouplevel_high_impact_maf.maf")
-                                   for patient in patients
-                                   }
-    grouplevel_high_impact_merged_snvs = {
-        patient: os.path.join(out_dir, patient, "grouplevel_high_impact_merged_snvs.csv")
-        for patient in patients
-    }
-    grouplevel_snvs = {patient: os.path.join(out_dir, patient, "grouplevel_snvs.csv")
-                       for patient in patients
-                       }
+    mutationreports = os.path.join(out_dir, 'patient', "mutationreport.html")
+    grouplevelmafs = os.path.join(out_dir, 'patient', "grouplevelmaf.maf")
+    grouplevel_high_impact_mafs = os.path.join(out_dir, 'patient', "grouplevel_high_impact_maf.maf")
+    grouplevel_high_impact_merged_snvs = os.path.join(out_dir, 'patient', "grouplevel_high_impact_merged_snvs.csv")
+    grouplevel_snvs = os.path.join(out_dir, 'patient', "grouplevel_snvs.csv")
 
     mappability_files = {label: paths["mappability"] for label, paths in data.items()}
     strelka_files = {label: paths["strelka"] for label, paths in data.items()}
@@ -61,11 +46,10 @@ def pseudo_bulk_qc_workflow(args):
     gc_metrics_files = {label: paths["gc_metrics"] for label, paths in data.items()}
     indel_files = {label: paths["indel_file"] for label, paths in data.items()}
 
-    sample_level_report_htmls = {label: os.path.join(out_dir, *label, "mainreport.html")
-                                 for label, paths in data.items()}
-    sample_level_maf = {label: os.path.join(out_dir, *label, "samplelevelmaf.maf")
-                        for label, paths in data.items()}
-    snvs_all = {label: os.path.join(out_dir, *label, "snvs_all.csv") for label, paths in data.items()}
+    label_dir = os.path.join(out_dir, 'patient', 'sample_id', 'library_id')
+    sample_level_report_htmls = os.path.join(label_dir,  "mainreport.html")
+    sample_level_maf = os.path.join(label_dir,  "samplelevelmaf.maf")
+    snvs_all = os.path.join(label_dir, 'snvs_all.csv')
 
     workflow = pypeliner.workflow.Workflow(
         ctx={'docker_image': config['docker']['single_cell_pipeline']}
@@ -116,9 +100,9 @@ def pseudo_bulk_qc_workflow(args):
             mgd.InputFile('indel_files', 'patient', 'sample_id', 'library_id', fnames=indel_files),
 
             mgd.OutputFile('sample_level_report_htmls', 'patient', 'sample_id', 'library_id',
-                           fnames=sample_level_report_htmls),
-            mgd.OutputFile('mafs', 'patient', 'sample_id', 'library_id', fnames=sample_level_maf),
-            mgd.OutputFile('snvs_all', 'patient', 'sample_id', 'library_id', fnames=snvs_all),
+                           template=sample_level_report_htmls),
+            mgd.OutputFile('mafs', 'patient', 'sample_id', 'library_id', template=sample_level_maf),
+            mgd.OutputFile('snvs_all', 'patient', 'sample_id', 'library_id', template=snvs_all),
 
             out_dir,
             config
@@ -135,14 +119,14 @@ def pseudo_bulk_qc_workflow(args):
                           fnames=sample_level_maf, axes_origin=[]),
             mgd.InputFile("snvs_all", "patient", "sample_id", "library_id",
                           fnames=snvs_all, axes_origin=[]),
-            mgd.OutputFile('mutationreport', 'patient', fnames=mutationreports),
-            mgd.OutputFile('grouplevelmaf', 'patient', fnames=grouplevelmafs),
+            mgd.OutputFile('mutationreport', 'patient', template=mutationreports),
+            mgd.OutputFile('grouplevelmaf', 'patient', template=grouplevelmafs),
             mgd.OutputFile('grouplevel_high_impact_maf', 'patient',
-                           fnames=grouplevel_high_impact_mafs
+                           template=grouplevel_high_impact_mafs
                            ),
-            mgd.OutputFile('grouplevel_snvs', 'patient', fnames=grouplevel_snvs),
+            mgd.OutputFile('grouplevel_snvs', 'patient', template=grouplevel_snvs),
             mgd.OutputFile('grouplevel_high_impact_merged_snvs', 'patient',
-                           fnames=grouplevel_high_impact_merged_snvs
+                           template=grouplevel_high_impact_merged_snvs
                            ),
             config,
         ),
