@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import pandas as pd
 import pypeliner.commandline
@@ -46,12 +47,15 @@ def filter_maf_for_high_impact(maf, filtmaf, docker_image=None):
 
 
 def vcf2maf(vcf_file, output_maf, tempdir, vep_ref, docker_image=None):
-    if vcf_file.endswith('.gz'):
-        helpers.makedirs(tempdir)
+    vcf_file_copy = os.path.join(tempdir, 'vcf2maf_input_vcf', os.path.basename(vcf_file))
+    helpers.makedirs(vcf_file_copy, isfile=True)
+    shutil.copyfile(vcf_file, vcf_file_copy)
+
+    if vcf_file_copy.endswith('.gz'):
         vcf_unzipped = os.path.join(tempdir, 'unzipped_vcf.vcf')
-        helpers.gunzip_file(vcf_file, vcf_unzipped)
+        helpers.gunzip_file(vcf_file_copy, vcf_unzipped)
     else:
-        vcf_unzipped = vcf_file
+        vcf_unzipped = vcf_file_copy
 
     cmd = [
         'vcf2maf', vcf_unzipped, output_maf,
