@@ -1,5 +1,11 @@
 # Change Log
 
+### v0.6.25
+
+### Changes:
+1. update pypeliner
+2. deleted redundant dockerfiles
+
 ### v0.6.24
 
 ### Changes:
