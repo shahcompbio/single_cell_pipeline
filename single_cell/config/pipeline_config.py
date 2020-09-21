@@ -29,7 +29,7 @@ def override_config(config, override):
 
 def get_config_params(override=None):
     input_params = {
-        "cluster": "azure", "aligner": "bwa-mem", "refdir": None,
+        "cluster": "azure", "refdir": None,
         "reference": "grch37", "smoothing_function": "modal",
         "bin_size": 500000, "copynumber_bin_size": 1000,
         'memory': {'high': 16, 'med': 6, 'low': 2},
@@ -89,7 +89,7 @@ def get_hmmcopy_params(reference_dir, reference, binsize, smoothing_function, ve
     return {"hmmcopy": params}
 
 
-def get_align_params(reference_dir, reference, aligner, version):
+def get_align_params(reference_dir, reference, version):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
     refdata_callback = config_reference.get_cluster_reference_data
 
@@ -108,7 +108,6 @@ def get_align_params(reference_dir, reference, aligner, version):
         'ref_genome': referencedata['ref_genome'],
         'docker': docker_containers,
         'memory': {'med': 6},
-        'aligner': aligner,
         'adapter': 'CTGTCTCTTATACACATCTCCGAGCCCACGAGAC',
         'adapter2': 'CTGTCTCTTATACACATCTGACGCTGCCGACGA',
         'picard_wgs_params': {
@@ -500,7 +499,6 @@ def get_singlecell_pipeline_config(config_params, override=None):
     params.update(
         get_align_params(
             reference_dir, reference,
-            config_params['aligner'],
             version
         )
     )

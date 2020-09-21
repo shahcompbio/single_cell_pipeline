@@ -121,20 +121,12 @@ def trim_fastqs(fastq1, fastq2, cell_id, tempdir, adapter, adapter2, trimgalore_
 
 def align_pe_with_bwa(
         fastq1, fastq2, output, reference, readgroup, tempdir,
-        containers, aligner='bwa-aln'
+        containers
 ):
     samfile = os.path.join(tempdir, "bwamem.sam")
 
-    if aligner == 'bwa-aln':
-        bamutils.bwa_aln_paired_end(fastq1, fastq2, samfile, tempdir, reference, readgroup,
-                                    docker_image=containers['bwa'])
-    elif aligner == 'bwa-mem':
-        bamutils.bwa_mem_paired_end(fastq1, fastq2, samfile, reference, readgroup,
-                                    docker_image=containers['bwa'])
-    else:
-        raise Exception(
-            "Aligner %s not supported, pipeline supports bwa-aln and bwa-mem" %
-            aligner)
+    bamutils.bwa_mem_paired_end(fastq1, fastq2, samfile, reference, readgroup,
+                                docker_image=containers['bwa'])
 
     bamutils.samtools_sam_to_bam(samfile, output,
                                  docker_image=containers['samtools'])
@@ -142,7 +134,7 @@ def align_pe_with_bwa(
 
 def align_pe(
         fastq1, fastq2, output, reports_dir, tempdir, reference,
-        trim, centre, sample_info, cell_id, lane_id, library_id, aligner,
+        trim, centre, sample_info, cell_id, lane_id, library_id,
         containers, adapter, adapter2,
         fastqscreen_detailed_metrics, fastqscreen_summary_metrics,
         fastqscreen_params
@@ -169,7 +161,7 @@ def align_pe(
 
     aln_temp = os.path.join(tempdir, "temp_alignments.bam")
 
-    if aligner == "bwa-aln" and trim:
+    if trim:
         filtered_fastq_r1, filtered_fastq_r2 = trim_fastqs(
             filtered_fastq_r1, filtered_fastq_r2, cell_id, tempdir,
             adapter, adapter2, containers['trimgalore']
@@ -177,7 +169,7 @@ def align_pe(
 
     align_pe_with_bwa(
         filtered_fastq_r1, filtered_fastq_r2, aln_temp, reference, readgroup,
-        tempdir, containers, aligner=aligner
+        tempdir, containers
     )
 
     picardutils.bam_sort(aln_temp, output, tempdir, docker_image=containers['picard'])
@@ -196,7 +188,7 @@ def extract_mt_chromosome(input_bam, mt_bam, docker_image=None, mt_chrom_name='M
 
 def align_lanes(
         fastq1, fastq2, output, output_mt, reports, tempdir, reference, laneinfo,
-        sample_info, cell_id, library_id, aligner, containers, adapter,
+        sample_info, cell_id, library_id, containers, adapter,
         adapter2, fastqscreen_detailed_metrics,
         fastqscreen_summary_metrics, fastqscreen_params, mt_chrom_name='MT'
 ):
@@ -224,7 +216,7 @@ def align_lanes(
             fastq1[lane_id], fastq2[lane_id], lane_bam, reports_dir,
             lane_tempdir, reference, laneinfo[lane_id]['trim'],
             laneinfo[lane_id]['center'], sample_info, cell_id, lane_id,
-            library_id, aligner, containers, adapter, adapter2,
+            library_id, containers, adapter, adapter2,
             screen_detailed, screen_summary, fastqscreen_params
         )
 
