@@ -221,7 +221,6 @@ def create_alignment_workflow(
             mgd.TempInputObj('sampleinfo', 'cell_id'),
             mgd.InputInstance('cell_id'),
             library_id,
-            config['aligner'],
             config['docker'],
             config['adapter'],
             config['adapter2'],

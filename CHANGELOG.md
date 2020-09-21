@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.6.26
+
+### Changes:
+1. remove bwa aln
+
 ### v0.6.25
 
 ### Changes:
