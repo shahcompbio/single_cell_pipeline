@@ -10,7 +10,7 @@ import wgs_analysis.plots.rearrangement
 import wgs_analysis.snvs.mutsig
 import wgs_analysis.plots.snv
 import wgs_analysis.annotation.position
-from scgenome.loaders.qc import load_qc_data
+from scgenome.loaders.qc import load_qc_data_from_files
 from scgenome.snvdata import run_bulk_snv_analysis
 import scgenome
 import scgenome.db.qc_from_files
@@ -24,6 +24,8 @@ import scgenome.loaders.breakpoint
 import scgenome.breakpointdata
 import scgenome.utils
 from scgenome.snvdata import filter_snv_data
+
+from single_cell.utils import csvutils
 
 
 def load_snv_data(
@@ -86,6 +88,7 @@ def plot_mutations_per_cell(snv_data, snv_count_data, mutations_per_cell, prefix
     seaborn.distplot(percell["Number of mutations"])
     ax.set_title('Number of mutations per cell')
     fig.savefig(mutations_per_cell, bbox_inches='tight', format="png")
+    plt.close()
 
 
 def write_summary_csv(snv_data, snv_count_data, summary):
@@ -143,6 +146,7 @@ def plot_snv_adjacent_distance(snv_data, snv_adjacent_distance):
     fig = plt.figure(figsize=(10, 3))
     wgs_analysis.plots.snv.snv_adjacent_distance_plot(plt.gca(), snv_data)
     fig.savefig(snv_adjacent_distance, bbox_inches='tight', format="png")
+    plt.close()
 
 
 def plot_snv_genome_count(snv_data, snv_genome_count):
@@ -150,12 +154,14 @@ def plot_snv_genome_count(snv_data, snv_genome_count):
     fig = plt.figure(figsize=(10, 3))
     wgs_analysis.plots.snv.snv_count_plot(plt.gca(), snv_data)
     fig.savefig(snv_genome_count, bbox_inches='tight', format="png")
+    plt.close()
 
 
 def plot_snv_cell_counts(cell_counts, snv_cell_counts):
     fig = plt.figure(figsize=(4, 4))
     cell_counts['num_cells'].astype(float).hist(bins=50)
     fig.savefig(snv_cell_counts, bbox_inches='tight', format="png")
+    plt.close()
 
 
 def plot_snv_alt_counts(snv_count_data, snv_alt_counts):
@@ -166,6 +172,7 @@ def plot_snv_alt_counts(snv_count_data, snv_alt_counts):
     fig = plt.figure(figsize=(4, 4))
     sum_alt_counts['sum_alt_counts'].astype(float).hist(bins=50)
     fig.savefig(snv_alt_counts, bbox_inches='tight', format="png")
+    plt.close()
 
 
 def load_breakpoint_data(
@@ -276,6 +283,7 @@ def plot_breakpoint_distribution(
         ax.set_title('Chromosome types')
         plt.tight_layout()
         fig.savefig(chromosome_types, bbox_inches='tight', format="png")
+    plt.close()
 
 
 def load_allele_data(haplotype_allele_data):
@@ -294,18 +302,46 @@ def load_allele_data(haplotype_allele_data):
     return allele_data
 
 
-def plotbaf(allele_data, baf_plot):
-    merged_allele_data = allele_data.groupby(['chromosome', 'hap_label', 'end', 'start'])
-    merged_allele_data = merged_allele_data[['allele_1', 'allele_2', 'total_counts']]
-    merged_allele_data = merged_allele_data.aggregate(
+def load_allele_data(haplotype_allele_data):
+    allele_data = []
+
+    for chunk in csvutils.CsvInput(haplotype_allele_data).read_csv(chunksize=1e6):
+        chunk = chunk.set_index(['chromosome', 'start', 'end', 'hap_label', 'cell_id', 'allele_id'])
+
+        chunk = chunk['readcount'].unstack(fill_value=0)
+
+        chunk.rename(columns={0: 'allele_1', 1: 'allele_2'}, inplace=True)
+
+        chunk['total_counts'] = chunk['allele_1'] + chunk['allele_2']
+
+        chunk = chunk.groupby(['chromosome', 'hap_label', 'end', 'start'])
+
+        chunk = chunk.aggregate(
+            {'allele_1': sum, 'allele_2': sum, 'total_counts': sum}
+        )
+
+        chunk = chunk.reset_index()
+
+        allele_data.append(chunk)
+
+    allele_data = pd.concat(allele_data)
+
+    allele_data = allele_data.groupby(['chromosome', 'hap_label', 'end', 'start'])
+
+    allele_data = allele_data.aggregate(
         {'allele_1': sum, 'allele_2': sum, 'total_counts': sum}
     )
-    merged_allele_data = merged_allele_data.reset_index()
 
-    baf_numerator = np.minimum(merged_allele_data['allele_1'], merged_allele_data['allele_2'])
-    merged_allele_data['baf'] = baf_numerator / merged_allele_data['total_counts'].astype(float)
+    allele_data = allele_data.reset_index()
 
-    merged_allele_data = merged_allele_data.rename(
+    return allele_data
+
+
+def plotbaf(allele_data, baf_plot):
+    baf_numerator = np.minimum(allele_data['allele_1'], allele_data['allele_2'])
+    allele_data['baf'] = baf_numerator / allele_data['total_counts'].astype(float)
+
+    allele_data = allele_data.rename(
         columns={'chromosome': 'chr'}
     )
 
@@ -313,41 +349,12 @@ def plotbaf(allele_data, baf_plot):
     ax = fig.add_subplot(1, 1, 1)
 
     scgenome.snpdata.plot_vaf_profile(
-        ax, merged_allele_data, 'baf',
+        ax, allele_data, 'baf',
         size_field_name='total_counts',
         size_scale=5000.,
     )
     fig.savefig(baf_plot, bbox_inches='tight', format="png")
-
-
-def load_qc_data(
-        sample_id, annotation_metrics, hmmcopy_reads, hmmcopy_segs,
-        hmmcopy_metrics, alignment_metrics, gc_metrics
-):
-    results_tables_new = scgenome.db.qc_from_files.get_qc_data_from_filenames(
-        [annotation_metrics],
-        [hmmcopy_reads],
-        [hmmcopy_segs],
-        [hmmcopy_metrics], [alignment_metrics], [gc_metrics],
-        sample_ids=[sample_id], additional_hmmcopy_reads_cols=None
-    )
-
-    cn_data = results_tables_new['hmmcopy_reads']
-    metrics_data = results_tables_new['annotation_metrics']
-
-    metrics_data = scgenome.cnfilter.calculate_filter_metrics(
-        metrics_data,
-        cn_data,
-    )
-
-    filtered_cells = metrics_data.loc[
-        metrics_data['filter_is_s_phase'] &
-        metrics_data['filter_quality'],
-        ['cell_id']]
-
-    cn_data_filt = cn_data.merge(filtered_cells[['cell_id']].drop_duplicates())
-
-    return metrics_data, cn_data_filt
+    plt.close()
 
 
 def plot_cn(cn_data_filt, cn_plot):
@@ -370,6 +377,7 @@ def plot_cn(cn_data_filt, cn_plot):
             ax, cn_data_summary, 'copy', 'state'
         )
         fig.savefig(cn_plot, bbox_inches='tight', format="png")
+    plt.close()
 
 
 def qc_plots(
@@ -462,9 +470,10 @@ def qc_plots(
     plotbaf(allele_data, baf_plot)
 
     # Plot CN profile
-    metrics_data, cn_data_filt = load_qc_data(
-        sample_id, annotation_metrics, hmmcopy_reads,
-        hmmcopy_segs, hmmcopy_metrics, alignment_metrics, gc_metrics)
+    metrics_data, cn_data_filt = load_qc_data_from_files(
+        hmmcopy_reads, hmmcopy_segs, hmmcopy_metrics, alignment_metrics,
+        gc_metrics, annotation_metrics=annotation_metrics,
+        sample_id=sample_id)
 
     plot_cn(cn_data_filt, cn_plot)
 
