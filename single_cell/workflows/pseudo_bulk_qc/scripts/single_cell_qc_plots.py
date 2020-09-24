@@ -255,18 +255,18 @@ def plot_breakpoint_distribution(breakpoint_data, plot_pdf):
     type_size_distribution = plot_type_size_distribution(breakpoint_data, "type")
     rearrangement_type_size_distribution = plot_type_size_distribution(breakpoint_data, "rearrangement_type")
 
-    pdf.savefig(type_distribution, facecolor=type_distribution.get_facecolor())
-    pdf.savefig(rearrangement_type_distribution, facecolor=rearrangement_type_distribution.get_facecolor())
-    pdf.savefig(type_genome_distribution, facecolor=type_genome_distribution.get_facecolor())
-    pdf.savefig(rearrangement_type_genome_didstribution, facecolor=rearrangement_type_genome_didstribution.get_facecolor())
-    pdf.savefig(type_size_distribution, facecolor=type_size_distribution.get_facecolor())
-    pdf.savefig(rearrangement_type_size_distribution, facecolor=rearrangement_type_size_distribution.get_facecolor())
+    pdf.savefig(type_distribution)
+    pdf.savefig(rearrangement_type_distribution)
+    pdf.savefig(type_genome_distribution)
+    pdf.savefig(rearrangement_type_genome_didstribution)
+    pdf.savefig(type_size_distribution)
+    pdf.savefig(rearrangement_type_size_distribution)
 
     pdf.close()
 
 
 def plot_genome_type_distribution(breakpoint_data, type_col):
-    genome_distribution, axis = plt.subplots(1,1, figsize=(30, 6))
+    genome_distribution, axis = plt.subplots(1,1, figsize=(30, 5))
     breakends = wgs_analysis.plots.rearrangement.create_breakends(
         breakpoint_data, data_cols=[type_col]
     )
@@ -277,13 +277,11 @@ def plot_genome_type_distribution(breakpoint_data, type_col):
     axis.set_title(f'Chromosome types')
     plt.tight_layout()
     plt.title("Breakpoint distribution over the genome")
-    genome_distribution.patch.set_facecolor('xkcd:white')
-
     return genome_distribution
 
 
 def plot_type_distribution(breakpoint_data, type_col):
-    type_distribution, axis = plt.subplots(1,1, figsize=(30, 6))
+    type_distribution, axis = plt.subplots(1,1, figsize=(30, 3))
     seaborn.countplot(x=type_col, data=breakpoint_data,  ax=axis, palette = "Dark2")
     axis.set_ylabel("count inter and intra chromosomal")
     axis.set_title('Counts by rearrangement type')
@@ -304,7 +302,7 @@ def plot_type_size_distribution(breakpoint_data, type_col):
 
     colors = seaborn.color_palette('Dark2', len(breakpoint_data[type_col].unique()))
 
-    typesizes = plt.figure(figsize=(30, 6))
+    typesizes = plt.figure(figsize=(20, 2))
     gs = typesizes.add_gridspec(1, ntypes + 1, width_ratios=[1]*(ntypes) + [0.2])
     axes=[]
     
@@ -325,16 +323,13 @@ def plot_type_size_distribution(breakpoint_data, type_col):
     axes[0].set_xlabel("size of breakpoint")
     axes[0].set_ylabel("count")
     plt.title("rearrangement size distribution")
-    typesizes.patch.set_facecolor('xkcd:white')
-
     return typesizes
-
 
 def load_allele_data(haplotype_allele_data):
     allele_data = []
 
     unique_cells = []
-    for chunk in csvutils.CsvInput(haplotype_allele_data).read_csv(sep="\t", chunksize=1e6):
+    for chunk in csvutils.CsvInput(haplotype_allele_data).read_csv(chunksize=1e6):
 
         unique_cells += chunk.cell_id.unique().tolist()
 
@@ -526,7 +521,6 @@ def qc_plots(
             'start2': "position_2"
         }
     )
-
     plot_breakpoint_distribution(lumpy_breakpoint_data_unfiltered, lumpy_rearrangement_plots_unfiltered)
 
     # Analyse SNP data
