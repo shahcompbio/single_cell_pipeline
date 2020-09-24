@@ -70,23 +70,17 @@ def vcf2maf(vcf_file, output_maf, tempdir, vep_ref, docker_image=None):
 def sample_level_report(
         mutations_per_cell, summary, snvs_high_impact, snvs_all,
         trinuc, snv_adjacent_distance, snv_genome_count,
-        snv_cell_counts, snv_alt_counts,
-        rearranegementtype_distribution_destruct_unfiltered,
-        chromosome_types_destruct_unfiltered,
-        rearranegementtype_distribution_destruct_filtered,
-        chromosome_types_destruct_filtered,
-        rearranegementtype_distribution_lumpy_unfiltered,
-        chromosome_types_lumpy_unfiltered,
+        snv_cell_counts, snv_alt_counts, destruct_rearrangement_plots_unfiltered,
+        destruct_rearrangement_plots_filtered, lumpy_rearrangement_plots_unfiltered, 
         baf_plot, cn_plot, datatype_summary, maf, html_file,
         sample_id, docker_image=None
 ):
     files_args = [
         html_file, sample_id, mutations_per_cell, summary,
         snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count,
-        snv_cell_counts, snv_alt_counts, rearranegementtype_distribution_destruct_unfiltered,
-        chromosome_types_destruct_unfiltered, rearranegementtype_distribution_destruct_filtered,
-        chromosome_types_destruct_filtered, rearranegementtype_distribution_lumpy_unfiltered,
-        chromosome_types_lumpy_unfiltered, baf_plot, cn_plot, datatype_summary, maf
+        snv_cell_counts, snv_alt_counts, destruct_rearrangement_plots_unfiltered,
+        destruct_rearrangement_plots_filtered, lumpy_rearrangement_plots_unfiltered, 
+        baf_plot, cn_plot, datatype_summary, maf
     ]
 
     files_args = [os.path.abspath(v) for v in files_args]
