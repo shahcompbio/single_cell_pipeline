@@ -29,6 +29,15 @@ from single_cell.utils import csvutils
 import matplotlib.backends.backend_pdf
 
 
+lumpy_to_destruct_breakpoint_labels = {'INV': 'inversion',
+    'DEL': 'deletion',
+    'DUP': 'duplication',
+    'INS': 'insertion',
+    'CNV': 'CNV',
+    'DUP:TANDEM': 'tandem_duplication',
+    'BND': 'BND'}
+
+
 def load_snv_data(
         sample_id, library_id, prefix, mappability_file, strelka_file,
         museq_file, cosmic_status_file, snpeff_file, dbsnp_status_file,
@@ -176,6 +185,33 @@ def plot_snv_alt_counts(snv_count_data, snv_alt_counts):
     plt.close()
 
 
+def label_rearrangement(row):
+    breakpoint_label = row.type
+    chrom1 = row.chrom1
+    chrom2 = row.chrom2
+    break_distance = row.start2 - row.start1
+
+    rearrangement_type = breakpoint_label
+
+    if breakpoint_label == "BND":
+        if chrom1 == chrom2:
+            rearrangement_type = "inversion"
+        else:
+            rearrangement_type = "translocation"
+    if breakpoint_label == "inversion" or rearrangement_type == "inversion":
+        if chrom1 == chrom2:
+            if break_distance < 20000:
+                rearrangement_type = "foldback"
+    return rearrangement_type
+
+
+def load_lumpy_breakpoints_and_rearrangements(lumpy_data):
+
+    lumpy_data["type"] =  lumpy_data.type.replace(lumpy_to_destruct_breakpoint_labels)
+    lumpy_data["rearrangement_type"] = lumpy_data.apply(lambda row: label_rearrangement(row), axis=1)
+    return lumpy_data
+
+
 def load_breakpoint_data(
         sample_id, library_id, breakpoint_annotation, breakpoint_count,
         lumpy=False, filter_data=False
@@ -251,6 +287,8 @@ def plot_type_distribution(breakpoint_data, type_col):
     axis.set_title('Counts by rearrangement type')
     axis.set_xlabel('', visible=False)
     plt.title("Distribution of rearrangement types")
+    type_distribution.patch.set_facecolor('xkcd:white')
+
     return type_distribution
 
 
@@ -287,13 +325,11 @@ def plot_type_size_distribution(breakpoint_data, type_col):
     plt.title("rearrangement size distribution")
     return typesizes
 
-
 def load_allele_data(haplotype_allele_data):
     allele_data = []
 
     unique_cells = []
-    #TODO: generate yaml for this filtype
-    for chunk in csvutils.CsvInput(haplotype_allele_data).read_csv(sep="\t", chunksize=1e6):
+    for chunk in csvutils.CsvInput(haplotype_allele_data).read_csv(chunksize=1e6):
 
         unique_cells += chunk.cell_id.unique().tolist()
 
@@ -474,7 +510,9 @@ def qc_plots(
         sample_id, library_id,
         lumpy_breakpoint_annotation, lumpy_breakpoint_evidence,
         lumpy=True)
-        
+
+    lumpy_breakpoint_data_unfiltered = load_lumpy_breakpoints_and_rearrangements(lumpy_breakpoint_data_unfiltered )
+
     lumpy_breakpoint_data_unfiltered = lumpy_breakpoint_data_unfiltered.rename(columns={
             'breakpoint_id': "prediction_id",
             'chrom1': "chromosome_1", 'strand1': "strand_1",
@@ -487,8 +525,6 @@ def qc_plots(
 
     # Analyse SNP data
     allele_data, unique_cells = load_allele_data(haplotype_allele_data)
-
-    allele_data2 = load_allele_data2(haplotype_allele_data)
 
     plotbaf(allele_data, baf_plot)
 
