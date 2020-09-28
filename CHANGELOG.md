@@ -1,5 +1,17 @@
 # Change Log
 
+### v0.6.27
+
+### Changes:
+1. pseudo_bulk_qc: allele data loading is done in chunks to improve memory usage
+2. pseudo_bulk_qc: added rearrangement types for lumpy
+3. pseudo_bulk_qc: additional qcplots
+4. pseudo_bulk_qc: better plot organization 
+5. pseudo_bulk_qc: resized report output
+6. pseudo_bulk_qc: code can now handle incomplete data
+7. pseudo_bulk_qc: placeholder text for missing plots
+
+
 ### v0.6.26
 
 ### Changes:

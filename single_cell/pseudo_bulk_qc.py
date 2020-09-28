@@ -46,7 +46,7 @@ def pseudo_bulk_qc_workflow(args):
     gc_metrics_files = {label: paths["gc_metrics"] for label, paths in data.items()}
     indel_files = {label: paths["indel_file"] for label, paths in data.items()}
 
-    label_dir = os.path.join(out_dir, 'patient', 'sample_id', 'library_id')
+    label_dir = os.path.join(out_dir, '{patient}', '{sample_id}', '{library_id}')
     sample_level_report_htmls = os.path.join(label_dir,  "mainreport.html")
     sample_level_maf = os.path.join(label_dir,  "samplelevelmaf.maf")
     snvs_all = os.path.join(label_dir, 'snvs_all.csv')
@@ -98,12 +98,10 @@ def pseudo_bulk_qc_workflow(args):
                           fnames=alignment_metrics_files),
             mgd.InputFile('gc_metrics', 'patient', 'sample_id', 'library_id', fnames=gc_metrics_files),
             mgd.InputFile('indel_files', 'patient', 'sample_id', 'library_id', fnames=indel_files),
-
             mgd.OutputFile('sample_level_report_htmls', 'patient', 'sample_id', 'library_id',
                            template=sample_level_report_htmls),
             mgd.OutputFile('mafs', 'patient', 'sample_id', 'library_id', template=sample_level_maf),
             mgd.OutputFile('snvs_all', 'patient', 'sample_id', 'library_id', template=snvs_all),
-
             out_dir,
             config
 
