@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.6.28
+
+### Bugs:
+1. added Trim to dtypes
+
 ### v0.6.27
 
 ### Changes:

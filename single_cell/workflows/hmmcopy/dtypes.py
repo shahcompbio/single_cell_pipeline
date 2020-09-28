@@ -77,7 +77,8 @@ def dtypes():
         'cell_call': 'str',
         'index_i7': 'str',
         'order': 'int',
-        'row': 'int'
+        'row': 'int',
+        'trim': 'bool'
     }
 
     dtypes = locals()

@@ -69,6 +69,7 @@ def dtypes():
         "fastqscreen_grch37_ratio": 'float',
         "fastqscreen_mm10_ratio": 'float',
         "fastqscreen_salmon_ratio": 'float',
+        'trim': 'bool'
     }
 
     dtypes = locals()
