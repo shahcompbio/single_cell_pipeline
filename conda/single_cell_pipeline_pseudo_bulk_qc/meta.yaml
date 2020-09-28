@@ -1,9 +1,9 @@
 package:
   name: single_cell_pseudo_bulk_qc
-  version: '0.6.27'
+  version: '0.6.28'
 source:
   - git_url: https://github.com/shahcompbio/single_cell_pipeline.git
-    git_rev: v0.6.27
+    git_rev: v0.6.28
     folder: single_cell_pipeline
   - git_url: https://github.com/shahcompbio/pypeliner.git
     git_rev: v0.5.21
