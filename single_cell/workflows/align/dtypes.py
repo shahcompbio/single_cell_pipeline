@@ -35,7 +35,8 @@ def dtypes():
         'fastqscreen_mm10': 'int',
         'fastqscreen_nohit': 'int',
         'fastqscreen_mm10_multihit': 'int',
-        'is_contaminated': 'bool'
+        'is_contaminated': 'bool',
+        'trim': 'bool'
     }
 
     gc = {str(i): 'float' for i in range(0,101)}
