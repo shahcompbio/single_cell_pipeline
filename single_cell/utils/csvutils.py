@@ -534,8 +534,10 @@ def annotate_csv(infile, annotation_data, outfile, annotation_dtypes, on="cell_i
 
     ann = pd.DataFrame(annotation_data).T
 
+    ann[on] = ann.index
+
     # get annotation rows that correspond to rows in on
-    reformed_annotation = ann[ann.index.isin(metrics_df[on])]
+    reformed_annotation = ann[ann[on].isin(metrics_df[on])]
 
     # do nothing if the annotation df is empty
     if reformed_annotation.empty:  # so we dont add NaNs
@@ -543,8 +545,7 @@ def annotate_csv(infile, annotation_data, outfile, annotation_dtypes, on="cell_i
                                                csvinput.dtypes,
                                                write_header=write_header)
 
-    for new_col in reformed_annotation.columns:
-        metrics_df.loc[:, new_col] = reformed_annotation[new_col].values
+    metrics_df = metrics_df.merge(reformed_annotation, on=on, how='outer')
 
     csv_dtypes = csvinput.dtypes
 
