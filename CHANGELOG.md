@@ -1,5 +1,11 @@
 # Change Log
 
+### v0.6.29
+
+### Bugs:
+1. csvutils annotate_csv: annotation was in incorrect order
+
+
 ### v0.6.28
 
 ### Bugs:
