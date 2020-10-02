@@ -27,7 +27,7 @@ def containers(version=None):
         'destruct': 'destruct:v0.0.5',
         'trimgalore': 'trimgalore:v0.0.2',
         'lumpy': 'lumpy:v0.0.3',
-        'cell_cycle_classifier': 'cell_cycle_classifier:v0.0.2',
+        'cell_cycle_classifier': 'cell_cycle_classifier:v0.0.3',
         'biobloom': 'biobloom:v0.0.2',
         'corrupt_tree': 'corrupt_tree:v0.0.1',
         'fastq_screen': 'fastq_screen:v0.0.2',
