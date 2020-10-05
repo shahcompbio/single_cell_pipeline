@@ -1,12 +1,12 @@
 package:
   name: single_cell_pipeline_annotation
-  version: '0.6.29'
+  version: '0.6.30'
 source:
   - git_url: https://github.com/shahcompbio/single_cell_pipeline.git
-    git_rev: v0.6.29
+    git_rev: v0.6.30
     folder: single_cell_pipeline
   - git_url: https://github.com/shahcompbio/cell_cycle_classifier.git
-    git_rev: v0.0.2
+    git_rev: v0.0.3
     folder: cell_cycle_classifier
 build:
   number: 1
