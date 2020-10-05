@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.6.30
+
+### Bugs:
+1. update cell cycle classifier
+
 ### v0.6.29
 
 ### Bugs:
