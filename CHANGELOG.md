@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.6.31
+
+### Bugs:
+1. hmmcopy plots were hardcoded to human genomes
+
 ### v0.6.30
 
 ### Bugs:

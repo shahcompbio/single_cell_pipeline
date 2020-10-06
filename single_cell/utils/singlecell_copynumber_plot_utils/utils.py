@@ -33,9 +33,8 @@ def read_fai(fai_filename):
 
 
 def read_chromosome_lengths(ref_genome):
-    # TODO: human genome specific
-    chromosomes = [str(a) for a in range(1, 23)] + ['X'] + ['Y']
     chrom_info = read_fai(ref_genome + '.fai')
+    chromosomes = list(chrom_info['chrom'])
     chrom_info = chrom_info[chrom_info['chrom'].isin(chromosomes)]
     chrom_length = chrom_info.set_index('chrom')['length']
     return chrom_length
