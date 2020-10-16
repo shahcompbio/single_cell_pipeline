@@ -85,6 +85,66 @@ def load_snv_data(
     return filtered_data[0], filtered_data[1]
 
 
+    def get_cna_changepoints(cna_data):
+        cn_data_summary = cna_data.groupby(['chr', 'start', 'end'])
+        cn_data_summary = cn_data_summary[['copy', 'state']]
+        cn_data_summary = cn_data_summary.aggregate(
+            {'copy': statistics.median, 'state': statistics.median}
+        )
+        cn_data_summary = cn_data_summary.sort_values(by=["chr", "start"])
+        cn_data_summary["cn_change"] = cn_data_summary.state.diff()
+        cn_data_summary.reset_index(inplace=True)
+
+        change_data = cn_data_summary[(cn_data_summary.cn_change!=0) & (cn_data_summary.cn_change!=np.nan)].cn_change
+        change_data.index = change_data.index-1
+
+        cn_data_summary.update(change_data)
+        change_data = cn_data_summary[(cn_data_summary.cn_change!=0) & (cn_data_summary.cn_change!=np.nan)].cn_change
+
+        cn_data_summary = cn_data_summary[cn_data_summary.cn_change != 0 ]
+
+        cn_data_summary.reset_index(inplace=True)
+
+        return cn_data_summary
+
+
+def anno_bkp(row, cn, side="1"):
+    if side == "1":
+        chrom = str(row.chromosome_1)
+        pos = row.position_1
+    else:
+        chrom = str(row.chromosome_2)
+        pos = row.position_2        
+    # print(chrom)
+    matches = cn[(cn.start < pos) 
+        & (cn.end > pos) 
+        & (cn.chr == chrom)]
+
+    matches = matches.reset_index()
+
+    if matches.empty:
+        row["chr_pos_{}".format(side)] = np.NaN
+        row["start_pos_{}".format(side)] = np.NaN
+        row["end_pos_{}".format(side)] = np.NaN
+        row["state_pos_{}".format(side)] = np.NaN
+        row["cn_change_pos_{}".format(side)] = np.NaN
+    else:
+        row["chr_pos_{}".format(side)] = matches.chr.tolist()[0]
+        row["start_pos_{}".format(side)] = matches.start.tolist()[0]
+        row["end_pos_{}".format(side)] = matches.end.tolist()[0]
+        row["state_pos_{}".format(side)] = matches.state.tolist()[0]
+        row["cn_change_pos_{}".format(side)] = matches.cn_change.tolist()[0]
+        
+    row["pos_{}_in_cn_change_region".format(side)] = not matches.empty
+    return row
+
+
+    def match_changepoints(changepoints, sv):
+        sv = sv.apply(lambda row: anno_bkp(row, changepoints, side="2"), axis=1)
+        sv = sv.reset_index()
+        sv = sv.apply(lambda row: anno_bkp(row, changepoints), axis=1)
+
+
 def plot_mutations_per_cell(snv_data, snv_count_data, mutations_per_cell, prefix):
     allcells = snv_count_data.loc[:, ["cell_id"]].drop_duplicates()
     run_bulk_snv_analysis(snv_data, snv_count_data, allcells, results_prefix=prefix)
@@ -445,9 +505,9 @@ def qc_plots(
         gc_metrics, library_id, prefix, mutations_per_cell, summary, snvs_high_impact, snvs_all,
         trinuc, snv_adjacent_distance, snv_genome_count, snv_cell_counts, snv_alt_counts, 
         destruct_rearrangement_plots_unfiltered, destruct_rearrangement_plots_filtered, 
-        lumpy_rearrangement_plots_unfiltered, baf_plot, cn_plot, datatype_summary
+        lumpy_rearrangement_plots_unfiltered, baf_plot, cn_plot, datatype_summary,
+        brk_cna_overlap_destruct, brk_cna_overlap_lumpy
 ):
-
 
     snv_data, snv_count_data = load_snv_data(
         sample_id, library_id, prefix, mappability_file, strelka_file, museq_file,
@@ -548,4 +608,13 @@ def qc_plots(
     df = pd.DataFrame(df)
     df.to_csv(datatype_summary)
 
-    
+    #brk cna overlap
+
+    changepoints = get_cna_changepoints(cn_data)
+
+    destruct_brk_overlap = match_changepoints(changepoints, 
+        destruct_breakpoint_data_unfiltered[["chromosome_1", "chromosome_2", "position_1", "position)_2"]]
+    )
+    lumpy_brk_overlap = match_changepoints(changepoints, 
+        lumpy_breakpoint_data_unfiltered[["chromosome_1", "chromosome_2", "position_1", "position)_2"]]
+    )

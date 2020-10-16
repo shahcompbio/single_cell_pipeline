@@ -76,7 +76,8 @@ def create_sample_level_plots(
         lumpy_breakpoint_annotation, lumpy_breakpoint_evidence,
         haplotype_allele_data, annotation_metrics, hmmcopy_reads,
         hmmcopy_segs, hmmcopy_metrics, alignment_metrics, gc_metrics,
-        indel_file, reporthtml, maf, snvs_all_csv, out_dir, config
+        indel_file, reporthtml, maf, snvs_all_csv, brk_cna_overlap_destruct, 
+        brk_cna_overlap_lumpy, out_dir, config
 ):
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1, }
 
@@ -105,7 +106,7 @@ def create_sample_level_plots(
             {"docker_image": scp_qc_docker["vcf2maf"]}
         )
     )
-
+    
     workflow.transform(
         name='qc_plots',
         func="single_cell.workflows.pseudo_bulk_qc.scripts.single_cell_qc_plots.qc_plots",
@@ -147,8 +148,22 @@ def create_sample_level_plots(
             mgd.TempOutputFile('baf_plot.png'),
             mgd.TempOutputFile('cn_plot.png'),
             mgd.OutputFile(datatype_summary_csv),
+            mgd.OutputFile(brk_cna_overlap_destruct),
+            mgd.OutputFile(brk_cna_overlap_lumpy),
         ),
     )
+
+
+    workflow.transform(
+        name='brk_cna_overlap_plotting',
+        func="single_cell.workflows.pseudo_bulk_qc.tasks.brk_cna_overlap_plot",
+        args=(
+            mgd.InputFile(brk_cna_overlap),
+            mgd.TempOutputFile("brk_cna_overlap_results.pdf"),
+        ),
+        kwargs={'docker_image': scp_qc_docker['pseudo_bulk_qc_html_report']}
+    )
+
 
     workflow.transform(
         name='create_main_report',
@@ -168,6 +183,7 @@ def create_sample_level_plots(
             mgd.TempInputFile('lumpy_rearrangement_plots_unfiltered.pdf'),
             mgd.TempInputFile('baf_plot.png'),
             mgd.TempInputFile('cn_plot.png'),
+            mgd.TempInputFile("brk_cna_overlap_results.pdf"),
             mgd.InputFile(datatype_summary_csv),
             mgd.InputFile(maf),
             mgd.OutputFile(reporthtml),

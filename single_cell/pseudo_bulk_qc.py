@@ -49,6 +49,9 @@ def pseudo_bulk_qc_workflow(args):
     label_dir = os.path.join(out_dir, '{patient}', '{sample_id}', '{library_id}')
     sample_level_report_htmls = os.path.join(label_dir,  "mainreport.html")
     sample_level_maf = os.path.join(label_dir,  "samplelevelmaf.maf")
+    brk_cna_overlap_destruct = os.path.join(label_dir,  "brk_cna_destruct.tsv")
+    brk_cna_overlap_lumpy = os.path.join(label_dir,  "brk_cna_lumpy.tsv")
+
     snvs_all = os.path.join(label_dir, 'snvs_all.csv')
 
     workflow = pypeliner.workflow.Workflow(
@@ -102,6 +105,8 @@ def pseudo_bulk_qc_workflow(args):
                            template=sample_level_report_htmls),
             mgd.OutputFile('mafs', 'patient', 'sample_id', 'library_id', template=sample_level_maf),
             mgd.OutputFile('snvs_all', 'patient', 'sample_id', 'library_id', template=snvs_all),
+            mgd.OutputFile('brk_cna_overlap_destruct', 'patient', 'sample_id', 'library_id', template=brk_cna_overlap_destruct),
+            mgd.OutputFile('brk_cna_overlap_lumpy', 'patient', 'sample_id', 'library_id', template=brk_cna_overlap_lumpy),
             out_dir,
             config
 

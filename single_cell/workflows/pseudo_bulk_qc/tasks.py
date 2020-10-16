@@ -6,6 +6,11 @@ import pypeliner.commandline
 from single_cell.utils import helpers
 
 
+def brk_cna_overlap_plot(brk_cna_overlap, plot):
+    cmd = ["brk_cna_plot.R", brk_cna_overlap, plot]
+    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+
+
 def merge_mafs(mafs, merged_maf, id_colname=False):
     assert isinstance(mafs, dict)
     preppedmafs = []
@@ -72,7 +77,7 @@ def sample_level_report(
         trinuc, snv_adjacent_distance, snv_genome_count,
         snv_cell_counts, snv_alt_counts, destruct_rearrangement_plots_unfiltered,
         destruct_rearrangement_plots_filtered, lumpy_rearrangement_plots_unfiltered, 
-        baf_plot, cn_plot, datatype_summary, maf, html_file,
+        baf_plot, cn_plot, brk_cna_overlap_results, datatype_summary, maf, html_file,
         sample_id, docker_image=None
 ):
     files_args = [
@@ -80,7 +85,7 @@ def sample_level_report(
         snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count,
         snv_cell_counts, snv_alt_counts, destruct_rearrangement_plots_unfiltered,
         destruct_rearrangement_plots_filtered, lumpy_rearrangement_plots_unfiltered, 
-        baf_plot, cn_plot, datatype_summary, maf
+        baf_plot, cn_plot, brk_cna_overlap_results, datatype_summary, maf
     ]
 
     files_args = [os.path.abspath(v) for v in files_args]
