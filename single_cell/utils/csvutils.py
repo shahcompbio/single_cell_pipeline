@@ -228,11 +228,9 @@ class CsvInput(object):
 
         self.na_rep = na_rep
 
-        self.sep = ','
-
         metadata = self.__parse_metadata()
 
-        self.header, self.dtypes, self.columns = metadata
+        self.header, self.dtypes, self.columns, self.sep = metadata
 
         self.__confirm_compression_type_pandas()
 
@@ -263,8 +261,6 @@ class CsvInput(object):
         header = yamldata['header']
         sep = yamldata['sep']
 
-        assert sep == self.sep
-
         dtypes = {}
         columns = []
         for coldata in yamldata['columns']:
@@ -274,7 +270,7 @@ class CsvInput(object):
 
             columns.append(colname)
 
-        return header, dtypes, columns
+        return header, dtypes, columns, sep
 
     def __verify_data(self, df):
         if not set(list(df.columns.values)) == set(self.columns):
