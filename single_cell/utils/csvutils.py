@@ -263,6 +263,11 @@ class CsvInput(object):
         header = yamldata['header']
         sep = yamldata['sep']
 
+        if  sep != self.sep:
+            #make sure sep is valid for pandas
+            assert  isinstance(sep, str)
+            self.sep = sep
+            
         assert sep == self.sep
 
         dtypes = {}
