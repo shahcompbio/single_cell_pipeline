@@ -50,7 +50,6 @@ def add_contamination_status(
     )
 
 
-
 def annotate_metrics(
         metrics, output, sample_info, cells):
     """
@@ -111,7 +110,8 @@ def generate_qc_report(
     fastqscreen_classify.classify_fastqscreen(
         fastqscreen_training_data, metrics_df, metrics_df_annotated, dtypes()['metrics']
     )
-    generate_qc.generate_html_report(tempdir, qc_report, reference_gc, metrics_df, gc_metrics_df)
+
+    generate_qc.generate_html_report(tempdir, qc_report, reference_gc, metrics_df_annotated, gc_metrics_df)
 
 
 def cell_cycle_classifier(hmmcopy_reads, hmmcopy_metrics, alignment_metrics, output, tempdir, docker_image=None):
