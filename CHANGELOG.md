@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.6.32
+
+### Bugs:
+1. csvutils couldnt handle tsv
+
 ### v0.6.31
 
 ### Bugs:
