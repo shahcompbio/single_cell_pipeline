@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.6.33
+
+### Bugs:
+1. fixed issue with missing contamination table in annotation html
+
 ### v0.6.32
 
 ### Bugs:
