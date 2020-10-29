@@ -1,10 +1,10 @@
 package:
   name: single_cell_pipeline_hmmcopy
-  version: '0.6.31'
+  version: '0.6.32'
 
 source:
   git_url: https://github.com/shahcompbio/single_cell_pipeline.git
-  git_rev: v0.6.31
+  git_rev: v0.6.32
 
 build:
   number: 1
