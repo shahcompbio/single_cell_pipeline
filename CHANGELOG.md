@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.6.34
+
+Changes: 
+1. update pypeliner to v0.5.22 which lowers lsf query volume
+
 ### v0.6.33
 
 ### Bugs:
