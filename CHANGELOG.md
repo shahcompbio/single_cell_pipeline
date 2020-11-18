@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.6.35
+
+Changes:
+1. updated pypeliner to v0.5.23 to support latest azure python sdk
+
 ### v0.6.34
 
 Changes: 
