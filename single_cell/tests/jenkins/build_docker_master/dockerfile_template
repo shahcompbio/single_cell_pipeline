@@ -1,5 +1,5 @@
 # build on top of out base image
-FROM singlecellpipeline/python_singlecell_qc:v0.1.3
+FROM quay.io/singlecellpipeline/python_singlecell_qc:v0.1.3
 
 # Copy the current directory contents into the container at /app
 
