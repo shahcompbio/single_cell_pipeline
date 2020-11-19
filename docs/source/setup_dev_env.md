@@ -62,7 +62,7 @@ save the following yaml to a file.
 
 ```
 docker:
-    server: 'docker.io'
+    server: 'quay.io'
     username: null
     password: null
     mounts:
