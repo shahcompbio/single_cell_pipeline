@@ -10,7 +10,7 @@
     this can be done through ssh keys on the cluster. We don't support ssh keys with a passphrase at the moment.
 3. access to dockerhub on all nodes
     ```
-    singularity run docker://docker.io/singlecellpipeline/single_cell_pipeline:v{VERSION}
+    singularity run docker://quay.io/singlecellpipeline/single_cell_pipeline:v{VERSION}
     ```
 
 ### Download the reference data 
@@ -45,7 +45,7 @@ the context section of the yaml snippet below sets the walltime and number of ti
 
 ```
 singularity:
-    server: 'docker.io'
+    server: 'quay.io'
     username: null
     password: null
     local_cache: '/juno/work/shah/runner/singularity/cache'
@@ -87,7 +87,7 @@ launch the pipeline:
 
 ```
 export SINGULARITY_CACHEDIR=/juno/work/shah/runner/singularity/cache
-singularity run --bind /common --bind /juno/work  docker://docker.io/singlecellpipeline/single_cell_pipeline:v{VERSION} sh /path/to/shell/script/from/previous/step
+singularity run --bind /common --bind /juno/work  docker://quay.io/singlecellpipeline/single_cell_pipeline:v{VERSION} sh /path/to/shell/script/from/previous/step
 ```
 
 The `--bind /common` will mount the `/common` directory inside the singularity. The PATH environment variable must also be set to point to the location of LSF binaries. This will make the commands such as `bsub`, `bjobs` and `bhosts` available to the pipeline. This path will depend on the singularity location. 

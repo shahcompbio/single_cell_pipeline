@@ -1,5 +1,5 @@
 docker:
-    server: 'docker.io'
+    server: 'quay.io'
     username: null
     password: null
     org: singlecellpipelinetest

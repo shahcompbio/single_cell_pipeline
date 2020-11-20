@@ -3,11 +3,12 @@
 # push it to azure container registry
 # usage: bash build_docker.sh dockerhub_username dockerhub_password
 #!/usr/bin/env bash
-echo "\n LOGIN \n"
-docker login -u $1 --password $2
 
 REGISTRY=$3
 ORG=$4
+
+echo "\n LOGIN \n"
+docker login $REGISTRY -u $1 --password $2
 
 TAG=`git describe --tags $(git rev-list --tags --max-count=1)`
 

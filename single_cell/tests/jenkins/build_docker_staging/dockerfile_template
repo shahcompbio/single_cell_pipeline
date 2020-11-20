@@ -1,5 +1,5 @@
 # build on top of out base image
-FROM singlecellpipeline/python_singlecell_qc:v0.1.3
+FROM quay.io/singlecellpipeline/python_singlecell_qc:v0.1.3
 
 ADD . /app
 
@@ -7,7 +7,7 @@ ADD . /app
 
 # Install any needed packages specified in requirements.txt
 RUN apt-get update && apt-get install libc-dev libz-dev -y && apt-get install build-essential -y && rm -rf /var/lib/apt/lists/*
-RUN pip install -e git+https://github.com/shahcompbio/pypeliner.git@v0.5.22#egg=pypeliner
+RUN pip install -e git+https://github.com/shahcompbio/pypeliner.git@v0.5.23#egg=pypeliner
 RUN pip install -e git+https://github.com/shahcompbio/biowrappers.git@v0.2.8#egg=biowrappers
 RUN pip install -e git+https://github.com/shahcompbio/scgenome.git@master#egg=scgenome
 RUN pip install -e git+https://github.com/amcpherson/wgs_analysis.git@master#egg=wgs_analysis
