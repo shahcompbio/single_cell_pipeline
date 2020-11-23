@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.6.36
+
+Changes:
+1. updated hmmcopy
+
 ### v0.6.35
 
 Changes:
