@@ -1,0 +1,39 @@
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+# platform: linux-64
+@EXPLICIT
+https://repo.anaconda.com/pkgs/main/linux-64/_libgcc_mutex-0.1-main.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/ca-certificates-2020.10.14-0.tar.bz2
+https://repo.anaconda.com/pkgs/main/noarch/font-ttf-dejavu-sans-mono-2.37-h6964260_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/ld_impl_linux-64-2.33.1-h53a641e_7.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/libstdcxx-ng-9.1.0-hdf63c60_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/openjdk-8.0.152-h7b6447c_3.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/libgcc-ng-9.1.0-hdf63c60_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/icu-58.2-he6710b0_3.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/libffi-3.3-he6710b0_2.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/libuuid-1.0.3-h1bed415_2.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/ncurses-6.2-he6710b0_1.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/openssl-1.1.1h-h7b6447c_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/perl-5.26.2-h14c3975_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/xz-5.2.5-h7b6447c_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/zlib-1.2.11-h7b6447c_3.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/libedit-3.1.20191231-h14c3975_1.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/libpng-1.6.37-hbc83047_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/libxml2-2.9.10-hb55368b_3.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/pigz-2.4-h84994c4_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/readline-8.0-h7b6447c_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/tk-8.6.10-hbc83047_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/freetype-2.10.4-h5ab3b9f_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/sqlite-3.33.0-h62c20be_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/fontconfig-2.13.0-h9420a91_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/python-3.7.9-h7579374_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/bz2file-0.98-py37_1.tar.bz2
+https://repo.anaconda.com/pkgs/main/noarch/certifi-2020.6.20-pyhd3eb1b0_3.tar.bz2
+https://conda.anaconda.org/bioconda/noarch/fastqc-0.11.9-0.tar.bz2
+https://repo.anaconda.com/pkgs/main/noarch/wheel-0.35.1-pyhd3eb1b0_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/setuptools-50.3.1-py37h06a4308_1.tar.bz2
+https://conda.anaconda.org/bioconda/noarch/xopen-0.7.3-py_0.tar.bz2
+https://conda.anaconda.org/bioconda/linux-64/dnaio-0.3-py37h14c3975_1.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/pip-20.2.4-py37h06a4308_0.tar.bz2
+https://conda.anaconda.org/bioconda/linux-64/cutadapt-2.6-py37h516909a_0.tar.bz2
+https://conda.anaconda.org/bioconda/noarch/trim-galore-0.6.6-0.tar.bz2

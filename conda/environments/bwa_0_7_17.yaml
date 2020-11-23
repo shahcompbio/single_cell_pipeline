@@ -1,0 +1,9 @@
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+# platform: linux-64
+@EXPLICIT
+https://repo.anaconda.com/pkgs/main/linux-64/_libgcc_mutex-0.1-main.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/libgcc-ng-9.1.0-hdf63c60_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/perl-5.26.2-h14c3975_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/zlib-1.2.11-h7b6447c_3.tar.bz2
+https://conda.anaconda.org/bioconda/linux-64/bwa-0.7.17-hed695b0_7.tar.bz2
