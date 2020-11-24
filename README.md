@@ -1,9 +1,7 @@
 
 # Single Cell Pipeline
 
-For a detailed guide see [INSTALL](docs/INSTALL)
-
-For azure documentation see [azure](docs/azure)
+For a detailed guide see [INSTALL](docs/source/index.md)
 
 For LSF + singularity documentation see [Singularity](docs/singularity/singularity.md)
 
@@ -72,7 +70,7 @@ Cell ids follow the format `{sample_id}_{library_id}_R{row}_C{column}`, however 
 
 ## 1. Alignment
 
-![align](readme_data/alignment.png)
+![align](docs/readme_data/alignment.png)
 
 The single cell analysis pipeline runs on a list of pairs of fastq file (paired end) and performs the following steps:
 
@@ -198,7 +196,7 @@ The alignment metrics and gc metrics tables are described in detail TODO
 
 ## 2. HMMcopy
 
-![align](readme_data/hmmcopy.png)
+![align](docs/readme_data/hmmcopy.png)
 
 Hmmcopy:
 
@@ -280,7 +278,7 @@ The reads, segs, params, and metrics tables are described in detail TODO
 
 ## 3. Annotation
 
-![annotation](readme_data/annotation.png)
+![annotation](docs/readme_data/annotation.png)
 
 Annotation:
 1. Assign a quality score to each cell
@@ -351,7 +349,7 @@ The metrics table is described in detail TODO
 
 ## 4. Split merge cell bams
 
-![merge_cell_bams](readme_data/merge_cell_bams.png)
+![merge_cell_bams](docs/readme_data/merge_cell_bams.png)
 
 The tumour needs to be simultaneously merged across cells and split by region. The input for this step is the per cell bam yaml and the template for the merged bams by region.
 
@@ -414,7 +412,7 @@ meta:
 
 ## 5. Split bams
 
-![split_wgs_bam](readme_data/split_wgs_bam.png)
+![split_wgs_bam](docs/readme_data/split_wgs_bam.png)
 
 The normal also needs to be split by region from an input data path to an output per region template.
 
@@ -466,7 +464,7 @@ meta:
 
 ## 6. Variant Calling
 
-![variant_calling](readme_data/variant_calling.png)
+![variant_calling](docs/readme_data/variant_calling.png)
 
 Inputs are a WGS tumour bam file and a WGS normal bam file along with the tumour cells. The bam files are used for the variant calling. The pipeline also generates counts at the snvs for each cell.
 The variant calling takes in both the per cell bam yaml, using the per cell bams for variant allele counting, and the tumour and normal region templates for calling snvs in parallel by region.
@@ -523,7 +521,7 @@ meta:
 
 ## 7. Breakpoint calling
 
-![breakpoint_calling](readme_data/breakpoint_calling.png)
+![breakpoint_calling](docs/readme_data/breakpoint_calling.png)
 
 The breakpoint analysis takes in per cell bam yaml in addition to the unsplit matched normal bam filename.
 
@@ -605,7 +603,7 @@ meta:
 
 ## 8. Haplotype calling:
 
-![infer_haps](readme_data/infer_haps.png)
+![infer_haps](docs/readme_data/infer_haps.png)
 
 The haplotype analysis takes in per cell bam yaml in addition to the unsplit matched normal bam filename.
 
@@ -685,7 +683,7 @@ meta:
 
 ## 9. SNV genotyping:
 
-![variant_counting](readme_data/variant_counting.png)
+![variant_counting](docs/readme_data/variant_counting.png)
 
 ### Input:
 
@@ -738,7 +736,7 @@ meta:
 
 
 ## 10. Germline Calling:
-![germline_calling](readme_data/germline.png)
+![germline_calling](docs/readme_data/germline.png)
 
 
 ### Input:

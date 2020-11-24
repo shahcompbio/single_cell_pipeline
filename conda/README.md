@@ -6,7 +6,7 @@ cd into the current directory (```single_cell_pipeline/conda```) and launch a do
 ```docker run -it -v $PWD:$PWD -w $PWD singlecellpipeline/conda_build:v0.0.1 bash```
 
 #### 2. To build: 
-##### 2.1 For alignement workflow: 
+##### 2.1 For alignment workflow: 
 
 ```conda build single_cell_pipeline_align -c bioconda -c shahcompbio```
 
