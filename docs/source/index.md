@@ -192,6 +192,8 @@ meta:
     - LANE_ID_2
 ```
 
+The alignment pipeline classifies the species for each read. You can read more about it in detail here: (Organism Filter)[organism_filter.md]
+
 The alignment metrics and gc metrics tables are described in detail TODO
 
 ## 2. HMMcopy
@@ -344,6 +346,12 @@ meta:
   version: v0.0.0
   library_id: LIBRARY_ID
 ```
+
+
+The annotation pipeline runs the:
+1. Cell Cycle Classifier: You can learn more here: [cell_cycle_classifier](https://github.com/shahcompbio/cell_cycle_classifier)
+2. Cell Quality Classifier: You can learn more here: [cell quality classifier] (quality_classifier.md)
+
 
 The metrics table is described in detail TODO
 
