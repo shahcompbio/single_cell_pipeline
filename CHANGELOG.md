@@ -1,5 +1,12 @@
 # Change Log
 
+### v0.6.37
+
+Changes:
+1. fixed snpeff call in  germline calling
+2. updated docs
+
+
 ### v0.6.36
 
 Changes:
