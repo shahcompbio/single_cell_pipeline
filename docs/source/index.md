@@ -1,9 +1,7 @@
 
 # Single Cell Pipeline
 
-For a installation guide see [INSTALL](install.md)
-
-For LSF + singularity documentation see [Singularity](docs/singularity/singularity.md)
+For installation guide see [INSTALL](install.md)
 
 [Changelog](CHANGELOG.md)
 
@@ -192,9 +190,9 @@ meta:
     - LANE_ID_2
 ```
 
-The alignment pipeline classifies the species for each read. You can read more about it in detail here: (Organism Filter)[organism_filter.md]
+The alignment pipeline classifies the species for each read. You can read more about it in detail here: [Organism Filter](organism_filter.md)
 
-The alignment metrics and gc metrics tables are described in detail TODO
+You can also read more about the alignment metrics data [here](alignment_metrics.md) and gc metrics [here](gc_metrics.md)
 
 ## 2. HMMcopy
 
@@ -276,7 +274,7 @@ meta:
     - CELL_ID_1
 ```
 
-The reads, segs, params, and metrics tables are described in detail TODO
+You can read more about the data in the reads table [here](hmmcopy_reads.md), segments table [here](hmmcopy_segments.md) and metrics table here [here](hmmcopy_metrics.md).
 
 ## 3. Annotation
 
@@ -350,10 +348,10 @@ meta:
 
 The annotation pipeline runs the:
 1. Cell Cycle Classifier: You can learn more here: [cell_cycle_classifier](https://github.com/shahcompbio/cell_cycle_classifier)
-2. Cell Quality Classifier: You can learn more here: [cell quality classifier] (quality_classifier.md)
+2. Cell Quality Classifier: You can learn more here: [cell quality classifier](quality_classifier.md)
 
 
-The metrics table is described in detail TODO
+The metrics table is described in detail [here](annotation_metrics.md)
 
 ## 4. Split merge cell bams
 
@@ -451,7 +449,6 @@ Bam files are named as `{REGION_1}.bam` in the BAM results directory.
 
 The metadata file is structured as follows:
 
-TODO: is this the same format as split cells?
 
 ```
 filenames:
