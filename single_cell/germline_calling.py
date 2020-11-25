@@ -87,12 +87,11 @@ def germline_calling_workflow(args):
         func="biowrappers.components.variant_calling.snpeff.create_snpeff_annotation_workflow",
         args=(
             config['databases']['snpeff']['db'],
+            config['databases']['snpeff']['data_dir'],
             mgd.InputFile(out_files['samtools_germline_vcf'], extensions=['.tbi']),
             mgd.OutputFile(out_files['snpeff_vcf_filename']),
         ),
         kwargs={
-            'hdf5_output': False,
-            'vcftools_docker': vcftoolsdocker,
             'snpeff_docker': snpeffdocker,
         }
     )
