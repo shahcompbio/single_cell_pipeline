@@ -73,21 +73,17 @@ def sample_level_report(
         snv_cell_counts, snv_alt_counts, destruct_rearrangement_plots_unfiltered,
         destruct_rearrangement_plots_filtered, lumpy_rearrangement_plots_unfiltered, 
         baf_plot, cn_plot, datatype_summary, maf, html_file,
-        sample_id, docker_image=None
+        sample_id, tmpspace, docker_image=None
 ):
     files_args = [
         html_file, sample_id, mutations_per_cell, summary,
         snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count,
         snv_cell_counts, snv_alt_counts, destruct_rearrangement_plots_unfiltered,
         destruct_rearrangement_plots_filtered, lumpy_rearrangement_plots_unfiltered, 
-        baf_plot, cn_plot, datatype_summary, maf
+        baf_plot, cn_plot, datatype_summary, maf,tmpspace
     ]
 
     files_args = [os.path.abspath(v) for v in files_args]
-
-    files_dir = os.path.dirname(files_args[0])
-
-    files_args = files_args.append(files_dir)
 
     cmd = ['run_report.sh'] + files_args
 
@@ -96,7 +92,7 @@ def sample_level_report(
 
 def create_mutation_report(
         pseudo_bulk_group, merged_maf, high_impact_maf, high_impact_snvs, report_html,
-        docker_image=None
+        tmpspace, docker_image=None
 ):
     cmd = [
         "run_mutationreport.sh",
@@ -104,11 +100,8 @@ def create_mutation_report(
         os.path.abspath(pseudo_bulk_group),
         os.path.abspath(high_impact_snvs),
         os.path.abspath(merged_maf),
-        os.path.abspath(high_impact_maf)
+        os.path.abspath(high_impact_maf),
+        tmpspace
     ]
-
-    dirname = os.path.dirname(cmd[0])
-
-    cmd = cmd.append(dirname)
 
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)

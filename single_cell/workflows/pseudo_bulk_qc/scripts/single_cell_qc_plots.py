@@ -485,7 +485,7 @@ def qc_plots(
     plot_snv_cell_counts(cell_counts, snv_cell_counts)
 
     snv_data = snv_data.merge(cell_counts, how='left')
-    #assert not snv_data['num_cells'].isnull().any()
+    assert not snv_data['num_cells'].isnull().any()
 
     plot_snv_alt_counts(snv_count_data, snv_alt_counts)
 

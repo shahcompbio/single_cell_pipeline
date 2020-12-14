@@ -61,6 +61,7 @@ def create_patient_workflow(
             mgd.InputFile(high_impact_maf),
             mgd.InputFile(merged_high_impact_snvs),
             mgd.OutputFile(mutationreport),
+            mgd.TempSpace("mutationreport")
         ),
         kwargs={'docker_image': scp_qc_docker['pseudo_bulk_qc_html_report']}
     )
@@ -173,6 +174,7 @@ def create_sample_level_plots(
             mgd.InputFile(maf),
             mgd.OutputFile(reporthtml),
             cell_id + "_" + library_id,
+            mgd.TempSpace("mainreport")
         ),
         kwargs={'docker_image': scp_qc_docker['pseudo_bulk_qc_html_report']}
     )

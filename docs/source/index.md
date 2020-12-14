@@ -785,6 +785,7 @@ meta:
 ```
 
 ## 11. Pseudobulk QC:
+![pseudo_bulk_qc](readme_data/pseudo_bulk_qc.png)
 
 ### Input:
 
@@ -812,6 +813,7 @@ SA123:
       alignment_metrics: PSEUDO_BULK_QC/ref_test_data/alignment_metrics.csv.gz
       gc_metrics: PSEUDO_BULK_QC/ref_test_data/gc_metrics.csv.gz
       indel_file: PSEUDO_BULK_QC/ref_test_data/strelka_indel.vcf.gz
+      isabl_id: {isabl-specific id for SA123X1}
 ```
 
 ### Run:
@@ -831,21 +833,27 @@ The metadata file is structured as follows:
 
 ```
 filenames:
-./{patient_id}/{sample_id}/{library_id}_snvs_high_impact.csv
-./{patient_id}/{sample_id}/{library_id}_num_cells_class_top10_mutsig.pdf
-./{patient_id}/{sample_id}/{library_id}_num_cells_class_mutsig.pdf
-./{patient_id}/{sample_id}/{library_id}/snvs_high_impact.csv
-./{patient_id}/{sample_id}/{library_id}/samplelevelmaf.maf
-./{patient_id}/{sample_id}/{library_id}/snv_alt_counts.pdf
-./{patient_id}/{sample_id}/{library_id}/snvs_all.csv
-./{patient_id}/{sample_id}/{library_id}/summary.csv
-./{patient_id}/{sample_id}/{library_id}/datatype_summary.csv
-./{patient_id}/{sample_id}/{library_id}/snv_cell_counts.pdf
+./{patient_id}/mutationreport.html
+./{patient_id}/grouplevel_high_impact_maf.maf
+./{patient_id}/grouplevel_high_impact_merged_snvs.csv
+./{patient_id}/grouplevelmaf.maf
+./{patient_id}/grouplevel_snvs.csv
+./{patient_id}/{sample_id}/{library_id}/mainreport.html
+./{patient_id}/{sample_id}/{library_id}/{library_id}_snvs_high_impact.csv
+./{patient_id}/{sample_id}/{library_id}/{library_id}_num_cells_class_top10_mutsig.pdf
+./{patient_id}/{sample_id}/{library_id}/{library_id}_num_cells_class_mutsig.pdf
+./{patient_id}/{sample_id}/{library_id}/{library_id}/snvs_high_impact.csv
+./{patient_id}/{sample_id}/{library_id}/{library_id}/samplelevelmaf.maf
+./{patient_id}/{sample_id}/{library_id}/{library_id}/snv_alt_counts.pdf
+./{patient_id}/{sample_id}/{library_id}/{library_id}/snvs_all.csv
+./{patient_id}/{sample_id}/{library_id}/{library_id}/summary.csv
+./{patient_id}/{sample_id}/{library_id}/{library_id}/datatype_summary.csv
+./{patient_id}/{sample_id}/{library_id}/{library_id}/snv_cell_counts.pdf
 ./{patient_id}/{sample_id}/{library_id}/trinuc.csv
-./{patient_id}/{sample_id}/{library_id}_snv_genome_count.pdf
-./{patient_id}/{sample_id}/{library_id}_adjacent_distance_class_mutsig.pdf
-./{patient_id}/{sample_id}/{library_id}_adjacent_distance_class_top10_mutsig.pdf
-./{patient_id}/{sample_id}/{library_id}_snv_adjacent_distance.pdf
+./{patient_id}/{sample_id}/{library_id}/{library_id}_snv_genome_count.pdf
+./{patient_id}/{sample_id}/{library_id}/{library_id}_adjacent_distance_class_mutsig.pdf
+./{patient_id}/{sample_id}/{library_id}/{library_id}_adjacent_distance_class_top10_mutsig.pdf
+./{patient_id}/{sample_id}/{library_id}/{library_id}_snv_adjacent_distance.pdf
 meta:
   command: 'single_cell pseudo_bulk_qc ...'
   input_yaml: input.yaml
@@ -853,9 +861,33 @@ meta:
   version: v0.0.0
 ```
 
+### Output Descriptions
+| FILENAME                                           | DESCRIPTION                                                                                         |
+|----------------------------------------------------|-----------------------------------------------------------------------------------------------------|
+| grouplevel_high_impact_maf.maf                     | patient maf filtered on variant consequence and impact                                              |
+| grouplevel_high_impact_merged_snvs.csv             | all snvs for patient filtered for high impact                                                       |
+| grouplevelmaf.maf                                  | single maf with all maf data from patient                                                           |
+| grouplevel_snvs.csv                                | al snvs for patient                                                                                 |
+| mutationreport.html                                | html report characterizing patient-level variants                                                   |
+| mainreport.html                                    | html report containing library-level analyses                                                       |
+| {library}_adjacent_distance_class_top10_mutsig.pdf | bar plot of top 10 mutational signatures in the library grouped by adjacent distance                |
+| {library}_adjacent_distance_class_mutsig.pdf       | heatmap of library signatures groupedby adjacent distance                                           |
+| {library}_num_cells_class_top10_mutsig.pdf         | bar plot of top 10 mutational signatures grouped by number of cells                                 |
+| {library}_num_cells_class_mutsig.pdf               | heatmap of mutational signatures grouped by number of cells                                         |
+| {library}snvs_high_impact.csv                      | high impact snvs for the library (effect_impact=="HIGH")                                            |
+| {library}Asnv_adjacent_distance.pdf                | scatterplot of distance between mutations                                                           |
+| {library}snv_genome_count.pdf                      | scatterplot of distance between mutations                                                           |
+| samplelevelmaf.maf                                 | barplot of number of snvs across the genome                                                         |
+| snvs_all.csv                                       | all snvs for the library                                                                            |
+| trinuc.csv                                         | trinucleotide contexts for the snvs in the library                                                  |
+| datatype_summary.csv                               | number of cells with snvs, cnvs and haplotype variants                                              |
+| snv_alt_counts.pdf                                 | histogram of alt counts/snv for the library                                                         |
+| snvs_high_impact.csv                               | high impact snvs for the library (effect_umpact = {"HIGH", "NON_SYNONYMOUS_CODING", "STOP_GAINED"}) |
+| snv_cell_counts.pdf                                | histogram of cell counts/snv for the library                                                        |
+| summary.csv                                        | number of mutations and number of cells in the library                                              |
 
 
-## 11. Generate Config
+## 12. Generate Config
 
 The pipeline auto generates a config file with the default parameters before every run. Some of the values in the config file can be updated by using the ``--config_override`` option.  ```generate_config``` option allows users to generate the config files. These configs can then be specified as input to the pipeline after making the required changes.
 ```
@@ -866,7 +898,7 @@ the pipeline config file contains all pipeline defaults and the batch config spe
 the pipeline config can be specified manually when running the pipeline with ```--config_file``` option and the batch config with ```--submit_config``` option.
 
 
-## 12. Clean Sentinels
+## 13. Clean Sentinels
 
 the pipeline will skip any successful tasks from previous runs when run again. The ``--rerun`` flag force run all tasks including the successful tasks from the previous runs while the ```clean_sentinels``` option provides a more fine grained control.
 
