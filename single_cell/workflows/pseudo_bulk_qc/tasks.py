@@ -85,6 +85,10 @@ def sample_level_report(
 
     files_args = [os.path.abspath(v) for v in files_args]
 
+    files_dir = os.path.dirname(files_args[0])
+
+    files_args = files_args.append(files_dir)
+
     cmd = ['run_report.sh'] + files_args
 
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
@@ -102,4 +106,9 @@ def create_mutation_report(
         os.path.abspath(merged_maf),
         os.path.abspath(high_impact_maf)
     ]
+
+    dirname = os.path.dirname(cmd[0])
+
+    cmd = cmd.append(dirname)
+
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
