@@ -61,6 +61,7 @@ def create_patient_workflow(
             mgd.InputFile(high_impact_maf),
             mgd.InputFile(merged_high_impact_snvs),
             mgd.OutputFile(mutationreport),
+            mgd.TempSpace("mutationreport")
         ),
         kwargs={'docker_image': scp_qc_docker['pseudo_bulk_qc_html_report']}
     )
@@ -74,7 +75,7 @@ def create_sample_level_plots(
         dbsnp_status_file, trinuc_file, counts_file,
         destruct_breakpoint_annotation, destruct_breakpoint_counts,
         lumpy_breakpoint_annotation, lumpy_breakpoint_evidence,
-        haplotype_allele_data, annotation_metrics, hmmcopy_reads,
+        haplotype_allele_data, annotation_metrics, hmmcopy_reads,isabl_id,
         hmmcopy_segs, hmmcopy_metrics, alignment_metrics, gc_metrics,
         indel_file, reporthtml, maf, snvs_all_csv, out_dir, config
 ):
@@ -111,6 +112,7 @@ def create_sample_level_plots(
         func="single_cell.workflows.pseudo_bulk_qc.scripts.single_cell_qc_plots.qc_plots",
         args=(
             cell_id,
+            isabl_id,
             mgd.InputFile(mappability_file),
             mgd.InputFile(strelka_file),
             mgd.InputFile(museq_file),
@@ -172,6 +174,7 @@ def create_sample_level_plots(
             mgd.InputFile(maf),
             mgd.OutputFile(reporthtml),
             cell_id + "_" + library_id,
+            mgd.TempSpace("mainreport")
         ),
         kwargs={'docker_image': scp_qc_docker['pseudo_bulk_qc_html_report']}
     )

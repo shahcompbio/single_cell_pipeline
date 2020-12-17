@@ -39,7 +39,7 @@ lumpy_to_destruct_breakpoint_labels = {'INV': 'inversion',
 
 
 def load_snv_data(
-        sample_id, library_id, prefix, mappability_file, strelka_file,
+        sample_id, isabl_id, library_id, prefix, mappability_file, strelka_file,
         museq_file, cosmic_status_file, snpeff_file, dbsnp_status_file,
         trinuc_file, counts_file
 ):
@@ -68,7 +68,7 @@ def load_snv_data(
         [counts_file],
         snv_counts=True,
         positions=snv_data[['chrom', 'coord', 'ref', 'alt']].drop_duplicates(),
-        filter_sample_id=sample_id,
+        filter_sample_id=isabl_id,
         filter_library_id=library_id
     )
 
@@ -337,7 +337,7 @@ def load_allele_data(haplotype_allele_data):
 
         chunk = chunk['readcount'].unstack(fill_value=0)
 
-        chunk.rename(columns={0: 'allele_1', 1: 'allele_2'}, inplace=True)
+        chunk.rename(columns={"0": 'allele_1', "1": 'allele_2'}, inplace=True)
 
         chunk.reset_index(inplace=True)
 
@@ -437,7 +437,7 @@ def plot_cn(cn_data_filt, cn_plot):
 
 
 def qc_plots(
-        sample_id, mappability_file, strelka_file, museq_file,
+        sample_id, isabl_id, mappability_file, strelka_file, museq_file,
         cosmic_status_file, snpeff_file, dbsnp_status_file, trinuc_file,
         counts_file, destruct_breakpoint_annotation, destruct_breakpoint_count,
         lumpy_breakpoint_annotation, lumpy_breakpoint_evidence, haplotype_allele_data,
@@ -450,7 +450,7 @@ def qc_plots(
 
 
     snv_data, snv_count_data = load_snv_data(
-        sample_id, library_id, prefix, mappability_file, strelka_file, museq_file,
+        sample_id, isabl_id, library_id, prefix, mappability_file, strelka_file, museq_file,
         cosmic_status_file, snpeff_file, dbsnp_status_file, trinuc_file, counts_file
     )
 
