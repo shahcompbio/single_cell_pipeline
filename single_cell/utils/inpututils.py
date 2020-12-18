@@ -273,3 +273,18 @@ def get_fastqs(fastqs_file):
             fastq_2_filenames[(cell, lane)] = paths["fastq_2"]
 
     return fastq_1_filenames, fastq_2_filenames
+
+def load_cohort_qc_inputs(yaml):
+    yaml = load_yaml(yaml)
+    cohort = list(yaml.keys())[0]
+    data = yaml[cohort]
+    mafs = {}
+    hmmcopy={}
+    maf_data=data["MAFS"]
+    hmmcopy_data=data["HMMCOPY"]
+    for sample, data in hmmcopy_data.items():
+        for library, data in data.items():
+            hmmcopy[(sample, library)] = {"hmmcopy": data["hmmcopy_reads"]}
+    for sample, data in maf_data.items():
+        mafs[(sample)] = {"germline_maf": data["germline_maf"], "somatic_maf": data["somatic_maf"]}
+    return cohort, mafs, hmmcopy

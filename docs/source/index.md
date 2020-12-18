@@ -887,7 +887,46 @@ meta:
 | summary.csv                                        | number of mutations and number of cells in the library                                              |
 
 
-## 12. Generate Config
+## 12. Pseudobulk Cohort QC:
+![cohort_qc](readme_data/dlp_cohort_qc_workflow.png)
+
+### Input:
+
+```
+{COHORT}:
+  MAFS:
+    {SAMPLE}:
+      germline_maf:
+      somatic_maf:
+  HMMCOPY:
+    {SAMPLE}:
+      {LIBRARY}:
+        hmmcopy_reads:
+```
+
+### Run:
+```
+ single_cell cohort_qc --input_yaml {}  --submit {} --out_dir {} --tmpdir {} --loglevel {}  --API_key  {}
+```
+### Outputs
+
+
+
+The metadata file is structured as follows:
+
+```
+filenames:
+./{cohort_id}/cna_table.tsv.gz
+./{cohort_id}/cohort_oncogenic_filtered.maf
+./{cohort_id}/cohort_oncoplot.png
+./{cohort_id}/segments.tsv.gz
+
+```
+### Output Descriptions
+```
+```
+
+## 13. Generate Config
 
 The pipeline auto generates a config file with the default parameters before every run. Some of the values in the config file can be updated by using the ``--config_override`` option.  ```generate_config``` option allows users to generate the config files. These configs can then be specified as input to the pipeline after making the required changes.
 ```
@@ -898,7 +937,7 @@ the pipeline config file contains all pipeline defaults and the batch config spe
 the pipeline config can be specified manually when running the pipeline with ```--config_file``` option and the batch config with ```--submit_config``` option.
 
 
-## 13. Clean Sentinels
+## 14. Clean Sentinels
 
 the pipeline will skip any successful tasks from previous runs when run again. The ``--rerun`` flag force run all tasks including the successful tasks from the previous runs while the ```clean_sentinels``` option provides a more fine grained control.
 
