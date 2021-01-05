@@ -1,10 +1,10 @@
 package:
   name: single_cell_pipeline_align
-  version: '0.6.37'
+  version: '0.6.38'
 
 source:
   git_url: https://github.com/shahcompbio/single_cell_pipeline.git
-  git_rev: v0.6.37
+  git_rev: v0.6.38
 
 build:
   number: 1

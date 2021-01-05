@@ -1,5 +1,15 @@
 # Change Log
 
+### v0.6.38
+
+Changes:
+1. destruct updated to remove secondary reads
+2. updated pseudobulk QC on jun o (singularity)
+3. updated pseudobulk plots
+4. updated pseudobulk documentation
+
+
+
 ### v0.6.37
 
 Changes:

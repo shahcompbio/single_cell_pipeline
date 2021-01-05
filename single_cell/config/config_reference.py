@@ -24,7 +24,7 @@ def containers(version=None):
         'snpeff': 'vcftools:v0.0.2',
         'titan': 'titan:v0.0.1',
         'remixt': 'remixt:v0.0.7',
-        'destruct': 'destruct:v0.0.5',
+        'destruct': 'destruct:v0.0.6',
         'trimgalore': 'trimgalore:v0.0.2',
         'lumpy': 'lumpy:v0.0.3',
         'cell_cycle_classifier': 'cell_cycle_classifier:v0.0.3',
