@@ -228,9 +228,13 @@ def organism_filter(
     write_summary_counts(counts, summary_metrics, cell_id, params)
 
     if filter_contaminated_reads:
+        ref_name = [entry['name'] for entry in params['genomes'] if entry['path'] == reference]
+        assert len(ref_name) == 1, 'duplicate reference paths detected in fastqscreen params'
+        ref_name = ref_name[0]
+
         filter_reads(
             tagged_fastq_r1, tagged_fastq_r2, filtered_fastq_r1,
-            filtered_fastq_r2, reference
+            filtered_fastq_r2, ref_name
         )
     else:
         # use the full tagged fastq downstream

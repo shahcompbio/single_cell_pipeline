@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.6.39
+
+Bugfix:
+1. Error in fastqscreen when removing contaminated reads
+
 ### v0.6.38
 
 Changes:
