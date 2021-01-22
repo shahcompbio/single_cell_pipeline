@@ -6,10 +6,8 @@ def validate_alignment_fastqs(data):
         for lane, lane_data in sample_data['fastqs'].items():
             if not utils.get(lane_data, 'fastq_1') or not utils.get(lane_data, 'fastq_2'):
                 raise utils.MissingInput()
-            utils.check_data_type(['sequencing_center', 'sequencing_instrument'], str, lane_data)
-
-            # this is not the platform. that is hardcoded in pipeline.
-            # utils.check_sequencing_instrument_type(utils.get(lane_data, 'sequencing_instrument'))
+            utils.check_data_type(['sequencing_center'], str, lane_data)
+            utils.check_data_type(['trim'], bool, lane_data)
 
 
 def validate_sample_info(yamldata):

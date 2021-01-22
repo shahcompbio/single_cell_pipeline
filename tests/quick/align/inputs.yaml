@@ -6,7 +6,7 @@ SA1090-A96213A-R20-C28:
       fastq_1: test_data/tumour_fastqs/SA1090-A96213A-R20-C28_1.fastq.gz
       fastq_2: test_data/tumour_fastqs/SA1090-A96213A-R20-C28_2.fastq.gz
       sequencing_center: TEST
-      sequencing_instrument: TEST
+      trim: true
   img_col: 45
   index_i5: i5-20
   index_i7: i7-28
@@ -22,7 +22,7 @@ SA1090-A96213A-R20-C62:
       fastq_1: test_data/tumour_fastqs/SA1090-A96213A-R20-C62_1.fastq.gz
       fastq_2: test_data/tumour_fastqs/SA1090-A96213A-R20-C62_2.fastq.gz
       sequencing_center: TEST
-      sequencing_instrument: TEST
+      trim: true
   img_col: 11
   index_i5: i5-20
   index_i7: i7-62
@@ -38,7 +38,7 @@ SA1090-A96213A-R22-C43:
       fastq_1: test_data/tumour_fastqs/SA1090-A96213A-R22-C43_1.fastq.gz
       fastq_2: test_data/tumour_fastqs/SA1090-A96213A-R22-C43_2.fastq.gz
       sequencing_center: TEST
-      sequencing_instrument: TEST
+      trim: true
   img_col: 30
   index_i5: i5-22
   index_i7: i7-43

@@ -1,6 +1,7 @@
 import yaml
 from single_cell.utils.validator import validate
 
+
 def load_split_wgs_input(input_yaml):
     yamldata = load_yaml(input_yaml)
 
@@ -80,7 +81,6 @@ def load_variant_calling_input(input_yaml):
 
     validate.validate_variant_calling(yamldata)
 
-
     normals = yamldata['normal']
 
     tumours = yamldata['tumour']
@@ -108,7 +108,6 @@ def load_variant_counting_input(input_yaml):
     yamldata = load_yaml(input_yaml)
 
     validate.validate_snv_genotyping(yamldata)
-
 
     vcf_files = yamldata['vcf_files']
 
@@ -166,14 +165,15 @@ def load_yaml(path):
             'Unable to open file: {0}'.format(path))
     return data
 
+
 def load_qc_input(path):
-    data= {}
+    data = {}
     yaml = load_yaml(path)
     for patient, patient_data in yaml.items():
         for sample, sample_data in patient_data.items():
             for library, library_data in sample_data.items():
-                data[(patient, sample, library)] = {data_label: data 
-                    for data_label, data in library_data.items()
+                data[(patient, sample, library)] = {
+                    data_label: data for data_label, data in library_data.items()
                 }
     return data
 
@@ -190,24 +190,13 @@ def get_lane_info(fastqs_file):
         fastqs = data[cell]["fastqs"]
 
         for lane, paths in fastqs.items():
-            if 'trim' in paths:
-                seqinfo[(cell, lane)] = paths["trim"]
-            elif 'sequencing_instrument' in paths:
-                DeprecationWarning("sequencing instrument value is deprecated "
-                                   "and will be removed with v0.2.8")
-                if paths["sequencing_instrument"] == "N550":
-                    trim = False
-                else:
-                    trim = True
-                seqinfo[(cell, lane)] = {'trim': trim}
-            else:
-                raise Exception(
-                    "trim flag missing in cell: {}".format(cell))
+            assert 'trim' in paths, "trim key missing in cell: {}".format(cell)
+            assert 'sequencing_center' in paths, "sequencing center missing in cell: {}".format(cell)
 
-            if "sequencing_center" not in paths:
-                raise Exception(
-                    "sequencing_center key missing in cell: {}".format(cell))
-            seqinfo[(cell, lane)]['center'] = paths["sequencing_center"]
+            seqinfo[(cell, lane)] = {
+                'trim': paths['trim'],
+                'center': paths['sequencing_center'],
+            }
 
     return seqinfo
 
@@ -246,8 +235,8 @@ def get_bams(fastqs_file):
     data = load_yaml(fastqs_file)
 
     for cell in data.keys():
-        assert "bam" in data[
-            cell], "couldnt extract bam file paths from yaml input for cell: {}".format(cell)
+        assert "bam" in data[cell], \
+            "couldnt extract bam file paths from yaml input for cell: {}".format(cell)
 
     bam_filenames = {cell: data[cell]["bam"] for cell in data.keys()}
 
@@ -260,8 +249,8 @@ def get_fastqs(fastqs_file):
     validate.validate_alignment_fastqs(data)
 
     for cell in data.keys():
-        assert "fastqs" in data[
-            cell], "couldnt extract fastq file paths from yaml input for cell: {}".format(cell)
+        assert "fastqs" in data[cell], \
+            "couldnt extract fastq file paths from yaml input for cell: {}".format(cell)
 
     fastq_1_filenames = dict()
     fastq_2_filenames = dict()
