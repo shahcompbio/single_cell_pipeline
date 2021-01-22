@@ -191,7 +191,7 @@ def get_lane_info(fastqs_file):
 
         for lane, paths in fastqs.items():
             if 'trim' in paths:
-                seqinfo[(cell, lane)] = paths["trim"]
+                seqinfo[(cell, lane)] = {'trim': paths["trim"]}
             elif 'sequencing_instrument' in paths:
                 DeprecationWarning("sequencing instrument value is deprecated "
                                    "and will be removed with v0.2.8")
