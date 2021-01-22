@@ -175,7 +175,7 @@ def create_alignment_workflow(
 ):
     baseimage = config['docker']['single_cell_pipeline']
 
-    ctx = {'mem': 7, 'ncpus': 1, 'docker_image': baseimage, 'mem_retry_factor': 1}
+    ctx = {'mem': 7, 'ncpus': 1, 'docker_image': baseimage}
 
     bam_filename = dict([(cellid, bam_filename[cellid])
                          for cellid in cell_ids])
