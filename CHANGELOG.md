@@ -1,5 +1,14 @@
 # Change Log
 
+### v0.6.40
+
+#### Bug:
+1. bugfix: trim field in seqinfo incorrect (#119)
+
+#### Changes:
+1. remove mem_retry_factor overrides in pipeline
+2. deprecation: sequencing instrument in input.yaml is deprecated, replaced with trim (boolean)
+
 ### v0.6.39
 
 Bugfix:

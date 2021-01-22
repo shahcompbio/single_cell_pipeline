@@ -7,7 +7,7 @@ SA501X8XB01694-A90696C-R70-C42:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_CATTTT-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_CATTTT-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 31
   index_i5: i5-70
   index_i7: i7-42
@@ -25,7 +25,7 @@ SA501X8XB01694-A90696C-R70-C43:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_CGGAAT-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_CGGAAT-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 30
   index_i5: i5-70
   index_i7: i7-43
@@ -43,7 +43,7 @@ SA501X8XB01694-A90696C-R70-C44:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_GATATA-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_GATATA-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 29
   index_i5: i5-70
   index_i7: i7-44
@@ -61,7 +61,7 @@ SA501X8XB01694-A90696C-R70-C45:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_GGCCTG-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_GGCCTG-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 28
   index_i5: i5-70
   index_i7: i7-45
@@ -79,7 +79,7 @@ SA501X8XB01694-A90696C-R70-C46:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_TCTACC-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_TCTACC-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 27
   index_i5: i5-70
   index_i7: i7-46
@@ -97,7 +97,7 @@ SA501X8XB01694-A90696C-R70-C47:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_AGTCAA-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_AGTCAA-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 26
   index_i5: i5-70
   index_i7: i7-47
@@ -115,7 +115,7 @@ SA501X8XB01694-A90696C-R70-C49:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_ATCACG-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_ATCACG-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 24
   index_i5: i5-70
   index_i7: i7-49
@@ -133,7 +133,7 @@ SA501X8XB01694-A90696C-R70-C51:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_AACCCC-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_AACCCC-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 22
   index_i5: i5-70
   index_i7: i7-51
@@ -151,7 +151,7 @@ SA501X8XB01694-A90696C-R70-C52:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_ACCCAG-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_ACCCAG-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 21
   index_i5: i5-70
   index_i7: i7-52
@@ -169,7 +169,7 @@ SA501X8XB01694-A90696C-R70-C53:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_AGCGCT-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_AGCGCT-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 20
   index_i5: i5-70
   index_i7: i7-53
@@ -187,7 +187,7 @@ SA501X8XB01694-A90696C-R70-C54:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_CAAAAG-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_CAAAAG-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 19
   index_i5: i5-70
   index_i7: i7-54
@@ -205,7 +205,7 @@ SA501X8XB01694-A90696C-R70-C55:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_CCAACA-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_CCAACA-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 18
   index_i5: i5-70
   index_i7: i7-55
@@ -223,7 +223,7 @@ SA501X8XB01694-A90696C-R70-C56:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_CTAGCT-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_CTAGCT-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 17
   index_i5: i5-70
   index_i7: i7-56
@@ -241,7 +241,7 @@ SA501X8XB01694-A90696C-R70-C57:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_GATGCT-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_GATGCT-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 16
   index_i5: i5-70
   index_i7: i7-57
@@ -259,7 +259,7 @@ SA501X8XB01694-A90696C-R70-C58:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_TAATCG-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_TAATCG-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 15
   index_i5: i5-70
   index_i7: i7-58
@@ -277,7 +277,7 @@ SA501X8XB01694-A90696C-R70-C59:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_TGAATG-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_TGAATG-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 14
   index_i5: i5-70
   index_i7: i7-59
@@ -295,7 +295,7 @@ SA501X8XB01694-A90696C-R70-C60:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_AGTTCC-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_AGTTCC-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 13
   index_i5: i5-70
   index_i7: i7-60
@@ -313,7 +313,7 @@ SA501X8XB01694-A90696C-R70-C61:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_CGATGT-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_CGATGT-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 12
   index_i5: i5-70
   index_i7: i7-61
@@ -331,7 +331,7 @@ SA501X8XB01694-A90696C-R70-C62:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_TAGCTT-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_TAGCTT-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 11
   index_i5: i5-70
   index_i7: i7-62
@@ -349,7 +349,7 @@ SA501X8XB01694-A90696C-R70-C63:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_AACTTG-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_AACTTG-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 10
   index_i5: i5-70
   index_i7: i7-63
@@ -367,7 +367,7 @@ SA501X8XB01694-A90696C-R70-C64:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_ACCGGC-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_ACCGGC-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 9
   index_i5: i5-70
   index_i7: i7-64
@@ -385,7 +385,7 @@ SA501X8XB01694-A90696C-R70-C65:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_AGGCCG-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_AGGCCG-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 8
   index_i5: i5-70
   index_i7: i7-65
@@ -403,7 +403,7 @@ SA501X8XB01694-A90696C-R70-C66:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_CAACTA-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_CAACTA-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 7
   index_i5: i5-70
   index_i7: i7-66
@@ -421,7 +421,7 @@ SA501X8XB01694-A90696C-R70-C67:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_CCACGC-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_CCACGC-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 6
   index_i5: i5-70
   index_i7: i7-67
@@ -439,7 +439,7 @@ SA501X8XB01694-A90696C-R70-C68:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_CTATAC-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_CTATAC-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 5
   index_i5: i5-70
   index_i7: i7-68
@@ -457,7 +457,7 @@ SA501X8XB01694-A90696C-R70-C69:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_GCAAGG-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_GCAAGG-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 4
   index_i5: i5-70
   index_i7: i7-69
@@ -475,7 +475,7 @@ SA501X8XB01694-A90696C-R70-C70:
       fastq_1: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_TACAGC-CTTCGA_1.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_lowmad/CB643ANXX_3_TACAGC-CTTCGA_2.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 3
   index_i5: i5-70
   index_i7: i7-70

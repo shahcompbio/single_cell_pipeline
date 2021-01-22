@@ -45,18 +45,8 @@ def check_barcodes(barcode_str):
             raise InvalidBarcode('{} is not a valid varcode'.format(barcode_str))
 
 
-def check_sequencing_instrument_type(instrument):
-    bam_instruments = ['CAPILLARY', 'DNBSEQ', 'HELICOS', 'ILLUMINA', 'IONTORRENT', 'LS454', 'ONT', 'PACBIO', 'SOLID']
-
-    if instrument not in bam_instruments:
-        raise InvalidInstrument(
-            '{} instrument is not supported. Please check Bam spec for supported instruments'.format(instrument)
-        )
-
-
-
 def check_genomic_regions(region, sep='-'):
-    chroms = list(map(str,range(1, 23))) + ['X', 'Y']
+    chroms = list(map(str, range(1, 23))) + ['X', 'Y']
 
     chrom, start, end = region.split(sep)
 

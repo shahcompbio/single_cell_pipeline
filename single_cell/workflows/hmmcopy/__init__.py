@@ -20,7 +20,7 @@ def create_hmmcopy_workflow(
     baseimage = hmmparams['docker']['single_cell_pipeline']
     hmmcopy_docker = hmmparams['docker']['hmmcopy']
 
-    ctx = {'mem': 7, 'ncpus': 1, 'docker_image': baseimage, 'mem_retry_factor': 1}
+    ctx = {'mem': 7, 'ncpus': 1, 'docker_image': baseimage}
 
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
