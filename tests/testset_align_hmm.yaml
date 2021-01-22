@@ -7,7 +7,7 @@ SA1044-A90707B-R03-C39:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA1044-A90707B-R03-C39_S524_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA1044-A90707B-R03-C39_S524_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 34
   index_i7: i7-39
   index_i5: i5-03
@@ -25,7 +25,7 @@ SA1044-A90707B-R04-C41:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA1044-A90707B-R04-C41_S466_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA1044-A90707B-R04-C41_S466_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 32
   index_i7: i7-41
   index_i5: i5-04
@@ -43,7 +43,7 @@ SA1044-A90707B-R04-C42:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA1044-A90707B-R04-C42_S465_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA1044-A90707B-R04-C42_S465_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 31
   index_i7: i7-42
   index_i5: i5-04
@@ -61,7 +61,7 @@ SA1044-A90707B-R05-C41:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA1044-A90707B-R05-C41_S410_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA1044-A90707B-R05-C41_S410_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 32
   index_i7: i7-41
   index_i5: i5-05
@@ -79,7 +79,7 @@ SA1044-A90707B-R07-C33:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA1044-A90707B-R07-C33_S306_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA1044-A90707B-R07-C33_S306_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 40
   index_i7: i7-33
   index_i5: i5-07
@@ -97,7 +97,7 @@ SA1044-A90707B-R10-C39:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA1044-A90707B-R10-C39_S132_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA1044-A90707B-R10-C39_S132_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 34
   index_i7: i7-39
   index_i5: i5-10
@@ -115,7 +115,7 @@ SA922-A90707B-R03-C61:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R03-C61_S514_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R03-C61_S514_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 12
   index_i7: i7-61
   index_i5: i5-03
@@ -133,7 +133,7 @@ SA922-A90707B-R03-C62:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R03-C62_S513_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R03-C62_S513_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 11
   index_i7: i7-62
   index_i5: i5-03
@@ -151,7 +151,7 @@ SA922-A90707B-R03-C65:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R03-C65_S510_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R03-C65_S510_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 8
   index_i7: i7-65
   index_i5: i5-03
@@ -169,7 +169,7 @@ SA922-A90707B-R04-C65:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R04-C65_S454_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R04-C65_S454_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 8
   index_i7: i7-65
   index_i5: i5-04
@@ -187,7 +187,7 @@ SA922-A90707B-R06-C68:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R06-C68_S339_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R06-C68_S339_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 5
   index_i7: i7-68
   index_i5: i5-06
@@ -205,7 +205,7 @@ SA922-A90707B-R07-C61:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R07-C61_S290_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R07-C61_S290_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 12
   index_i7: i7-61
   index_i5: i5-07
@@ -223,7 +223,7 @@ SA922-A90707B-R07-C65:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R07-C65_S286_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R07-C65_S286_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 8
   index_i7: i7-65
   index_i5: i5-07
@@ -241,7 +241,7 @@ SA922-A90707B-R08-C60:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R08-C60_S235_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R08-C60_S235_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 13
   index_i7: i7-60
   index_i5: i5-08
@@ -259,7 +259,7 @@ SA922-A90707B-R11-C65:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R11-C65_S74_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R11-C65_S74_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 8
   index_i7: i7-65
   index_i5: i5-11
@@ -277,7 +277,7 @@ SA922-A90707B-R11-C67:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R11-C67_S72_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R11-C67_S72_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 6
   index_i7: i7-67
   index_i5: i5-11
@@ -295,7 +295,7 @@ SA922-A90707B-R12-C66:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R12-C66_S29_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA922-A90707B-R12-C66_S29_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 7
   index_i7: i7-66
   index_i5: i5-12
@@ -313,7 +313,7 @@ SA928-A90707B-R03-C11:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R03-C11_S552_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R03-C11_S552_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 62
   index_i7: i7-11
   index_i5: i5-03
@@ -331,7 +331,7 @@ SA928-A90707B-R03-C19:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R03-C19_S544_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R03-C19_S544_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 54
   index_i7: i7-19
   index_i5: i5-03
@@ -349,7 +349,7 @@ SA928-A90707B-R03-C24:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R03-C24_S539_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R03-C24_S539_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 49
   index_i7: i7-24
   index_i5: i5-03
@@ -367,7 +367,7 @@ SA928-A90707B-R04-C12:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R04-C12_S495_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R04-C12_S495_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 61
   index_i7: i7-12
   index_i5: i5-04
@@ -385,7 +385,7 @@ SA928-A90707B-R05-C16:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R05-C16_S435_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R05-C16_S435_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 57
   index_i7: i7-16
   index_i5: i5-05
@@ -403,7 +403,7 @@ SA928-A90707B-R05-C26:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R05-C26_S425_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R05-C26_S425_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 47
   index_i7: i7-26
   index_i5: i5-05
@@ -421,7 +421,7 @@ SA928-A90707B-R05-C27:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R05-C27_S424_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R05-C27_S424_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 46
   index_i7: i7-27
   index_i5: i5-05
@@ -439,7 +439,7 @@ SA928-A90707B-R06-C29:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R06-C29_S366_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R06-C29_S366_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 44
   index_i7: i7-29
   index_i5: i5-06
@@ -457,7 +457,7 @@ SA928-A90707B-R07-C11:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R07-C11_S328_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R07-C11_S328_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 62
   index_i7: i7-11
   index_i5: i5-07
@@ -475,7 +475,7 @@ SA928-A90707B-R07-C16:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R07-C16_S323_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R07-C16_S323_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 57
   index_i7: i7-16
   index_i5: i5-07
@@ -493,7 +493,7 @@ SA928-A90707B-R07-C19:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R07-C19_S320_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R07-C19_S320_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 54
   index_i7: i7-19
   index_i5: i5-07
@@ -511,7 +511,7 @@ SA928-A90707B-R07-C44:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R07-C44_S295_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R07-C44_S295_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 29
   index_i7: i7-44
   index_i5: i5-07
@@ -529,7 +529,7 @@ SA928-A90707B-R08-C26:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R08-C26_S257_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R08-C26_S257_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 47
   index_i7: i7-26
   index_i5: i5-08
@@ -547,7 +547,7 @@ SA928-A90707B-R08-C28:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R08-C28_S255_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R08-C28_S255_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 45
   index_i7: i7-28
   index_i5: i5-08
@@ -565,7 +565,7 @@ SA928-A90707B-R08-C44:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R08-C44_S239_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R08-C44_S239_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 29
   index_i7: i7-44
   index_i5: i5-08
@@ -583,7 +583,7 @@ SA928-A90707B-R09-C21:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R09-C21_S206_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R09-C21_S206_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 52
   index_i7: i7-21
   index_i5: i5-09
@@ -601,7 +601,7 @@ SA928-A90707B-R09-C25:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R09-C25_S202_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R09-C25_S202_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 48
   index_i7: i7-25
   index_i5: i5-09
@@ -619,7 +619,7 @@ SA928-A90707B-R10-C14:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R10-C14_S157_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R10-C14_S157_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 59
   index_i7: i7-14
   index_i5: i5-10
@@ -637,7 +637,7 @@ SA928-A90707B-R13-C11:
       fastq_1: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R13-C11_S18_R1_001.fastq.gz
       fastq_2: {storageaccount}/testdata/hmmcopy_testdata/SA928-A90707B-R13-C11_S18_R2_001.fastq.gz
       sequencing_center: UBCBRC
-      sequencing_instrument: N550
+      trim: true
   img_col: 62
   index_i7: i7-11
   index_i5: i5-13

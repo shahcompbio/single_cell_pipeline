@@ -94,12 +94,12 @@ SA12345-A12345-R01-C01:
       fastq_1: /path/to/fastqfile/ACTACT-AGTAGT_1.fastq.gz
       fastq_2: /path/to/fastqfile/ACTACT-AGTAGT_1.fastq.gz
       sequencing_center: CENTERID # sequencing center id
-      sequencing_instrument: INSTRUMENT_TYPE # sequencing machine (HiseqX for hiseq, N550 for nextseq machine). pipeline will not run trim galore on N550 output.
+      trim: BOOL # sequencing machine (HiseqX for hiseq, N550 for nextseq machine). pipeline will not run trim galore on N550 output.
     LANE_ID_2:
       fastq_1: /path/to/fastqfile/ATTATT-ACTACT_1.fastq.gz
       fastq_2: /path/to/fastqfile/ATTATT-ACTACT_1.fastq.gz
       sequencing_center: CENTERID
-      sequencing_instrument: INSTRUMENT_TYPE
+      trim: BOOL
   img_col: 10 # column number of the well on chip image
   index_i5: i5-INDEX
   index_i7: i7-INDEX
