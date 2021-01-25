@@ -12,7 +12,7 @@ cd into the current directory (```single_cell_pipeline/conda```) and launch a do
 
 ##### 2.2 For hmmcopy workflow: 
 
-```conda update -n base -c defaults conda -y && conda build single_cell_pipeline_hmmcopy -c bioconda -c shahcompbio``` 
+```conda update -n base -c defaults conda -y && conda build single_cell_pipeline_hmmcopy -c bioconda -c shahcompbio -c conda-forge``` 
 
 ##### 2.3 For annotation workflow: 
 
