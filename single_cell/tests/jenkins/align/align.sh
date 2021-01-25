@@ -27,6 +27,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   --submit local \
   --out_dir ALIGN/output \
   --bams_dir ALIGN/bams \
+  --sequencing_center TEST --trim \
   --config_override '{"version": '\"$TAG\"'}'
 
 

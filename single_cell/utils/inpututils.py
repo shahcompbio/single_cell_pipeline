@@ -178,29 +178,6 @@ def load_qc_input(path):
     return data
 
 
-def get_lane_info(fastqs_file):
-    data = load_yaml(fastqs_file)
-
-    for cell in data.keys():
-        assert "fastqs" in data[
-            cell], "couldnt extract fastq file paths from yaml input for cell: {}".format(cell)
-
-    seqinfo = dict()
-    for cell in data.keys():
-        fastqs = data[cell]["fastqs"]
-
-        for lane, paths in fastqs.items():
-            assert 'trim' in paths, "trim key missing in cell: {}".format(cell)
-            assert 'sequencing_center' in paths, "sequencing center missing in cell: {}".format(cell)
-
-            seqinfo[(cell, lane)] = {
-                'trim': paths['trim'],
-                'center': paths['sequencing_center'],
-            }
-
-    return seqinfo
-
-
 def get_sample_info(fastqs_file):
     """
     load yaml and remove some extra info to reduce size

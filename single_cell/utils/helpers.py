@@ -447,20 +447,6 @@ def extract_tar(input_tar, outdir):
         tar.extractall(path=outdir)
 
 
-def tar_files(infiles, tar_output, tempdir):
-    if isinstance(infiles, dict):
-        infiles = infiles.values()
-
-    for infile in infiles:
-        if isinstance(infile, dict):
-            for filepath in infile.values():
-                shutil.copyfile(filepath, tempdir)
-        else:
-            shutil.copyfile(infile, tempdir)
-
-    make_tarfile(tar_output, tempdir)
-
-
 def gunzip_file(infile, outfile):
     with gzip.open(infile, 'rb') as f_in:
         with open(outfile, 'wb') as f_out:
