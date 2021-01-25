@@ -120,7 +120,7 @@ install single cell pipeline (hmmcopy) app under the miniconda install:
 ```
 export PATH=$PWD/miniconda3/bin:$PATH
 conda update -n base -c defaults conda -y   
-conda install -c bioconda -c shahcompbio single_cell_pipeline_hmmcopy 
+conda install -c bioconda -c shahcompbio -c conda-forge single_cell_pipeline_hmmcopy 
 ```
 
 #### download test dataset:
