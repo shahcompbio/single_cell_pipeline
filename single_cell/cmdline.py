@@ -110,7 +110,7 @@ def parse_args():
                            action='store_true',
                            help='''trim fastq files before aligning''')
     alignment.add_argument("--sequencing_center",
-                           action=True,
+                           required=True,
                            help='''sequencing center where data is generated''')
 
 
