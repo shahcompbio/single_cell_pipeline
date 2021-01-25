@@ -8,6 +8,7 @@ import shutil
 
 import numpy as np
 import pandas as pd
+import pypeliner
 import scipy.cluster.hierarchy as hc
 import scipy.spatial as sp
 from single_cell.utils import csvutils
@@ -18,7 +19,6 @@ from single_cell.utils.singlecell_copynumber_plot_utils import PlotMetrics
 from single_cell.utils.singlecell_copynumber_plot_utils import PlotPcolor
 from single_cell.workflows.hmmcopy.dtypes import dtypes
 
-import pypeliner
 from .scripts import ConvertCSVToSEG
 from .scripts import CorrectReadCount
 from .scripts import ReadCounter
@@ -90,7 +90,7 @@ def run_hmmcopy_script(corrected_reads, tempdir, cell_id, hmmparams, docker_imag
     cmd.append('--param_g=' + str(hmmparams['g']))
     cmd.append('--param_s=' + str(hmmparams['s']))
     cmd.append('--param_multiplier=' + multipliers)
-    
+
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
 
 
@@ -113,7 +113,6 @@ def run_hmmcopy(
         tempdir,
         docker_image
 ):
-
     # generate wig file for hmmcopy
     helpers.makedirs(tempdir)
     readcount_wig = os.path.join(tempdir, 'readcounter.wig')
@@ -139,22 +138,22 @@ def run_hmmcopy(
     )
 
     hmmcopy_outdir = os.path.join(hmmcopy_tempdir, str(0))
-    
+
     csvutils.rewrite_csv_file(
         os.path.join(hmmcopy_outdir, "reads.csv"), corrected_reads_filename,
         dtypes=dtypes()['reads']
     )
-    
+
     csvutils.rewrite_csv_file(
         os.path.join(hmmcopy_outdir, "params.csv"), parameters_filename,
         dtypes=dtypes()['params']
     )
- 
+
     csvutils.rewrite_csv_file(
         os.path.join(hmmcopy_outdir, "segs.csv"), segments_filename,
         dtypes=dtypes()['segs']
     )
-    
+
     csvutils.rewrite_csv_file(
         os.path.join(hmmcopy_outdir, "metrics.csv"), metrics_filename,
         dtypes=dtypes()['metrics']
@@ -254,6 +253,7 @@ def add_clustering_order(
 
     csvutils.annotate_csv(metrics, sample_info, output, dtypes()['metrics'])
 
+
 def group_cells_by_row(cells, metrics, sort_by_col=False):
     metricsdata = pd.read_csv(metrics, compression='gzip')
     metricsdata = metricsdata.set_index('cell_id')
@@ -318,7 +318,6 @@ def create_igv_seg(merged_segs, merged_hmm_metrics,
 def plot_hmmcopy(reads, segments, params, metrics, ref_genome, segs_out,
                  bias_out, cell_id, num_states=7,
                  annotation_cols=None, sample_info=None, max_cn=None):
-    
     if not annotation_cols:
         annotation_cols = ['cell_call', 'experimental_condition', 'sample_type',
                            'mad_neutral_state', 'MSRSI_non_integerness',
@@ -424,3 +423,12 @@ def add_quality(hmmcopy_metrics, alignment_metrics, multipliers, output, trainin
             predictions)
 
         csvutils.prep_csv_files(intermediate_output, output, dtypes=dtypes()['metrics'])
+
+
+def create_hmmcopy_data_tar(infiles, tar_output, tempdir):
+    helpers.makedirs(tempdir)
+
+    for key, infile in infiles.items():
+        helpers.extract_tar(infile, os.path.join(tempdir, key))
+
+    helpers.make_tarfile(tar_output, tempdir)

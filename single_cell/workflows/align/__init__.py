@@ -277,7 +277,7 @@ def create_alignment_workflow(
     workflow.transform(
         name='tar_all_files',
         ctx={'mem': config['memory']['med']},
-        func="single_cell.utils.helpers.tar_files",
+        func="single_cell.workflows.align.tasks.tar_align_data",
         args=(
             [
                 mgd.TempInputFile('fastqc_reports.tar.gz', 'cell_id'),
