@@ -1,5 +1,9 @@
 # Change Log
 
+### v0.6.41
+#### Changes
+1. trim is now a pipeline level flag
+
 ### v0.6.40
 
 #### Bug:
