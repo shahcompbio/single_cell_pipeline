@@ -105,6 +105,12 @@ def parse_args():
     alignment.add_argument("--bams_dir",
                            required=True,
                            help='''directory for bam storage''')
+    alignment.add_argument("--trim",
+                           default=False,
+                           action='store_true',
+                           help='''trim fastq files before aligning''')
+
+
 
     # ===========
     # hmmcopy
