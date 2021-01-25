@@ -137,7 +137,7 @@ def align_pe(
         trim, centre, sample_info, cell_id, lane_id, library_id,
         containers, adapter, adapter2,
         fastqscreen_detailed_metrics, fastqscreen_summary_metrics,
-        fastqscreen_params
+        fastqscreen_params,
 ):
     fastqscreen_tempdir = os.path.join(tempdir, 'fastq_screen')
     helpers.makedirs(fastqscreen_tempdir)
@@ -190,7 +190,7 @@ def align_lanes(
         fastq1, fastq2, output, output_mt, reports, tempdir, reference, laneinfo,
         sample_info, cell_id, library_id, containers, adapter,
         adapter2, fastqscreen_detailed_metrics,
-        fastqscreen_summary_metrics, fastqscreen_params, mt_chrom_name='MT'
+        fastqscreen_summary_metrics, fastqscreen_params, trim = False, mt_chrom_name='MT'
 ):
     lane_bams = []
     detailed_counts = []
@@ -214,10 +214,10 @@ def align_lanes(
 
         align_pe(
             fastq1[lane_id], fastq2[lane_id], lane_bam, reports_dir,
-            lane_tempdir, reference, laneinfo[lane_id]['trim'],
+            lane_tempdir, reference, trim,
             laneinfo[lane_id]['center'], sample_info, cell_id, lane_id,
             library_id, containers, adapter, adapter2,
-            screen_detailed, screen_summary, fastqscreen_params
+            screen_detailed, screen_summary, fastqscreen_params,
         )
 
     helpers.make_tarfile(reports, os.path.join(tempdir, 'reports_per_lane'))

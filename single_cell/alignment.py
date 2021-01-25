@@ -28,6 +28,8 @@ def alignment_workflow(args):
     alignment_dir = args["out_dir"]
     bams_dir = args["bams_dir"]
 
+    trim = args['trim']
+
     sampleinfo = inpututils.get_sample_info(args['input_yaml'])
     laneinfo = inpututils.get_lane_info(args['input_yaml'])
 
@@ -80,6 +82,7 @@ def alignment_workflow(args):
             cellids,
             mgd.OutputFile(alignment_files['alignment_metrics_tar']),
             lib,
+            trim,
         ),
     )
 

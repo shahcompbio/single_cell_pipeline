@@ -172,6 +172,7 @@ def create_alignment_workflow(
         cell_ids,
         metrics_tar,
         library_id,
+        trim
 ):
     baseimage = config['docker']['single_cell_pipeline']
 
@@ -227,7 +228,8 @@ def create_alignment_workflow(
             mgd.TempOutputFile('organism_detailed_count_per_cell.csv.gz', 'cell_id'),
             mgd.TempOutputFile('organism_summary_count_per_cell.csv.gz', 'cell_id'),
             config['fastq_screen_params'],
-        )
+        ),
+        kwargs = {'trim': trim}
     )
 
     workflow.transform(

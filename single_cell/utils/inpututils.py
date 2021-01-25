@@ -190,11 +190,9 @@ def get_lane_info(fastqs_file):
         fastqs = data[cell]["fastqs"]
 
         for lane, paths in fastqs.items():
-            assert 'trim' in paths, "trim key missing in cell: {}".format(cell)
             assert 'sequencing_center' in paths, "sequencing center missing in cell: {}".format(cell)
 
             seqinfo[(cell, lane)] = {
-                'trim': paths['trim'],
                 'center': paths['sequencing_center'],
             }
 
