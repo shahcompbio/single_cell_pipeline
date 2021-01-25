@@ -150,7 +150,6 @@ def bam_metrics_workflow(
             'outer',
             ['cell_id'],
         ),
-        # kwargs={'dtypes': dtypes()['metrics']}
     )
 
     return workflow
@@ -167,12 +166,12 @@ def create_alignment_workflow(
         plot_metrics,
         ref_genome,
         config,
-        laneinfo,
         sample_info,
         cell_ids,
         metrics_tar,
         library_id,
-        trim
+        trim,
+        center
 ):
     baseimage = config['docker']['single_cell_pipeline']
 
@@ -202,10 +201,6 @@ def create_alignment_workflow(
         value=list(fastq_1_filename.keys()),
     )
 
-    workflow.setobj(
-        obj=mgd.TempOutputObj('laneinfo', 'cell_id', 'lane', axes_origin=[]),
-        value=laneinfo)
-
     workflow.transform(
         name='align_reads',
         axes=('cell_id',),
@@ -218,7 +213,6 @@ def create_alignment_workflow(
             mgd.TempOutputFile('fastqc_reports.tar.gz', 'cell_id'),
             mgd.TempSpace('alignment_temp', 'cell_id'),
             ref_genome,
-            mgd.TempInputObj('laneinfo', 'cell_id', 'lane', axes_origin=[]),
             mgd.TempInputObj('sampleinfo', 'cell_id'),
             mgd.InputInstance('cell_id'),
             library_id,
@@ -228,8 +222,9 @@ def create_alignment_workflow(
             mgd.TempOutputFile('organism_detailed_count_per_cell.csv.gz', 'cell_id'),
             mgd.TempOutputFile('organism_summary_count_per_cell.csv.gz', 'cell_id'),
             config['fastq_screen_params'],
+            trim,
+            center
         ),
-        kwargs = {'trim': trim}
     )
 
     workflow.transform(

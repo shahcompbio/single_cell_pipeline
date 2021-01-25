@@ -134,7 +134,7 @@ def align_pe_with_bwa(
 
 def align_pe(
         fastq1, fastq2, output, reports_dir, tempdir, reference,
-        trim, centre, sample_info, cell_id, lane_id, library_id,
+        trim, center, sample_info, cell_id, lane_id, library_id,
         containers, adapter, adapter2,
         fastqscreen_detailed_metrics, fastqscreen_summary_metrics,
         fastqscreen_params,
@@ -154,7 +154,7 @@ def align_pe(
     )
 
     readgroup = get_readgroup(
-        lane_id, cell_id, library_id, centre, sample_info
+        lane_id, cell_id, library_id, center, sample_info
     )
 
     run_fastqc(filtered_fastq_r1, filtered_fastq_r2, reports_dir, tempdir, containers)
@@ -187,10 +187,10 @@ def extract_mt_chromosome(input_bam, mt_bam, docker_image=None, mt_chrom_name='M
 
 
 def align_lanes(
-        fastq1, fastq2, output, output_mt, reports, tempdir, reference, laneinfo,
+        fastq1, fastq2, output, output_mt, reports, tempdir, reference,
         sample_info, cell_id, library_id, containers, adapter,
         adapter2, fastqscreen_detailed_metrics,
-        fastqscreen_summary_metrics, fastqscreen_params, trim = False, mt_chrom_name='MT'
+        fastqscreen_summary_metrics, fastqscreen_params, trim, center, mt_chrom_name='MT'
 ):
     lane_bams = []
     detailed_counts = []
@@ -214,8 +214,7 @@ def align_lanes(
 
         align_pe(
             fastq1[lane_id], fastq2[lane_id], lane_bam, reports_dir,
-            lane_tempdir, reference, trim,
-            laneinfo[lane_id]['center'], sample_info, cell_id, lane_id,
+            lane_tempdir, reference, trim, center, sample_info, cell_id, lane_id,
             library_id, containers, adapter, adapter2,
             screen_detailed, screen_summary, fastqscreen_params,
         )
