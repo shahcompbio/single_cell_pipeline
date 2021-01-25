@@ -1,7 +1,6 @@
 from __future__ import division
 
 import os
-import logging
 
 from single_cell.utils import bamutils
 from single_cell.utils import csvutils
@@ -129,3 +128,14 @@ def picard_insert_gc_flagstat(
         insert_tempdir,
         docker_image=picard_docker
     )
+
+
+def tar_align_data(infiles, tar_output, tempdir):
+    helpers.makedirs(tempdir)
+
+    for infile in infiles:
+        for key, filepath in infile.items():
+            temp_path = os.path.join(tempdir, '{}_{}'.format(key, os.path.basename(filepath)))
+            helpers.shutil.copyfile(filepath, temp_path)
+
+    helpers.make_tarfile(tar_output, tempdir)

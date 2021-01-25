@@ -1,5 +1,13 @@
 # Change Log
 
+### v0.6.41
+
+#### Changes
+1. trim and sequencing center is now a pipeline level flag
+
+#### Bug
+1. alignment and hmmcopy tarballs were broken
+
 ### v0.6.40
 
 #### Bug:

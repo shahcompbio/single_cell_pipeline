@@ -229,7 +229,7 @@ def create_hmmcopy_workflow(
     workflow.transform(
         name='merge_hmmcopy_data_tars',
         ctx={'mem': hmmparams['memory']['med'], 'ncpus': 1, 'docker_image': baseimage},
-        func="single_cell.utils.helpers.tar_files",
+        func="single_cell.workflows.hmmcopy.tasks.create_hmmcopy_data_tar",
         args=(
             mgd.TempInputFile('hmm_data.tar.gz', 'cell_id', axes_origin=[]),
             mgd.OutputFile(hmmcopy_data_tar),

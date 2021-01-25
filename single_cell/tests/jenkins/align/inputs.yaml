@@ -5,8 +5,6 @@ SA1090-A96213A-R20-C28:
     HHCJ7CCXY_5.HGTJJCCXY_8.HYG5LCCXY_6.HYG5LCCXY_7.HYG5LCCXY_5:
       fastq_1: ALIGN/ref_test_data/testdata/SA1090-A96213A-R20-C28_1.fastq.gz
       fastq_2: ALIGN/ref_test_data/testdata/SA1090-A96213A-R20-C28_2.fastq.gz
-      sequencing_center: TEST
-      trim: true
   img_col: 45
   index_i5: i5-20
   index_i7: i7-28
@@ -21,8 +19,6 @@ SA1090-A96213A-R20-C62:
     HHCJ7CCXY_5.HGTJJCCXY_8.HYG5LCCXY_6.HYG5LCCXY_7.HYG5LCCXY_5:
       fastq_1: ALIGN/ref_test_data/testdata/SA1090-A96213A-R20-C62_1.fastq.gz
       fastq_2: ALIGN/ref_test_data/testdata/SA1090-A96213A-R20-C62_2.fastq.gz
-      sequencing_center: TEST
-      trim: true
   img_col: 11
   index_i5: i5-20
   index_i7: i7-62
@@ -37,8 +33,6 @@ SA1090-A96213A-R22-C43:
     HHCJ7CCXY_5.HGTJJCCXY_8.HYG5LCCXY_6.HYG5LCCXY_7.HYG5LCCXY_5:
       fastq_1: ALIGN/ref_test_data/testdata/SA1090-A96213A-R22-C43_1.fastq.gz
       fastq_2: ALIGN/ref_test_data/testdata/SA1090-A96213A-R22-C43_2.fastq.gz
-      sequencing_center: TEST
-      trim: true
   img_col: 30
   index_i5: i5-22
   index_i7: i7-43
