@@ -6,7 +6,6 @@ def validate_alignment_fastqs(data):
         for lane, lane_data in sample_data['fastqs'].items():
             if not utils.get(lane_data, 'fastq_1') or not utils.get(lane_data, 'fastq_2'):
                 raise utils.MissingInput()
-            utils.check_data_type(['sequencing_center'], str, lane_data)
 
 
 def validate_sample_info(yamldata):
