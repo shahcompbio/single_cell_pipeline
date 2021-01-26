@@ -105,14 +105,6 @@ def parse_args():
     alignment.add_argument("--bams_dir",
                            required=True,
                            help='''directory for bam storage''')
-    alignment.add_argument("--trim",
-                           default=False,
-                           action='store_true',
-                           help='''trim fastq files before aligning''')
-    alignment.add_argument("--sequencing_center",
-                           required=True,
-                           help='''sequencing center where data is generated''')
-
 
     # ===========
     # hmmcopy
@@ -213,7 +205,16 @@ def parse_args():
     qc = add_global_args(
         subparsers.add_parser("pseudo_bulk_qc"))
     qc.set_defaults(which='pseudo_bulk_qc')
-
+    
+    # ================
+    # cohortqc
+    # ================
+    cohort_qc = add_global_args(
+        subparsers.add_parser("cohort_qc"))
+    cohort_qc.set_defaults(which='cohort_qc')
+    cohort_qc.add_argument("--API_key",
+        help='''api key'''
+    )
     # ======================================
     # generates pipeline and batch configs
     # ======================================
