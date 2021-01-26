@@ -887,6 +887,49 @@ meta:
 | summary.csv                                        | number of mutations and number of cells in the library                                              |
 
 
+## 12. Pseudobulk Cohort QC:
+![cohort_qc](readme_data/dlp_cohort_pipeline.png)
+
+### Input:
+
+```
+{COHORT}:
+  MAFS:
+    {SAMPLE}:
+      germline_maf:
+      somatic_maf:
+  HMMCOPY:
+    {SAMPLE}:
+      {LIBRARY}:
+        hmmcopy_reads:
+```
+
+### Run:
+```
+ single_cell cohort_qc --input_yaml {}  --submit {} --out_dir {} --tmpdir {} --loglevel {}  --API_key  {}
+```
+
+
+
+The metadata file is structured as follows:
+
+```
+filenames:
+./{cohort_id}/cna_table.tsv.gz
+./{cohort_id}/cohort_oncogenic_filtered.maf
+./{cohort_id}/cohort_oncoplot.png
+./{cohort_id}/segments.tsv.gz
+
+```
+### Output Descriptions
+
+| FILENAME                                           | DESCRIPTION                                                                                         |
+|----------------------------------------------------|-----------------------------------------------------------------------------------------------------|
+| cna_table.tsv.gz                                   | copynumber data for cbiopoortal                                             |
+| cohort_oncogenic_filtered.maf                      | maf input for cbiportal                                                      |
+| cohort_oncoplot.png                                | oncoplot                                                           |
+| segments.tsv.gz                                    | segment cn data for cbioportal                                                                                 |
+
 ## 12. Generate Config
 
 The pipeline auto generates a config file with the default parameters before every run. Some of the values in the config file can be updated by using the ``--config_override`` option.  ```generate_config``` option allows users to generate the config files. These configs can then be specified as input to the pipeline after making the required changes.

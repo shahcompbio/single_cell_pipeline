@@ -478,7 +478,33 @@ def get_qc_params(reference_dir, reference, version):
     }
     return {'qc': params}
 
-    
+
+def get_cohort_qc_params(reference_dir, reference, version):
+    docker_containers = config_reference.containers(version)['docker']
+
+    referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
+
+    non_synonymous_labels=["Frame_Shift_Del", "Frame_Shift_Ins", "Splice_Site", 
+        "Translation_Start_Site", "Nonsense_Mutation", "Nonstop_Mutation", 
+        "In_Frame_Del", "In_Frame_Ins", "Missense_Mutation"
+    ]
+
+    params = {
+        'ref_genome': referencedata['ref_genome'],
+        'vep': referencedata['vep'],
+        'gtf':  referencedata['destruct_gtf_file'],
+        'non_synonymous_labels': non_synonymous_labels,
+        'memory': {'low': 4, 'med': 6, 'high': 16},
+        'docker': {
+            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
+            'vcf2maf': docker_containers['vcf2maf'],
+            'pseudo_bulk_qc_html_report': docker_containers['pseudo_bulk_qc_html_report'],
+            
+        },
+    }
+    return {'cohort_qc': params}
+
+
 def get_singlecell_pipeline_config(config_params, override=None):
     reference = config_params["reference"]
     reference_dir = config_params['refdir']
@@ -528,6 +554,8 @@ def get_singlecell_pipeline_config(config_params, override=None):
     params.update(get_sv_genotyping_params(reference_dir, reference, version))
 
     params.update(get_qc_params(reference_dir, reference, version))
+
+    params.update(get_cohort_qc_params(reference_dir, reference, version))
 
     params = override_config(params, override)
 

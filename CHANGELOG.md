@@ -1,5 +1,11 @@
 # Change Log
 
+### v0.6.42
+
+#### Changes
+1. produces all outputs necessary to load cbioportal with cna + an oncoplot from maftools
+2. updated HMMcopy to R=4
+
 ### v0.6.41
 
 #### Changes
