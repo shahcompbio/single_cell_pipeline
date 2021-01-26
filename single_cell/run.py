@@ -17,6 +17,7 @@ from single_cell.snv_genotyping import snv_genotyping_pipeline
 from single_cell.split_bam import split_bam_pipeline
 from single_cell.sv_genotyping import sv_genotyping_pipeline
 from single_cell.variant_calling import variant_calling_pipeline
+from single_cell.cohort_qc import cohort_qc_pipeline
 
 
 def main():
@@ -73,6 +74,8 @@ def main():
     if args["which"] == "pseudo_bulk_qc":
         pseudo_bulk_qc_pipeline(args)
 
-
+    if args["which"] == "cohort_qc":
+        cohort_qc_pipeline(args)
+        
 if __name__ == "__main__":
     main()

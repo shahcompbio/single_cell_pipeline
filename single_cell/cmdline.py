@@ -213,7 +213,16 @@ def parse_args():
     qc = add_global_args(
         subparsers.add_parser("pseudo_bulk_qc"))
     qc.set_defaults(which='pseudo_bulk_qc')
-
+    
+    # ================
+    # cohortqc
+    # ================
+    cohort_qc = add_global_args(
+        subparsers.add_parser("cohort_qc"))
+    cohort_qc.set_defaults(which='cohort_qc')
+    cohort_qc.add_argument("--API_key",
+        help='''api key'''
+    )
     # ======================================
     # generates pipeline and batch configs
     # ======================================
