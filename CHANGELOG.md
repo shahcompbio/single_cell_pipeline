@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.6.43
+
+#### changes: 
+1. update to latest pypeliner (v0.6.27)
+
 ### v0.6.42
 
 #### Changes
