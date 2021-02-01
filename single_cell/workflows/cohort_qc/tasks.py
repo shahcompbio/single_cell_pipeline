@@ -151,14 +151,15 @@ def make_maftools_cna_table(amps, dels, maftools_table):
     -------
     '''
     amps = pd.read_csv(amps, sep="\t", usecols=["gene_name", "sample", "cn_type", "pass_filter"])
-    amps = amps.rename(columns={"gene_name":"Gene", "cn_type":"CN", "sample": "Sample_Name"})
+    amps = amps.rename(columns={"gene_name":"Gene", "cn_type":"CN", "sample": "Sample_name"})
     amps=amps[amps.pass_filter == True]
 
     dels = pd.read_csv(dels,  sep="\t", usecols=["gene_name", "sample", "cn_type", "pass_filter"])
-    dels = dels.rename(columns={"gene_name":"Gene", "cn_type":"CN", "sample": "Sample_Name"})
+    dels = dels.rename(columns={"gene_name":"Gene", "cn_type":"CN", "sample": "Sample_name"})
     dels=dels[dels.pass_filter == True]
 
     out = pd.concat([amps, dels])
+    out = out[["Gene","Sample_name","CN"]]
     out.to_csv(maftools_table, index=False, sep="\t")
 
 
@@ -230,6 +231,7 @@ def annotate_maf_with_oncokb(
     cmd = [
         "MafAnnotator.py", "-i", maf, "-o", annotated_maf, "-b", api_key
     ]
+
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
 
 
