@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.6.44
+
+#### Bug:
+1. errors in cohort QC
+
 ### v0.6.43
 
 #### changes: 
