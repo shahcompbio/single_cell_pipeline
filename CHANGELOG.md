@@ -2,6 +2,10 @@
 
 ### v0.6.44
 
+#### Changes:
+1. raise exception when reference type is unknown
+2. set all dtypes as str when reading maf 
+
 #### Bug:
 1. errors in cohort QC
 
