@@ -10,7 +10,7 @@ def merge_mafs(mafs, merged_maf, id_colname=False):
     assert isinstance(mafs, dict)
     preppedmafs = []
     for samplegroup, maf in mafs.items():
-        maftemp = pd.read_csv(maf, sep="\t", skiprows=1)
+        maftemp = pd.read_csv(maf, sep="\t", skiprows=1, dtype='str')
         maftemp = maftemp.astype(
             {"Chromosome": "str", "PHENO": "str", "SOMATIC": "str", "PUBMED": "str"}
         )
