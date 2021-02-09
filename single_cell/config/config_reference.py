@@ -88,7 +88,7 @@ def get_reference_data(reference, rootdir):
             }
         }
 
-    else:
+    elif reference == 'mm10':
         vep = {
             'reference_dir': None,
             'reference_fasta': None,
@@ -127,6 +127,8 @@ def get_reference_data(reference, rootdir):
                 'local_path': None
             }
         }
+    else:
+        raise Exception('unknown reference')
 
     return locals()
 

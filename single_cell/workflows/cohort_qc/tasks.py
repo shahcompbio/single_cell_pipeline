@@ -56,7 +56,7 @@ def _write_maf(m, label, merged_maf, write_header):
     Returns
     -------
     '''
-    maf = pd.read_csv(m, sep="\t", chunksize=10e6)
+    maf = pd.read_csv(m, sep="\t", dtype='str', chunksize=10e6)
     for chunk in maf:
         chunk["Tumor_Sample_Barcode"] = label
         chunk= chunk.astype({"t_ref_count":"Int64", "t_alt_count":"Int64", 
@@ -247,7 +247,7 @@ def filter_maf(annotated_maf, filtered_maf, write_header=True):
     -------
     '''
     oncogenic_annotations = ["Oncogenic", "Likely Oncogenic", "Predicted Oncogenic"]
-    maf = pd.read_csv(annotated_maf, sep="\t", chunksize=10e6)
+    maf = pd.read_csv(annotated_maf, sep="\t", dtype='str', chunksize=10e6)
     for chunk in maf:
         chunk = chunk[chunk.oncogenic.isin(oncogenic_annotations)]
         chunk.to_csv(filtered_maf, sep="\t", index=False, header=write_header, mode='a')
@@ -266,7 +266,7 @@ def annotate_germline_somatic(filtered_maf, annotated_maf, is_germline):
     Returns
     -------
     '''
-    maf = pd.read_csv(filtered_maf, sep="\t")
+    maf = pd.read_csv(filtered_maf, sep="\t", dtype='str')
     maf["is_germline"] = [is_germline] * len(maf)
     maf.to_csv(annotated_maf, sep="\t", index=False)
 
@@ -299,7 +299,7 @@ def prepare_maf_for_maftools(cohort_label, filtered_maf, prepared_maf, non_synon
     Returns
     -------
     '''
-    maf = pd.read_csv(filtered_maf, sep="\t")
+    maf = pd.read_csv(filtered_maf, sep="\t", dtype='str')
     maf = maf[maf.Variant_Classification.isin(non_synonymous_labels)]
     maf["Variant_Classification"] = maf.apply(lambda row: label_germline_somatic(row), axis=1 )
     nonsynclasses = pd.DataFrame({"Variant_Classification":maf.Variant_Classification.unique().tolist()})
