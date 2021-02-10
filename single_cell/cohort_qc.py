@@ -1,18 +1,19 @@
 import os
+import sys
+
 import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import inpututils
-import sys
+
 
 def get_file_paths(root_dir):
     return {"cohort_maf": os.path.join(root_dir, "cohort_oncogenic_filtered.maf"),
-        "cohort_oncoplot": os.path.join(root_dir, "cohort_oncoplot.png"), 
-        "cna_table": os.path.join(root_dir, "cna_table.tsv.gz"), 
-        "segments": os.path.join(root_dir, "segments.tsv.gz")}
+            "cohort_oncoplot": os.path.join(root_dir, "cohort_oncoplot.png"),
+            "cna_table": os.path.join(root_dir, "cna_table.tsv.gz"),
+            "segments": os.path.join(root_dir, "segments.tsv.gz")}
 
 
 def cohort_qc_pipeline(args):
-
     config = inpututils.load_config(args)
     config = config["cohort_qc"]
 
@@ -22,29 +23,19 @@ def cohort_qc_pipeline(args):
         ctx={'docker_image': config['docker']['single_cell_pipeline']}
     )
 
-    meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
-    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
+    out_dir = args["out_dir"]
+    api_key = args["API_key"]
 
-    #inputs
     cohort, mafs, hmmcopy = inpututils.load_cohort_qc_inputs(args["input_yaml"])
 
-    out_dir = args["out_dir"]
-    tmp_dir = args["tmpdir"]
-    api_key = args["API_key"]
-    gtf = config["gtf"]
+    meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
 
     germline_mafs = {label: data["germline_maf"] for label, data in mafs.items()}
     somatic_mafs = {label: data["somatic_maf"] for label, data in mafs.items()}
     hmmcopy_files = {label: data["hmmcopy"] for label, data in hmmcopy.items()}
 
-    #outputs
-    filepaths = get_file_paths( os.path.join(out_dir, cohort) )
-
-    cna_cbioportal_table = filepaths["cna_table"]
-    segments = filepaths["segments"]
-    cohort_maf_oncogenic_filtered = filepaths["cohort_maf"]
-    cohort_oncoplot = filepaths["cohort_oncoplot"]
-
+    file_paths = get_file_paths(os.path.join(out_dir, cohort))
 
     workflow.setobj(
         obj=mgd.OutputChunks('sample_label', 'library_label'),
@@ -57,10 +48,10 @@ def cohort_qc_pipeline(args):
         args=(
             config,
             mgd.InputFile('hmmcopy_dict', 'sample_label', 'library_label', fnames=hmmcopy_files, axes_origin=[]),
-            mgd.OutputFile(cna_cbioportal_table),
+            mgd.OutputFile(file_paths["cna_table"]),
             mgd.TempOutputFile("cna_maftools_table"),
-            mgd.OutputFile(segments),
-            gtf,
+            mgd.OutputFile(file_paths["segments"]),
+            config["gtf"],
         ),
     )
 
@@ -69,9 +60,9 @@ def cohort_qc_pipeline(args):
         func="single_cell.workflows.cohort_qc.preprocess_mafs_workflow",
         args=(
             config,
-            mgd.InputFile('germline_mafs_dict',  'sample_label', fnames=germline_mafs, axes_origin=[]),
-            mgd.InputFile('somatic_mafs_dict',  'sample_label', fnames=somatic_mafs, axes_origin=[]),
-            mgd.OutputFile(cohort_maf_oncogenic_filtered),
+            mgd.InputFile('germline_mafs_dict', 'sample_label', fnames=germline_mafs, axes_origin=[]),
+            mgd.InputFile('somatic_mafs_dict', 'sample_label', fnames=somatic_mafs, axes_origin=[]),
+            mgd.OutputFile(file_paths["cohort_maf"]),
             api_key
         ),
     )
@@ -82,12 +73,11 @@ def cohort_qc_pipeline(args):
         args=(
             config,
             cohort,
-            out_dir,
-            mgd.InputFile(cohort_maf_oncogenic_filtered),
+            mgd.InputFile(file_paths["cohort_maf"]),
             mgd.TempInputFile("cna_maftools_table"),
-            mgd.OutputFile(cohort_oncoplot)
+            mgd.OutputFile(file_paths["cohort_oncoplot"])
         ),
-    )   
+    )
 
     workflow.transform(
         name='generate_meta_files_results',
@@ -95,7 +85,7 @@ def cohort_qc_pipeline(args):
         args=(
             sys.argv[0:],
             args['out_dir'],
-            list(filepaths.values()),
+            list(file_paths.values()),
             mgd.OutputFile(meta_yaml)
         ),
         kwargs={

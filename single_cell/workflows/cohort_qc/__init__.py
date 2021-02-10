@@ -1,13 +1,15 @@
-import logging
-import os
-
 import pypeliner
 import pypeliner.managed as mgd
-from wgs.config import config
 
 
-def cna_annotation_workflow(config, hmmcopy_dict, output_cbio_table, 
-    output_maftools_table, output_segs, gtf):
+def cna_annotation_workflow(
+        config,
+        hmmcopy_dict,
+        output_cbio_table,
+        output_maftools_table,
+        output_segs,
+        gtf
+):
     workflow = pypeliner.workflow.Workflow(
         ctx={'docker_image': config['docker']['single_cell_pipeline']}
     )
@@ -23,13 +25,14 @@ def cna_annotation_workflow(config, hmmcopy_dict, output_cbio_table,
         axes=("sample_label",),
         args=(
             mgd.InputInstance("sample_label"),
-            mgd.InputFile('hmmcopy', 'sample_label', 'library_label', fnames=hmmcopy_dict, 
-                axes_origin=[]),
+            mgd.InputFile(
+                'hmmcopy', 'sample_label', 'library_label', fnames=hmmcopy_dict, axes_origin=[]
+            ),
             gtf,
             mgd.TempSpace("annotated_maf_tmp", "sample_label"),
             mgd.TempOutputFile('amps', 'sample_label'),
-            mgd.TempOutputFile('dels', 'sample_label'),   
-        ),     
+            mgd.TempOutputFile('dels', 'sample_label'),
+        ),
     )
 
     workflow.transform(
@@ -49,7 +52,7 @@ def cna_annotation_workflow(config, hmmcopy_dict, output_cbio_table,
             mgd.TempOutputFile("merged_dels"),
         ),
     )
-    
+
     workflow.transform(
         name='make_cbio_cna_table',
         func='single_cell.workflows.cohort_qc.tasks.make_cbio_cna_table',
@@ -70,7 +73,6 @@ def cna_annotation_workflow(config, hmmcopy_dict, output_cbio_table,
         ),
     )
 
-
     workflow.transform(
         name='generate_segmental_copynumber',
         func='single_cell.workflows.cohort_qc.tasks.generate_segmental_copynumber',
@@ -90,17 +92,19 @@ def cna_annotation_workflow(config, hmmcopy_dict, output_cbio_table,
             mgd.OutputFile(output_segs)
         ),
     )
-  
+
     return workflow
 
 
-def preprocess_mafs_workflow(config, germline_mafs, somatic_mafs, cohort_maf, api_key):
+def preprocess_mafs_workflow(
+        config, germline_mafs, somatic_mafs, cohort_maf, api_key
+):
     workflow = pypeliner.workflow.Workflow(
         ctx={'docker_image': config['docker']['single_cell_pipeline']}
     )
 
     workflow.setobj(
-        obj=mgd.OutputChunks('sample_label',),
+        obj=mgd.OutputChunks('sample_label', ),
         value=list(somatic_mafs.keys()),
     )
 
@@ -140,23 +144,23 @@ def preprocess_mafs_workflow(config, germline_mafs, somatic_mafs, cohort_maf, ap
 
     workflow.transform(
         name='annotate_germline_class',
-        func='single_cell.workflows.cohort_qc.tasks.annotate_germline_somatic',
+        func='single_cell.workflows.cohort_qc.tasks.annotate_maf_file',
         axes=("sample_label",),
         args=(
             mgd.TempInputFile('filtered_germline_maf', 'sample_label'),
             mgd.TempOutputFile("filtered_class_labeled_germline_maf", 'sample_label'),
-            True
+            {'is_germline': True}
         ),
     )
 
     workflow.transform(
         name='annotate_somatic_class',
-        func='single_cell.workflows.cohort_qc.tasks.annotate_germline_somatic',
+        func='single_cell.workflows.cohort_qc.tasks.annotate_maf',
         axes=("sample_label",),
         args=(
             mgd.TempInputFile('annotated_somatic_maf', 'sample_label'),
             mgd.TempOutputFile("class_labeled_somatic_maf", 'sample_label'),
-            False
+            {'is_germline': False}
         ),
     )
 
@@ -173,8 +177,7 @@ def preprocess_mafs_workflow(config, germline_mafs, somatic_mafs, cohort_maf, ap
     return workflow
 
 
-def create_cohort_oncoplot(config, cohort, out_dir,  cohort_maf, cna_table, oncoplot):
-
+def create_cohort_oncoplot(config, cohort, cohort_maf, cna_table, oncoplot):
     workflow = pypeliner.workflow.Workflow(
         ctx={'docker_image': config['docker']['single_cell_pipeline']}
     )
@@ -192,7 +195,7 @@ def create_cohort_oncoplot(config, cohort, out_dir,  cohort_maf, cna_table, onco
             mgd.TempOutputFile("vcNames")
         ),
     )
-    
+
     workflow.transform(
         name='make_oncoplot',
         func='single_cell.workflows.cohort_qc.tasks.make_oncoplot',
@@ -203,7 +206,7 @@ def create_cohort_oncoplot(config, cohort, out_dir,  cohort_maf, cna_table, onco
             mgd.TempInputFile("vcNames")
 
         ),
-        kwargs={'docker_image':config["docker"]["pseudo_bulk_qc_html_report"] },
+        kwargs={'docker_image': config["docker"]["pseudo_bulk_qc_html_report"]},
     )
 
     return workflow

@@ -1,12 +1,9 @@
-import pypeliner
-import pandas as pd
-from single_cell.utils.csvutils import concatenate_csv, write_dataframe_to_csv_and_yaml
-import matplotlib.pyplot as plt
-import pandas as pd
-import pypeliner
-from single_cell.utils import helpers
-from classifycopynumber import parsers, transformations
 import os
+
+import pandas as pd
+import pypeliner
+from classifycopynumber import parsers, transformations
+from single_cell.utils import helpers
 
 
 def merge_segmental_cn(segmental_cn, combined):
@@ -36,56 +33,36 @@ def generate_segmental_copynumber(hmmcopy_files, segmental_cn, sample):
     Returns
     -------
     '''
-    cn, ploidy = parsers.read_hmmcopy_files(list(hmmcopy_files.values()), 
-        filter_normal=False, group_label_col='cell_id')
+    cn, ploidy = parsers.read_hmmcopy_files(
+        list(hmmcopy_files.values()),
+        filter_normal=False, group_label_col='cell_id'
+    )
 
     cn["sample"] = sample
-    transformations.generate_segmental_cn(segmental_cn, cn, ploidy, cn_col="copy", 
-        length_col="width")
+    transformations.generate_segmental_cn(
+        segmental_cn, cn, ploidy, cn_col="copy",
+        length_col="width"
+    )
 
 
-def _write_maf(m, label, merged_maf, write_header):
-    '''
-    write maf m to path merged_maf with label label (append)
-    Parameters
-    ----------
-    m : maf path
-    labe: maf label
-    merged_maf : write path
-    write_header: bool, write header
-    Returns
-    -------
-    '''
-    maf = pd.read_csv(m, sep="\t", dtype='str', chunksize=10e6)
-    for chunk in maf:
-        chunk["Tumor_Sample_Barcode"] = label
-        chunk= chunk.astype({"t_ref_count":"Int64", "t_alt_count":"Int64", 
-            "n_ref_count":"Int64", "n_alt_count":"Int64"})
+def merge_mafs(germline_mafs, somatic_mafs, merged_maf):
+    def _read_maf_chunk(maf_file, label):
+        maf = pd.read_csv(maf_file, sep="\t", dtype='str', chunksize=1e7)
+        for maf_chunk in maf:
+            maf_chunk["Tumor_Sample_Barcode"] = label
+            yield maf_chunk
 
-        chunk.to_csv(merged_maf, sep="\t", index=False, header=write_header, mode='a', na_rep="")
-        write_header=False     
+    if os.path.exists(merged_maf):
+        os.remove(merged_maf)
 
+    for label, maf_file in somatic_mafs.items():
+        for i, chunk in enumerate(_read_maf_chunk(maf_file, label)):
+            header = True if i == 0 else False
+            chunk.to_csv(merged_maf, sep="\t", index=False, header=header, mode='a', na_rep="")
 
-def merge_mafs(germline, somatic_mafs, merged_maf):
-    '''
-    write maf m to path merged_maf with label label (append)
-    Parameters
-    ----------
-    m : maf path
-    labe: maf label
-    merged_maf : write path
-    write_header: bool, write header
-    Returns
-    -------
-    '''
-    write_header=True
-
-    for label, m in somatic_mafs.items():
-        _write_maf(m, label, merged_maf, write_header)
-        write_header=False
-    for label, m in germline.items():
-        _write_maf(m, label, merged_maf, write_header)
-        write_header=False
+    for label, maf_file in germline_mafs.items():
+        for chunk in _read_maf_chunk(maf_file, label):
+            chunk.to_csv(merged_maf, sep="\t", index=False, header=False, mode='a', na_rep="")
 
 
 def generate_gistic_outputs(gistic_data, hdel_data, cbio_table):
@@ -130,11 +107,11 @@ def make_cbio_cna_table(amps, dels, cbio_table):
     Returns
     -------
     '''
-    amps = pd.read_csv(amps,  sep="\t", usecols=["gene_name", "log_change", "sample"])
-    amps = amps.rename(columns={"gene_name":"Hugo_Symbol"})
+    amps = pd.read_csv(amps, sep="\t", usecols=["gene_name", "log_change", "sample"])
+    amps = amps.rename(columns={"gene_name": "Hugo_Symbol"})
 
-    dels = pd.read_csv(dels,  sep="\t", usecols=["gene_name", "sample"])
-    dels = dels.rename(columns={"gene_name":"Hugo_Symbol"})
+    dels = pd.read_csv(dels, sep="\t", usecols=["gene_name", "sample"])
+    dels = dels.rename(columns={"gene_name": "Hugo_Symbol"})
 
     generate_gistic_outputs(amps, dels, cbio_table)
 
@@ -151,15 +128,15 @@ def make_maftools_cna_table(amps, dels, maftools_table):
     -------
     '''
     amps = pd.read_csv(amps, sep="\t", usecols=["gene_name", "sample", "cn_type", "pass_filter"])
-    amps = amps.rename(columns={"gene_name":"Gene", "cn_type":"CN", "sample": "Sample_name"})
-    amps=amps[amps.pass_filter == True]
+    amps = amps.rename(columns={"gene_name": "Gene", "cn_type": "CN", "sample": "Sample_name"})
+    amps = amps[amps.pass_filter == True]
 
-    dels = pd.read_csv(dels,  sep="\t", usecols=["gene_name", "sample", "cn_type", "pass_filter"])
-    dels = dels.rename(columns={"gene_name":"Gene", "cn_type":"CN", "sample": "Sample_name"})
-    dels=dels[dels.pass_filter == True]
+    dels = pd.read_csv(dels, sep="\t", usecols=["gene_name", "sample", "cn_type", "pass_filter"])
+    dels = dels.rename(columns={"gene_name": "Gene", "cn_type": "CN", "sample": "Sample_name"})
+    dels = dels[dels.pass_filter == True]
 
     out = pd.concat([amps, dels])
-    out = out[["Gene","Sample_name","CN"]]
+    out = out[["Gene", "Sample_name", "CN"]]
     out.to_csv(maftools_table, index=False, sep="\t")
 
 
@@ -173,16 +150,16 @@ def merge_cna_tables(tables, output):
     Returns
     -------
     '''
-    number=0
+    number = 0
     for label, cna in tables.items():
 
         data = pd.read_csv(cna)
         data["sample"] = label
-        if number==0:
-            header=True
+        if number == 0:
+            header = True
         else:
-            header=False
-        number+=1
+            header = False
+        number += 1
         data.to_csv(output, index=False, mode='a', header=header, sep="\t")
 
 
@@ -212,7 +189,6 @@ def classify_hmmcopy(sample_label, hmmcopy_files, gtf, output_dir, amps, dels, d
 
 
 def annotate_maf_with_oncokb(
-
         maf, api_key, tmpspace, annotated_maf, docker_image=None
 ):
     '''
@@ -251,23 +227,16 @@ def filter_maf(annotated_maf, filtered_maf, write_header=True):
     for chunk in maf:
         chunk = chunk[chunk.oncogenic.isin(oncogenic_annotations)]
         chunk.to_csv(filtered_maf, sep="\t", index=False, header=write_header, mode='a')
+        write_header = False
 
-        write_header=False
 
-
-def annotate_germline_somatic(filtered_maf, annotated_maf, is_germline):
-    '''
-    add germline/somatic annotated to filtered_maf
-    Parameters
-    ----------
-    filtered_maf: filtered_maf maf
-    annotated_maf: output annotated_maf
-    is_germline: str, label to add to maf, should  be in {germline, somatic}
-    Returns
-    -------
-    '''
+def annotate_maf_file(filtered_maf, annotated_maf, annotations):
     maf = pd.read_csv(filtered_maf, sep="\t", dtype='str')
-    maf["is_germline"] = [is_germline] * len(maf)
+
+    for k, v in annotations.items():
+        assert isinstance(v, int) or isinstance(v, float) or isinstance(v, str)
+        maf[k] = v
+
     maf.to_csv(annotated_maf, sep="\t", index=False)
 
 
@@ -283,8 +252,9 @@ def label_germline_somatic(row):
     if row.is_germline == True:
         return row.Variant_Classification + "_" + "germline"
     return row.Variant_Classification + "_" + "somatic"
-  
 
+
+## TODO: cohort label is unused
 def prepare_maf_for_maftools(cohort_label, filtered_maf, prepared_maf, non_synonymous_labels, vcNames):
     '''
     format maf for intake in maftools
@@ -301,8 +271,8 @@ def prepare_maf_for_maftools(cohort_label, filtered_maf, prepared_maf, non_synon
     '''
     maf = pd.read_csv(filtered_maf, sep="\t", dtype='str')
     maf = maf[maf.Variant_Classification.isin(non_synonymous_labels)]
-    maf["Variant_Classification"] = maf.apply(lambda row: label_germline_somatic(row), axis=1 )
-    nonsynclasses = pd.DataFrame({"Variant_Classification":maf.Variant_Classification.unique().tolist()})
+    maf["Variant_Classification"] = maf.apply(lambda row: label_germline_somatic(row), axis=1)
+    nonsynclasses = pd.DataFrame({"Variant_Classification": maf.Variant_Classification.unique().tolist()})
     nonsynclasses.to_csv(vcNames, index=False)
     maf.to_csv(prepared_maf, sep="\t", index=False)
 

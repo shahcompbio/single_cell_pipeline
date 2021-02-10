@@ -2,13 +2,15 @@ import os
 import shutil
 
 import pandas as pd
-import pypeliner.commandline
 from single_cell.utils import helpers
+
+import pypeliner.commandline
 
 
 def merge_mafs(mafs, merged_maf, id_colname=False):
     assert isinstance(mafs, dict)
     preppedmafs = []
+
     for samplegroup, maf in mafs.items():
         maftemp = pd.read_csv(maf, sep="\t", skiprows=1, dtype='str')
         maftemp = maftemp.astype(
@@ -25,6 +27,7 @@ def merge_mafs(mafs, merged_maf, id_colname=False):
 
 def merge_snvs(snv_files, merged_snv, id_colname=False):
     assert isinstance(snv_files, dict)
+
     preppednsvs = []
     for samplegroup, snv_file in snv_files.items():
         svtemp = pd.read_csv(snv_file).astype({"chrom": "str"})
@@ -32,6 +35,7 @@ def merge_snvs(snv_files, merged_snv, id_colname=False):
             svtemp["id"] = [samplegroup] * len(svtemp)
         svtemp = svtemp[svtemp.alt_counts > 1]
         preppednsvs.append(svtemp)
+
     output = pd.concat(preppednsvs).reset_index()
     output.to_csv(merged_snv, sep="\t", index=False, header=True)
 
@@ -71,7 +75,7 @@ def sample_level_report(
         mutations_per_cell, summary, snvs_high_impact, snvs_all,
         trinuc, snv_adjacent_distance, snv_genome_count,
         snv_cell_counts, snv_alt_counts, destruct_rearrangement_plots_unfiltered,
-        destruct_rearrangement_plots_filtered, lumpy_rearrangement_plots_unfiltered, 
+        destruct_rearrangement_plots_filtered, lumpy_rearrangement_plots_unfiltered,
         baf_plot, cn_plot, datatype_summary, maf, html_file,
         sample_id, tmpspace, docker_image=None
 ):
@@ -79,8 +83,8 @@ def sample_level_report(
         html_file, sample_id, mutations_per_cell, summary,
         snvs_high_impact, snvs_all, trinuc, snv_adjacent_distance, snv_genome_count,
         snv_cell_counts, snv_alt_counts, destruct_rearrangement_plots_unfiltered,
-        destruct_rearrangement_plots_filtered, lumpy_rearrangement_plots_unfiltered, 
-        baf_plot, cn_plot, datatype_summary, maf,tmpspace
+        destruct_rearrangement_plots_filtered, lumpy_rearrangement_plots_unfiltered,
+        baf_plot, cn_plot, datatype_summary, maf, tmpspace
     ]
 
     files_args = [os.path.abspath(v) for v in files_args]
@@ -91,8 +95,8 @@ def sample_level_report(
 
 
 def create_mutation_report(
-        pseudo_bulk_group, merged_maf, high_impact_maf, high_impact_snvs, report_html,
-        tmpspace, docker_image=None
+        pseudo_bulk_group, merged_maf, high_impact_maf,
+        high_impact_snvs, report_html, tmpspace, docker_image=None
 ):
     cmd = [
         "run_mutationreport.sh",
