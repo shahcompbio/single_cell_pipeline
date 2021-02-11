@@ -242,21 +242,16 @@ def get_fastqs(fastqs_file):
 
 
 def load_cohort_qc_inputs(yaml_file):
-    yaml_file = load_yaml(yaml_file)
-    cohort = list(yaml_file.keys())[0]
-    data = yaml_file[cohort]
-
+    yaml_data = load_yaml(yaml_file)
+    cohort = list(yaml_data.keys())[0]
+    data = yaml_data[cohort]
     mafs = {}
     hmmcopy = {}
-
     maf_data = data["mafs"]
     hmmcopy_data = data["hmmcopy"]
-
     for sample, data in hmmcopy_data.items():
         for library, data in data.items():
             hmmcopy[(sample, library)] = {"hmmcopy": data["hmmcopy_reads"]}
-
     for sample, data in maf_data.items():
-        mafs[sample] = data
-
+        mafs[(sample)] = data
     return cohort, mafs, hmmcopy
