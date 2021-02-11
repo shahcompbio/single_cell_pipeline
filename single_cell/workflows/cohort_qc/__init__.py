@@ -1,3 +1,5 @@
+import logging
+import os
 import pypeliner
 import pypeliner.managed as mgd
 
@@ -10,6 +12,18 @@ def cna_annotation_workflow(
         output_segs,
         gtf
 ):
+    """Run classify copynumber on hmmcopy dictionary and generate a cohort cna table and file containg segments.
+
+    Args:
+        config ([dict]): [config]
+        hmmcopy_dict ([dict]): [dictionary of sample: hmmcopy file]
+        output_cbio_table ([str]): [path to cna data for cbio]
+        output_maftools_table ([str]): [path to cna data for maftools]
+        output_segs ([str]): [path to output segments for cbio]
+        gtf ([str]): [path to gtf file]
+
+    Returns:
+    """
     workflow = pypeliner.workflow.Workflow(
         ctx={'docker_image': config['docker']['single_cell_pipeline']}
     )
@@ -97,8 +111,21 @@ def cna_annotation_workflow(
 
 
 def preprocess_mafs_workflow(
-        config, germline_mafs, somatic_mafs, cohort_maf, api_key
+    config, germline_mafs, somatic_mafs,
+    cohort_germline_maf, cohort_somatic_maf, api_key
 ):
+    """Take germline and somatic mafs, annotates, filters and merges them.
+
+    Args:
+        config ([dict]): [config]
+        germline_mafs ([dic]): [sample: germline maf path]
+        somatic_mafs ([dict]): [sample: somatic maf path]
+        cohort_germline_maf ([str]): [merged germline output]
+        cohort_somatic_maf ([str]): [merged somatic output]
+        api_key ([str]): [API key for onckb annotator]
+
+    Returns:
+    """
     workflow = pypeliner.workflow.Workflow(
         ctx={'docker_image': config['docker']['single_cell_pipeline']}
     )
@@ -113,7 +140,9 @@ def preprocess_mafs_workflow(
         func='single_cell.workflows.cohort_qc.tasks.annotate_maf_with_oncokb',
         axes=("sample_label",),
         args=(
-            mgd.InputFile('germlne_maf', 'sample_label', fnames=germline_mafs),
+            mgd.InputFile(
+                'germlne_maf', 'sample_label', fnames=germline_mafs
+            ),
             api_key,
             mgd.TempSpace("annotated_germline_maf_tmp", 'sample_label'),
             mgd.TempOutputFile("annotated_germline_maf", 'sample_label'),
@@ -131,6 +160,17 @@ def preprocess_mafs_workflow(
     )
 
     workflow.transform(
+        name='merge_germline_mafs',
+        func='single_cell.workflows.cohort_qc.tasks.merge_mafs',
+        args=(
+            mgd.TempInputFile(
+                "filtered_germline_maf", 'sample_label',  axes_origin=[]
+            ),
+            mgd.OutputFile(cohort_germline_maf)
+        ),
+    )
+
+    workflow.transform(
         name='annotate_somatic_mafs',
         func='single_cell.workflows.cohort_qc.tasks.annotate_maf_with_oncokb',
         axes=("sample_label",),
@@ -141,43 +181,37 @@ def preprocess_mafs_workflow(
             mgd.TempOutputFile("annotated_somatic_maf", 'sample_label'),
         ),
     )
-
     workflow.transform(
-        name='annotate_germline_class',
-        func='single_cell.workflows.cohort_qc.tasks.annotate_maf_file',
-        axes=("sample_label",),
-        args=(
-            mgd.TempInputFile('filtered_germline_maf', 'sample_label'),
-            mgd.TempOutputFile("filtered_class_labeled_germline_maf", 'sample_label'),
-            {'is_germline': True}
-        ),
-    )
-
-    workflow.transform(
-        name='annotate_somatic_class',
-        func='single_cell.workflows.cohort_qc.tasks.annotate_maf',
-        axes=("sample_label",),
-        args=(
-            mgd.TempInputFile('annotated_somatic_maf', 'sample_label'),
-            mgd.TempOutputFile("class_labeled_somatic_maf", 'sample_label'),
-            {'is_germline': False}
-        ),
-    )
-
-    workflow.transform(
-        name='merge_filtered_germline_somatic',
+        name='merge_somatic_mafs',
         func='single_cell.workflows.cohort_qc.tasks.merge_mafs',
         args=(
-            mgd.TempInputFile("filtered_class_labeled_germline_maf", 'sample_label', axes_origin=[]),
-            mgd.TempInputFile('class_labeled_somatic_maf', 'sample_label', axes_origin=[]),
-            mgd.OutputFile(cohort_maf),
+            mgd.TempInputFile(
+                "annotated_somatic_maf", 'sample_label', axes_origin=[]
+            ),
+            mgd.OutputFile(cohort_somatic_maf)
         ),
     )
 
     return workflow
 
 
-def create_cohort_oncoplot(config, cohort, cohort_maf, cna_table, oncoplot):
+def create_cohort_oncoplot(
+    config, merged_germline, 
+    merged_somatic, maftools_cna, maftools_maf, oncoplot
+):
+    """create oncoplot from cna table, and germlinne/somatic dataa.
+
+    Args:
+        config ([dict]): [config]
+        merged_germline ([str]): [path to merged germline file]
+        merged_somatic ([str]): [path to merged somatic file]
+        maftools_cna ([str]): [path to merged cna data]
+        maftools_maf ([sstr]): [path to output prepped maftools input maf]
+        oncoplot ([str]): [path to output oncoplot]
+
+    Returns:
+        [type]: [description]
+    """
     workflow = pypeliner.workflow.Workflow(
         ctx={'docker_image': config['docker']['single_cell_pipeline']}
     )
@@ -188,9 +222,9 @@ def create_cohort_oncoplot(config, cohort, cohort_maf, cna_table, oncoplot):
         name='postprocess_maf',
         func='single_cell.workflows.cohort_qc.tasks.prepare_maf_for_maftools',
         args=(
-            cohort,
-            mgd.InputFile(cohort_maf),
-            mgd.TempOutputFile("prepared_maf"),
+            mgd.InputFile(merged_germline),
+            mgd.InputFile(merged_somatic),
+            mgd.OutputFile(maftools_maf),
             non_synonymous_labels,
             mgd.TempOutputFile("vcNames")
         ),
@@ -200,8 +234,8 @@ def create_cohort_oncoplot(config, cohort, cohort_maf, cna_table, oncoplot):
         name='make_oncoplot',
         func='single_cell.workflows.cohort_qc.tasks.make_oncoplot',
         args=(
-            mgd.TempInputFile("prepared_maf"),
-            mgd.InputFile(cna_table),
+            mgd.InputFile(maftools_maf),
+            mgd.InputFile(maftools_cna),
             mgd.OutputFile(oncoplot),
             mgd.TempInputFile("vcNames")
 
