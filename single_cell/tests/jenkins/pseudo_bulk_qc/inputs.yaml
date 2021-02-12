@@ -21,4 +21,3 @@ SA123:
       alignment_metrics: PSEUDO_BULK_QC/ref_test_data/alignment_metrics.csv.gz
       gc_metrics: PSEUDO_BULK_QC/ref_test_data/gc_metrics.csv.gz
       indel_file: PSEUDO_BULK_QC/ref_test_data/strelka_indel.vcf.gz
-      isabl_id: null

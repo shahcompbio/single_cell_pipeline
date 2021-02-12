@@ -19,8 +19,6 @@ def pseudo_bulk_qc_workflow(args):
     grouplevel_snvs = os.path.join(out_dir, 'patient', "grouplevel_snvs.csv")
 
 
-    isabl_ids = {label: paths["isabl_id"] for label, paths in data.items()}
-
     mappability_files = {label: paths["mappability"] for label, paths in data.items()}
     strelka_files = {label: paths["strelka"] for label, paths in data.items()}
     museq_files = {label: paths["museq"] for label, paths in data.items()}
@@ -95,8 +93,7 @@ def pseudo_bulk_qc_workflow(args):
             mgd.InputFile('annotation_metrics', 'patient', 'sample_id', 'library_id',
                           fnames=annotation_metrics_files),
             mgd.InputFile('hmmcopy_reads', 'patient', 'sample_id', 'library_id', fnames=hmmcopy_reads_files),
-            mgd.InputFile('isabl_ids', 'patient', 'sample_id', 'library_id', fnames=isabl_ids),
-
+            mgd.InputInstance("sample_id"),
             mgd.InputFile('hmmcopy_segs', 'patient', 'sample_id', 'library_id', fnames=hmmcopy_segs_files),
             mgd.InputFile('hmmcopy_metrics', 'patient', 'sample_id', 'library_id', fnames=hmmcopy_metrics_files),
             mgd.InputFile('alignment_metrics', 'patient', 'sample_id', 'library_id',

@@ -85,6 +85,7 @@ def load_snv_data(
     return filtered_data[0], filtered_data[1]
 
 
+
 def plot_mutations_per_cell(snv_data, snv_count_data, mutations_per_cell, prefix):
     allcells = snv_count_data.loc[:, ["cell_id"]].drop_duplicates()
     run_bulk_snv_analysis(snv_data, snv_count_data, allcells, results_prefix=prefix)
@@ -325,6 +326,7 @@ def plot_type_size_distribution(breakpoint_data, type_col):
     plt.title("rearrangement size distribution")
     return typesizes
 
+
 def load_allele_data(haplotype_allele_data):
     allele_data = []
 
@@ -337,9 +339,9 @@ def load_allele_data(haplotype_allele_data):
 
         chunk = chunk['readcount'].unstack(fill_value=0)
 
-        chunk.rename(columns={"0": 'allele_1', "1": 'allele_2'}, inplace=True)
-
         chunk.reset_index(inplace=True)
+
+        chunk.rename(columns={0: 'allele_1', 1: 'allele_2'}, inplace=True)
 
         chunk['total_counts'] = chunk['allele_1'] + chunk['allele_2']
 
