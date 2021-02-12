@@ -1,5 +1,12 @@
 # Change Log
 
+### v0.6.45:
+
+#### Changes:
+1. remove unused code in hmmcopy
+2. review of QC codebase
+3. pseudobulk QC is in codebuild
+
 ### v0.6.44
 
 #### Changes:

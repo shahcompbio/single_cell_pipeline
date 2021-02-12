@@ -17,7 +17,7 @@ phases:
       - bash single_cell/tests/jenkins/breakpoint_calling/breakpoint_calling.sh quay.io/singlecellpipelinetest
       - bash single_cell/tests/jenkins/infer_haps/infer_haps.sh quay.io/singlecellpipelinetest
       - bash single_cell/tests/jenkins/count_haps/count_haps.sh quay.io/singlecellpipelinetest
-#      - bash single_cell/tests/jenkins/pseudo_bulk_qc/pseudo_bulk_qc.sh  quay.io/singlecellpipelinetest
+      - bash single_cell/tests/jenkins/pseudo_bulk_qc/pseudo_bulk_qc.sh  quay.io/singlecellpipelinetest
   post_build:
     commands:
       - if [ $CODEBUILD_BUILD_SUCCEEDING = 1 ]; then bash single_cell/tests/jenkins/build_docker_master/build.sh $QUAY_USR $QUAY_PSW quay.io singlecellpipeline; fi
