@@ -88,8 +88,11 @@ def cna_annotation_workflow(
         axes=("sample_label",),
         args=(
             mgd.InputFile('hmmcopy', 'sample_label', 'library_label', fnames=hmmcopy_dict),
+            mgd.TempInputObj(
+                'sample_ids', 'sample_label', 'library_label',
+            ),
             mgd.TempOutputFile('segmental_cn', 'sample_label'),
-            mgd.InputInstance('sample_label')
+            mgd.InputInstance('sample_label'),
         ),
     )
 
