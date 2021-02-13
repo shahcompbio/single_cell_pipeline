@@ -7,6 +7,7 @@ import pypeliner.managed as mgd
 def cna_annotation_workflow(
         config,
         hmmcopy_dict,
+        hmmcopy_samples,
         output_cbio_table,
         output_maftools_table,
         output_segs,
@@ -17,6 +18,7 @@ def cna_annotation_workflow(
     Args:
         config ([dict]): [config]
         hmmcopy_dict ([dict]): [dictionary of sample: hmmcopy file]
+        hmmcopy_dict ([dict]): [dictionary of sample: sample_id]
         output_cbio_table ([str]): [path to cna data for cbio]
         output_maftools_table ([str]): [path to cna data for maftools]
         output_segs ([str]): [path to output segments for cbio]
@@ -25,12 +27,12 @@ def cna_annotation_workflow(
     Returns:
     """
     workflow = pypeliner.workflow.Workflow(
-        ctx={'docker_image': config['docker']['single_cell_pipeline']}
+        ctx={'docker_image': config['docker']['single_cell_pipeline'], 'mem': 16}
     )
 
     workflow.setobj(
-        obj=mgd.OutputChunks('sample_label', 'library_label'),
-        value=list(hmmcopy_dict.keys()),
+        obj=mgd.TempOutputObj('sample_ids', 'sample_label', 'library_label'),
+        value=hmmcopy_samples,
     )
 
     workflow.transform(
@@ -38,9 +40,11 @@ def cna_annotation_workflow(
         func='single_cell.workflows.cohort_qc.tasks.classify_hmmcopy',
         axes=("sample_label",),
         args=(
-            mgd.InputInstance("sample_label"),
             mgd.InputFile(
-                'hmmcopy', 'sample_label', 'library_label', fnames=hmmcopy_dict, axes_origin=[]
+                'hmmcopy', 'sample_label', 'library_label', fnames=hmmcopy_dict,
+            ),
+            mgd.TempInputObj(
+                'sample_ids', 'sample_label', 'library_label',
             ),
             gtf,
             mgd.TempSpace("annotated_maf_tmp", "sample_label"),

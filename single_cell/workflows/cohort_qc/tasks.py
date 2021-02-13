@@ -181,15 +181,15 @@ def merge_cna_tables(tables, output):
 
 
 def classify_hmmcopy(
-    sample_label, hmmcopy_files, gtf, output_dir, 
+    hmmcopy_files, sample_ids, gtf, output_dir, 
     amps, dels, docker_image=None
 ):
     '''
     run classify_copynumber on hmmcopy data
     Parameters
     ----------
-    sample_label: sample label for all libraries
     hmmcopy_files: library: path of hmmcopy data 
+    sample_ids: sample ids to filter library level data
     gtf: gtf file
     output_dir: output directory
     amps: output path for amps
@@ -198,12 +198,15 @@ def classify_hmmcopy(
     -------
     '''
     files = list(hmmcopy_files.values())
+    sample_ids = list(sample_ids.values())
     cmd = [
         "classifycopynumber", gtf, output_dir,
-        sample_label, amps, dels, "--plot", False
+        amps, dels, "--plot", False
     ]
     for f in files:
         cmd.extend(["--hmmcopy_csv_filenames", f])
+    for s in sample_ids:
+        cmd.extend(["--sample_ids", s])
 
     pypeliner.commandline.execute(*cmd, docker_image=docker_image)
 
