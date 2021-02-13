@@ -20,24 +20,27 @@ def merge_segmental_cn(segmental_cn, combined):
     segmental_cn_combined.to_csv(combined, sep="\t", index=False)
 
 
-def generate_segmental_copynumber(hmmcopy_files, segmental_cn, sample):
+def generate_segmental_copynumber(hmmcopy_files, sample_ids, segmental_cn, sample_label):
     '''
     transform copynumber  data from classify_copynumber
     package to segmental format
     Parameters
     ----------
     hmmcopy_files : dictionary of library: copynumber data
+    sample_ids : sample_ids for filtering hmmcopy data
     segmental_cn : output segmental cn file, 1 for sample
-    sample : sample label
+    sample_label : sample label for merged data
     Returns
     -------
     '''
+    sample_ids = list(sample_ids.values())
     cn, ploidy = parsers.read_hmmcopy_files(
         list(hmmcopy_files.values()),
-        filter_normal=False, group_label_col='cell_id'
+        filter_normal=False, group_label_col='cell_id',
+        sample_ids=sample_ids,
     )
 
-    cn["sample"] = sample
+    cn["sample"] = sample_label
     transformations.generate_segmental_cn(
         segmental_cn, cn, ploidy, cn_col="copy",
         length_col="width"
