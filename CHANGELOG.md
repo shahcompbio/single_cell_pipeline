@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.6.46:
+
+####  Changes:
+1. Added sample id and library id to alignment and hmm metrics
+
 ### v0.6.45:
 
 #### Changes:
