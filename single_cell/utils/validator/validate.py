@@ -13,7 +13,7 @@ def validate_sample_info(yamldata):
         celldata = yamldata[cell]
 
         utils.check_data_type(['column', 'img_col', 'row'], int, celldata)
-        utils.check_data_type(['condition', 'pick_met', 'index_i5', 'index_i7'], str, celldata)
+        utils.check_data_type(['condition', 'pick_met', 'index_i5', 'index_i7', 'sample_id', 'library_id'], str, celldata)
 
         utils.check_barcodes(utils.get(celldata, 'primer_i5'))
         utils.check_barcodes(utils.get(celldata, 'primer_i7'))
