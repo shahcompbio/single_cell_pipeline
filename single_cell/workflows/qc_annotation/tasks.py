@@ -114,7 +114,7 @@ def generate_qc_report(
     generate_qc.generate_html_report(tempdir, qc_report, reference_gc, metrics_df_annotated, gc_metrics_df)
 
 
-def cell_cycle_classifier(hmmcopy_reads, hmmcopy_metrics, alignment_metrics, output, tempdir, docker_image=None):
+def cell_cycle_classifier(hmmcopy_reads, hmmcopy_metrics, alignment_metrics, output, tempdir):
     helpers.makedirs(tempdir)
     temp_output = os.path.join(tempdir, 'cell_cycle_output.csv')
 
@@ -127,7 +127,7 @@ def cell_cycle_classifier(hmmcopy_reads, hmmcopy_metrics, alignment_metrics, out
         temp_output
     ]
 
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)
 
     cell_cycle_df = pd.read_csv(temp_output)
 

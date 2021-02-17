@@ -291,7 +291,7 @@ def extract_svtyper_info(df):
 def genotype(
         input_bam, reference, input_vcf,
         output_vcf, output_csv, tempdir,
-        cell_id, docker_image=None
+        cell_id
 ):
     """
     calls svtyper-sso on input
@@ -308,8 +308,6 @@ def genotype(
     :type output_csv:
     :param tempdir:
     :type tempdir:
-    :param docker_image:
-    :type docker_image:
     :return:
     :rtype:
     """
@@ -321,7 +319,7 @@ def genotype(
            '--ref_fasta', reference,
            '-o', output_vcf]
 
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)
 
     base_data = parse_vcf(output_vcf, None, return_pandas=True)
 

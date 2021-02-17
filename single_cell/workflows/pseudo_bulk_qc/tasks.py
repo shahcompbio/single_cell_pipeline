@@ -40,17 +40,17 @@ def merge_snvs(snv_files, merged_snv, id_colname=False):
     output.to_csv(merged_snv, sep="\t", index=False, header=True)
 
 
-def filter_snvs_for_high_impact(snv, filtsnv, docker_image=None):
+def filter_snvs_for_high_impact(snv, filtsnv):
     cmd = ["mergesnvs.R", snv, filtsnv]
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)
 
 
-def filter_maf_for_high_impact(maf, filtmaf, docker_image=None):
+def filter_maf_for_high_impact(maf, filtmaf):
     cmd = ["mergemafs.R", maf, filtmaf]
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)
 
 
-def vcf2maf(vcf_file, output_maf, tempdir, vep_ref, docker_image=None):
+def vcf2maf(vcf_file, output_maf, tempdir, vep_ref):
     vcf_file_copy = os.path.join(tempdir, 'vcf2maf_input_vcf', os.path.basename(vcf_file))
     helpers.makedirs(vcf_file_copy, isfile=True)
     shutil.copyfile(vcf_file, vcf_file_copy)
@@ -68,7 +68,7 @@ def vcf2maf(vcf_file, output_maf, tempdir, vep_ref, docker_image=None):
         vep_ref['reference_dir'],
     ]
 
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)
 
 
 def sample_level_report(
@@ -77,7 +77,7 @@ def sample_level_report(
         snv_cell_counts, snv_alt_counts, destruct_rearrangement_plots_unfiltered,
         destruct_rearrangement_plots_filtered, lumpy_rearrangement_plots_unfiltered,
         baf_plot, cn_plot, datatype_summary, maf, html_file,
-        sample_id, tmpspace, docker_image=None
+        sample_id, tmpspace
 ):
     files_args = [
         html_file, sample_id, mutations_per_cell, summary,
@@ -91,12 +91,12 @@ def sample_level_report(
 
     cmd = ['run_report.sh'] + files_args
 
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)
 
 
 def create_mutation_report(
         pseudo_bulk_group, merged_maf, high_impact_maf,
-        high_impact_snvs, report_html, tmpspace, docker_image=None
+        high_impact_snvs, report_html, tmpspace
 ):
     cmd = [
         "run_mutationreport.sh",
@@ -108,4 +108,4 @@ def create_mutation_report(
         tmpspace
     ]
 
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)

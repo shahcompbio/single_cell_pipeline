@@ -23,7 +23,7 @@ def create_variant_counting_workflow(args):
     config = inpututils.load_config(args)
     config = config['variant_calling']
 
-    workflow = pypeliner.workflow.Workflow(ctx={'docker_image': config['docker']['single_cell_pipeline']})
+    workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
         obj=mgd.OutputChunks('sample_id', 'library_id', 'cell_id'),
@@ -43,7 +43,6 @@ def create_variant_counting_workflow(args):
             mgd.TempOutputFile('all.snv.vcf.gz', extensions=['.tbi', '.csi']),
             mgd.TempSpace("merge_vcf_temp")
         ),
-        kwargs={'docker_image': config['docker']['vcftools']}
     )
 
     workflow.subworkflow(

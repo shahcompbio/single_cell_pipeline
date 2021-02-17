@@ -70,7 +70,7 @@ def concatenate_vcf(infiles, outfile):
                     ofile.write(l)
 
 
-def merge_vcf(infiles, outfile, tempdir, docker_image=None):
+def merge_vcf(infiles, outfile, tempdir):
     vcf_files = []
     for infile in infiles:
         if isinstance(infile, str):
@@ -87,4 +87,4 @@ def merge_vcf(infiles, outfile, tempdir, docker_image=None):
 
     vcf_tasks.merge_vcfs(vcf_files, temp_output)
 
-    vcf_tasks.finalise_vcf(temp_output, outfile, docker_config={'docker_image': docker_image})
+    vcf_tasks.finalise_vcf(temp_output, outfile)

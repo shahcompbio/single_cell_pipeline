@@ -15,9 +15,6 @@ def create_merge_bams_workflow(
         regions,
         config,
 ):
-    baseimage = config['docker']['single_cell_pipeline']
-
-
     merged_bams = dict([(region, merged_bams[region])
                         for region in regions])
 
@@ -39,13 +36,12 @@ def create_merge_bams_workflow(
     if one_split_job:
         workflow.transform(
             name='merge_bams',
-            ctx={'mem': config['memory']['med'], 'ncpus': config['max_cores'], 'docker_image': baseimage},
+            ctx={'mem': config['memory']['med'], 'ncpus': config['max_cores']},
             func="single_cell.workflows.merge_bams.tasks.merge_bams",
             args=(
                 mgd.InputFile('bam', 'cell_id', fnames=input_bams, extensions=['.bai']),
                 mgd.OutputFile('merged.bam', "region", fnames=merged_bams, axes_origin=[], extensions=['.bai']),
                 regions,
-                config['docker']['samtools'],
                 mgd.TempSpace("merge_bams_tempdir")
             ),
             kwargs={"ncores": config["max_cores"]}
@@ -60,7 +56,6 @@ def create_merge_bams_workflow(
                 mgd.OutputFile(
                     'tumour_regions.bam', 'region', axes_origin=[], extensions=['.bai'], fnames=merged_bams),
                 mgd.Instance('region'),
-                config['docker']['samtools'],
             ),
         )
 

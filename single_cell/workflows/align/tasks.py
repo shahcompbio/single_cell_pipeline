@@ -129,6 +129,6 @@ def tar_align_data(infiles, tar_output, tempdir):
     for infile in infiles:
         for key, filepath in infile.items():
             temp_path = os.path.join(tempdir, '{}_{}'.format(key, os.path.basename(filepath)))
-            helpers.shutil.copyfile(filepath, temp_path)
+            helpers.copyfile(filepath, temp_path)
 
     helpers.make_tarfile(tar_output, tempdir)

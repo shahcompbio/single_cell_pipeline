@@ -261,7 +261,7 @@ def build_shell_script(command, tag, tempdir):
     return outfile
 
 
-def run_in_gnu_parallel(commands, tempdir, docker_image, ncores=None):
+def run_in_gnu_parallel(commands, tempdir, ncores=None):
     makedirs(tempdir)
 
     scriptfiles = []
@@ -278,7 +278,7 @@ def run_in_gnu_parallel(commands, tempdir, docker_image, ncores=None):
         ncores = multiprocessing.cpu_count()
 
     gnu_parallel_cmd = ['parallel', '--jobs', ncores, '<', parallel_outfile]
-    pypeliner.commandline.execute(*gnu_parallel_cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*gnu_parallel_cmd)
 
 
 def makedirs(directory, isfile=False):

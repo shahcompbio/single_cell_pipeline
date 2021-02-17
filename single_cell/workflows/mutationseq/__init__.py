@@ -15,11 +15,8 @@ def museq_callback(record):
 def create_museq_workflow(
         normal_bam, tumour_bam, snv_vcf, museq_csv,
         config):
-    museq_docker = {'docker_image': config['docker']['mutationseq']}
-    vcftools_docker = {'docker_image': config['docker']['vcftools']}
 
-    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1, 'num_retry': 3,
-           'docker_image': config['docker']['single_cell_pipeline']}
+    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1, 'num_retry': 3}
 
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
@@ -41,7 +38,6 @@ def create_museq_workflow(
             mgd.InputInstance('region'),
             config,
         ),
-        kwargs={'docker_kwargs': museq_docker}
     )
 
     workflow.transform(
@@ -53,7 +49,6 @@ def create_museq_workflow(
             mgd.TempInputFile('museq.vcf', 'region'),
             mgd.TempOutputFile('museq.vcf.gz', 'region', extensions=['.tbi', '.csi']),
         ),
-        kwargs={'docker_config': vcftools_docker}
     )
 
     workflow.transform(
@@ -66,7 +61,6 @@ def create_museq_workflow(
         ),
         kwargs={
             'allow_overlap': True,
-            'docker_config': vcftools_docker
         },
     )
 
@@ -78,7 +72,6 @@ def create_museq_workflow(
             mgd.TempInputFile('museq.vcf.gz', extensions=['.tbi', '.csi']),
             mgd.OutputFile(snv_vcf, extensions=['.tbi', '.csi']),
         ),
-        kwargs={'docker_config': vcftools_docker}
     )
 
     workflow.transform(

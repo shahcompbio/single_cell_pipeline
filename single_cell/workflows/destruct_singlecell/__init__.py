@@ -4,20 +4,19 @@ from single_cell.workflows.destruct_singlecell.dtypes import dtypes
 
 
 def process_cells_destruct(
-        destruct_config, config, cell_bam_files,
+        destruct_config, cell_bam_files,
         reads_1, reads_2, sample_1, sample_2, stats,
         tag=False
 ):
 
-    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1, }
+    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1}
 
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     if isinstance(cell_bam_files, str):
         workflow.commandline(
             name='bamdisc_normal',
-            # func="single_cell.workflows.destruct_singlecell.tasks.destruct_bamdisc_and_numreads",
-            ctx={'io': 1, 'mem': 8, 'disk': 200, 'docker_image': config['docker']['destruct']},
+            ctx={'io': 1, 'mem': 8, 'disk': 200},
             args=(
                 'destruct_bamdiscordantfastq',
                 '-r',
@@ -45,9 +44,8 @@ def process_cells_destruct(
 
     workflow.commandline(
         name='bamdisc_and_numreads_cell',
-        # func="single_cell.workflows.destruct_singlecell.tasks.destruct_bamdisc_and_numreads",
         axes=('cell_id',),
-        ctx={'io': 1, 'mem': 8, 'docker_image': config['docker']['destruct']},
+        ctx={'io': 1, 'mem': 8},
         args=(
             'destruct_bamdiscordantfastq',
             '-r',
@@ -116,7 +114,7 @@ def destruct_preprocess_workflow(
         normal_bam_files, normal_stats,
         normal_reads_1, normal_reads_2,
         normal_sample_1, normal_sample_2,
-        ref_data_directory, destruct_config, config,
+        ref_data_directory, destruct_config,
         tag=False
 ):
     workflow = pypeliner.workflow.Workflow()
@@ -124,7 +122,7 @@ def destruct_preprocess_workflow(
     workflow.transform(
         name="get_destruct_config",
         func="destruct.defaultconfig.get_config",
-        ctx={'docker_image': config['docker']['destruct'], 'disk': 200},
+        ctx={'disk': 200},
         ret=mgd.TempOutputObj("destruct_config"),
         args=(
             ref_data_directory,
@@ -138,7 +136,6 @@ def destruct_preprocess_workflow(
             func=process_cells_destruct,
             args=(
                 mgd.TempInputObj("destruct_config"),
-                config,
                 mgd.InputFile(normal_bam_files),
                 mgd.OutputFile(normal_reads_1),
                 mgd.OutputFile(normal_reads_2),
@@ -159,7 +156,6 @@ def destruct_preprocess_workflow(
             func=process_cells_destruct,
             args=(
                 mgd.TempInputObj("destruct_config"),
-                config,
                 mgd.InputFile('bam', 'normal_cell_id', fnames=normal_bam_files),
                 mgd.OutputFile(normal_reads_1),
                 mgd.OutputFile(normal_reads_2),
@@ -176,7 +172,7 @@ def destruct_preprocess_workflow(
 def destruct_workflow(
         normal_stats, normal_reads_1, normal_reads_2, normal_sample_1, normal_sample_2,
         tumour_stats, tumour_reads_1, tumour_reads_2, tumour_sample_1, tumour_sample_2,
-        destruct_config, config, ref_data_directory, breakpoints_filename,
+        destruct_config, ref_data_directory, breakpoints_filename,
         breakpoints_library_filename, cell_counts_filename, raw_data_directory,
         normal_sample_id='normal', tumour_sample_id='tumour',
         tumour_library_id='tumour'
@@ -187,7 +183,6 @@ def destruct_workflow(
     workflow.transform(
         name="get_destruct_config",
         func="destruct.defaultconfig.get_config",
-        ctx={'docker_image': config['docker']['destruct']},
         ret=mgd.TempOutputObj("destruct_config"),
         args=(
             ref_data_directory,
@@ -198,7 +193,7 @@ def destruct_workflow(
     workflow.subworkflow(
         name='destruct',
         func="destruct.workflow.create_destruct_fastq_workflow",
-        ctx={'docker_image': config['docker']['destruct'], 'disk': 200},
+        ctx={'disk': 200},
         args=(
             {
                 normal_sample_id: mgd.InputFile(normal_reads_1),
@@ -233,7 +228,7 @@ def destruct_workflow(
 
     workflow.transform(
         name='filter_annotate_breakpoints',
-        ctx={'docker_image': config['docker']['destruct'], 'mem': 8},
+        ctx={'mem': 8},
         func="biowrappers.components.breakpoint_calling.destruct.tasks.filter_annotate_breakpoints",
         args=(
             pypeliner.managed.TempInputFile('breakpoint_table'),
@@ -307,8 +302,7 @@ def create_destruct_workflow(
         destruct_ref_data_dir, breakpoints_csv, breakpoints_library_csv,
         cell_counts_csv, normal_sample_id='normal',
 ):
-    ctx = {'docker_image': config['docker']['single_cell_pipeline']}
-    workflow = pypeliner.workflow.Workflow(ctx=ctx)
+    workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
@@ -327,7 +321,6 @@ def create_destruct_workflow(
             mgd.TempOutputFile('normal_sample_2.fastq.gz'),
             destruct_ref_data_dir,
             destruct_config,
-            config
         ),
     )
 
@@ -343,7 +336,6 @@ def create_destruct_workflow(
             mgd.TempOutputFile('tumour_sample_2.fastq.gz'),
             destruct_ref_data_dir,
             destruct_config,
-            config
         ),
         kwargs={'tag': True}
     )
@@ -363,7 +355,6 @@ def create_destruct_workflow(
             mgd.TempInputFile('tumour_sample_1.fastq.gz'),
             mgd.TempInputFile('tumour_sample_2.fastq.gz'),
             destruct_config,
-            config,
             destruct_ref_data_dir,
             mgd.OutputFile(breakpoints_csv),
             mgd.OutputFile(breakpoints_library_csv),

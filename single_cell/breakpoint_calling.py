@@ -43,9 +43,7 @@ def breakpoint_calling_workflow(args):
 
     ref_data_directory = config['ref_data_directory']
 
-    workflow = pypeliner.workflow.Workflow(
-        ctx={'docker_image': config['docker']['single_cell_pipeline']}
-    )
+    workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
         obj=mgd.OutputChunks('tumour_cell_id'),
@@ -67,7 +65,6 @@ def breakpoint_calling_workflow(args):
     if run_destruct:
         workflow.subworkflow(
             name='destruct',
-            ctx={'docker_image': config['docker']['single_cell_pipeline']},
             func="single_cell.workflows.destruct_singlecell.create_destruct_workflow",
             args=(
                 normal_bam,

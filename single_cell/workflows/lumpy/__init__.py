@@ -7,16 +7,12 @@ def lumpy_preprocess_workflow(
         bam_files, config, discordants, split_reads,
         histogram, mean_stdev
 ):
-    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
-           'docker_image': config['docker']['single_cell_pipeline']
-           }
+    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1}
 
-    lumpydocker = {'docker_image': config['docker']['lumpy']}
 
     histogram_settings = dict(
         N=10000, skip=0, min_elements=100, mads=10, X=4, read_length=101
     )
-    histogram_settings.update(lumpydocker)
 
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
@@ -70,15 +66,12 @@ def lumpy_preprocess_cells(
         config, bam_files, merged_discordants, merged_splitters, hist_csv, mean_stdev_obj
 ):
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
-           'docker_image': config['docker']['single_cell_pipeline']
            }
 
-    lumpydocker = {'docker_image': config['docker']['lumpy']}
 
     histogram_settings = dict(
         N=10000, skip=0, min_elements=100, mads=10, X=4, read_length=101
     )
-    histogram_settings.update(lumpydocker)
 
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
@@ -111,7 +104,6 @@ def lumpy_preprocess_cells(
             mgd.OutputFile(merged_discordants),
             mgd.TempSpace("merge_disc_temp")
         ),
-        kwargs=lumpydocker,
     )
 
     workflow.transform(
@@ -123,7 +115,6 @@ def lumpy_preprocess_cells(
             mgd.OutputFile(merged_splitters),
             mgd.TempSpace("merge_split_temp")
         ),
-        kwargs=lumpydocker,
     )
 
     workflow.transform(
@@ -153,10 +144,8 @@ def lumpy_calling_workflow(
         normal_id = sample_id + 'N'
 
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
-           'docker_image': config['docker']['single_cell_pipeline']
            }
 
-    lumpydocker = {'docker_image': config['docker']['lumpy']}
 
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
@@ -178,7 +167,6 @@ def lumpy_calling_workflow(
             mgd.OutputFile(lumpy_bed),
             mgd.TempSpace("lumpy_temp"),
         ),
-        kwargs=lumpydocker,
     )
 
     workflow.transform(
@@ -226,8 +214,7 @@ def create_lumpy_workflow(
         lumpy_breakpoints_csv, lumpy_breakpoints_evidence,
         lumpy_breakpoints_bed
 ):
-    ctx = {'docker_image': config['docker']['single_cell_pipeline']}
-    workflow = pypeliner.workflow.Workflow(ctx=ctx)
+    workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
@@ -237,7 +224,6 @@ def create_lumpy_workflow(
     workflow.subworkflow(
         name='normal_preprocess_lumpy',
         func='single_cell.workflows.lumpy.lumpy_preprocess_workflow',
-        ctx={'docker_image': config['docker']['single_cell_pipeline']},
         args=(
             normal_bam,
             config,
@@ -251,7 +237,6 @@ def create_lumpy_workflow(
     workflow.subworkflow(
         name='tumour_preprocess_lumpy',
         func='single_cell.workflows.lumpy.lumpy_preprocess_workflow',
-        ctx={'docker_image': config['docker']['single_cell_pipeline']},
         args=(
             mgd.InputFile('tumour_cells.bam','cell_id', extensions=['.bai'], fnames=tumour_cell_bams),
             config,
@@ -264,7 +249,6 @@ def create_lumpy_workflow(
 
     workflow.subworkflow(
         name='lumpy',
-        ctx={'docker_image': config['docker']['single_cell_pipeline']},
         func="single_cell.workflows.lumpy.lumpy_calling_workflow",
         args=(
             config,

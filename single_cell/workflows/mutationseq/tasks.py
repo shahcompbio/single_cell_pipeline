@@ -8,7 +8,7 @@ from single_cell.utils import vcfutils
 import pypeliner
 
 
-def run_museq(tumour, normal, out, log, region, config, docker_kwargs={}):
+def run_museq(tumour, normal, out, log, region, config):
     '''
     Run museq script for each chromosome
 
@@ -40,7 +40,7 @@ def run_museq(tumour, normal, out, log, region, config, docker_kwargs={}):
             else:
                 cmd.append(val)
 
-    pypeliner.commandline.execute(*cmd, **docker_kwargs)
+    pypeliner.commandline.execute(*cmd)
 
 
 def concatenate_vcfs(inputs, output):

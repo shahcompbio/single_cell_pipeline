@@ -18,15 +18,11 @@ def create_strelka_workflow(
         indel_vcf_file,
         snv_vcf_file,
         snv_csv_file,
-        config,
         chromosomes=default_chromosomes,
-        split_size=int(1e7),
-        use_depth_thresholds=True):
+        use_depth_thresholds=True
+):
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1,
-           'num_retry': 3, 'docker_image': config['docker']['single_cell_pipeline']}
-
-    strelka_docker = {'docker_image': config['docker']['strelka']}
-    vcftools_docker = {'docker_image': config['docker']['vcftools']}
+           'num_retry': 3}
 
     regions = list(normal_bam_file.keys())
     assert set(tumour_bam_file.keys()) == set(regions)
@@ -50,7 +46,6 @@ def create_strelka_workflow(
         args=(
             ref_genome_fasta_file,
             pypeliner.managed.TempOutputFile('ref_base_counts.tsv'),
-            strelka_docker
         )
     )
 
@@ -80,7 +75,6 @@ def create_strelka_workflow(
             pypeliner.managed.TempOutputFile('somatic.snvs.unfiltered.vcf', 'region'),
             pypeliner.managed.TempOutputFile('strelka.stats', 'region'),
             pypeliner.managed.InputInstance("region"),
-            strelka_docker
         ),
     )
 
@@ -125,7 +119,6 @@ def create_strelka_workflow(
             pypeliner.managed.TempInputFile('somatic.indels.filtered.vcf', 'chrom'),
             pypeliner.managed.TempOutputFile('somatic.indels.filtered.vcf.gz'),
             pypeliner.managed.TempSpace("merge_indels_temp"),
-            vcftools_docker
         )
     )
 
@@ -137,7 +130,6 @@ def create_strelka_workflow(
             pypeliner.managed.TempInputFile('somatic.snvs.filtered.vcf', 'chrom'),
             pypeliner.managed.TempOutputFile('somatic.snvs.filtered.vcf.gz'),
             pypeliner.managed.TempSpace("merge_snvs_temp"),
-            vcftools_docker
         )
     )
 
@@ -168,7 +160,6 @@ def create_strelka_workflow(
         args=(
             pypeliner.managed.TempInputFile('somatic.indels.passed.vcf'),
             pypeliner.managed.OutputFile(indel_vcf_file, extensions=['.tbi', '.csi']),
-            vcftools_docker
         )
     )
 
@@ -179,7 +170,6 @@ def create_strelka_workflow(
         args=(
             pypeliner.managed.TempInputFile('somatic.snvs.passed.vcf'),
             pypeliner.managed.OutputFile(snv_vcf_file, extensions=['.tbi', '.csi']),
-            vcftools_docker
         )
     )
 

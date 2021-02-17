@@ -5,7 +5,6 @@ from single_cell.annotation import annotation_pipeline
 from single_cell.breakpoint_calling import breakpoint_calling_pipeline
 from single_cell.clean_sentinels import clean_sentinels
 from single_cell.cmdline import parse_args
-from single_cell.docker_run import run_with_docker
 from single_cell.generate_config import generate_config
 from single_cell.germline_calling import germline_calling_pipeline
 from single_cell.hmmcopy import hmmcopy_pipeline
@@ -29,10 +28,6 @@ def main():
 
     if args["which"] == "clean_sentinels":
         clean_sentinels(args)
-        return
-
-    if args["run_with_docker"]:
-        run_with_docker(args, sys.argv)
         return
 
     if args["which"] == "alignment":

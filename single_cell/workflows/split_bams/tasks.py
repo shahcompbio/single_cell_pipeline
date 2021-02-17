@@ -12,31 +12,31 @@ from single_cell.utils import helpers
 import pypeliner
 
 
-def split_bam_file_one_job(bam, outbam, regions, samtools_docker, tempdir, ncores=None):
+def split_bam_file_one_job(bam, outbam, regions, tempdir, ncores=None):
     commands = []
     for region in regions:
         output = outbam[region]
         region = '{}:{}-{}'.format(*region.split('-'))
         commands.append(['samtools', 'view', '-b', bam, '-o', output, region])
 
-    helpers.run_in_gnu_parallel(commands, tempdir, samtools_docker, ncores=ncores)
+    helpers.run_in_gnu_parallel(commands, tempdir, ncores=ncores)
 
     commands = []
     for region in regions:
         output = outbam[region]
         commands.append(['samtools', 'index', output, output + ".bai"])
 
-    helpers.run_in_gnu_parallel(commands, tempdir, samtools_docker, ncores=ncores)
+    helpers.run_in_gnu_parallel(commands, tempdir, ncores=ncores)
 
 
-def split_bam_file(bam, outbam, interval, samtools_docker):
+def split_bam_file(bam, outbam, interval):
     outbai = outbam + '.bai'
-    bamutils.bam_view(bam, outbam, interval, docker_image=samtools_docker)
+    bamutils.bam_view(bam, outbam, interval)
 
-    bamutils.bam_index(outbam, outbai, docker_image=samtools_docker)
+    bamutils.bam_index(outbam, outbai)
 
 
-def split_bam_file_by_reads(bam, outbams, tempspace, intervals, samtools_docker):
+def split_bam_file_by_reads(bam, outbams, tempspace, intervals):
     # sort bam by reads and convert to sam
 
     helpers.makedirs(tempspace)
@@ -44,7 +44,7 @@ def split_bam_file_by_reads(bam, outbams, tempspace, intervals, samtools_docker)
     headerfile = os.path.join(tempspace, "bam_header.sam")
 
     cmd = ['samtools', 'view', '-H', bam, '-o', headerfile]
-    pypeliner.commandline.execute(*cmd, docker_image=samtools_docker)
+    pypeliner.commandline.execute(*cmd)
 
     collate_prefix = os.path.join(
         tempspace, os.path.basename(bam) + "_collate_temp"
@@ -56,7 +56,7 @@ def split_bam_file_by_reads(bam, outbams, tempspace, intervals, samtools_docker)
         'samtools', 'view', '-', '-o', collated_bam
     ]
 
-    pypeliner.commandline.execute(*cmd, docker_image=samtools_docker)
+    pypeliner.commandline.execute(*cmd)
 
     tempoutputs = [
         os.path.join(tempspace, os.path.basename(outbams[interval]) + ".split.temp")
@@ -70,7 +70,7 @@ def split_bam_file_by_reads(bam, outbams, tempspace, intervals, samtools_docker)
 
         cmd = ['samtools', 'view', '-Sb', inputsam, '-o', outputbam]
 
-        pypeliner.commandline.execute(*cmd, docker_image=samtools_docker)
+        pypeliner.commandline.execute(*cmd)
 
 
 def get_file_handle(filename, mode="r"):
