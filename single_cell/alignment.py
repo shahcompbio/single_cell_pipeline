@@ -48,9 +48,7 @@ def alignment_workflow(args):
 
     input_yaml_blob = os.path.join(alignment_dir, 'input.yaml')
 
-    workflow = pypeliner.workflow.Workflow(
-        ctx={'docker_image': config['docker']['single_cell_pipeline']}
-    )
+    workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id', 'lane'),

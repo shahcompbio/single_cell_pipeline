@@ -67,7 +67,6 @@ def collect_metrics(flagstat_metrics, markdups_metrics, insert_metrics,
 def picard_wgs_dup(
         input_bam, markdups_bam, markdups_metrics, tempdir,
         ref_genome, wgs_metrics, picard_wgs_params,
-        picard_docker=None
 
 ):
     tempdir_markdups = os.path.join(tempdir, 'markdups')
@@ -78,7 +77,6 @@ def picard_wgs_dup(
         markdups_bam,
         markdups_metrics,
         tempdir_markdups,
-        docker_image=picard_docker
     )
 
     tempdir_wgs = os.path.join(tempdir, 'wgs')
@@ -90,19 +88,16 @@ def picard_wgs_dup(
         wgs_metrics,
         picard_wgs_params,
         tempdir_wgs,
-        docker_image=picard_docker
     )
 
 
 def picard_insert_gc_flagstat(
         input_bam, ref_genome, gc_metrics, gc_metrics_summary, gc_metrics_pdf,
-        tempdir, flagstat_metrics, insert_metrics, insert_pdf, picard_docker=None,
-        samtools_docker=None
+        tempdir, flagstat_metrics, insert_metrics, insert_pdf,
 ):
     bamutils.bam_flagstat(
         input_bam,
         flagstat_metrics,
-        docker_image=samtools_docker
     )
 
     gc_tempdir = os.path.join(tempdir, 'gc')
@@ -115,7 +110,6 @@ def picard_insert_gc_flagstat(
         gc_metrics_summary,
         gc_metrics_pdf,
         gc_tempdir,
-        docker_image=picard_docker
     )
 
     insert_tempdir = os.path.join(tempdir, 'insert')
@@ -126,7 +120,6 @@ def picard_insert_gc_flagstat(
         insert_metrics,
         insert_pdf,
         insert_tempdir,
-        docker_image=picard_docker
     )
 
 

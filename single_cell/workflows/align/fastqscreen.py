@@ -53,7 +53,7 @@ def merge_fastq_screen_counts(
     )
 
 
-def run_fastq_screen_paired_end(fastq_r1, fastq_r2, tempdir, params, docker_image=None):
+def run_fastq_screen_paired_end(fastq_r1, fastq_r2, tempdir, params):
     def get_basename(filepath):
         filepath_base = os.path.basename(filepath)
 
@@ -101,7 +101,7 @@ def run_fastq_screen_paired_end(fastq_r1, fastq_r2, tempdir, params, docker_imag
         fastq_r2,
     ]
 
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)
 
     return tagged_fastq_r1, tagged_fastq_r2
 
@@ -209,7 +209,7 @@ def re_tag_reads(infile, outfile):
 def organism_filter(
         fastq_r1, fastq_r2, filtered_fastq_r1, filtered_fastq_r2,
         detailed_metrics, summary_metrics, tempdir, cell_id, params,
-        reference, docker_image=None, filter_contaminated_reads=False,
+        reference, filter_contaminated_reads=False,
 ):
     # fastq screen tries to skip if files from old runs are available
     if os.path.exists(tempdir):
@@ -218,7 +218,7 @@ def organism_filter(
     helpers.makedirs(tempdir)
 
     tagged_fastq_r1, tagged_fastq_r2 = run_fastq_screen_paired_end(
-        fastq_r1, fastq_r2, tempdir, params, docker_image=docker_image
+        fastq_r1, fastq_r2, tempdir, params,
     )
 
     reader = fastqutils.PairedTaggedFastqReader(tagged_fastq_r1, tagged_fastq_r2)
