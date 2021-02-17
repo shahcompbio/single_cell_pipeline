@@ -53,6 +53,8 @@ SA1090-A96213A-R20-C28:
   primer_i5: GTATAG
   primer_i7: CTATCT
   row: 20
+  sample_id: SA1090
+  library_id: A96213A
 SA1090-A96213A-R20-C62:
   column: 62
   condition: B
@@ -69,6 +71,8 @@ SA1090-A96213A-R20-C62:
   primer_i5: GTATAG
   primer_i7: AAGCTA
   row: 20
+  sample_id: SA1090
+  library_id: A96213A
 SA1090-A96213A-R22-C43:
   column: 43
   condition: B
@@ -85,6 +89,8 @@ SA1090-A96213A-R22-C43:
   primer_i5: GCTGTA
   primer_i7: ATTCCG
   row: 22
+  sample_id: SA1090
+  library_id: A96213A
 ```
 
 the testdata path must change to point it to the correct output data directory.
@@ -142,6 +148,8 @@ SA1090-A96213A-R20-C28:
   primer_i5: GTATAG
   primer_i7: CTATCT
   row: 20
+  sample_id: SA1090
+  library_id: A96213A
 SA1090-A96213A-R20-C62:
   bam: testdata/SA1090-A96213A-R20-C62.bam
   column: 62
@@ -153,6 +161,8 @@ SA1090-A96213A-R20-C62:
   primer_i5: GTATAG
   primer_i7: AAGCTA
   row: 20
+  sample_id: SA1090
+  library_id: A96213A
 SA1090-A96213A-R22-C43:
   bam: testdata/SA1090-A96213A-R22-C43.bam
   column: 43
@@ -164,6 +174,8 @@ SA1090-A96213A-R22-C43:
   primer_i5: GCTGTA
   primer_i7: ATTCCG
   row: 22
+  sample_id: SA1090
+  library_id: A96213A
   ```
   the testdata path must change to point it to the correct output data directory.
 
