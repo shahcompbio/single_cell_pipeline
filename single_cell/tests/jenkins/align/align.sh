@@ -13,14 +13,11 @@ docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_DEFAULT_REGION -
   aws s3 cp s3://singlecelltestsets/TESTDATA_CODEBUILD/alignment ALIGN/ref_test_data --recursive
 
 
-ls  /refdata
-
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v $DOCKER:$DOCKER --rm \
-  $1/single_cell_pipeline:$TAG \
+  $1/single_cell_pipeline_alignment:$TAG \
   single_cell alignment --input_yaml single_cell/tests/jenkins/align/inputs.yaml \
   --library_id A97318A --maxjobs $NUMCORES --nocleanup --sentinel_only  \
-  --context_config single_cell/tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
   --tmpdir ALIGN/temp \
   --pipelinedir ALIGN/pipeline \
@@ -28,7 +25,6 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
   --out_dir ALIGN/output \
   --bams_dir ALIGN/bams \
   --sequencing_center TEST --trim \
-  --config_override '{"version": '\"$TAG\"'}'
 
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \

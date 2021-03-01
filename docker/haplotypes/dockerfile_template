@@ -1,0 +1,18 @@
+FROM continuumio/miniconda3:4.8.2
+
+# weird error about incorrect links
+ADD . /app
+RUN conda install --file /app/requirements.yml
+
+#RUN conda install -c dranew remixt && rm -rf /opt/conda/lib/python2.7/site-packages/remixt*
+#RUN apt-get update && apt-get install libc-dev libz-dev -y && apt-get install build-essential -y && rm -rf /var/lib/apt/lists/* && conda install -c bioconda cython
+#RUN pip install git+https://github.com/amcpherson/remixt.git@v0.5.13
+#RUN mkdir -p /root/.config/matplotlib && echo "backend : Agg" > /root/.config/matplotlib/matplotlibrc
+
+#RUN rm -rf /opt/conda/lib/python3.7/site-packages/pypeliner*
+
+
+RUN pip install git+https://github.com/shahcompbio/pypeliner.git@master
+RUN pip install git+https://github.com/shahcompbio/single_cell_pipeline.git@{git_commit}
+#RUN pip install git+https://github.com/shahcompbio/biowrappers.git@master
+#RUN pip install -e git+https://github.com/amcpherson/blossomv.git#egg=blossomv
