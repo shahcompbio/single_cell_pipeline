@@ -30,7 +30,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v $DOCKER:$DOCKER --rm \
-  $1/single_cell_pipeline:$TAG \
+  $1/single_cell_pipeline_hmmcopy:$TAG \
   python single_cell/tests/jenkins/hmmcopy/test_hmmcopy.py HMMCOPY/output A97318A  HMMCOPY/ref_test_data/refdata
 
-docker run -w $PWD -v $PWD:$PWD --rm $1/single_cell_pipeline:$TAG rm -rf HMMCOPY
+docker run -w $PWD -v $PWD:$PWD --rm $1/single_cell_pipeline_hmmcopy:$TAG rm -rf HMMCOPY
