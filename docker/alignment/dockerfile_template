@@ -1,5 +1,8 @@
 FROM continuumio/miniconda3:4.8.2
 ADD . /app
+
+RUN apt-get update && apt-get install -y libltdl7 parallel && rm -rf /var/lib/apt/lists/*
+
 RUN conda install --file /app/conda_requirements.yml
 
 RUN pip install git+https://github.com/shahcompbio/pypeliner.git@master
