@@ -4,3 +4,4 @@ RUN conda install --file /app/conda_requirements.yml
 
 RUN pip install git+https://github.com/shahcompbio/pypeliner.git@master
 RUN pip install git+https://github.com/shahcompbio/single_cell_pipeline.git@{git_commit}
+RUN pip install git+https://github.com/shahcompbio/cell_cycle_classifier.git@v0.0.3
