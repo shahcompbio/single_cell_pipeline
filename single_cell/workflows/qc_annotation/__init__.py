@@ -14,7 +14,7 @@ def create_qc_annotation_workflow(
         plot_heatmap_ec_filt_output, config, alignment_config
 ):
 
-    workflow = pypeliner.workflow.Workflow(ctx=ctx)
+    workflow = pypeliner.workflow.Workflow()
 
     workflow.transform(
         name='cell_cycle_classifier',
