@@ -6,9 +6,9 @@ phases:
       - cd docker/alignment/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
       - cd docker/hmmcopy/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
       - cd docker/annotation/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
-      - cd docker/variant/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
-      - cd docker/breakpoint/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
-      - cd docker/haplotypes/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
+      #- cd docker/variant/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
+      #- cd docker/breakpoint/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
+      #- cd docker/haplotypes/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
   build:
     commands:
       - bash single_cell/tests/jenkins/refdata/download.sh
@@ -17,8 +17,8 @@ phases:
       - bash single_cell/tests/jenkins/annotation/annotation.sh quay.io/singlecellpipelinetest
       - bash single_cell/tests/jenkins/merge_cell_bams/merge_cell_bams.sh quay.io/singlecellpipelinetest
       - bash single_cell/tests/jenkins/split_wgs_bam/split_wgs_bam.sh quay.io/singlecellpipelinetest
-      - bash single_cell/tests/jenkins/variant_calling/variant_calling.sh quay.io/singlecellpipelinetest
-      - bash single_cell/tests/jenkins/breakpoint_calling/breakpoint_calling.sh quay.io/singlecellpipelinetest
-      - bash single_cell/tests/jenkins/infer_haps/infer_haps.sh quay.io/singlecellpipelinetest
-      - bash single_cell/tests/jenkins/count_haps/count_haps.sh quay.io/singlecellpipelinetest
-      - bash single_cell/tests/jenkins/pseudo_bulk_qc/pseudo_bulk_qc.sh  quay.io/singlecellpipelinetest
+      #- bash single_cell/tests/jenkins/variant_calling/variant_calling.sh quay.io/singlecellpipelinetest
+      #- bash single_cell/tests/jenkins/breakpoint_calling/breakpoint_calling.sh quay.io/singlecellpipelinetest
+      #- bash single_cell/tests/jenkins/infer_haps/infer_haps.sh quay.io/singlecellpipelinetest
+      #- bash single_cell/tests/jenkins/count_haps/count_haps.sh quay.io/singlecellpipelinetest
+      #- bash single_cell/tests/jenkins/pseudo_bulk_qc/pseudo_bulk_qc.sh  quay.io/singlecellpipelinetest
