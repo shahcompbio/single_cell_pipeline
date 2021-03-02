@@ -15,5 +15,4 @@ ENV PATH="${PATH}:/opt/conda/envs/museq/bin"
 RUN pip install git+https://github.com/shahcompbio/pypeliner.git@master
 RUN pip install git+https://github.com/shahcompbio/single_cell_pipeline.git@{git_commit}
 RUN pip install git+https://github.com/shahcompbio/biowrappers.git@master
-RUN pip install pyvcf bx-python numpy --force-reinstall
-RUN conda install pandas==0.25.3
+RUN pip install pyvcf bx-python numpy==1.19.5 pandas==0.25.3 --force-reinstall
