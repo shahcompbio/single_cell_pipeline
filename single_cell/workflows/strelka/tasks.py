@@ -55,7 +55,7 @@ def get_known_chromosome_sizes(size_file, chromosomes):
     return sizes
 
 
-def count_fasta_bases(ref_genome_fasta_file, out_file, docker_config):
+def count_fasta_bases(ref_genome_fasta_file, out_file):
     cmd = [
         'countFastaBases',
         ref_genome_fasta_file,
@@ -63,7 +63,7 @@ def count_fasta_bases(ref_genome_fasta_file, out_file, docker_config):
         out_file
     ]
 
-    pypeliner.commandline.execute(*cmd, **docker_config)
+    pypeliner.commandline.execute(*cmd)
 
 
 def call_somatic_variants(
@@ -76,8 +76,6 @@ def call_somatic_variants(
         snv_file,
         stats_file,
         region,
-        docker_config,
-        ncores=None,
         max_input_depth=10000,
         min_tier_one_mapq=20,
         min_tier_two_mapq=5,
@@ -139,7 +137,7 @@ def call_somatic_variants(
         '--tier2-single-align-score-rescue-mode'
     ]
 
-    pypeliner.commandline.execute(*cmd, **docker_config)
+    pypeliner.commandline.execute(*cmd)
 
 
 # =======================================================================================================================

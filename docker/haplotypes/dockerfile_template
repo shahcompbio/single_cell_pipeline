@@ -1,0 +1,12 @@
+FROM continuumio/miniconda3:4.8.2
+
+ADD . /app
+RUN conda install --file /app/requirements.yml
+
+RUN rm -rf /opt/conda/lib/python2.7/site-packages/remixt* && apt-get update && apt install libc-dev libz-dev build-essential -y && rm -rf /var/lib/apt/lists/* && conda install -c bioconda cython
+
+RUN pip install git+https://github.com/shahcompbio/pypeliner.git@master
+RUN pip install git+https://github.com/shahcompbio/single_cell_pipeline.git@{git_commit}
+
+RUN pip install git+https://github.com/amcpherson/remixt.git@v0.5.13
+RUN mkdir -p /root/.config/matplotlib && echo "backend : Agg" > /root/.config/matplotlib/matplotlibrc

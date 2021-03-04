@@ -1,11 +1,8 @@
-import logging
-import os
 import pypeliner
 import pypeliner.managed as mgd
 
 
 def cna_annotation_workflow(
-        config,
         hmmcopy_dict,
         output_cbio_table,
         output_maftools_table,
@@ -24,9 +21,7 @@ def cna_annotation_workflow(
 
     Returns:
     """
-    workflow = pypeliner.workflow.Workflow(
-        ctx={'docker_image': config['docker']['single_cell_pipeline']}
-    )
+    workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
         obj=mgd.OutputChunks('sample_label', 'library_label'),
@@ -111,8 +106,8 @@ def cna_annotation_workflow(
 
 
 def preprocess_mafs_workflow(
-    config, germline_mafs, somatic_mafs,
-    cohort_germline_maf, cohort_somatic_maf, api_key
+        germline_mafs, somatic_mafs,
+        cohort_germline_maf, cohort_somatic_maf, api_key
 ):
     """Take germline and somatic mafs, annotates, filters and merges them.
 
@@ -126,9 +121,7 @@ def preprocess_mafs_workflow(
 
     Returns:
     """
-    workflow = pypeliner.workflow.Workflow(
-        ctx={'docker_image': config['docker']['single_cell_pipeline']}
-    )
+    workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
         obj=mgd.OutputChunks('sample_label', ),
@@ -164,7 +157,7 @@ def preprocess_mafs_workflow(
         func='single_cell.workflows.cohort_qc.tasks.merge_mafs',
         args=(
             mgd.TempInputFile(
-                "filtered_germline_maf", 'sample_label',  axes_origin=[]
+                "filtered_germline_maf", 'sample_label', axes_origin=[]
             ),
             mgd.OutputFile(cohort_germline_maf)
         ),
@@ -196,8 +189,8 @@ def preprocess_mafs_workflow(
 
 
 def create_cohort_oncoplot(
-    config, merged_germline, 
-    merged_somatic, maftools_cna, maftools_maf, oncoplot
+        config, merged_germline,
+        merged_somatic, maftools_cna, maftools_maf, oncoplot
 ):
     """create oncoplot from cna table, and germlinne/somatic dataa.
 
@@ -212,9 +205,7 @@ def create_cohort_oncoplot(
     Returns:
         [type]: [description]
     """
-    workflow = pypeliner.workflow.Workflow(
-        ctx={'docker_image': config['docker']['single_cell_pipeline']}
-    )
+    workflow = pypeliner.workflow.Workflow()
 
     non_synonymous_labels = config["non_synonymous_labels"]
 
@@ -240,7 +231,6 @@ def create_cohort_oncoplot(
             mgd.TempInputFile("vcNames")
 
         ),
-        kwargs={'docker_image': config["docker"]["pseudo_bulk_qc_html_report"]},
     )
 
     return workflow

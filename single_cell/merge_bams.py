@@ -16,11 +16,8 @@ def merge_bams_workflow(args):
     config = inpututils.load_config(args)
     config = config['merge_bams']
 
-    baseimage = config['docker']['single_cell_pipeline']
-
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50,
-           'ncpus': 1, 'mem': config["memory"]['low'],
-           'docker_image': baseimage}
+           'ncpus': 1, 'mem': config["memory"]['low']}
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     bam_files = inpututils.load_merge_cell_bams(args['input_yaml'])

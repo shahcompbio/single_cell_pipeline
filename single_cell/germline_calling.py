@@ -29,19 +29,13 @@ def germline_calling_workflow(args):
     config = inpututils.load_config(args)
     config = config['germline_calling']
 
-    vcftoolsdocker = {'docker_image': config['docker']['vcftools']}
-    samtoolsdocker = {'docker_image': config['docker']['samtools']}
-    snpeffdocker = {'docker_image': config['docker']['snpeff']}
-
     normal_bams = inpututils.load_germline_data(args['input_yaml'])
 
     varcalls_meta = os.path.join(args['out_dir'], 'metadata.yaml')
     input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
     out_files = get_output_files(args['out_dir'])
 
-    workflow = pypeliner.workflow.Workflow(
-        ctx={'docker_image': config['docker']['single_cell_pipeline']}
-    )
+    workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
         obj=mgd.OutputChunks('region'),
@@ -57,8 +51,6 @@ def germline_calling_workflow(args):
             mgd.OutputFile(out_files['samtools_germline_vcf'], extensions=['.tbi']),
             config,
         ),
-        kwargs={'vcftools_docker': vcftoolsdocker,
-                'samtools_docker': samtoolsdocker, }
     )
 
     workflow.subworkflow(
@@ -91,9 +83,6 @@ def germline_calling_workflow(args):
             mgd.InputFile(out_files['samtools_germline_vcf'], extensions=['.tbi']),
             mgd.OutputFile(out_files['snpeff_vcf_filename']),
         ),
-        kwargs={
-            'snpeff_docker': snpeffdocker,
-        }
     )
 
     workflow.transform(

@@ -1,0 +1,6 @@
+FROM continuumio/miniconda3:4.8.2
+ADD . /app
+RUN conda install --file /app/conda_requirements.yml
+
+RUN pip install git+https://github.com/shahcompbio/pypeliner.git@master
+RUN pip install git+https://github.com/shahcompbio/single_cell_pipeline.git@{git_commit}

@@ -10,15 +10,12 @@ def create_samtools_germline_workflow(
         ref_genome_fasta_file,
         vcf_file,
         config,
-        samtools_docker=None,
-        vcftools_docker=None
 ):
-    baseimage = config['docker']['single_cell_pipeline']
 
     ctx = {'mem': config["memory"]['low'],
            'mem_retry_increment': 2,
            'disk_retry_increment': 50,
-           'ncpus': 1, 'docker_image': baseimage}
+           'ncpus': 1}
 
     regions = list(normal_bam_files.keys())
 
@@ -40,8 +37,6 @@ def create_samtools_germline_workflow(
         ),
         kwargs={
             'region': pypeliner.managed.InputInstance('regions'),
-            'samtools_docker': samtools_docker,
-            'vcftools_docker': samtools_docker
         },
     )
 
@@ -53,7 +48,6 @@ def create_samtools_germline_workflow(
             pypeliner.managed.OutputFile(vcf_file, extensions=['.tbi']),
             pypeliner.managed.TempSpace("merge_variants_germline"),
         ),
-        kwargs={'docker_config': vcftools_docker}
     )
 
     return workflow

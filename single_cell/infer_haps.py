@@ -15,9 +15,8 @@ from single_cell.utils import inpututils
 def infer_haps_workflow(args):
     config = inpututils.load_config(args)
     config = config['infer_haps']
-    baseimage = config['docker']['single_cell_pipeline']
 
-    ctx = dict(mem_retry_increment=2, disk_retry_increment=50, ncpus=1, docker_image=baseimage)
+    ctx = dict(mem_retry_increment=2, disk_retry_increment=50, ncpus=1)
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     haplotypes_filename = os.path.join(args["out_dir"], "haplotypes.csv.gz")
@@ -68,9 +67,8 @@ def infer_haps_workflow(args):
 def count_haps_workflow(args):
     config = inpututils.load_config(args)
     config = config['count_haps']
-    baseimage = config['docker']['single_cell_pipeline']
 
-    ctx = dict(mem_retry_increment=2, disk_retry_increment=50, ncpus=1, docker_image=baseimage)
+    ctx = dict(mem_retry_increment=2, disk_retry_increment=50, ncpus=1)
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     allele_counts_filename = os.path.join(args["out_dir"], "allele_counts.csv.gz")

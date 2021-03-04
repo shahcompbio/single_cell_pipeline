@@ -13,10 +13,9 @@ docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_DEFAULT_REGION -
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v $DOCKER:$DOCKER --rm \
-  $1/single_cell_pipeline:$TAG \
+  $1/single_cell_pipeline_variant:$TAG \
   single_cell variant_calling --input_yaml single_cell/tests/jenkins/variant_calling/inputs.yaml \
   --maxjobs $NUMCORES --nocleanup --sentinel_only  \
-  --context_config single_cell/tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
   --tmpdir VARIANT_CALLING/temp \
   --pipelinedir VARIANT_CALLING/pipeline --submit local --out_dir VARIANT_CALLING/output \
@@ -24,7 +23,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v $DOCKER:$DOCKER --rm \
-  $1/single_cell_pipeline:$TAG \
+  $1/single_cell_pipeline_variant:$TAG \
   python single_cell/tests/jenkins/variant_calling/test_variant_calling.py VARIANT_CALLING/output VARIANT_CALLING/ref_test_data/refdata
 
-docker run -w $PWD -v $PWD:$PWD --rm $1/single_cell_pipeline:$TAG rm -rf VARIANT_CALLING
+docker run -w $PWD -v $PWD:$PWD --rm $1/single_cell_pipeline_variant:$TAG rm -rf VARIANT_CALLING

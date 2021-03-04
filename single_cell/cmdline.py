@@ -80,8 +80,6 @@ def add_global_args(parser, dont_add_input_yaml=False):
         type=json.loads,
         help='''json string to override the defaults in config''')
 
-    parser.add_argument('--run_with_docker', help='launches pipeline in a docker container')
-
     return parser
 
 

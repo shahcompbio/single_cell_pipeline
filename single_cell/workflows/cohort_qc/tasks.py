@@ -182,7 +182,7 @@ def merge_cna_tables(tables, output):
 
 def classify_hmmcopy(
     sample_label, hmmcopy_files, gtf, output_dir, 
-    amps, dels, docker_image=None
+    amps, dels
 ):
     '''
     run classify_copynumber on hmmcopy data
@@ -205,11 +205,11 @@ def classify_hmmcopy(
     for f in files:
         cmd.extend(["--hmmcopy_csv_filenames", f])
 
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)
 
 
 def annotate_maf_with_oncokb(
-        maf, api_key, tmpspace, annotated_maf, docker_image=None
+        maf, api_key, tmpspace, annotated_maf
 ):
     '''
     annotate maf with onco kb to get oncogenicity of variants
@@ -228,7 +228,7 @@ def annotate_maf_with_oncokb(
          "MafAnnotator.py", "-i", maf, "-o", annotated_maf, "-b", api_key
     ]
 
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)
 
 
 def filter_maf(annotated_maf, filtered_maf, write_header=True):
@@ -320,7 +320,7 @@ def prepare_maf_for_maftools(
 
 
 def make_oncoplot(
-    prepped_maf, cna_table, oncoplot, vcNames, docker_image=None
+    prepped_maf, cna_table, oncoplot, vcNames
 ):
     '''
     run R script to make oncoplot with prepped, annotatedd maf
@@ -337,4 +337,4 @@ def make_oncoplot(
     plots_cmd = [
         "oncoplot.R", prepped_maf, vcNames, cna_table, oncoplot
     ]
-    pypeliner.commandline.execute(*plots_cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*plots_cmd)

@@ -38,7 +38,8 @@ def get_max_cn(reads):
 
 
 def run_correction_hmmcopy(
-        bam_file, correct_reads_out, readcount_wig, hmmparams, docker_image):
+        bam_file, correct_reads_out, readcount_wig, hmmparams
+):
     run_readcount_rscript = os.path.join(
         scripts_directory,
         'correct_read_count.R')
@@ -54,7 +55,7 @@ def run_correction_hmmcopy(
                hmmparams['map_wig_file'],
                correct_reads_out
                ]
-        pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+        pypeliner.commandline.execute(*cmd)
     elif hmmparams["smoothing_function"] == 'modal':
         CorrectReadCount(hmmparams["gc_wig_file"],
                          hmmparams['map_wig_file'],
@@ -69,7 +70,7 @@ def run_correction_hmmcopy(
     return correct_reads_out
 
 
-def run_hmmcopy_script(corrected_reads, tempdir, cell_id, hmmparams, docker_image):
+def run_hmmcopy_script(corrected_reads, tempdir, cell_id, hmmparams):
     cmd = ["hmmcopy_single_cell.R"]
 
     # run hmmcopy
@@ -91,7 +92,7 @@ def run_hmmcopy_script(corrected_reads, tempdir, cell_id, hmmparams, docker_imag
     cmd.append('--param_s=' + str(hmmparams['s']))
     cmd.append('--param_multiplier=' + multipliers)
 
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)
 
 
 def gzip_file(inputfile, gzipped_csv):
@@ -111,7 +112,6 @@ def run_hmmcopy(
         cell_id,
         hmmparams,
         tempdir,
-        docker_image
 ):
     # generate wig file for hmmcopy
     helpers.makedirs(tempdir)
@@ -122,8 +122,7 @@ def run_hmmcopy(
         bam_file,
         corrected_reads,
         readcount_wig,
-        hmmparams,
-        docker_image
+        hmmparams
     )
 
     hmmcopy_tempdir = os.path.join(tempdir, '{}_hmmcopy'.format(cell_id))
@@ -133,8 +132,7 @@ def run_hmmcopy(
         corrected_reads,
         hmmcopy_tempdir,
         cell_id,
-        hmmparams,
-        docker_image
+        hmmparams
     )
 
     hmmcopy_outdir = os.path.join(hmmcopy_tempdir, str(0))

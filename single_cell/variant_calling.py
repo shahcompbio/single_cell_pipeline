@@ -48,7 +48,6 @@ def variant_calling_workflow(args):
         'mem_retry_increment': 2,
         'disk_retry_increment': 50,
         'mem': config["memory"]['low'],
-        'docker_image': config['docker']['single_cell_pipeline']
     }
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
@@ -78,7 +77,6 @@ def variant_calling_workflow(args):
             mgd.OutputFile(filepaths['strelka_indel'], extensions=['.tbi', '.csi']),
             mgd.OutputFile(filepaths['strelka_snv'], extensions=['.tbi', '.csi']),
             mgd.OutputFile(filepaths['strelka_csv'], extensions=['.yaml']),
-            config,
         ),
         kwargs={
             "chromosomes": config["chromosomes"],
@@ -98,7 +96,6 @@ def variant_calling_workflow(args):
             mgd.OutputFile(filepaths['mappability_csv'], extensions=['.yaml']),
             mgd.OutputFile(filepaths['snpeff_csv'], extensions=['.yaml']),
             mgd.OutputFile(filepaths['trinuc_csv'], extensions=['.yaml']),
-            config['docker'],
             config['memory']
         )
     )

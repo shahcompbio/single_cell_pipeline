@@ -49,8 +49,7 @@ def run_samtools_variant_calling(
         min_depth=0,
         min_mqual=0,
         region=None,
-        samtools_docker=None,
-        vcftools_docker=None):
+):
     mpileup_cmd = [
         'samtools',
         'mpileup',
@@ -77,9 +76,9 @@ def run_samtools_variant_calling(
     cmd.append('|')
     cmd.extend(bcf_cmd)
 
-    pypeliner.commandline.execute(*cmd, **samtools_docker)
+    pypeliner.commandline.execute(*cmd)
 
-    biowrappers.components.io.vcf.tasks.index_bcf(out_file, docker_config=vcftools_docker)
+    biowrappers.components.io.vcf.tasks.index_bcf(out_file)
 
 
 def annotate_normal_genotype(vcf_filename, results_filename, chromosomes):

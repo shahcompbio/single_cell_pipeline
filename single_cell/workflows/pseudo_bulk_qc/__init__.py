@@ -7,12 +7,9 @@ import pypeliner.managed as mgd
 def create_patient_workflow(
         pseudo_bulk_group, mafs, sample_all_snv_csvs,
         mutationreport, merged_maf, high_impact_maf, merged_snvs,
-        merged_high_impact_snvs, config
+        merged_high_impact_snvs
 ):
-
-    scp_qc_docker = config["docker"]
-
-    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1, }
+    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1}
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     workflow.transform(
@@ -31,7 +28,6 @@ def create_patient_workflow(
             mgd.InputFile(merged_maf),
             mgd.OutputFile(high_impact_maf),
         ),
-        kwargs={'docker_image': scp_qc_docker['pseudo_bulk_qc_html_report']}
     )
     workflow.transform(
         name='merge_snvs',
@@ -49,7 +45,6 @@ def create_patient_workflow(
             mgd.InputFile(merged_snvs),
             mgd.OutputFile(merged_high_impact_snvs),
         ),
-        kwargs={'docker_image': scp_qc_docker['pseudo_bulk_qc_html_report']}
     )
 
     workflow.transform(
@@ -63,7 +58,6 @@ def create_patient_workflow(
             mgd.OutputFile(mutationreport),
             mgd.TempSpace("mutationreport")
         ),
-        kwargs={'docker_image': scp_qc_docker['pseudo_bulk_qc_html_report']}
     )
 
     return workflow
@@ -75,14 +69,13 @@ def create_sample_level_plots(
         dbsnp_status_file, trinuc_file, counts_file,
         destruct_breakpoint_annotation, destruct_breakpoint_counts,
         lumpy_breakpoint_annotation, lumpy_breakpoint_evidence,
-        haplotype_allele_data, annotation_metrics, hmmcopy_reads,isabl_id,
+        haplotype_allele_data, annotation_metrics, hmmcopy_reads, isabl_id,
         hmmcopy_segs, hmmcopy_metrics, alignment_metrics, gc_metrics,
         indel_file, reporthtml, maf, snvs_all_csv, out_dir, config
 ):
-    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1, }
+    ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1}
 
     vep_reference = config['vep']
-    scp_qc_docker = config["docker"]
 
     prefix = os.path.join(out_dir, patient, cell_id, library_id)
 
@@ -102,9 +95,6 @@ def create_sample_level_plots(
             mgd.TempSpace('vcf2maf_temp'),
             vep_reference,
         ),
-        kwargs=(
-            {"docker_image": scp_qc_docker["vcf2maf"]}
-        )
     )
 
     workflow.transform(
@@ -176,7 +166,6 @@ def create_sample_level_plots(
             cell_id + "_" + library_id,
             mgd.TempSpace("mainreport")
         ),
-        kwargs={'docker_image': scp_qc_docker['pseudo_bulk_qc_html_report']}
     )
 
     return workflow

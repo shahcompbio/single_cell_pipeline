@@ -42,9 +42,7 @@ def hmmcopy_workflow(args):
 
     lib = args["library_id"]
 
-    workflow = pypeliner.workflow.Workflow(
-        ctx={'docker_image': config['docker']['single_cell_pipeline']},
-    )
+    workflow = pypeliner.workflow.Workflow()
 
     hmmcopy_dir = args["out_dir"]
 
