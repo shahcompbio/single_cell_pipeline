@@ -1,6 +1,0 @@
-brewer2mpl
-lda
-umap
-hdbscan
-hmmlearn
-adjusttext

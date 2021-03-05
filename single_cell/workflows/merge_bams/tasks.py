@@ -9,21 +9,20 @@ from single_cell.utils import bamutils
 from single_cell.utils import helpers
 
 
-def cell_region_merge_bams(cell_bams, region_bam, region, docker_image):
+def cell_region_merge_bams(cell_bams, region_bam, region):
     cell_bams = cell_bams.values()
     region = '{}:{}-{}'.format(*region.split('-'))
 
     bamutils.bam_merge(
         cell_bams, region_bam,
-        region=region,
-        docker_image=docker_image)
+        region=region)
 
     bamutils.bam_index(
         region_bam, region_bam + '.bai',
-        docker_image=docker_image)
+    )
 
 
-def merge_bams(bams, outputs, regions, samtools_docker, tempdir, ncores=None):
+def merge_bams(bams, outputs, regions, tempdir, ncores=None):
     merge_tempdir = os.path.join(tempdir, "merge")
     commands = []
     for region in regions:
@@ -33,7 +32,7 @@ def merge_bams(bams, outputs, regions, samtools_docker, tempdir, ncores=None):
         cmd.append(output)
         cmd.extend(bams.values())
         commands.append(cmd)
-    helpers.run_in_gnu_parallel(commands, merge_tempdir, samtools_docker, ncores=ncores)
+    helpers.run_in_gnu_parallel(commands, merge_tempdir, ncores=ncores)
 
     index_tempdir = os.path.join(tempdir, "index")
     commands = []
@@ -41,4 +40,4 @@ def merge_bams(bams, outputs, regions, samtools_docker, tempdir, ncores=None):
         output = outputs[region]
         commands.append(['samtools', 'index', output, output + ".bai"])
 
-    helpers.run_in_gnu_parallel(commands, index_tempdir, samtools_docker, ncores=ncores)
+    helpers.run_in_gnu_parallel(commands, index_tempdir, ncores=ncores)

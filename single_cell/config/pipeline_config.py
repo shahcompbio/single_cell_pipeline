@@ -46,14 +46,8 @@ def write_config(params, filepath):
         yaml.safe_dump(params, outputfile, default_flow_style=False)
 
 
-def get_hmmcopy_params(reference_dir, reference, binsize, smoothing_function, version):
+def get_hmmcopy_params(reference_dir, reference, binsize, smoothing_function):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
-
-    docker_containers = config_reference.containers(version)['docker']
-    docker_containers = {
-        'single_cell_pipeline': docker_containers['single_cell_pipeline'],
-        'hmmcopy': docker_containers['hmmcopy']
-    }
 
     params = {
         'multipliers': [1, 2, 3, 4, 5, 6],
@@ -77,7 +71,6 @@ def get_hmmcopy_params(reference_dir, reference, binsize, smoothing_function, ve
         'map_wig_file': referencedata['map_wig_file'][binsize],
         'chromosomes': referencedata['chromosomes'],
         'ref_genome': referencedata['ref_genome'],
-        'docker': docker_containers,
         'igv_segs_quality_threshold': 0.75,
         'memory': {'med': 6},
         'good_cells': [
@@ -89,24 +82,12 @@ def get_hmmcopy_params(reference_dir, reference, binsize, smoothing_function, ve
     return {"hmmcopy": params}
 
 
-def get_align_params(reference_dir, reference, version):
+def get_align_params(reference_dir, reference):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
     refdata_callback = config_reference.get_cluster_reference_data
 
-    docker_containers = config_reference.containers(version)['docker']
-    docker_containers = {
-        'single_cell_pipeline': docker_containers['single_cell_pipeline'],
-        'fastqc': docker_containers['fastqc'],
-        'samtools': docker_containers['samtools'],
-        'bwa': docker_containers['bwa'],
-        'picard': docker_containers['picard'],
-        'trimgalore': docker_containers['trimgalore'],
-        'fastq_screen': docker_containers['fastq_screen'],
-    }
-
     params = {
         'ref_genome': referencedata['ref_genome'],
-        'docker': docker_containers,
         'memory': {'med': 6},
         'adapter': 'CTGTCTCTTATACACATCTCCGAGCCCACGAGAC',
         'adapter2': 'CTGTCTCTTATACACATCTGACGCTGCCGACGA',
@@ -132,18 +113,10 @@ def get_align_params(reference_dir, reference, version):
     return {"alignment": params}
 
 
-def get_annotation_params(reference_dir, reference, version):
+def get_annotation_params(reference_dir, reference):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
-    docker_containers = config_reference.containers(version)['docker']
-    docker_containers = {
-        'single_cell_pipeline': docker_containers['single_cell_pipeline'],
-        'cell_cycle_classifier': docker_containers['cell_cycle_classifier'],
-        'corrupt_tree': docker_containers['corrupt_tree']
-    }
-
     params = {
-        'docker': docker_containers,
         'memory': {'med': 6},
         'classifier_training_data': referencedata['classifier_training_data'],
         'fastqscreen_training_data': referencedata['fastqscreen_training_data'],
@@ -171,16 +144,11 @@ def get_annotation_params(reference_dir, reference, version):
     return {"annotation": params}
 
 
-def get_aneufinder_params(reference_dir, reference, version):
+def get_aneufinder_params(reference_dir, reference):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
-    docker_containers = config_reference.containers(version)['docker']
     params = {
         'memory': {'med': 6},
-        'docker': {
-            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
-            'aneufinder': docker_containers['aneufinder'],
-        },
         'chromosomes': referencedata['chromosomes'],
         'ref_genome': referencedata['ref_genome']
     }
@@ -188,7 +156,7 @@ def get_aneufinder_params(reference_dir, reference, version):
     return {'aneufinder': params}
 
 
-def get_merge_bams_params(reference_dir, reference, cluster, version):
+def get_merge_bams_params(reference_dir, reference, cluster):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
     if cluster in ['azure', 'aws']:
@@ -196,14 +164,9 @@ def get_merge_bams_params(reference_dir, reference, cluster, version):
     else:
         one_split_job = False
 
-    docker_containers = config_reference.containers(version)['docker']
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 16},
         'max_cores': 8,
-        'docker': {
-            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
-            'samtools': docker_containers['samtools']
-        },
         'ref_genome': referencedata['ref_genome'],
         'split_size': 10000000,
         'chromosomes': referencedata['chromosomes'],
@@ -212,18 +175,12 @@ def get_merge_bams_params(reference_dir, reference, cluster, version):
     return {'merge_bams': params}
 
 
-def get_split_bam_params(reference_dir, reference, version):
+def get_split_bam_params(reference_dir, reference):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
-
-    docker_containers = config_reference.containers(version)['docker']
 
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 16},
         'max_cores': 8,
-        'docker': {
-            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
-            'samtools': docker_containers['samtools']
-        },
         'ref_genome': referencedata['ref_genome'],
         'split_size': 10000000,
         'chromosomes': referencedata['chromosomes'],
@@ -233,20 +190,12 @@ def get_split_bam_params(reference_dir, reference, version):
     return {'split_bam': params}
 
 
-def get_germline_calling_params(reference_dir, reference, version):
+def get_germline_calling_params(reference_dir, reference):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
-
-    docker_containers = config_reference.containers(version)['docker']
 
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 16},
         'max_cores': 8,
-        'docker': {
-            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
-            'samtools': docker_containers['samtools'],
-            'vcftools': docker_containers['vcftools'],
-            'snpeff': docker_containers['snpeff'],
-        },
         'ref_genome': referencedata['ref_genome'],
         'chromosomes': referencedata['chromosomes'],
         'split_size': 10000000,
@@ -266,10 +215,8 @@ def get_germline_calling_params(reference_dir, reference, version):
     return {'germline_calling': params}
 
 
-def get_variant_calling_params(reference_dir, reference, version):
+def get_variant_calling_params(reference_dir, reference):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
-
-    docker_containers = config_reference.containers(version)['docker']
 
     status_data = {
         'kwargs': {
@@ -280,12 +227,6 @@ def get_variant_calling_params(reference_dir, reference, version):
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 16},
         'max_cores': 8,
-        'docker': {
-            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
-            'vcftools': docker_containers['vcftools'],
-            'strelka': docker_containers['strelka'],
-            'mutationseq': docker_containers['mutationseq'],
-        },
         'ref_genome': referencedata['ref_genome'],
         'chromosomes': referencedata['chromosomes'],
         'use_depth_thresholds': True,
@@ -343,10 +284,8 @@ def get_variant_calling_params(reference_dir, reference, version):
     return {'variant_calling': params}
 
 
-def get_copy_number_calling_params(reference_dir, reference, binsize, version):
+def get_copy_number_calling_params(reference_dir, reference, binsize):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
-
-    docker_containers = config_reference.containers(version)['docker']
 
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 16},
@@ -357,10 +296,6 @@ def get_copy_number_calling_params(reference_dir, reference, binsize, version):
         'chromosomes': referencedata['chromosomes'],
         'extract_seqdata': {},
         'ref_data_dir': referencedata['copynumber_ref_data'],
-        'docker': {
-            'single_cell_pipeline': docker_containers['remixt'],
-            'titan': docker_containers['titan']
-        },
         'titan_params': {
             "normal_contamination": [0.2, 0.4, 0.6, 0.8],
             'num_clusters': [1, 2],
@@ -375,10 +310,8 @@ def get_copy_number_calling_params(reference_dir, reference, binsize, version):
     return {'copy_number_calling': params}
 
 
-def get_infer_haps_params(reference_dir, reference, version):
+def get_infer_haps_params(reference_dir, reference):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
-
-    docker_containers = config_reference.containers(version)['docker']
 
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 16},
@@ -389,19 +322,13 @@ def get_infer_haps_params(reference_dir, reference, version):
             'genome_fai_template': referencedata['ref_genome'] + '.fai',
         },
         'ref_data_dir': referencedata['copynumber_ref_data'],
-        'docker': {
-            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
-            'remixt': docker_containers['remixt'],
-        },
     }
 
     return {'infer_haps': params}
 
 
-def get_count_haps_params(reference_dir, reference, version):
+def get_count_haps_params(reference_dir, reference):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
-
-    docker_containers = config_reference.containers(version)['docker']
 
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 16},
@@ -412,19 +339,13 @@ def get_count_haps_params(reference_dir, reference, version):
             'genome_fai_template': referencedata['ref_genome'] + '.fai',
         },
         'ref_data_dir': referencedata['copynumber_ref_data'],
-        'docker': {
-            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
-            'remixt': docker_containers['remixt'],
-        },
     }
 
     return {'count_haps': params}
 
 
-def get_breakpoint_params(reference_dir, reference, version):
+def get_breakpoint_params(reference_dir, reference):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
-
-    docker_containers = config_reference.containers(version)['docker']
 
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 16},
@@ -434,73 +355,46 @@ def get_breakpoint_params(reference_dir, reference, version):
             'genome_fai': referencedata['ref_genome'] + '.fai',
             'gtf_filename': referencedata['destruct_gtf_file'],
         },
-        'docker': {
-            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
-            'destruct': docker_containers['destruct'],
-            'lumpy': docker_containers['lumpy'],
-            'samtools': docker_containers['samtools'],
-        },
     }
 
     return {'breakpoint_calling': params}
 
 
-def get_sv_genotyping_params(reference_dir, reference, version):
-    docker_containers = config_reference.containers(version)['docker']
-
+def get_sv_genotyping_params(reference_dir, reference):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
     params = {
         'ref_genome': referencedata['ref_genome'],
         'memory': {'low': 4, 'med': 6, 'high': 16},
-        'docker': {
-            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
-            'svtyper': docker_containers['svtyper']
-        },
     }
     return {'sv_genotyping': params}
 
 
-def get_qc_params(reference_dir, reference, version):
-    docker_containers = config_reference.containers(version)['docker']
-
+def get_qc_params(reference_dir, reference):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
     params = {
         'ref_genome': referencedata['ref_genome'],
         'vep': referencedata['vep'],
         'memory': {'low': 4, 'med': 6, 'high': 16},
-        'docker': {
-            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
-            'vcf2maf': docker_containers['vcf2maf'],
-            'pseudo_bulk_qc_html_report': docker_containers['pseudo_bulk_qc_html_report'],
-        },
     }
     return {'qc': params}
 
 
-def get_cohort_qc_params(reference_dir, reference, version):
-    docker_containers = config_reference.containers(version)['docker']
-
+def get_cohort_qc_params(reference_dir, reference):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
-    non_synonymous_labels=["Frame_Shift_Del", "Frame_Shift_Ins", "Splice_Site", 
-        "Translation_Start_Site", "Nonsense_Mutation", "Nonstop_Mutation", 
-        "In_Frame_Del", "In_Frame_Ins", "Missense_Mutation"
-    ]
+    non_synonymous_labels = ["Frame_Shift_Del", "Frame_Shift_Ins", "Splice_Site",
+                             "Translation_Start_Site", "Nonsense_Mutation", "Nonstop_Mutation",
+                             "In_Frame_Del", "In_Frame_Ins", "Missense_Mutation"
+                             ]
 
     params = {
         'ref_genome': referencedata['ref_genome'],
         'vep': referencedata['vep'],
-        'gtf':  referencedata['destruct_gtf_file'],
+        'gtf': referencedata['destruct_gtf_file'],
         'non_synonymous_labels': non_synonymous_labels,
         'memory': {'low': 4, 'med': 6, 'high': 16},
-        'docker': {
-            'single_cell_pipeline': docker_containers['single_cell_pipeline'],
-            'vcf2maf': docker_containers['vcf2maf'],
-            'pseudo_bulk_qc_html_report': docker_containers['pseudo_bulk_qc_html_report'],
-            
-        },
     }
     return {'cohort_qc': params}
 
@@ -508,7 +402,6 @@ def get_cohort_qc_params(reference_dir, reference, version):
 def get_singlecell_pipeline_config(config_params, override=None):
     reference = config_params["reference"]
     reference_dir = config_params['refdir']
-    version = config_params['version']
     cluster = config_params["cluster"]
     if not reference_dir:
         reference_dir = config_reference.get_reference_dir(cluster)
@@ -518,44 +411,44 @@ def get_singlecell_pipeline_config(config_params, override=None):
     params.update(
         get_hmmcopy_params(
             reference_dir, reference, config_params["bin_size"],
-            config_params["smoothing_function"], version
+            config_params["smoothing_function"]
         )
     )
 
     params.update(
         get_align_params(
             reference_dir, reference,
-            version
+
         )
     )
 
-    params.update(get_annotation_params(reference_dir, reference, version))
+    params.update(get_annotation_params(reference_dir, reference))
 
-    params.update(get_aneufinder_params(reference_dir, reference, version))
+    params.update(get_aneufinder_params(reference_dir, reference))
 
-    params.update(get_merge_bams_params(reference_dir, reference, cluster, version))
+    params.update(get_merge_bams_params(reference_dir, reference, cluster))
 
-    params.update(get_split_bam_params(reference_dir, reference, version))
+    params.update(get_split_bam_params(reference_dir, reference))
 
-    params.update(get_germline_calling_params(reference_dir, reference, version))
+    params.update(get_germline_calling_params(reference_dir, reference))
 
-    params.update(get_variant_calling_params(reference_dir, reference, version))
+    params.update(get_variant_calling_params(reference_dir, reference))
 
     params.update(get_copy_number_calling_params(
-        reference_dir, reference, config_params['copynumber_bin_size'], version)
+        reference_dir, reference, config_params['copynumber_bin_size'])
     )
 
-    params.update(get_infer_haps_params(reference_dir, reference, version))
+    params.update(get_infer_haps_params(reference_dir, reference))
 
-    params.update(get_count_haps_params(reference_dir, reference, version))
+    params.update(get_count_haps_params(reference_dir, reference))
 
-    params.update(get_breakpoint_params(reference_dir, reference, version))
+    params.update(get_breakpoint_params(reference_dir, reference))
 
-    params.update(get_sv_genotyping_params(reference_dir, reference, version))
+    params.update(get_sv_genotyping_params(reference_dir, reference))
 
-    params.update(get_qc_params(reference_dir, reference, version))
+    params.update(get_qc_params(reference_dir, reference))
 
-    params.update(get_cohort_qc_params(reference_dir, reference, version))
+    params.update(get_cohort_qc_params(reference_dir, reference))
 
     params = override_config(params, override)
 

@@ -9,29 +9,29 @@ from single_cell.workflows.lumpy import generate_histogram
 
 def process_bam(
         input_bam, discordant_bam, split_bam, histogram,
-        tempdir, docker_image=None, tag=None,
+        tempdir, tag=None,
         N=10000, skip=100000, min_elements=1000, mads=10,
         X=4, read_length=101
 ):
     helpers.makedirs(tempdir)
 
     discordants = os.path.join(tempdir, "discordants.bam")
-    run_samtools_view(input_bam, discordants, docker_image=docker_image)
+    run_samtools_view(input_bam, discordants)
     if tag:
         sorted_discordants = os.path.join(tempdir, 'discordants.sorted.bam')
-        run_samtools_sort(discordants, sorted_discordants, docker_image=docker_image)
+        run_samtools_sort(discordants, sorted_discordants)
         tag_reads(sorted_discordants, discordant_bam, tag)
     else:
-        run_samtools_sort(discordants, discordant_bam, docker_image=docker_image)
+        run_samtools_sort(discordants, discordant_bam)
 
     split_reads = os.path.join(tempdir, "split_reads.bam")
-    run_lumpy_extract_split_reads_bwamem(input_bam, split_reads, docker_image=docker_image)
+    run_lumpy_extract_split_reads_bwamem(input_bam, split_reads)
     if tag:
         sorted_split_reads = os.path.join(tempdir, 'split.sorted.bam')
-        run_samtools_sort(split_reads, sorted_split_reads, docker_image=docker_image)
+        run_samtools_sort(split_reads, sorted_split_reads)
         tag_reads(sorted_split_reads, split_bam, tag)
     else:
-        run_samtools_sort(split_reads, split_bam, docker_image=docker_image)
+        run_samtools_sort(split_reads, split_bam)
 
     generate_histogram.gen_histogram(
         input_bam, histogram, N=N, skip=skip, min_elements=min_elements,
@@ -49,13 +49,13 @@ def tag_reads(infile, outfile, sample_id):
     taggedreads.close()
 
 
-def run_samtools_view(infile, outfile, docker_image=None):
+def run_samtools_view(infile, outfile):
     cmd = ['samtools', 'view', '-b', '-F', '1294', infile, '>', outfile]
 
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)
 
 
-def run_lumpy_extract_split_reads_bwamem(infile, outfile, docker_image=None):
+def run_lumpy_extract_split_reads_bwamem(infile, outfile):
     cmd = [
         'samtools', 'view', '-h', infile, '|',
         'extractSplitReads_BwaMem', '-i', 'stdin', '|',
@@ -63,18 +63,18 @@ def run_lumpy_extract_split_reads_bwamem(infile, outfile, docker_image=None):
         '>', outfile
     ]
 
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)
 
 
-def run_samtools_sort(infile, outfile, docker_image=None):
+def run_samtools_sort(infile, outfile):
     cmd = ['samtools', 'sort', infile, '-o', outfile]
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)
 
     cmd = ['samtools', 'index', outfile]
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)
 
 
-def merge_bams(inputs, output, tempdir, docker_image=None):
+def merge_bams(inputs, output, tempdir):
     helpers.makedirs(tempdir)
 
     inputs = inputs.values()
@@ -90,7 +90,7 @@ def merge_bams(inputs, output, tempdir, docker_image=None):
         scriptfile.write(cmd)
 
     cmd = ['sh', shell_script_path]
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)
 
 
 def load_metadata(infile):
@@ -102,7 +102,7 @@ def load_metadata(infile):
 def run_lumpy(
         tumour_disc, tumour_split, tumour_hist, tumour_mean_stdev, tumour_id,
         normal_disc, normal_split, normal_hist, normal_mean_stdev, normal_id,
-        vcf, tempdir, docker_image=None
+        vcf, tempdir
 ):
     tumour_mean, tumour_stdev = load_metadata(tumour_mean_stdev)
     normal_mean, normal_stdev = load_metadata(normal_mean_stdev)
@@ -129,4 +129,4 @@ def run_lumpy(
            '-pe', normal_pe, '-sr', normal_sr,
            '-t', tempdir, '>', vcf]
 
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)

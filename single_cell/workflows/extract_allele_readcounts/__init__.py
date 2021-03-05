@@ -9,9 +9,7 @@ def extract_allele_readcounts(
         allele_counts_filename,
         config,
 ):
-    baseimage = {'docker_image': config['docker']['single_cell_pipeline']}
 
-    remixt_image = config['docker']['remixt']
 
     remixt_config = config.get('extract_seqdata', {})
     remixt_ref_data_dir = config['ref_data_dir']
@@ -19,7 +17,7 @@ def extract_allele_readcounts(
     chromosomes = config['chromosomes']
     remixt_config['chromosomes'] = chromosomes
 
-    workflow = pypeliner.workflow.Workflow(ctx=baseimage)
+    workflow = pypeliner.workflow.Workflow()
 
     workflow.set_filenames('cell.bam', 'cell_id', fnames=cell_bams)
 
@@ -32,7 +30,6 @@ def extract_allele_readcounts(
         name='create_seqdata_readcounts',
         axes=('cell_id',),
         func='remixt.workflow.create_extract_seqdata_workflow',
-        ctx={'docker_image': remixt_image},
         args=(
             mgd.InputFile('cell.bam', 'cell_id', extensions=['.bai']),
             mgd.TempOutputFile('seqdata.h5', 'cell_id', axes_origin=[]),
@@ -46,7 +43,7 @@ def extract_allele_readcounts(
     workflow.transform(
         name='create_segments',
         func='remixt.analysis.segment.create_segments',
-        ctx={'mem': 16, 'docker_image': remixt_image},
+        ctx={'mem': 16},
         args=(
             mgd.TempOutputFile('segments.tsv'),
             remixt_config,
@@ -66,7 +63,7 @@ def extract_allele_readcounts(
     workflow.transform(
         name='haplotype_allele_readcount',
         axes=('cell_id',),
-        ctx={'mem': 16, 'docker_image': remixt_image},
+        ctx={'mem': 16},
         func='remixt.analysis.readcount.haplotype_allele_readcount',
         args=(
             mgd.TempOutputFile('allele_counts.tsv', 'cell_id', axes_origin=[]),

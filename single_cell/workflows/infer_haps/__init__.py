@@ -9,9 +9,6 @@ def infer_haps(
         config,
         from_tumour=False,
 ):
-    baseimage = {'docker_image': config['docker']['single_cell_pipeline']}
-
-    remixt_image = config['docker']['remixt']
 
     remixt_config = config.get('extract_seqdata', {})
     remixt_ref_data_dir = config['ref_data_dir']
@@ -19,7 +16,7 @@ def infer_haps(
     chromosomes = config['chromosomes']
     remixt_config['chromosomes'] = chromosomes
 
-    ctx = dict(mem_retry_increment=2, disk_retry_increment=50, ncpus=1, **baseimage)
+    ctx = dict(mem_retry_increment=2, disk_retry_increment=50, ncpus=1)
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     if isinstance(bam_file, dict):
@@ -33,7 +30,6 @@ def infer_haps(
             name="extract_seqdata",
             axes=('cell_id',),
             func='remixt.workflow.create_extract_seqdata_workflow',
-            ctx={'docker_image': remixt_image},
             args=(
                 mgd.InputFile(
                     'bam_markdups', 'cell_id', fnames=bam_file, extensions=['.bai']
@@ -47,7 +43,6 @@ def infer_haps(
         workflow.transform(
             name='merge_all_seqdata',
             func="remixt.seqdataio.merge_overlapping_seqdata",
-            ctx={'docker_image': remixt_image},
             args=(
                 mgd.TempOutputFile('seqdata_file.h5'),
                 mgd.TempInputFile("seqdata_cell.h5", "cell_id"),
@@ -58,7 +53,7 @@ def infer_haps(
         workflow.subworkflow(
             name='extract_seqdata',
             func='remixt.workflow.create_extract_seqdata_workflow',
-            ctx={'disk': 150, 'docker_image': remixt_image},
+            ctx={'disk': 150},
             args=(
                 mgd.InputFile(bam_file, extensions=['.bai']),
                 mgd.TempOutputFile('seqdata_file.h5'),
@@ -80,7 +75,7 @@ def infer_haps(
     workflow.transform(
         name='infer_snp_genotype',
         axes=('chromosome',),
-        ctx={'mem': 16, 'docker_image': remixt_image},
+        ctx={'mem': 16},
         func=func,
         args=(
             mgd.TempOutputFile('snp_genotype.tsv', 'chromosome'),
@@ -93,7 +88,7 @@ def infer_haps(
     workflow.transform(
         name='infer_haps',
         axes=('chromosome',),
-        ctx={'mem': 16, 'docker_image': remixt_image},
+        ctx={'mem': 16},
         func='remixt.analysis.haplotype.infer_haps',
         args=(
             mgd.TempOutputFile('haplotypes.tsv', 'chromosome'),
@@ -107,7 +102,7 @@ def infer_haps(
 
     workflow.transform(
         name='merge_haps',
-        ctx={'mem': 16, 'docker_image': remixt_image},
+        ctx={'mem': 16},
         func='remixt.utils.merge_tables',
         args=(
             mgd.TempOutputFile('haplotypes_merged.tsv'),

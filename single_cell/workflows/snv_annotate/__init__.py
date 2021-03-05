@@ -13,11 +13,8 @@ def create_snv_annotate_workflow(
         mappability_csv,
         snpeff_csv,
         trinuc_csv,
-        docker_config,
         memory_config,
 ):
-    basedocker = {'docker_image': docker_config['single_cell_pipeline']}
-    vcftools_docker = {'docker_image': docker_config['vcftools']}
 
     ctx = {
         'mem': memory_config['low'], 'num_retry': 3, 'mem_retry_increment': 2, 'ncpus': 1,
@@ -46,7 +43,6 @@ def create_snv_annotate_workflow(
             mgd.TempInputFile('all.snv.vcf'),
             mgd.TempOutputFile('all.snv.vcf.gz', extensions=['.tbi', '.csi'])
         ),
-        kwargs={'docker_config': vcftools_docker}
     )
 
     workflow.subworkflow(
@@ -65,9 +61,6 @@ def create_snv_annotate_workflow(
         ),
         kwargs={
             'variant_type': 'snv',
-            'docker_config': basedocker,
-            'snpeff_docker': vcftools_docker,
-            'vcftools_docker': vcftools_docker
         }
     )
 

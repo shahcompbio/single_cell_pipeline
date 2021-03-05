@@ -47,7 +47,6 @@ def create_sv_genotyper_workflow(
         name='genotype',
         func='single_cell.workflows.sv_genotyping.create_sv_genotyping_workflow',
         axes=('sample_id', 'library_id',),
-        ctx={'docker_image': sv_genotyping_config['docker']['single_cell_pipeline']},
         args=(
             reference_genome,
             mgd.InputFile('bam_input', 'sample_id', 'library_id', 'cell_id', extensions=['.bai'],

@@ -13,9 +13,8 @@ def create_qc_annotation_workflow(
         merged_metrics, qc_report, pass_segs, fail_segs,
         plot_heatmap_ec_filt_output, config, alignment_config
 ):
-    ctx = {'docker_image': config['docker']['single_cell_pipeline']}
 
-    workflow = pypeliner.workflow.Workflow(ctx=ctx)
+    workflow = pypeliner.workflow.Workflow()
 
     workflow.transform(
         name='cell_cycle_classifier',
@@ -27,7 +26,6 @@ def create_qc_annotation_workflow(
             mgd.TempOutputFile('cell_state_classifier.csv.gz', extensions=['.yaml']),
             mgd.TempSpace('tempdata_cell_cycle')
         ),
-        kwargs={'docker_image': config['docker']['cell_cycle_classifier']}
     )
 
     workflow.transform(

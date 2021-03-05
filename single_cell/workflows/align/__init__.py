@@ -51,9 +51,7 @@ def bam_metrics_workflow(
     insert_metrics_pdf_percell = dict([(cellid, insert_metrics_pdf_percell[cellid])
                                        for cellid in cell_ids])
 
-    baseimage = config['docker']['single_cell_pipeline']
-
-    workflow = pypeliner.workflow.Workflow(ctx={'docker_image': baseimage})
+    workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
@@ -73,9 +71,6 @@ def bam_metrics_workflow(
             mgd.OutputFile('wgs_metrics_percell', 'cell_id', fnames=wgs_metrics_percell),
             config['picard_wgs_params'],
         ),
-        kwargs={
-            'picard_docker': config['docker']['picard'],
-        }
     )
 
     workflow.transform(
@@ -94,10 +89,6 @@ def bam_metrics_workflow(
             mgd.OutputFile('insert_metrics_percell', 'cell_id', fnames=insert_metrics_percell),
             mgd.OutputFile('insert_metrics_pdf_percell', 'cell_id', fnames=insert_metrics_pdf_percell),
         ),
-        kwargs={
-            'picard_docker': config['docker']['picard'],
-            'samtools_docker': config['docker']['samtools']
-        }
     )
 
     workflow.transform(
@@ -173,9 +164,8 @@ def create_alignment_workflow(
         trim,
         center
 ):
-    baseimage = config['docker']['single_cell_pipeline']
 
-    ctx = {'mem': 7, 'ncpus': 1, 'docker_image': baseimage}
+    ctx = {'mem': 7, 'ncpus': 1}
 
     bam_filename = dict([(cellid, bam_filename[cellid])
                          for cellid in cell_ids])
@@ -216,7 +206,6 @@ def create_alignment_workflow(
             mgd.TempInputObj('sampleinfo', 'cell_id'),
             mgd.InputInstance('cell_id'),
             library_id,
-            config['docker'],
             config['adapter'],
             config['adapter2'],
             mgd.TempOutputFile('organism_detailed_count_per_cell.csv.gz', 'cell_id'),

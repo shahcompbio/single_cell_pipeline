@@ -10,25 +10,23 @@ from single_cell.utils import picardutils
 from .scripts import RunTrimGalore
 
 
-def merge_postprocess_bams(inputs, output, tempdir, containers):
+def merge_postprocess_bams(inputs, output, tempdir):
     helpers.makedirs(tempdir)
     merged_out = os.path.join(tempdir, 'merged_lanes.bam')
 
-    picardutils.merge_bams(inputs, merged_out, docker_image=containers['picard'])
-    bamutils.bam_index(merged_out, merged_out + '.bai', docker_image=containers['samtools'])
+    picardutils.merge_bams(inputs, merged_out)
+    bamutils.bam_index(merged_out, merged_out + '.bai')
 
     sorted_bam = os.path.join(tempdir, 'sorted.bam')
-    picardutils.bam_sort(merged_out, sorted_bam, tempdir,
-                         docker_image=containers['picard'])
+    picardutils.bam_sort(merged_out, sorted_bam, tempdir)
 
     markdups_metrics = os.path.join(tempdir, 'markdups_metrics.txt')
-    picardutils.bam_markdups(sorted_bam, output, markdups_metrics, tempdir,
-                             docker_image=containers['picard'])
+    picardutils.bam_markdups(sorted_bam, output, markdups_metrics, tempdir)
 
-    bamutils.bam_index(output, output + '.bai', docker_image=containers['samtools'])
+    bamutils.bam_index(output, output + '.bai')
 
 
-def run_fastqc(fastq1, fastq2, reports_dir, tempdir, containers):
+def run_fastqc(fastq1, fastq2, reports_dir, tempdir):
     """
     run fastqc on both fastq files
     run trimgalore if needed, copy if not.
@@ -40,8 +38,7 @@ def run_fastqc(fastq1, fastq2, reports_dir, tempdir, containers):
     out_html = os.path.join(reports_dir, 'fastqc_R1.html')
     out_plot = os.path.join(reports_dir, 'fastqc_R1.zip')
     if not os.path.getsize(fastq1) == 0:
-        bamutils.produce_fastqc_report(fastq1, out_html, out_plot, tempdir,
-                                       docker_image=containers['fastqc'])
+        bamutils.produce_fastqc_report(fastq1, out_html, out_plot, tempdir)
     else:
         logging.getLogger("single_cell.align.tasks").warn(
             "fastq file %s is empty, skipping fastqc" % fastq1)
@@ -49,8 +46,7 @@ def run_fastqc(fastq1, fastq2, reports_dir, tempdir, containers):
     out_html = os.path.join(reports_dir, 'fastqc_R2.html')
     out_plot = os.path.join(reports_dir, 'fastqc_R2.zip')
     if not os.path.getsize(fastq2) == 0:
-        bamutils.produce_fastqc_report(fastq2, out_html, out_plot, tempdir,
-                                       docker_image=containers['fastqc'])
+        bamutils.produce_fastqc_report(fastq2, out_html, out_plot, tempdir)
     else:
         logging.getLogger("single_cell.align.tasks").warn(
             "fastq file %s is empty, skipping fastqc" % fastq1)
@@ -77,7 +73,7 @@ def get_readgroup(run_id, cell_id, library_id, centre, sample_info):
     return read_group_template
 
 
-def trim_fastqs(fastq1, fastq2, cell_id, tempdir, adapter, adapter2, trimgalore_docker):
+def trim_fastqs(fastq1, fastq2, cell_id, tempdir, adapter, adapter2):
     """
     run fastqc on both fastq files
     run trimgalore if needed, copy if not.
@@ -110,8 +106,7 @@ def trim_fastqs(fastq1, fastq2, cell_id, tempdir, adapter, adapter2, trimgalore_
 
     run_tg = RunTrimGalore(
         fastq1, fastq2, trim1, trim2, 'trim_galore', 'cutadapt', tempdir,
-        adapter, adapter2, rep1, rep2, qcrep1, qcrep2, qczip1, qczip2,
-        trimgalore_docker
+        adapter, adapter2, rep1, rep2, qcrep1, qcrep2, qczip1, qczip2
     )
     run_tg.run_trimgalore()
     run_tg.gather_outputs()
@@ -120,24 +115,20 @@ def trim_fastqs(fastq1, fastq2, cell_id, tempdir, adapter, adapter2, trimgalore_
 
 
 def align_pe_with_bwa(
-        fastq1, fastq2, output, reference, readgroup, tempdir,
-        containers
+        fastq1, fastq2, output, reference, readgroup, tempdir
 ):
     samfile = os.path.join(tempdir, "bwamem.sam")
 
-    bamutils.bwa_mem_paired_end(fastq1, fastq2, samfile, reference, readgroup,
-                                docker_image=containers['bwa'])
+    bamutils.bwa_mem_paired_end(fastq1, fastq2, samfile, reference, readgroup)
 
-    bamutils.samtools_sam_to_bam(samfile, output,
-                                 docker_image=containers['samtools'])
+    bamutils.samtools_sam_to_bam(samfile, output)
 
 
 def align_pe(
         fastq1, fastq2, output, reports_dir, tempdir, reference,
         trim, center, sample_info, cell_id, lane_id, library_id,
-        containers, adapter, adapter2,
-        fastqscreen_detailed_metrics, fastqscreen_summary_metrics,
-        fastqscreen_params,
+        adapter, adapter2, fastqscreen_detailed_metrics,
+        fastqscreen_summary_metrics, fastqscreen_params,
 ):
     fastqscreen_tempdir = os.path.join(tempdir, 'fastq_screen')
     helpers.makedirs(fastqscreen_tempdir)
@@ -149,7 +140,7 @@ def align_pe(
         fastq1, fastq2, filtered_fastq_r1, filtered_fastq_r2,
         fastqscreen_detailed_metrics, fastqscreen_summary_metrics,
         fastqscreen_tempdir, cell_id, fastqscreen_params,
-        reference, docker_image=containers['fastq_screen'],
+        reference,
         filter_contaminated_reads=fastqscreen_params['filter_contaminated_reads'],
     )
 
@@ -157,38 +148,38 @@ def align_pe(
         lane_id, cell_id, library_id, center, sample_info
     )
 
-    run_fastqc(filtered_fastq_r1, filtered_fastq_r2, reports_dir, tempdir, containers)
+    run_fastqc(filtered_fastq_r1, filtered_fastq_r2, reports_dir, tempdir)
 
     aln_temp = os.path.join(tempdir, "temp_alignments.bam")
 
     if trim:
         filtered_fastq_r1, filtered_fastq_r2 = trim_fastqs(
             filtered_fastq_r1, filtered_fastq_r2, cell_id, tempdir,
-            adapter, adapter2, containers['trimgalore']
+            adapter, adapter2
         )
 
     align_pe_with_bwa(
         filtered_fastq_r1, filtered_fastq_r2, aln_temp, reference, readgroup,
-        tempdir, containers
+        tempdir
     )
 
-    picardutils.bam_sort(aln_temp, output, tempdir, docker_image=containers['picard'])
+    picardutils.bam_sort(aln_temp, output, tempdir)
 
     metrics = os.path.join(reports_dir, 'flagstat_metrics.txt')
-    bamutils.bam_flagstat(output, metrics, docker_image=containers['samtools'])
+    bamutils.bam_flagstat(output, metrics)
 
 
-def extract_mt_chromosome(input_bam, mt_bam, docker_image=None, mt_chrom_name='MT'):
+def extract_mt_chromosome(input_bam, mt_bam, mt_chrom_name='MT'):
     cmd = ['samtools', 'view', '-bh', input_bam, mt_chrom_name, '>', mt_bam]
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)
 
     cmd = ['samtools', 'index', mt_bam, mt_bam + '.bai']
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)
 
 
 def align_lanes(
         fastq1, fastq2, output, output_mt, reports, tempdir, reference,
-        sample_info, cell_id, library_id, containers, adapter,
+        sample_info, cell_id, library_id, adapter,
         adapter2, fastqscreen_detailed_metrics,
         fastqscreen_summary_metrics, fastqscreen_params, trim, center, mt_chrom_name='MT'
 ):
@@ -215,17 +206,17 @@ def align_lanes(
         align_pe(
             fastq1[lane_id], fastq2[lane_id], lane_bam, reports_dir,
             lane_tempdir, reference, trim, center, sample_info, cell_id, lane_id,
-            library_id, containers, adapter, adapter2,
+            library_id, adapter, adapter2,
             screen_detailed, screen_summary, fastqscreen_params,
         )
 
     helpers.make_tarfile(reports, os.path.join(tempdir, 'reports_per_lane'))
 
-    merge_postprocess_bams(lane_bams, output, os.path.join(tempdir, 'merge_bams'), containers)
+    merge_postprocess_bams(lane_bams, output, os.path.join(tempdir, 'merge_bams'))
 
     fastqscreen.merge_fastq_screen_counts(
         detailed_counts, summary_counts,
         fastqscreen_detailed_metrics, fastqscreen_summary_metrics
     )
 
-    extract_mt_chromosome(output, output_mt, docker_image=containers['samtools'], mt_chrom_name=mt_chrom_name)
+    extract_mt_chromosome(output, output_mt, mt_chrom_name=mt_chrom_name)

@@ -20,7 +20,7 @@ class RunTrimGalore(object):
 
     def __init__(self, seq1, seq2, fq_r1, fq_r2, trimgalore, cutadapt, tempdir,
                  adapter, adapter2, report_r1, report_r2, qc_report_r1,
-                 qc_report_r2, qc_zip_r1, qc_zip_r2, docker_image):
+                 qc_report_r2, qc_zip_r1, qc_zip_r2):
         self.seq1 = seq1
         self.seq2 = seq2
         self.trimgalore_path = trimgalore
@@ -38,8 +38,6 @@ class RunTrimGalore(object):
         self.report_r2 = report_r2
         self.empty = False
 
-        self.docker_image = docker_image
-
         self.check_inputs()
 
         if not os.path.exists(self.tempdir):
@@ -49,7 +47,7 @@ class RunTrimGalore(object):
         """
         run a command with subprocess and return outputs
         """
-        pypeliner.commandline.execute(*cmd, docker_image=self.docker_image)
+        pypeliner.commandline.execute(*cmd)
 
     def check_file(self, path):
         """

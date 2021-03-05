@@ -1,43 +1,5 @@
 import os
 
-from single_cell.utils import helpers
-
-
-def containers(version=None):
-    if not version:
-        version = helpers.get_version()
-        version = 'v'+version
-
-    docker_images = {
-        'bwa': 'bwa:v0.0.2',
-        'samtools': 'samtools:v0.0.3',
-        'python_base': 'python_base:v0.1.0',
-        'picard': 'picard:v0.0.3',
-        'single_cell_pipeline': 'single_cell_pipeline:{}'.format(version),
-        'gatk': 'gatk:v0.0.1',
-        'fastqc': 'fastqc:v0.0.2',
-        'hmmcopy': 'hmmcopy:v0.0.6',
-        'aneufinder': 'aneufinder:v0.0.1',
-        'strelka': 'strelka:v0.0.3',
-        'mutationseq': 'mutationseq:v0.0.3',
-        'vcftools': 'vcftools:v0.0.2',
-        'snpeff': 'vcftools:v0.0.2',
-        'titan': 'titan:v0.0.1',
-        'remixt': 'remixt:v0.0.7',
-        'destruct': 'destruct:v0.0.6',
-        'trimgalore': 'trimgalore:v0.0.2',
-        'lumpy': 'lumpy:v0.0.3',
-        'cell_cycle_classifier': 'cell_cycle_classifier:v0.0.3',
-        'biobloom': 'biobloom:v0.0.2',
-        'corrupt_tree': 'corrupt_tree:v0.0.1',
-        'fastq_screen': 'fastq_screen:v0.0.2',
-        'svtyper': 'svtyper:v0.0.1',
-        'vcf2maf': 'vcf2maf:v0.0.1',
-        'pseudo_bulk_qc_html_report': 'pseudo_bulk_qc_html_report:v0.0.1'
-    }
-
-    return {'docker': docker_images}
-
 
 def get_reference_data(reference, rootdir):
     # salmon

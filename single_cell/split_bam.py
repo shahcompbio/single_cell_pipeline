@@ -19,18 +19,16 @@ def split_bam_workflow(args):
 
     bam_file = inpututils.load_split_wgs_input(args['input_yaml'])
 
-    baseimage = config['docker']['single_cell_pipeline']
-
     split_bam_template = os.path.join(args['out_dir'], '{region}.bam')
 
     meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
     input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
 
-    workflow = pypeliner.workflow.Workflow(ctx={'docker_image': baseimage})
+    workflow = pypeliner.workflow.Workflow()
 
     workflow.transform(
         name="get_regions",
-        ctx={'mem': config['memory']['low'], 'ncpus': 1, 'docker_image': baseimage},
+        ctx={'mem': config['memory']['low'], 'ncpus': 1},
         func="single_cell.utils.pysamutils.get_regions_from_reference",
         ret=pypeliner.managed.OutputChunks('region'),
         args=(

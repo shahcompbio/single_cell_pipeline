@@ -20,9 +20,7 @@ def annotation_workflow(args):
 
     lib = args["library_id"]
 
-    workflow = pypeliner.workflow.Workflow(
-        ctx={'docker_image': config['annotation']['docker']['single_cell_pipeline']},
-    )
+    workflow = pypeliner.workflow.Workflow()
 
     annotation_dir = args["out_dir"]
 

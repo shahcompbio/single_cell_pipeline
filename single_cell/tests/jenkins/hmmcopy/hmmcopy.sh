@@ -13,17 +13,16 @@ docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_DEFAULT_REGION -
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v $DOCKER:$DOCKER --rm \
-  $1/single_cell_pipeline:$TAG \
+  $1/single_cell_pipeline_hmmcopy:$TAG \
   single_cell hmmcopy \
   --input_yaml single_cell/tests/jenkins/hmmcopy/inputs.yaml \
   --library_id A97318A \
   --maxjobs $NUMCORES \
   --nocleanup \
   --sentinel_only  \
-  --context_config single_cell/tests/jenkins/context_config.yaml \
   --submit local \
   --loglevel DEBUG \
-  --config_override '{"hmmcopy": {"chromosomes": ["6", "8", "17"]}, "version": '\"$TAG\"'}' \
+  --config_override '{"hmmcopy": {"chromosomes": ["6", "8", "17"]}}' \
   --tmpdir HMMCOPY/temp \
   --pipelinedir HMMCOPY/pipeline \
   --submit local \
@@ -31,7 +30,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/va
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v $DOCKER:$DOCKER --rm \
-  $1/single_cell_pipeline:$TAG \
+  $1/single_cell_pipeline_hmmcopy:$TAG \
   python single_cell/tests/jenkins/hmmcopy/test_hmmcopy.py HMMCOPY/output A97318A  HMMCOPY/ref_test_data/refdata
 
-docker run -w $PWD -v $PWD:$PWD --rm $1/single_cell_pipeline:$TAG rm -rf HMMCOPY
+docker run -w $PWD -v $PWD:$PWD --rm $1/single_cell_pipeline_hmmcopy:$TAG rm -rf HMMCOPY

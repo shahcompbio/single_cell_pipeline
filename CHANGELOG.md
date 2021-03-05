@@ -1,5 +1,15 @@
 # Change Log
 
+
+### v0.7.0
+
+ - Outputs do not change with this release
+#### Changes:
+1. deprecated conda package
+2. deprecated docker in docker 
+3. new docker containers (one per pipeline) and new org in quay.io
+
+
 ### v0.6.46:
 
 ####  Changes:

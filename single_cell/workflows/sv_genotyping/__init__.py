@@ -26,12 +26,9 @@ def create_sv_genotyping_workflow(
         ab_output,
         config
 ):
-    img = config["docker"]["single_cell_pipeline"]
-    genotyping_ctx = {'docker_image': img}
-
     logging.getLogger("SV_GENOTYPING").error("EXPERIMENTAL FEATURE")
 
-    workflow = pypeliner.workflow.Workflow(ctx=genotyping_ctx)
+    workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
@@ -61,7 +58,6 @@ def create_sv_genotyping_workflow(
             mgd.TempOutputFile("genotypedlumpy.csv.gz", "cell_id", extensions=['.yaml']),
             mgd.TempSpace("temp", 'cell_id'),
             mgd.InputInstance('cell_id'),
-            config["docker"]["svtyper"]
         )
     )
 
@@ -97,7 +93,6 @@ def create_sv_genotyping_workflow(
             mgd.TempOutputFile("genotypeddestruct.csv.gz", "cell_id", extensions=['.yaml']),
             mgd.TempSpace("tempdestruct", 'cell_id'),
             mgd.InputInstance('cell_id'),
-            config["docker"]["svtyper"]
         )
     )
 

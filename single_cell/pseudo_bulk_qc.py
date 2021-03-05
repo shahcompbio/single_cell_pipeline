@@ -52,9 +52,7 @@ def pseudo_bulk_qc_workflow(args):
     sample_level_maf = os.path.join(label_dir,  "samplelevelmaf.maf")
     snvs_all = os.path.join(label_dir, 'snvs_all.csv')
 
-    workflow = pypeliner.workflow.Workflow(
-        ctx={'docker_image': config['docker']['single_cell_pipeline']}
-    )
+    workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
         obj=mgd.OutputChunks('patient', 'sample_id', 'library_id', ),
@@ -128,7 +126,6 @@ def pseudo_bulk_qc_workflow(args):
             mgd.OutputFile('grouplevel_high_impact_merged_snvs', 'patient',
                            template=grouplevel_high_impact_merged_snvs
                            ),
-            config,
         ),
     )
 

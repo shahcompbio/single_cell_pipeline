@@ -79,9 +79,7 @@ def cohort_qc_pipeline(args):
 
     pyp = pypeliner.app.Pypeline(config=args)
 
-    workflow = pypeliner.workflow.Workflow(
-        ctx={'docker_image': config['docker']['single_cell_pipeline']}
-    )
+    workflow = pypeliner.workflow.Workflow()
 
     out_dir = args["out_dir"]
     api_key = args["API_key"]
@@ -117,7 +115,6 @@ def cohort_qc_pipeline(args):
         name="classifycopynumber",
         func="single_cell.workflows.cohort_qc.cna_annotation_workflow",
         args=(
-            config,
             mgd.InputFile(
                 'hmmcopy_dict', 'sample_label', 'library_label',
                 fnames=hmmcopy_files, axes_origin=[]
@@ -133,7 +130,6 @@ def cohort_qc_pipeline(args):
         name="maf_annotation_workflow",
         func="single_cell.workflows.cohort_qc.preprocess_mafs_workflow",
         args=(
-            config,
             mgd.InputFile(
                 'germline_mafs_dict',  'sample_label',
                 fnames=germline_mafs, axes_origin=[]

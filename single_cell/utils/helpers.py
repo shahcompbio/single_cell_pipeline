@@ -11,8 +11,6 @@ import os
 import re
 import shutil
 import tarfile
-from multiprocessing.pool import ThreadPool
-from subprocess import Popen, PIPE
 
 import pandas as pd
 import pypeliner
@@ -28,6 +26,56 @@ def generate_and_upload_metadata(
         command, root_dir, filepaths, output, template=None,
         input_yaml_data=None, input_yaml=None, metadata={}, type=None
 ):
+    def __add_extensions(filepaths):
+        paths_extensions = []
+        for filepath in filepaths:
+            paths_extensions.append(filepath)
+
+            if filepath.endswith('.csv.gz'):
+                paths_extensions.append(filepath + '.yaml')
+            elif filepath.endswith('.vcf.gz'):
+                paths_extensions.append(filepath + '.csi')
+                paths_extensions.append(filepath + '.tbi')
+            elif filepath.endswith('.bam'):
+                paths_extensions.append(filepath + '.bai')
+
+        return paths_extensions
+
+    def __generate_meta_yaml_file(
+            metadata_file,
+            filepaths=None,
+            metadata=None,
+            root_dir=None
+    ):
+        if not root_dir:
+            final_paths = filepaths
+        else:
+            final_paths = []
+            for filepath in filepaths:
+                if not filepath.startswith(root_dir):
+                    error = 'file {} does not have {} in path'.format(
+                        filepath, root_dir
+                    )
+                    raise Exception(error)
+
+                filepath = os.path.relpath(filepath, root_dir)
+                final_paths.append(filepath)
+
+        final_paths = __add_extensions(final_paths)
+
+        metadata = {
+            'filenames': final_paths,
+            'meta': metadata,
+        }
+
+        write_to_yaml(metadata_file, metadata)
+
+    def __get_version():
+        version = single_cell.__version__
+        # strip setuptools metadata
+        version = version.split("+")[0]
+        return version
+
     if not metadata:
         metadata = {}
 
@@ -36,7 +84,7 @@ def generate_and_upload_metadata(
     filepaths = list(filepaths)
 
     metadata['command'] = ' '.join(command)
-    metadata['version'] = get_version()
+    metadata['version'] = __get_version()
 
     if type:
         metadata['type'] = type
@@ -65,62 +113,9 @@ def generate_and_upload_metadata(
         metadata['input_yaml'] = os.path.relpath(input_yaml, root_dir)
         filepaths.append(input_yaml)
 
-    generate_meta_yaml_file(
+    __generate_meta_yaml_file(
         output, filepaths=filepaths, metadata=metadata, root_dir=root_dir
     )
-
-
-def add_extensions(filepaths):
-    paths_extensions = []
-    for filepath in filepaths:
-        paths_extensions.append(filepath)
-
-        if filepath.endswith('.csv.gz'):
-            paths_extensions.append(filepath + '.yaml')
-        elif filepath.endswith('.vcf.gz'):
-            paths_extensions.append(filepath + '.csi')
-            paths_extensions.append(filepath + '.tbi')
-        elif filepath.endswith('.bam'):
-            paths_extensions.append(filepath + '.bai')
-
-    return paths_extensions
-
-
-def generate_meta_yaml_file(
-        metadata_file,
-        filepaths=None,
-        metadata=None,
-        root_dir=None
-):
-    if not root_dir:
-        final_paths = filepaths
-    else:
-        final_paths = []
-        for filepath in filepaths:
-            if not filepath.startswith(root_dir):
-                error = 'file {} does not have {} in path'.format(
-                    filepath, root_dir
-                )
-                raise Exception(error)
-
-            filepath = os.path.relpath(filepath, root_dir)
-            final_paths.append(filepath)
-
-    final_paths = add_extensions(final_paths)
-
-    metadata = {
-        'filenames': final_paths,
-        'meta': metadata,
-    }
-
-    write_to_yaml(metadata_file, metadata)
-
-
-def get_version():
-    version = single_cell.__version__
-    # strip setuptools metadata
-    version = version.split("+")[0]
-    return version
 
 
 def copyfile(source, dest):
@@ -172,20 +167,6 @@ def get_compression_type_pandas(filepath):
         return None
 
 
-def is_gzip(filename):
-    """
-    Uses the file contents to check if the file is gzip or not.
-    The magic number for gzip is 1f 8b
-    See KRONOS-8 for details
-    """
-    with open(filename) as f:
-        file_start = f.read(4)
-
-        if file_start.startswith("\x1f\x8b\x08"):
-            return True
-        return False
-
-
 def get_file_format(filepath):
     if filepath.endswith('.tmp'):
         filepath = filepath[:-4]
@@ -203,73 +184,6 @@ def get_file_format(filepath):
             "Couldn't detect output format. extension {}".format(ext)
         )
         return "csv"
-
-
-def get_coltype_reference():
-    coltypes = {
-        'estimated_library_size': 'int', 'total_mapped_reads': 'int',
-        'total_reads_hmmcopy': 'float', 'cor_map': 'float',
-        'cv_neutral_state': 'float', 'MBRSM_dispersion': 'float',
-        'map': 'float', 'mad_hmmcopy': 'float', 'copy': 'float',
-        'modal_curve': 'float', 'sample_well': 'str', 'true_multiplier': 'float',
-        'reads': 'int', 'jira_id': 'str', 'gc': 'float', 'integer_copy_number': 'int',
-        'breakpoints': 'int', 'total_duplicate_reads': 'int',
-        'quality': 'float', 'cv_hmmcopy': 'float', 'empty_bins_hmmcopy': 'float',
-        'paired_mapped_reads': 'int', 'total_reads': 'int', 'end': 'int', 'width': 'int',
-        'MBRSI_dispersion_non_integerness': 'float', 'total_properly_paired': 'int',
-        'chr': 'str', 'sample_type': 'str', 'mean_insert_size': 'float', 'start': 'int',
-        'state': 'int', 'valid': 'bool', 'coverage_breadth': 'float', 'empty_bins_hmmcopy_chrY': 'int',
-        'too_even': 'bool', 'unpaired_duplicate_reads': 'int', 'unpaired_mapped_reads': 'int',
-        'unmapped_reads': 'int', 'mad_chr19': 'float', 'cell_id': 'str', 'cell_call': 'str',
-        'coverage_depth': 'float', 'median_insert_size': 'float', 'modal_quantile': 'float',
-        'sample_plate': 'str', 'mean_state_mads': 'float', 'ideal': 'bool',
-        'experimental_condition': 'str', 'mean_copy': 'float', 'mean_hmmcopy_reads_per_bin': 'float',
-        'multiplier': 'int', 'percent_duplicate_reads': 'float', 'i7_barcode': 'str',
-        'total_halfiness': 'float', 'std_hmmcopy_reads_per_bin': 'float',
-        'standard_deviation_insert_size': 'float', 'mean_state_vars': 'float',
-        'all_heatmap_order': 'int', 'scaled_halfiness': 'float', 'cor_gc': 'float',
-        'median': 'float', 'state_mode': 'int', 'paired_duplicate_reads': 'int',
-        'median_hmmcopy_reads_per_bin': 'float', 'mad_neutral_state': 'float',
-        'autocorrelation_hmmcopy': 'float', 'mad_autosomes': 'float', 'i5_barcode': 'str',
-        'loglikehood': 'float', 'MSRSI_non_integerness': 'float'}
-
-    ignore_cols = set(range(9))
-
-    return coltypes, ignore_cols
-
-
-def resolve_template(regions, template, format_key):
-    outputs = {v: template.format(**{format_key: v}) for v in regions}
-    return outputs
-
-
-def get_container_ctx(container_config, image_name, docker_only=False):
-    if docker_only and not container_config['container_type'] == 'docker':
-        return {}
-
-    credentials = container_config['images'][image_name]
-    docker_context = {
-        'image': credentials['image'],
-        'container_type': container_config['container_type'],
-        'mounts': container_config['mounts'],
-        'username': credentials['username'],
-        'password': credentials['password'],
-        'server': credentials['server'],
-    }
-    return docker_context
-
-
-def get_mount_dirs_docker(*args):
-    mounts = set()
-
-    for arg in args:
-        if os.path.exists(os.path.dirname(arg)):
-            if not arg.startswith('/'):
-                arg = os.path.abspath(arg)
-            arg = arg.split('/')
-
-            mounts.add('/' + arg[1])
-    return sorted(mounts)
 
 
 def write_to_yaml(outfile, data):
@@ -347,7 +261,7 @@ def build_shell_script(command, tag, tempdir):
     return outfile
 
 
-def run_in_gnu_parallel(commands, tempdir, docker_image, ncores=None):
+def run_in_gnu_parallel(commands, tempdir, ncores=None):
     makedirs(tempdir)
 
     scriptfiles = []
@@ -364,64 +278,7 @@ def run_in_gnu_parallel(commands, tempdir, docker_image, ncores=None):
         ncores = multiprocessing.cpu_count()
 
     gnu_parallel_cmd = ['parallel', '--jobs', ncores, '<', parallel_outfile]
-    pypeliner.commandline.execute(*gnu_parallel_cmd, docker_image=docker_image)
-
-
-def run_in_parallel(worker, args, ncores=None):
-    def args_unpack(worker, args):
-        return worker(*args)
-
-    count = multiprocessing.cpu_count()
-
-    if ncores:
-        count = min(ncores, count)
-
-    pool = ThreadPool(processes=count)
-
-    tasks = []
-
-    for arg in args:
-        task = pool.apply_async(args_unpack,
-                                args=(worker, arg),
-                                )
-        tasks.append(task)
-
-    pool.close()
-    pool.join()
-
-    [task.get() for task in tasks]
-
-    pool.terminate()
-    del pool
-
-
-def run_cmd(cmd, output=None):
-    stdout = PIPE
-    if output:
-        stdout = open(output, "w")
-
-    p = Popen(cmd, stdout=stdout, stderr=PIPE)
-
-    cmdout, cmderr = p.communicate()
-    retc = p.returncode
-
-    if retc:
-        raise Exception(
-            "command failed. stderr:{}, stdout:{}".format(
-                cmdout,
-                cmderr))
-
-    if output:
-        stdout.close()
-
-
-def symlink(actual_file, symlink):
-    if not os.path.exists(symlink):
-        os.symlink(actual_file, symlink)
-
-
-def copy_file(infile, output):
-    shutil.copy(infile, output)
+    pypeliner.commandline.execute(*gnu_parallel_cmd)
 
 
 def makedirs(directory, isfile=False):

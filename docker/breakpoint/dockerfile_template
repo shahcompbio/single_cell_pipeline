@@ -1,0 +1,24 @@
+FROM continuumio/miniconda3:4.8.2
+ADD . /app
+
+
+# this does not work because bioconda package for lumpy is missing a commit w fix that's needed for bed output
+#RUN conda create --name lumpy python=2.7
+#SHELL ["conda", "run", "-n", "lumpy", "/bin/bash", "-c"]
+#RUN conda install --file /app/conda_lumpy_requirements.yml
+#RUN sed 's/usr\/bin\/env python/usr\/bin\/env python2/' /opt/conda/envs/lumpy/bin/lumpy_extractSplitReads_BwaMem > /opt/conda/envs/lumpy/bin/extractSplitReads_BwaMem && chmod 777 /opt/conda/envs/lumpy/bin/extractSplitReads_BwaMem
+#SHELL ["conda", "run", "-n", "base", "/bin/bash", "-c"]
+
+RUN apt-get update && apt install autoconf make gcc zlib1g-dev  libcurl3-dev libssl-dev g++ -y && rm -rf /var/lib/apt/lists/*
+RUN git clone --recursive https://github.com/arq5x/lumpy-sv.git && cd ./lumpy-sv && make && cp bin/* /usr/local/bin/. && cp ./scripts/extractSplitReads_BwaMem /usr/local/bin/.
+
+
+
+RUN conda install --file /app/conda_base_requirements.yml
+
+ENV PATH="${PATH}:/opt/conda/envs/lumpy/bin"
+
+RUN pip install git+https://github.com/shahcompbio/pypeliner.git@master
+RUN pip install git+https://github.com/shahcompbio/single_cell_pipeline.git@{git_commit}
+RUN pip install git+https://github.com/shahcompbio/biowrappers.git@master
+RUN pip install -e git+https://github.com/amcpherson/blossomv.git#egg=blossomv

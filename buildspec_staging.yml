@@ -3,7 +3,12 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - bash single_cell/tests/jenkins/build_docker_staging/build.sh $QUAY_USR $QUAY_PSW quay.io singlecellpipelinetest
+      - cd docker/alignment/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
+      - cd docker/hmmcopy/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
+      - cd docker/annotation/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
+      - cd docker/variant/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
+      - cd docker/breakpoint/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
+      - cd docker/haplotypes/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
   build:
     commands:
       - bash single_cell/tests/jenkins/refdata/download.sh
@@ -16,4 +21,3 @@ phases:
       - bash single_cell/tests/jenkins/breakpoint_calling/breakpoint_calling.sh quay.io/singlecellpipelinetest
       - bash single_cell/tests/jenkins/infer_haps/infer_haps.sh quay.io/singlecellpipelinetest
       - bash single_cell/tests/jenkins/count_haps/count_haps.sh quay.io/singlecellpipelinetest
-      - bash single_cell/tests/jenkins/pseudo_bulk_qc/pseudo_bulk_qc.sh  quay.io/singlecellpipelinetest
