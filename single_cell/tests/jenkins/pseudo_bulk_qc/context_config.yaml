@@ -1,8 +1,0 @@
-docker:
-    server: 'quay.io'
-    username: null
-    password: null
-    org: singlecellpipelinetest
-    mounts:
-      home: /home
-      refdata: /refdata

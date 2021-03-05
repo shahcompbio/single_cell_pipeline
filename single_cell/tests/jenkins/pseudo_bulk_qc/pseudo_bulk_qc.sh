@@ -13,10 +13,9 @@ docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_DEFAULT_REGION -
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v $DOCKER:$DOCKER --rm \
-  $1/single_cell_pipeline:$TAG \
+  $1/single_cell_pipeline_qc:$TAG \
   single_cell pseudo_bulk_qc --input_yaml single_cell/tests/jenkins/pseudo_bulk_qc/inputs.yaml \
   --maxjobs $NUMCORES --nocleanup --sentinel_only  \
-  --context_config single_cell/tests/jenkins/context_config.yaml \
   --submit local --loglevel DEBUG \
   --tmpdir PSEUDO_BULK_QC/temp \
   --pipelinedir PSEUDO_BULK_QC/pipeline \
