@@ -9,7 +9,7 @@ RUN pip install git+https://github.com/amcpherson/wgs_analysis.git@master
 RUN pip install git+https://github.com/shahcompbio/classifycopynumber.git@master
 RUN pip install git+https://github.com/shahcompbio/scgenome.git@master
 RUN cp /app/oncokb-annotator/MafAnnotator.py /app/oncokb-annotator/AnnotatorCore.py /opt/conda/bin && chmod 777 /opt/conda/bin/MafAnnotator.py  /opt/conda/bin/AnnotatorCore.py
-RUN pip install brewer2mpl lda umap adjusttext hmmlearn pandas seaborn pysam
+RUN pip install brewer2mpl lda umap adjusttext hmmlearn pandas seaborn packaging
 RUN apt update && apt install build-essential -y
 RUN pip install hdbscan numpy --force-reinstall
 RUN apt update && apt install samtools -y
