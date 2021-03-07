@@ -12,7 +12,7 @@ cat dockerfile_template \
  | sed "s/{git_commit}/$COMMIT/g" \
  > dockerfile
 
-docker build -t $REGISTRY/$ORG/single_cell_pipeline_alignment:$TAG . --no-cache
+docker build -t $REGISTRY/$ORG/single_cell_pipeline_qc:$TAG . --no-cache
 
-docker push $REGISTRY/$ORG/single_cell_pipeline_alignment:$TAG
+docker push $REGISTRY/$ORG/single_cell_pipeline_qc:$TAG
 
