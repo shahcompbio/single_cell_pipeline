@@ -23,4 +23,4 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata \
   --out_dir PSEUDO_BULK_QC/output \
   --config_override '{"annotation": {"chromosomes": ["6", "8", "17"]}}' \
 
-docker run -w $PWD -v $PWD:$PWD --rm $1/single_cell_pipeline:$TAG rm -rf PSEUDO_BULK_QC
+docker run -w $PWD -v $PWD:$PWD --rm $1/single_cell_pipeline_qc:$TAG rm -rf PSEUDO_BULK_QC
