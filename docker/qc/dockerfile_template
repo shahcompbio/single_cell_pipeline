@@ -16,3 +16,4 @@ RUN apt update && apt install samtools -y
 RUN conda install -c bioconda bioconductor-maftools
 RUN conda install -c shahcompbio pseudo_bulk_qc_html_report --force-reinstall
 RUN conda install -c shahcompbio -c bioconda vcf2maf_shahcompbio
+RUN rm -rf /opt/conda/bin/samtools
