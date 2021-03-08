@@ -1,6 +1,11 @@
 # Change Log
 
 
+### v0.7.1
+
+#### Changes:
+1. added pseudobulk QC to codebuild
+
 ### v0.7.0
 
  - Outputs do not change with this release
