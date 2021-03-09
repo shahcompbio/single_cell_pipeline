@@ -1,5 +1,9 @@
 # Change Log
 
+### v0.7.2
+
+#### Changes:
+1. networkx version for nreakpoint docker
 
 ### v0.7.1
 
