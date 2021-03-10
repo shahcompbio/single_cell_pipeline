@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.7.3
+
+#### Changes:
+1. update destruct to v0.4.19
+
 ### v0.7.2
 
 #### Changes:

@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3:4.8.2
+FROM quay.io/singlecellpipelinetest/miniconda3:4.8.2
 ADD . /app
 
 
@@ -9,7 +9,7 @@ ADD . /app
 #RUN sed 's/usr\/bin\/env python/usr\/bin\/env python2/' /opt/conda/envs/lumpy/bin/lumpy_extractSplitReads_BwaMem > /opt/conda/envs/lumpy/bin/extractSplitReads_BwaMem && chmod 777 /opt/conda/envs/lumpy/bin/extractSplitReads_BwaMem
 #SHELL ["conda", "run", "-n", "base", "/bin/bash", "-c"]
 
-RUN apt-get update && apt install autoconf make gcc zlib1g-dev  libcurl3-dev libssl-dev g++ -y && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt install autoconf make gcc zlib1g-dev libcurl3-dev libssl-dev g++ samtools -y && rm -rf /var/lib/apt/lists/*
 RUN git clone --recursive https://github.com/arq5x/lumpy-sv.git && cd ./lumpy-sv && make && cp bin/* /usr/local/bin/. && cp ./scripts/extractSplitReads_BwaMem /usr/local/bin/.
 
 
