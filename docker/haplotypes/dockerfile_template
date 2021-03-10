@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3:4.8.2
+FROM quay.io/singlecellpipelinetest/miniconda3:4.8.2
 
 ADD . /app
 RUN conda install --file /app/requirements.yml
