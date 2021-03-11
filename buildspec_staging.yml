@@ -12,7 +12,7 @@ phases:
       #- cd docker/qc/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
   build:
     commands:
-      - bash single_cell/tests/jenkins/refdata/download.sh
+      #- bash single_cell/tests/jenkins/refdata/download.sh
       #- bash single_cell/tests/jenkins/align/align.sh quay.io/singlecellpipelinetest
       #- bash single_cell/tests/jenkins/hmmcopy/hmmcopy.sh quay.io/singlecellpipelinetest
       #- bash single_cell/tests/jenkins/annotation/annotation.sh quay.io/singlecellpipelinetest
