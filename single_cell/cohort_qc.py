@@ -88,7 +88,7 @@ def cohort_qc_pipeline(args):
     input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
 
     # inputs
-    cohort, mafs, hmmcopy = inpututils.load_cohort_qc_inputs(
+    mafs, hmmcopy_filenames, hmmcopy_samples = inpututils.load_cohort_qc_inputs(
         args["input_yaml"]
     )
 
@@ -98,17 +98,14 @@ def cohort_qc_pipeline(args):
     somatic_mafs = {
         label: data["somatic_maf"] for label, data in mafs.items()
     }
-    hmmcopy_files = {
-        label: data["hmmcopy"] for label, data in hmmcopy.items()
-    }
 
     # outputs
-    cbiofile_paths = get_cbioportal_paths(os.path.join(out_dir, cohort))
-    maftools_filepaths = get_maftools_paths(os.path.join(out_dir, cohort))
+    cbiofile_paths = get_cbioportal_paths(out_dir)
+    maftools_filepaths = get_maftools_paths(out_dir)
 
     workflow.setobj(
         obj=mgd.OutputChunks('sample_label', 'library_label'),
-        value=list(hmmcopy_files.keys()),
+        value=list(hmmcopy_filenames.keys()),
     )
 
     workflow.subworkflow(
@@ -117,8 +114,9 @@ def cohort_qc_pipeline(args):
         args=(
             mgd.InputFile(
                 'hmmcopy_dict', 'sample_label', 'library_label',
-                fnames=hmmcopy_files, axes_origin=[]
+                fnames=hmmcopy_filenames, axes_origin=[]
             ),
+            hmmcopy_samples,
             mgd.OutputFile(cbiofile_paths["cna_table"]),
             mgd.OutputFile(maftools_filepaths["maftools_cna"]),
             mgd.OutputFile(cbiofile_paths["segments"]),
