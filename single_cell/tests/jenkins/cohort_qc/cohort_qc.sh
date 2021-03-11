@@ -9,7 +9,7 @@ NUMCORES=`nproc --all`
 mkdir -p COHORT_QC/testdata
 
 docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_DEFAULT_REGION -v $PWD:$PWD -w $PWD $1/awscli:v0.0.1 \
-  aws s3 cp s3://singlecelltestsets/TESTDATA_CODEBUILD/cohort_qc COHORT_QC/testdata --recursive
+  aws s3 cp s3://singlecelltestsets/TESTDATA_CODEBUILD/cohort-qc COHORT_QC/testdata --recursive
 
 ls -l COHORT_QC/testdata
 echo $ONCOKB_KEY

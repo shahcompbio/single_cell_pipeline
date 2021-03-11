@@ -9,7 +9,7 @@ phases:
       #- cd docker/variant/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
       #- cd docker/breakpoint/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
       #- cd docker/haplotypes/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
-      - cd docker/qc/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
+      #- cd docker/qc/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
   build:
     commands:
       - bash single_cell/tests/jenkins/refdata/download.sh
