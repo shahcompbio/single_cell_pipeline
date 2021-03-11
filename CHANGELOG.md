@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.7.4
+
+#### Changes:
+1. added cohort_qc to testing
+
 ### v0.7.3
 
 #### Changes:
