@@ -15,17 +15,17 @@ echo "#############################"
 echo $ONCOKB_KEY
 
 
-docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata \
-  --rm \
-  $1/single_cell_pipeline_qc:$TAG \
-  single_cell cohort_qc --input_yaml single_cell/tests/jenkins/cohort_qc/inputs.yaml \
-  --maxjobs $NUMCORES --nocleanup --sentinel_only  \
-  --submit local --loglevel DEBUG \
-  --tmpdir COHORT_QC/temp \
-  --pipelinedir COHORT_QC/pipeline \
-  --submit local \
-  --out_dir COHORT_QC/output \
-  --config_override '{"refdir":"refdata"}'
-  --api_key $ONCOKB_KEY
-
-docker run -w $PWD -v $PWD:$PWD --rm $1/single_cell_pipeline_qc:$TAG rm -rf COHORT_QC
+#docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata \
+#  --rm \
+#  $1/single_cell_pipeline_qc:$TAG \
+#  single_cell cohort_qc --input_yaml single_cell/tests/jenkins/cohort_qc/inputs.yaml \
+#  --maxjobs $NUMCORES --nocleanup --sentinel_only  \
+#  --submit local --loglevel DEBUG \
+#  --tmpdir COHORT_QC/temp \
+#  --pipelinedir COHORT_QC/pipeline \
+#  --submit local \
+#  --out_dir COHORT_QC/output \
+#  --config_override '{"refdir":"refdata"}'
+#  --api_key $ONCOKB_KEY
+#
+#docker run -w $PWD -v $PWD:$PWD --rm $1/single_cell_pipeline_qc:$TAG rm -rf COHORT_QC
