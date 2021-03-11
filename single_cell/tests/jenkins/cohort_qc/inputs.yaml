@@ -1,0 +1,12 @@
+mafs:
+    SPECTRUM-OV-042:
+      germline_maf: COHORT/dlp_cohort_qc/testdata/museq.maf
+      somatic_maf: COHORT/dlp_cohort_qc/testdata/museq.maf
+hmmcopy:
+    SPECTRUM-OV-042:
+      A108838B:
+        sample_id: "SA1256PP"
+        hmmcopy_reads: COHORT/dlp_cohort_qc/testdata/A108838B_reads.csv.gz
+      A108836A:
+        sample_id: "SA1256PP"
+        hmmcopy_reads: COHORT/dlp_cohort_qc/testdata/A108836A_reads.csv.gz
