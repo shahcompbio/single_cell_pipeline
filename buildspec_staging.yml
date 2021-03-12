@@ -23,3 +23,4 @@ phases:
       - bash single_cell/tests/jenkins/infer_haps/infer_haps.sh quay.io/singlecellpipelinetest
       - bash single_cell/tests/jenkins/count_haps/count_haps.sh quay.io/singlecellpipelinetest
       - bash single_cell/tests/jenkins/pseudo_bulk_qc/pseudo_bulk_qc.sh quay.io/singlecellpipelinetest
+      - bash single_cell/tests/jenkins/cohort_qc/cohort_qc.sh quay.io/singlecellpipelinetest
