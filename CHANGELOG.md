@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.7.5
+
+#### Changes:
+1. updated pypeliner
+
 ### v0.7.4
 
 #### Changes:
