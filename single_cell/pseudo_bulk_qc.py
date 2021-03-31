@@ -9,7 +9,6 @@ def pseudo_bulk_qc_workflow(args):
     data = inpututils.load_qc_input(args["input_yaml"])
     config = inpututils.load_config(args)
     config = config["qc"]
-
     out_dir = args["out_dir"]
 
     mutationreports = os.path.join(out_dir, 'patient', "mutationreport.html")
@@ -17,7 +16,6 @@ def pseudo_bulk_qc_workflow(args):
     grouplevel_high_impact_mafs = os.path.join(out_dir, 'patient', "grouplevel_high_impact_maf.maf")
     grouplevel_high_impact_merged_snvs = os.path.join(out_dir, 'patient', "grouplevel_high_impact_merged_snvs.csv")
     grouplevel_snvs = os.path.join(out_dir, 'patient', "grouplevel_snvs.csv")
-
 
     mappability_files = {label: paths["mappability"] for label, paths in data.items()}
     strelka_files = {label: paths["strelka"] for label, paths in data.items()}
@@ -133,6 +131,9 @@ def pseudo_bulk_qc_workflow(args):
 
 
 def pseudo_bulk_qc_pipeline(args):
+    args["out_dir"] = os.path.realpath(args["out_dir"])
+    args["tmpdir"] = os.path.realpath(args["tmpdir"])
+
     pyp = pypeliner.app.Pypeline(config=args)
 
     workflow = pseudo_bulk_qc_workflow(args)

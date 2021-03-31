@@ -74,7 +74,6 @@ def create_sample_level_plots(
         indel_file, reporthtml, maf, snvs_all_csv, out_dir, config
 ):
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1}
-
     vep_reference = config['vep']
 
     prefix = os.path.join(out_dir, patient, cell_id, library_id)
