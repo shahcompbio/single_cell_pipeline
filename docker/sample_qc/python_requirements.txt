@@ -1,0 +1,40 @@
+adjustText==0.7.3
+brewer2mpl==1.4.1
+certifi==2020.12.5
+cffi==1.14.5
+cycler==0.10.0
+Cython==0.29.22
+decorator==4.4.2
+dill==0.3.3
+hdbscan==0.8.27
+hmmlearn==0.2.5
+Jinja2==2.11.3
+joblib==1.0.1
+kiwisolver==1.3.1
+lda==2.0.0
+MarkupSafe==1.1.1
+matplotlib==3.4.1
+networkx==2.5
+numpy==1.20.2
+packaging==20.9
+pandas==1.2.3
+pbr==3.1.1
+Pillow==8.1.2
+pycparser==2.20
+pyparsing==2.4.7
+pypeliner @ git+https://github.com/shahcompbio/pypeliner.git@b452c14c4abc6e653ac8e8f52d3c9b9a158becd1
+python-dateutil==2.8.1
+pytz==2021.1
+PyYAML==5.4.1
+rpy2==3.4.3
+scgenome @ git+https://github.com/shahcompbio/scgenome.git@687627ae1b15f35a415ddc550d2ea686d2f1582f
+scikit-learn==0.24.1
+scipy==1.6.2
+seaborn==0.11.1
+single-cell @ git+https://github.com/shahcompbio/single_cell_pipeline.git@b7519d9a1ab48c8cafa835d8e6c68a199f6f7240
+six==1.15.0
+sklearn==0.0
+threadpoolctl==2.1.0
+tzlocal==2.1
+umap==0.1.1
+wgs-analysis @ git+https://github.com/amcpherson/wgs_analysis.git@e9c35fa47334fa431b010ebe5744c7bfada78b73
