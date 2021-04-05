@@ -169,13 +169,15 @@ def load_yaml(path):
 def load_qc_input(path):
     data = {}
     yaml = load_yaml(path)
+    assert len(yaml.keys()) == 1
+    patient = list(yaml.keys())[0]
     for patient, patient_data in yaml.items():
         for sample, sample_data in patient_data.items():
             for library, library_data in sample_data.items():
-                data[(patient, sample, library)] = {
+                data[(sample, library)] = {
                     data_label: data for data_label, data in library_data.items()
                 }
-    return data
+    return data, patient
 
 
 def get_sample_info(fastqs_file):

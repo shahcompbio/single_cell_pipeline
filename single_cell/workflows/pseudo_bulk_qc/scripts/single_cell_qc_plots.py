@@ -88,7 +88,7 @@ def load_snv_data(
 
 def plot_mutations_per_cell(snv_data, snv_count_data, mutations_per_cell, prefix):
     allcells = snv_count_data.loc[:, ["cell_id"]].drop_duplicates()
-    run_bulk_snv_analysis(snv_data, snv_count_data, allcells, results_prefix=prefix)
+    run_bulk_snv_analysis(snv_data, snv_count_data, allcells, results_prefix=prefix + "/")
 
     # Plot number of mutations per cell
     percell = snv_count_data[snv_count_data.alt_counts > 0].groupby('cell_id').size()

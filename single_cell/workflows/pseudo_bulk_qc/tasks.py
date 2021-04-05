@@ -84,10 +84,10 @@ def sample_level_report(
         sample_id, tmpspace
 ):
 
-    rmd_script = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'scripts','report.Rmd')
-    # print(rmd_script)
-    # print(html_file)
-    # cc
+    rmd_script = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
+        'scripts','report.Rmd'
+    )
+
     parameters = robjects.r.list(sample_id=sample_id, mutations_per_cell_png=mutations_per_cell,
         summary_csv=summary, snvs_high_impact_csv=snvs_high_impact, snvs_all_csv=snvs_all, 
         trinuc_csv=trinuc,  snv_adjacent_distance_png=snv_adjacent_distance, snv_genome_count_png=snv_genome_count, 
@@ -99,39 +99,25 @@ def sample_level_report(
         maf=maf
     )
 
-    rmarkdown.render(rmd_script, output_file=html_file, params=parameters)
-
+    rmarkdown.render(rmd_script, output_file=html_file, 
+        output_options=robjects.r.list(self_contained=True), params=parameters
+    )
+    
 
 def create_mutation_report(
         pseudo_bulk_group, merged_maf, high_impact_maf,
         high_impact_snvs, report_html, tmpspace
 ):
-    rmd_script = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'scripts','mutationreport.Rmd')
-    print(report_html)
-    print(merged_maf)
-    assert os.path.exists(merged_maf)
-    print(high_impact_snvs)
-    assert os.path.exists(high_impact_snvs)
-    print(high_impact_maf)
-    assert os.path.exists(high_impact_maf)
-    # cc
-    parameters = robjects.r.list(pseudobulk_group=pseudo_bulk_group,
-        merged_filt_snvs=high_impact_snvs, merged_maf=merged_maf, high_impact_maf=high_impact_maf
+    rmd_script = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
+        'scripts','mutationreport.Rmd'
     )
 
-    rmarkdown.render(rmd_script, output_file=report_html, params=parameters)
+    parameters = robjects.r.list(pseudobulk_group=pseudo_bulk_group,
+        merged_filt_snvs=high_impact_snvs, merged_maf=merged_maf, 
+        high_impact_maf=high_impact_maf
+    )
 
-
-
-    # script_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'scripts','run_mutationreport.sh')
-    # cmd = [
-    #     script_path,
-    #     os.path.abspath(report_html),
-    #     os.path.abspath(pseudo_bulk_group),
-    #     os.path.abspath(high_impact_snvs),
-    #     os.path.abspath(merged_maf),
-    #     os.path.abspath(high_impact_maf),
-    #     tmpspace
-    # ]
-
-    # pypeliner.commandline.execute(*cmd)
+    rmarkdown.render(rmd_script, output_file=report_html, 
+        output_options=robjects.r.list(self_contained=True), params=parameters
+    )
+    

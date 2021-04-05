@@ -76,13 +76,13 @@ def create_sample_level_plots(
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1}
     vep_reference = config['vep']
 
-    prefix = os.path.join(out_dir, patient, cell_id, library_id)
+    prefix = os.path.join(out_dir, patient, cell_id, library_id, "supporting_files")
 
     summary_csv = os.path.join(prefix, "summary.csv")
     snvs_high_impact_csv = os.path.join(prefix, "snvs_high_impact.csv")
     trinuc_csv = os.path.join(prefix, "trinuc.csv")
     datatype_summary_csv = os.path.join(prefix, "datatype_summary.csv")
-
+        
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     workflow.transform(
