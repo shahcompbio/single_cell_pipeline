@@ -9,7 +9,7 @@ NUMCORES=`nproc --all`
 mkdir -p SNV_GENOTYPING/testdata
 
 docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_DEFAULT_REGION -v $PWD:$PWD -w $PWD $1/awscli:v0.0.1 \
-  aws s3 cp s3://singlecelltestsets/TESTDATA_CODEBUILD/snv_genotyping VARIANT_CALLING/testdata/ --recursive
+  aws s3 cp s3://singlecelltestsets/TESTDATA_CODEBUILD/snv_genotyping SNV_GENOTYPING/testdata/ --recursive
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata -v /var/run/docker.sock:/var/run/docker.sock \
   -v $DOCKER:$DOCKER --rm \
