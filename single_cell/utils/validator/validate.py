@@ -83,9 +83,9 @@ def validate_snv_genotyping(yamldata):
             utils.check_cells_data(tumour_cells[sample][library])
 
     vcf_files = utils.get(yamldata, 'vcf_files')
-    for sample in vcf_files:
-        for library in vcf_files[sample]:
-            utils.check_data_type(['museq_vcf', 'strelka_snv_vcf'], str, vcf_files[sample][library])
+    assert isinstance(vcf_files, list)
+    for filepath in vcf_files:
+        assert isinstance(filepath, str)
 
 
 def validate_sv_genotyping(yamldata):
