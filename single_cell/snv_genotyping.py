@@ -10,7 +10,7 @@ def create_variant_counting_workflow(args):
     """ Count variant reads for multiple sets of variants across cells.
     """
 
-    strelka_vcf, museq_vcf, tumour_cell_bams, sample_library = inpututils.load_variant_counting_input(
+    vcf_files, tumour_cell_bams, sample_library = inpututils.load_variant_counting_input(
         args['input_yaml']
     )
 
@@ -34,12 +34,7 @@ def create_variant_counting_workflow(args):
         name='merge_snvs_museq',
         func='single_cell.utils.vcfutils.merge_vcf',
         args=(
-            [
-                mgd.InputFile('museq.vcf', 'sample_id', 'library_id', fnames=museq_vcf,
-                              extensions=['.tbi', '.csi'], axes_origin=[]),
-                mgd.InputFile('strelka.vcf', 'sample_id', 'library_id', fnames=strelka_vcf,
-                              extensions=['.tbi', '.csi'], axes_origin=[]),
-            ],
+            [mgd.InputFile(vcf_file) for vcf_file in vcf_files],
             mgd.TempOutputFile('all.snv.vcf.gz', extensions=['.tbi', '.csi']),
             mgd.TempSpace("merge_vcf_temp")
         ),

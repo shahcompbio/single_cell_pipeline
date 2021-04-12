@@ -59,21 +59,25 @@ def run_fastq_screen_paired_end(fastq_r1, fastq_r2, tempdir, params):
 
         if filepath_base.endswith('.fastq.gz'):
             filepath_base = filepath_base[:-len('.fastq.gz')]
+            extension = '.fastq.gz'
         elif filepath_base.endswith('.fq.gz'):
             filepath_base = filepath_base[:-len('.fq.gz')]
+            extension = '.fastq.gz'
         elif filepath_base.endswith('.fastq'):
             filepath_base = filepath_base[:-len('.fastq')]
+            extension = '.fastq'
         elif filepath_base.endswith('.fq'):
             filepath_base = filepath_base[:-len('.fq')]
+            extension = '.fastq'
         else:
             raise Exception('unknown file format. {}'.format(filepath))
-        return filepath_base
+        return filepath_base, extension
 
-    basename = get_basename(fastq_r1)
-    tagged_fastq_r1 = os.path.join(tempdir, '{}.tagged.fastq.gz'.format(basename))
+    basename, ext = get_basename(fastq_r1)
+    tagged_fastq_r1 = os.path.join(tempdir, '{}.tagged{}'.format(basename, ext))
 
-    basename = get_basename(fastq_r2)
-    tagged_fastq_r2 = os.path.join(tempdir, '{}.tagged.fastq.gz'.format(basename))
+    basename, ext = get_basename(fastq_r2)
+    tagged_fastq_r2 = os.path.join(tempdir, '{}.tagged{}'.format(basename, ext))
 
     # fastq screen fails if run on empty files
     with helpers.getFileHandle(fastq_r1) as reader:

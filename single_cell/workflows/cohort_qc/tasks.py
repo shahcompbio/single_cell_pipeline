@@ -204,7 +204,7 @@ def classify_hmmcopy(
     sample_ids = list(sample_ids.values())
     cmd = [
         "classifycopynumber", gtf, output_dir,
-        amps, dels, "--plot", False
+        amps, dels,
     ]
     for f in files:
         cmd.extend(["--hmmcopy_csv_filenames", f])
