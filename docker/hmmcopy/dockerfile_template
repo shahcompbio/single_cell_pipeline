@@ -4,4 +4,4 @@ RUN conda install --file /app/conda_requirements.yml
 
 RUN pip install git+https://github.com/shahcompbio/pypeliner.git@v0.6.0
 RUN pip install git+https://github.com/shahcompbio/single_cell_pipeline.git@{git_commit}
-RUN pip install azure-batch azure-common azure azure-core azure-storage azure-identity
+RUN pip install azure-batch azure-common azure-core azure-storage-blob azure-identity

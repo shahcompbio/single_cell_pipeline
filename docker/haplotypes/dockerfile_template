@@ -10,4 +10,4 @@ RUN pip install git+https://github.com/shahcompbio/single_cell_pipeline.git@{git
 
 RUN pip install git+https://github.com/amcpherson/remixt.git@v0.5.13
 RUN mkdir -p /root/.config/matplotlib && echo "backend : Agg" > /root/.config/matplotlib/matplotlibrc
-RUN pip install azure-batch azure-common azure azure-core azure-storage azure-identity
+RUN pip install azure-batch azure-common azure-core azure-storage-blob azure-identity
