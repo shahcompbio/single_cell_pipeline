@@ -5,9 +5,9 @@ Created on Feb 19, 2018
 '''
 import os
 
-import pypeliner.commandline
-
 from single_cell.utils.helpers import makedirs
+
+import pypeliner.commandline
 
 
 def merge_bams(inputs, output, mem="2G"):

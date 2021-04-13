@@ -2,7 +2,7 @@ FROM quay.io/singlecellpipelinetest/miniconda3:4.8.2
 
 ADD . /app
 
-RUN rm -rf /opt/conda/lib/python3.7/site-packages/pypeliner* && pip install git+https://github.com/shahcompbio/pypeliner.git@v0.6.0
+RUN rm -rf /opt/conda/lib/python3.7/site-packages/pypeliner* && pip install git+https://github.com/shahcompbio/pypeliner.git@v0.6.1
 RUN rm -rf /opt/conda/lib/python3.7/site-packages/single_cell* && pip install git+https://github.com/shahcompbio/single_cell_pipeline.git@{git_commit}
 RUN rm -rf /opt/conda/lib/python3.7/site-packages/biowrappers* && pip install git+https://github.com/shahcompbio/biowrappers.git@master
 RUN pip install git+https://github.com/amcpherson/wgs_analysis.git@v0.0.1

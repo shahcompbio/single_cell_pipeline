@@ -18,7 +18,7 @@ RUN conda install --file /app/conda_base_requirements.yml
 
 ENV PATH="${PATH}:/opt/conda/envs/lumpy/bin"
 
-RUN pip install git+https://github.com/shahcompbio/pypeliner.git@v0.6.0
+RUN pip install git+https://github.com/shahcompbio/pypeliner.git@v0.6.1
 RUN pip install git+https://github.com/shahcompbio/single_cell_pipeline.git@{git_commit}
 RUN pip install git+https://github.com/shahcompbio/biowrappers.git@master
 RUN pip install -e git+https://github.com/amcpherson/blossomv.git#egg=blossomv
