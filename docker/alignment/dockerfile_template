@@ -5,7 +5,6 @@ RUN apt-get update && apt-get install -y libltdl7 parallel && rm -rf /var/lib/ap
 
 RUN conda install --file /app/conda_requirements.yml
 
-RUN pip install git+https://github.com/shahcompbio/pypeliner.git@v0.6.0
+RUN pip install git+https://github.com/shahcompbio/pypeliner.git@v0.6.1
 RUN pip install git+https://github.com/shahcompbio/single_cell_pipeline.git@{git_commit}
-
-
+RUN pip install azure-batch azure-common azure-core azure-storage-blob azure-identity
