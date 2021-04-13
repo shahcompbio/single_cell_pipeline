@@ -1,0 +1,44 @@
+vcf_files:
+  - SNV_GENOTYPING/testdata/vcf/museq.vcf.gz
+  - SNV_GENOTYPING/testdata/vcf/strelka_snv.vcf.gz
+tumour_cells:
+  SA1090:
+    A96213A:
+      SA1090-A96213A-R20-C28:
+        bam: SNV_GENOTYPING/testdata/cell_bams/SA1090-A96213A-R20-C28.bam
+      SA1090-A96213A-R22-C43:
+        bam: SNV_GENOTYPING/testdata/cell_bams/SA1090-A96213A-R22-C43.bam
+      SA1090-A96213A-R22-C44:
+        bam: SNV_GENOTYPING/testdata/cell_bams/SA1090-A96213A-R22-C44.bam
+      SA1090-A96213A-R24-C12:
+        bam: SNV_GENOTYPING/testdata/cell_bams/SA1090-A96213A-R24-C12.bam
+      SA1090-A96213A-R24-C20:
+        bam: SNV_GENOTYPING/testdata/cell_bams/SA1090-A96213A-R24-C20.bam
+      SA1090-A96213A-R24-C58:
+        bam: SNV_GENOTYPING/testdata/cell_bams/SA1090-A96213A-R24-C58.bam
+      SA1090-A96213A-R25-C14:
+        bam: SNV_GENOTYPING/testdata/cell_bams/SA1090-A96213A-R25-C14.bam
+      SA1090-A96213A-R25-C22:
+        bam: SNV_GENOTYPING/testdata/cell_bams/SA1090-A96213A-R25-C22.bam
+      SA1090-A96213A-R25-C40:
+        bam: SNV_GENOTYPING/testdata/cell_bams/SA1090-A96213A-R25-C40.bam
+      SA1090-A96213A-R25-C64:
+        bam: SNV_GENOTYPING/testdata/cell_bams/SA1090-A96213A-R25-C64.bam
+      SA1090-A96213A-R26-C49:
+        bam: SNV_GENOTYPING/testdata/cell_bams/SA1090-A96213A-R26-C49.bam
+      SA1090-A96213A-R26-C50:
+        bam: SNV_GENOTYPING/testdata/cell_bams/SA1090-A96213A-R26-C50.bam
+      SA1090-A96213A-R26-C64:
+        bam: SNV_GENOTYPING/testdata/cell_bams/SA1090-A96213A-R26-C64.bam
+      SA1090-A96213A-R27-C14:
+        bam: SNV_GENOTYPING/testdata/cell_bams/SA1090-A96213A-R27-C14.bam
+      SA1090-A96213A-R27-C21:
+        bam: SNV_GENOTYPING/testdata/cell_bams/SA1090-A96213A-R27-C21.bam
+      SA1090-A96213A-R27-C45:
+        bam: SNV_GENOTYPING/testdata/cell_bams/SA1090-A96213A-R27-C45.bam
+      SA1090-A96213A-R28-C23:
+        bam: SNV_GENOTYPING/testdata/cell_bams/SA1090-A96213A-R28-C23.bam
+      SA1090-A96213A-R28-C39:
+        bam: SNV_GENOTYPING/testdata/cell_bams/SA1090-A96213A-R28-C39.bam
+      SA1090-A96213A-R28-C64:
+        bam: SNV_GENOTYPING/testdata/cell_bams/SA1090-A96213A-R28-C64.bam

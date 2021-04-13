@@ -111,13 +111,6 @@ def load_variant_counting_input(input_yaml):
 
     vcf_files = yamldata['vcf_files']
 
-    strelka_vcf_data = {}
-    museq_vcf_data = {}
-    for sample, sampledata in vcf_files.items():
-        for library, library_data in sampledata.items():
-            strelka_vcf_data[(sample, library)] = library_data['strelka_snv_vcf']
-            museq_vcf_data[(sample, library)] = library_data['museq_vcf']
-
     cells_data = yamldata['tumour_cells']
 
     sample_library = []
@@ -128,7 +121,7 @@ def load_variant_counting_input(input_yaml):
             for cell, cell_data in library_data.items():
                 cells_data_out[(sample, library, cell)] = cell_data['bam']
 
-    return strelka_vcf_data, museq_vcf_data, cells_data_out, sample_library
+    return vcf_files, cells_data_out, sample_library
 
 
 def load_sv_genotyper_input(input_yaml):

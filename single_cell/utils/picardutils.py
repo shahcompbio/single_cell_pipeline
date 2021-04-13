@@ -5,9 +5,9 @@ Created on Feb 19, 2018
 '''
 import os
 
-import pypeliner.commandline
-
 from single_cell.utils.helpers import makedirs
+
+import pypeliner.commandline
 
 
 def merge_bams(inputs, output, mem="2G"):
@@ -21,7 +21,8 @@ def merge_bams(inputs, output, mem="2G"):
            'SORT_ORDER=coordinate',
            'ASSUME_SORTED=true',
            'VALIDATION_STRINGENCY=LENIENT',
-           'MAX_RECORDS_IN_RAM=150000'
+           'MAX_RECORDS_IN_RAM=150000',
+           'QUIET=true'
            ]
 
     for bamfile in inputs:
@@ -44,6 +45,7 @@ def bam_sort(bam_filename, sorted_bam_filename, tempdir, mem="2G"):
         'VALIDATION_STRINGENCY=LENIENT',
                   'TMP_DIR=' + tempdir,
         'MAX_RECORDS_IN_RAM=150000',
+        'QUIET=true'
     )
 
 
@@ -64,6 +66,7 @@ def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename,
         'VALIDATION_STRINGENCY=LENIENT',
                   'TMP_DIR=' + tempdir,
         'MAX_RECORDS_IN_RAM=150000',
+        'QUIET=true'
     )
 
 
@@ -89,6 +92,7 @@ def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename,
                   ('True' if config['count_unpaired'] else 'False'),
                   'TMP_DIR=' + tempdir,
         'MAX_RECORDS_IN_RAM=150000',
+        'QUIET=true'
     )
 
 
@@ -110,6 +114,7 @@ def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename,
         'VALIDATION_STRINGENCY=LENIENT',
                   'TMP_DIR=' + tempdir,
         'MAX_RECORDS_IN_RAM=150000',
+        'QUIET=true'
     )
 
 
@@ -151,4 +156,5 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename,
         'VALIDATION_STRINGENCY=LENIENT',
                   'TMP_DIR=' + tempdir,
         'MAX_RECORDS_IN_RAM=150000',
+        'QUIET=true'
     )

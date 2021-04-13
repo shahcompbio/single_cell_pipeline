@@ -28,7 +28,7 @@ class DLPIndexError(Exception):
 
 def get(data, key):
     if key not in data:
-        raise MissingFieldError('{} key missinsg in yaml file.'.format(key))
+        raise MissingFieldError('{} key missing in yaml file.'.format(key))
     return data[key]
 
 

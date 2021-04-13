@@ -1,5 +1,17 @@
 # Change Log
 
+### v0.8.0
+
+#### changes:
+1. picard: quiet mode
+2. pypeliner update to v0.6.1
+3. docker: added azure libs
+4. updated input file for snv genotyping
+5. snv genotyping in testing now
+
+#### bugs:
+1. fastqscreen supports non gzipped fastqs now
+
 ### v0.7.6
 
 #### Changes:
