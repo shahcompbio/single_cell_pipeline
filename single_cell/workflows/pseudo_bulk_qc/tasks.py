@@ -70,6 +70,8 @@ def vcf2maf(vcf_file, output_maf, tempdir, vep_ref):
         vep_ref['reference_fasta'],
         vep_ref['reference_filter_vcf'],
         vep_ref['reference_dir'],
+        "--buffer_size", 
+        "10"
     ]
     
     pypeliner.commandline.execute(*cmd)
