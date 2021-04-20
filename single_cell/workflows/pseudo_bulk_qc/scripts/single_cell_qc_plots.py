@@ -9,6 +9,7 @@ import wgs_analysis.plots.rearrangement
 import wgs_analysis.snvs.mutsig
 import wgs_analysis.plots.snv
 import wgs_analysis.annotation.position
+import wgs_analysis.algorithms.rearrangement
 from scgenome.loaders.qc import load_qc_data_from_files
 from scgenome.snvdata import run_bulk_snv_analysis
 import scgenome
@@ -260,14 +261,14 @@ def make_breakpoint_plots(breakpoint_data, output):
     plt.axis("off")                                                
 
     inner_left = gridspec.GridSpecFromSubplotSpec(1, 2,
-                        subplot_spec=left[0], wspace=0.25, hspace=0.1)
+                        subplot_spec=left[0], wspace=0.5, hspace=0.1)
                                           
     right = gridspec.GridSpecFromSubplotSpec(2, 1,
                         subplot_spec=outer[1], wspace=0.1, hspace=0.5)      
     fig.add_subplot(right[:]).set_title("\"rearrangement_type\" column")
                    
     inner_right = gridspec.GridSpecFromSubplotSpec(1, 2,
-                        subplot_spec=right[0], wspace=0.25, hspace=0.1)  
+                        subplot_spec=right[0], wspace=0.5, hspace=0.1)  
                         
     plt.axis("off")                                                
     plot_types(breakpoint_data, "type", inner_left[0], fig)
@@ -282,7 +283,7 @@ def make_breakpoint_plots(breakpoint_data, output):
 
 def plot_across_genome(breakpoint_data, type_col, gs, fig):
     axis = plt.Subplot(fig, gs)
-    breakends = wgs_analysis.plots.rearrangement.create_breakends(
+    breakends = wgs_analysis.algorithms.rearrangement.create_breakends(
         breakpoint_data, data_cols=[type_col]
     )
     breakends.rename(columns={type_col: "rearrangement_type"}, inplace=True)
@@ -558,3 +559,4 @@ def qc_plots(
     df.to_csv(datatype_summary)
 
     
+

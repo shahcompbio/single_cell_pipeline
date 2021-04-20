@@ -176,16 +176,19 @@ include_graphics(params$BAFplot_png)
 ```
 
 # Structural variation
+
 ## Destruct Unfiltered
 ```{r destruct-unfilt, out.width = "100%", out.height = "700px", echo = FALSE }
 # All defaults
 include_graphics(params$destruct_rearrangement_plots_unfiltered)
 ```
+
 ## Destruct Filtered
 ```{r destruct-filt , echo = FALSE, out.width = "100%", out.height = "900",}
 # All defaults
 include_graphics(params$destruct_rearrangement_plots_filtered)
 ```
+
 ## Lumpy Unfiltered
 ```{r lumpy-unfilt, echo = FALSE, out.width = "100%", out.height = "900",}
 # All defaults
