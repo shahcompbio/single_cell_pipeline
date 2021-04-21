@@ -249,9 +249,20 @@ def load_breakpoint_data(
 
     return breakpoint_data
 
+def _no_data():
+    fig, ax = plt.subplots(1,1, figsize=(15, 4))
+    ax.text(0.4,0.5, "breakpoint data is empty")
+    ax.set_yticks([])
+    ax.set_xticks([])
+    ax.set_xticklabels([])
+    ax.set_xticklabels([])
+    return fig
 
 def make_breakpoint_plots(breakpoint_data, output):
-    
+    if breakpoint_data.empty:
+        fig = _no_data()
+        plt.savefig(output, bbox_inches='tight', format="png")
+        return
     fig = plt.figure(figsize=(15, 4))
     outer = gridspec.GridSpec(1, 2)
     plt.tight_layout()
@@ -318,6 +329,7 @@ def plot_sizes(breakpoint_data, type_col, gs, fig):
 
     colors = seaborn.color_palette('Dark2', len(breakpoint_data[type_col].unique()))
     axis = plt.Subplot(fig, gs)
+    breakpoint_data = breakpoint_data.dropna()
     seaborn.histplot(
         breakpoint_data,
         x="break_dist", hue=type_col,
@@ -394,6 +406,7 @@ def plotbaf(allele_data, baf_plot):
     )
     fig.savefig(baf_plot, bbox_inches='tight', format="png")
     plt.close()
+
 
 
 def load_qc_data(
@@ -505,7 +518,6 @@ def qc_plots(
         sample_id, library_id,
         destruct_breakpoint_annotation,
         destruct_breakpoint_count)
-
     make_breakpoint_plots(destruct_breakpoint_data_unfiltered, destruct_rearrangement_plots_unfiltered)
 
     destruct_breakpoint_data_filtered = load_breakpoint_data(
@@ -515,7 +527,6 @@ def qc_plots(
 
     make_breakpoint_plots(destruct_breakpoint_data_filtered, destruct_rearrangement_plots_filtered)
 
-    
     lumpy_breakpoint_data_unfiltered = load_breakpoint_data(
         sample_id, library_id,
         lumpy_breakpoint_annotation, lumpy_breakpoint_evidence,
@@ -559,4 +570,3 @@ def qc_plots(
     df.to_csv(datatype_summary)
 
     
-
