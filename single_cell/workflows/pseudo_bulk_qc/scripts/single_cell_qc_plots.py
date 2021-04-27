@@ -323,13 +323,10 @@ def plot_sizes(breakpoint_data, type_col, gs, fig):
     ntypes = len(breakpoint_data[type_col].unique())
 
     breakpoint_data["break_dist"] = abs(breakpoint_data.position_1 - breakpoint_data.position_2)
-    breakpoint_data["interchrom"] = breakpoint_data.chromosome_1 != breakpoint_data.chromosome_2
-    intrachrom_data = breakpoint_data[~breakpoint_data.interchrom]
-    interchrom_data = breakpoint_data[breakpoint_data.interchrom]
 
-    colors = seaborn.color_palette('Dark2', len(breakpoint_data[type_col].unique()))
     axis = plt.Subplot(fig, gs)
-    breakpoint_data = breakpoint_data.dropna()
+
+    breakpoint_data = breakpoint_data.dropna(subset=["break_dist", type_col])
     seaborn.histplot(
         breakpoint_data,
         x="break_dist", hue=type_col,
@@ -343,6 +340,8 @@ def plot_sizes(breakpoint_data, type_col, gs, fig):
     )
     axis.set_xlabel("size")
     fig.add_subplot(axis)
+    plt.savefig("TESTSAVE.png")
+    c
 
 
 def load_allele_data(haplotype_allele_data):
