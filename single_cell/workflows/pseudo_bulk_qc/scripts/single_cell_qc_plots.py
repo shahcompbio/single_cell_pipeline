@@ -305,7 +305,6 @@ def plot_across_genome(breakpoint_data, type_col, gs, fig):
     fig.add_subplot(axis)
 
 
-
 def plot_types(breakpoint_data, type_col, gs, fig):
     axis = plt.Subplot(fig, gs)
     seaborn.countplot(x=type_col, data=breakpoint_data,  ax=axis, palette = "Dark2")
@@ -340,8 +339,6 @@ def plot_sizes(breakpoint_data, type_col, gs, fig):
     )
     axis.set_xlabel("size")
     fig.add_subplot(axis)
-    plt.savefig("TESTSAVE.png")
-    c
 
 
 def load_allele_data(haplotype_allele_data):
