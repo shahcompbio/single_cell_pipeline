@@ -28,7 +28,7 @@ scripts_directory = os.path.join(
     os.path.realpath(
         os.path.dirname(__file__)),
     'scripts')
-run_hmmcopy_rscript = os.path.join(scripts_directory, 'hmmcopy.R')
+run_hmmcopy_rscript = os.path.join(scripts_directory, 'hmmcopy_single_cell.R')
 
 
 def get_max_cn(reads):
@@ -71,7 +71,7 @@ def run_correction_hmmcopy(
 
 
 def run_hmmcopy_script(corrected_reads, tempdir, cell_id, hmmparams):
-    cmd = ["hmmcopy_single_cell.R"]
+    cmd = [run_hmmcopy_rscript]
 
     # run hmmcopy
     cmd += ['--corrected_data=' + corrected_reads,
