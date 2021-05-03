@@ -68,7 +68,6 @@ def vcf2maf(vcf_file, output_maf, tempdir, vep_ref):
         vcf_unzipped, 
         output_maf,
         vep_ref['reference_fasta'],
-        vep_ref['reference_filter_vcf'],
         vep_ref['reference_dir'],
         "--buffer_size", 
         "10"
@@ -89,7 +88,7 @@ def sample_level_report(
     rmd_script = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
         'scripts','report.Rmd'
     )
-
+    
     parameters = robjects.r.list(sample_id=sample_id, mutations_per_cell_png=mutations_per_cell,
         summary_csv=summary, snvs_high_impact_csv=snvs_high_impact, snvs_all_csv=snvs_all, 
         trinuc_csv=trinuc,  snv_adjacent_distance_png=snv_adjacent_distance, snv_genome_count_png=snv_genome_count, 
