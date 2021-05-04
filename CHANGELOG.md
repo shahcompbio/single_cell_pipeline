@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.8.1
+
+#### Changes:
+1. moved hmmcopy R into repo
+
 ### v0.8.0
 
 #### changes:
