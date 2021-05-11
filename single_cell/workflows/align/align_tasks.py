@@ -216,7 +216,8 @@ def align_lanes(
 
     fastqscreen.merge_fastq_screen_counts(
         detailed_counts, summary_counts,
-        fastqscreen_detailed_metrics, fastqscreen_summary_metrics
+        fastqscreen_detailed_metrics, fastqscreen_summary_metrics,
+        fastqscreen_params
     )
 
     extract_mt_chromosome(output, output_mt, mt_chrom_name=mt_chrom_name)
