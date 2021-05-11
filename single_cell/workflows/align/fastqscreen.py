@@ -187,12 +187,12 @@ def write_summary_counts(counts, outfile, cell_id, fastqscreen_params):
 
 
 def filter_tag_reads(
-        input_r1, input_r2, output_r1, output_r2, reference, filters
+        input_r1, input_r2, output_r1, output_r2, filters
 ):
     reader = fastqutils.PairedTaggedFastqReader(input_r1, input_r2)
 
     with helpers.getFileHandle(output_r1, 'wt') as writer_r1, helpers.getFileHandle(output_r2, 'wt') as writer_r2:
-        for read_1, read_2 in reader.filter_read_iterator(reference, filters):
+        for read_1, read_2 in reader.filter_read_iterator(filters):
 
             read_1 = reader.add_tag_to_read_comment(read_1)
             read_2 = reader.add_tag_to_read_comment(read_2)

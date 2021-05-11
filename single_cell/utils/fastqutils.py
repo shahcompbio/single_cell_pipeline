@@ -131,33 +131,17 @@ class PairedTaggedFastqReader(PairedFastqReader, TaggedFastqReader):
         self.indices = None
 
     def filter_read_iterator(self, filters):
+        filters = [i for i,v in filters.items() if v]
+
         for read_1, read_2 in self.get_read_pair_iterator():
 
             tags_r1 = self.get_read_tag(read_1)
             tags_r2 = self.get_read_tag(read_2)
 
+            for label in filters:
+                if tags_r1[label] == 1 or tags_r2[label] == 1:
+                    continue
 
-            raise Exception(tags_r1)
-
-
-            # skip if doesnt match
-            if not tags_r1[reference] and not tags_r2[reference]:
-                continue
-
-            # skip if read maps to multiple genomes
-            if len([v for v in tags_r1.values() if v]) > 1:
-                continue
-            if len([v for v in tags_r2.values() if v]) > 1:
-                continue
-
-            r1_nomatch = set(tags_r1.values()) == {0}
-            r2_nomatch = set(tags_r2.values()) == {0}
-
-            if tags_r1[reference] and tags_r2[reference]:
-                yield read_1, read_2
-            elif tags_r1[reference] and r2_nomatch:
-                yield read_1, read_2
-            elif r1_nomatch and tags_r2[reference]:
                 yield read_1, read_2
 
 
