@@ -186,13 +186,13 @@ def write_summary_counts(counts, outfile, cell_id, fastqscreen_params):
         writer.write(values)
 
 
-def filter_reads(
-        input_r1, input_r2, output_r1, output_r2, reference
+def filter_tag_reads(
+        input_r1, input_r2, output_r1, output_r2, reference, filters
 ):
     reader = fastqutils.PairedTaggedFastqReader(input_r1, input_r2)
 
     with helpers.getFileHandle(output_r1, 'wt') as writer_r1, helpers.getFileHandle(output_r2, 'wt') as writer_r2:
-        for read_1, read_2 in reader.filter_read_iterator(reference):
+        for read_1, read_2 in reader.filter_read_iterator(reference, filters):
 
             read_1 = reader.add_tag_to_read_comment(read_1)
             read_2 = reader.add_tag_to_read_comment(read_2)
@@ -216,11 +216,15 @@ def re_tag_reads(infile, outfile):
                 writer.write(line)
 
 
+
+
 def organism_filter(
         fastq_r1, fastq_r2, filtered_fastq_r1, filtered_fastq_r2,
         detailed_metrics, summary_metrics, tempdir, cell_id, params,
         reference, filter_contaminated_reads=False,
 ):
+    filters = {genome['name']: genome['filter'] for genome in params['genomes']}
+
     # fastq screen tries to skip if files from old runs are available
     if os.path.exists(tempdir):
         shutil.rmtree(tempdir)
@@ -242,9 +246,9 @@ def organism_filter(
         assert len(ref_name) == 1, 'duplicate reference paths detected in fastqscreen params'
         ref_name = ref_name[0]
 
-        filter_reads(
+        filter_tag_reads(
             tagged_fastq_r1, tagged_fastq_r2, filtered_fastq_r1,
-            filtered_fastq_r2, ref_name
+            filtered_fastq_r2, ref_name, filters
         )
     else:
         # use the full tagged fastq downstream
