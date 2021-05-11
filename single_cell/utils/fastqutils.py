@@ -130,14 +130,14 @@ class PairedTaggedFastqReader(PairedFastqReader, TaggedFastqReader):
         super(PairedTaggedFastqReader, self).__init__(fastq_r1, fastq_r2)
         self.indices = None
 
-    def filter_read_iterator(self, reference, filters):
+    def filter_read_iterator(self, filters):
         for read_1, read_2 in self.get_read_pair_iterator():
 
             tags_r1 = self.get_read_tag(read_1)
             tags_r2 = self.get_read_tag(read_2)
 
 
-            
+            raise Exception(tags_r1)
 
 
             # skip if doesnt match

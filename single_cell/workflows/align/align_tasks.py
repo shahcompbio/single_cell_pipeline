@@ -140,8 +140,7 @@ def align_pe(
         fastq1, fastq2, filtered_fastq_r1, filtered_fastq_r2,
         fastqscreen_detailed_metrics, fastqscreen_summary_metrics,
         fastqscreen_tempdir, cell_id, fastqscreen_params,
-        reference,
-        filter_contaminated_reads=fastqscreen_params['filter_contaminated_reads'],
+        reference
     )
 
     readgroup = get_readgroup(
