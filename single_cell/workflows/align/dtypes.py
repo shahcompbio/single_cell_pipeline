@@ -50,7 +50,7 @@ def dtypes():
 
 
 def fastqscreen_dtypes(genome_labels):
-    metrics = {'fastqscreen_nohit': int}
+    metrics = {'fastqscreen_nohit': int, 'cell_id':'str'}
     for label in genome_labels:
         metrics['fastqscreen_{}'.format(label)] = 'int'
         metrics['fastqscreen_{}_multihit'.format(label)] = 'int'
