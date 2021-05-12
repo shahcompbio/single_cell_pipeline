@@ -187,12 +187,12 @@ def write_summary_counts(counts, outfile, cell_id, fastqscreen_params):
 
 
 def filter_tag_reads(
-        input_r1, input_r2, output_r1, output_r2, filters
+        input_r1, input_r2, output_r1, output_r2, inclusive_filters, exclusive_filters
 ):
     reader = fastqutils.PairedTaggedFastqReader(input_r1, input_r2)
 
     with helpers.getFileHandle(output_r1, 'wt') as writer_r1, helpers.getFileHandle(output_r2, 'wt') as writer_r2:
-        for read_1, read_2 in reader.filter_read_iterator(filters):
+        for read_1, read_2 in reader.filter_read_iterator(inclusive_filters, exclusive_filters):
 
             read_1 = reader.add_tag_to_read_comment(read_1)
             read_2 = reader.add_tag_to_read_comment(read_2)
@@ -220,10 +220,10 @@ def re_tag_reads(infile, outfile):
 
 def organism_filter(
         fastq_r1, fastq_r2, filtered_fastq_r1, filtered_fastq_r2,
-        detailed_metrics, summary_metrics, tempdir, cell_id, params,
-        reference, filter_contaminated_reads=False,
+        detailed_metrics, summary_metrics, tempdir, cell_id, params
 ):
-    filters = {genome['name']: genome['filter'] for genome in params['genomes']}
+    inclusive_filters = {genome['name']: genome['filter_inclusive'] for genome in params['genomes']}
+    exclusive_filters = {genome['name']: genome['filter_exclusive'] for genome in params['genomes']}
 
     # fastq screen tries to skip if files from old runs are available
     if os.path.exists(tempdir):
@@ -247,5 +247,5 @@ def organism_filter(
     #
     filter_tag_reads(
         tagged_fastq_r1, tagged_fastq_r2, filtered_fastq_r1,
-        filtered_fastq_r2, filters
+        filtered_fastq_r2, inclusive_filters, exclusive_filters
     )

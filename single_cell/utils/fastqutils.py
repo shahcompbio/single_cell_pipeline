@@ -88,7 +88,7 @@ class TaggedFastqReader(FastqReader):
 
         tag = ['{}_{}'.format(k, v) for k, v in tag.items()]
         tag = ','.join(tag)
-        tag = 'FS:Z:'+tag
+        tag = 'FS:Z:' + tag
 
         comment = tag
 
@@ -96,17 +96,29 @@ class TaggedFastqReader(FastqReader):
 
         return read
 
-    def filter_read_iterator(self, reference):
+    def filter_read_iterator(self, inclusive_filters, exclusive_filters):
+        no_filter = False
+        if not any(inclusive_filters.values()) and not any(exclusive_filters.values()):
+            no_filter = True
+
         for read in self.get_read_iterator():
             read_tags = self.get_read_tag(read)
 
-            # skip if read maps to multiple genomes
-            if len([v for v in read_tags.values() if v]) > 1:
-                continue
-
-            if read_tags[reference]:
+            if no_filter:
                 yield read
                 continue
+
+            for tag in read_tags:
+
+                if inclusive_filters[tag]:
+                    if read_tags[tag]:
+                        continue
+
+                if exclusive_filters[tag]:
+                    if read_tags[tag] and not any([v for k, v in read_tags.items() if not k == tag]):
+                        continue
+
+            yield read
 
     def gather_counts(self):
         key_order = None
@@ -130,20 +142,35 @@ class PairedTaggedFastqReader(PairedFastqReader, TaggedFastqReader):
         super(PairedTaggedFastqReader, self).__init__(fastq_r1, fastq_r2)
         self.indices = None
 
-    def filter_read_iterator(self, filters):
-        filters = [i for i,v in filters.items() if v]
+    def filter_read_iterator(self, inclusive_filters, exclusive_filters):
+
+        no_filter = False
+        if not any(inclusive_filters.values()) and not any(exclusive_filters.values()):
+            no_filter = True
 
         for read_1, read_2 in self.get_read_pair_iterator():
 
             tags_r1 = self.get_read_tag(read_1)
             tags_r2 = self.get_read_tag(read_2)
 
-            for label in filters:
-                if tags_r1[label] == 1 or tags_r2[label] == 1:
-                    continue
-
+            if no_filter:
                 yield read_1, read_2
+                continue
 
+            for tag in tags_r1:
+
+                if inclusive_filters[tag]:
+                    if tags_r1[tag] or tags_r2[tag]:
+                        continue
+
+                if exclusive_filters[tag]:
+                    if tags_r1[tag] and not any([v for k, v in tags_r1.items() if not k == tag]):
+                        continue
+
+                    if tags_r2[tag] and not any([v for k, v in tags_r2.items() if not k == tag]):
+                        continue
+
+            yield read_1, read_2
 
     def gather_counts(self):
         key_order = None
