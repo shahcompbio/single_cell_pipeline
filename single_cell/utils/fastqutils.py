@@ -144,31 +144,38 @@ class PairedTaggedFastqReader(PairedFastqReader, TaggedFastqReader):
 
     def filter_read_iterator(self, inclusive_filters, exclusive_filters):
 
-        no_filter = False
-        if not any(inclusive_filters.values()) and not any(exclusive_filters.values()):
-            no_filter = True
+        inclusive_filters = [k for k,v in inclusive_filters.items() if v]
+        exclusive_filters = [k for k,v in exclusive_filters.items() if v]
 
         for read_1, read_2 in self.get_read_pair_iterator():
 
             tags_r1 = self.get_read_tag(read_1)
             tags_r2 = self.get_read_tag(read_2)
 
-            if no_filter:
+            if not inclusive_filters and not exclusive_filters:
                 yield read_1, read_2
                 continue
 
-            for tag in tags_r1:
+            filter_out = False
+            if inclusive_filters:
+                for filt in inclusive_filters:
+                    if tags_r1[filt] or tags_r2[filt]:
+                        filter_out=True
+                        break
+            if filter_out:
+                continue
 
-                if inclusive_filters[tag]:
-                    if tags_r1[tag] or tags_r2[tag]:
-                        continue
-
-                if exclusive_filters[tag]:
+            if exclusive_filters:
+                for tag in exclusive_filters:
                     if tags_r1[tag] and not any([v for k, v in tags_r1.items() if not k == tag]):
-                        continue
+                        filter_out = True
+                        break
 
                     if tags_r2[tag] and not any([v for k, v in tags_r2.items() if not k == tag]):
-                        continue
+                        filter_out = True
+                        break
+            if filter_out:
+                continue
 
             yield read_1, read_2
 

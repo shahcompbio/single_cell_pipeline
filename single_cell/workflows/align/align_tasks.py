@@ -139,8 +139,7 @@ def align_pe(
     fastqscreen.organism_filter(
         fastq1, fastq2, filtered_fastq_r1, filtered_fastq_r2,
         fastqscreen_detailed_metrics, fastqscreen_summary_metrics,
-        fastqscreen_tempdir, cell_id, fastqscreen_params,
-        reference
+        fastqscreen_tempdir, cell_id, fastqscreen_params
     )
 
     readgroup = get_readgroup(
