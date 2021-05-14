@@ -228,7 +228,6 @@ def create_alignment_workflow(
         )
     )
 
-    return workflow
     workflow.subworkflow(
         name='metrics_subworkflow',
         func="single_cell.workflows.align.bam_metrics_workflow",
