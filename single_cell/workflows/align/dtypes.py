@@ -28,16 +28,8 @@ def dtypes():
         'primer_i7': 'str',
         'row': 'int',
         'sample_type': 'str',
-        'fastqscreen_grch37': 'int',
-        'fastqscreen_salmon': 'int',
-        'fastqscreen_grch37_multihit': 'int',
-        'fastqscreen_salmon_multihit': 'int',
-        'fastqscreen_mm10': 'int',
-        'fastqscreen_nohit': 'int',
-        'fastqscreen_mm10_multihit': 'int',
         'is_contaminated': 'bool',
         'trim': 'bool',
-        'library_id': 'str',
         'sample_id': 'str'
     }
 
@@ -50,7 +42,7 @@ def dtypes():
 
 
 def fastqscreen_dtypes(genome_labels):
-    metrics = {'fastqscreen_nohit': 'int', 'cell_id':'str'}
+    metrics = {'fastqscreen_nohit': 'int', 'cell_id': 'str'}
     for label in genome_labels:
         metrics['fastqscreen_{}'.format(label)] = 'int'
         metrics['fastqscreen_{}_multihit'.format(label)] = 'int'
