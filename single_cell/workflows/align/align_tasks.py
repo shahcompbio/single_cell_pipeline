@@ -139,9 +139,7 @@ def align_pe(
     fastqscreen.organism_filter(
         fastq1, fastq2, filtered_fastq_r1, filtered_fastq_r2,
         fastqscreen_detailed_metrics, fastqscreen_summary_metrics,
-        fastqscreen_tempdir, cell_id, fastqscreen_params,
-        reference,
-        filter_contaminated_reads=fastqscreen_params['filter_contaminated_reads'],
+        fastqscreen_tempdir, cell_id, fastqscreen_params
     )
 
     readgroup = get_readgroup(
@@ -216,7 +214,8 @@ def align_lanes(
 
     fastqscreen.merge_fastq_screen_counts(
         detailed_counts, summary_counts,
-        fastqscreen_detailed_metrics, fastqscreen_summary_metrics
+        fastqscreen_detailed_metrics, fastqscreen_summary_metrics,
+        fastqscreen_params
     )
 
     extract_mt_chromosome(output, output_mt, mt_chrom_name=mt_chrom_name)

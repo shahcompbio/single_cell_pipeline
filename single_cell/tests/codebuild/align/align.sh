@@ -22,7 +22,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \
   --submit local \
   --out_dir ALIGN/output \
   --bams_dir ALIGN/bams \
-  --sequencing_center TEST --trim \
+  --sequencing_center TEST --trim
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \
   $1/single_cell_pipeline_alignment:$TAG \

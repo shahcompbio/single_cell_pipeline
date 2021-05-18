@@ -7,12 +7,16 @@ import pypeliner
 from single_cell.utils import csvutils
 from single_cell.utils import fastqutils
 from single_cell.utils import helpers
-from single_cell.workflows.align.dtypes import dtypes
+from single_cell.workflows.align.dtypes import fastqscreen_dtypes
 
 
 def merge_fastq_screen_counts(
-        all_detailed_counts, all_summary_counts, merged_detailed_counts, merged_summary_counts
+        all_detailed_counts, all_summary_counts,
+        merged_detailed_counts, merged_summary_counts,
+        fastqscreen_config
 ):
+    genome_labels = [genome['name'] for genome in fastqscreen_config['genomes']]
+
     if isinstance(all_detailed_counts, dict):
         all_detailed_counts = all_detailed_counts.values()
 
@@ -31,7 +35,8 @@ def merge_fastq_screen_counts(
     df = df.drop_duplicates(subset=index_cols)
 
     csvutils.write_dataframe_to_csv_and_yaml(
-        df, merged_detailed_counts, dtypes()['fastqscreen_detailed'], write_header=True
+        df, merged_detailed_counts,
+        fastqscreen_dtypes(genome_labels)['fastqscreen_detailed'], write_header=True
     )
 
     if isinstance(all_summary_counts, dict):
@@ -49,7 +54,8 @@ def merge_fastq_screen_counts(
     df = df.drop_duplicates(subset=['cell_id'])
 
     csvutils.write_dataframe_to_csv_and_yaml(
-        df, merged_summary_counts, dtypes()['metrics'], write_header=True
+        df, merged_summary_counts,
+        fastqscreen_dtypes(genome_labels)['metrics'], write_header=True
     )
 
 
@@ -180,13 +186,13 @@ def write_summary_counts(counts, outfile, cell_id, fastqscreen_params):
         writer.write(values)
 
 
-def filter_reads(
-        input_r1, input_r2, output_r1, output_r2, reference
+def filter_tag_reads(
+        input_r1, input_r2, output_r1, output_r2, inclusive_filters, exclusive_filters
 ):
     reader = fastqutils.PairedTaggedFastqReader(input_r1, input_r2)
 
     with helpers.getFileHandle(output_r1, 'wt') as writer_r1, helpers.getFileHandle(output_r2, 'wt') as writer_r2:
-        for read_1, read_2 in reader.filter_read_iterator(reference):
+        for read_1, read_2 in reader.filter_read_iterator(inclusive_filters, exclusive_filters):
 
             read_1 = reader.add_tag_to_read_comment(read_1)
             read_2 = reader.add_tag_to_read_comment(read_2)
@@ -198,23 +204,13 @@ def filter_reads(
                 writer_r2.write(line)
 
 
-def re_tag_reads(infile, outfile):
-    reader = fastqutils.TaggedFastqReader(infile)
-
-    with helpers.getFileHandle(outfile, 'wt') as writer:
-
-        for read in reader.get_read_iterator():
-            read = reader.add_tag_to_read_comment(read)
-
-            for line in read:
-                writer.write(line)
-
-
 def organism_filter(
         fastq_r1, fastq_r2, filtered_fastq_r1, filtered_fastq_r2,
-        detailed_metrics, summary_metrics, tempdir, cell_id, params,
-        reference, filter_contaminated_reads=False,
+        detailed_metrics, summary_metrics, tempdir, cell_id, params
 ):
+    inclusive_filters = {genome['name']: genome['filter_inclusive'] for genome in params['genomes']}
+    exclusive_filters = {genome['name']: genome['filter_exclusive'] for genome in params['genomes']}
+
     # fastq screen tries to skip if files from old runs are available
     if os.path.exists(tempdir):
         shutil.rmtree(tempdir)
@@ -231,17 +227,7 @@ def organism_filter(
     write_detailed_counts(counts, detailed_metrics, cell_id, params)
     write_summary_counts(counts, summary_metrics, cell_id, params)
 
-    if filter_contaminated_reads:
-        ref_name = [entry['name'] for entry in params['genomes'] if entry['path'] == reference]
-        assert len(ref_name) == 1, 'duplicate reference paths detected in fastqscreen params'
-        ref_name = ref_name[0]
-
-        filter_reads(
-            tagged_fastq_r1, tagged_fastq_r2, filtered_fastq_r1,
-            filtered_fastq_r2, ref_name
-        )
-    else:
-        # use the full tagged fastq downstream
-        # with organism type information in readname
-        re_tag_reads(tagged_fastq_r1, filtered_fastq_r1)
-        re_tag_reads(tagged_fastq_r2, filtered_fastq_r2)
+    filter_tag_reads(
+        tagged_fastq_r1, tagged_fastq_r2, filtered_fastq_r1,
+        filtered_fastq_r2, inclusive_filters, exclusive_filters
+    )
