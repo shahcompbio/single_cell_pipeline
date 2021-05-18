@@ -1,5 +1,12 @@
 # Change Log
 
+### v0.8.2
+
+### Changes:
+1. added filtering per genome in fastqscreen
+2. more cutomizable genomes in fastqscreen
+3. update pypeliner to 0.6.2
+
 ### v0.8.1
 
 #### Changes:
