@@ -23,18 +23,17 @@ def _get_col_data(df, organism):
 
 
 def add_contamination_status(
-        infile, outfile, config,
+        infile, outfile, genome_labels,
         reference='grch37', threshold=0.05
 ):
     data = csvutils.read_csv_and_yaml(infile)
 
     data = data.set_index('cell_id', drop=False)
-    organisms = [genome['name'] for genome in config['genomes']]
 
-    if reference not in organisms:
+    if reference not in genome_labels:
         raise Exception("Could not find the fastq screen counts")
 
-    alts = [col for col in organisms if not col == reference]
+    alts = [col for col in genome_labels if not col == reference]
 
     data['is_contaminated'] = False
 
@@ -42,32 +41,13 @@ def add_contamination_status(
         perc_alt = _get_col_data(data, altcol) / data['total_reads']
         data.loc[perc_alt > threshold, 'is_contaminated'] = True
 
-    col_type = dtypes()['metrics']['is_contaminated']
-
-    data['is_contaminated'] = data['is_contaminated'].astype(col_type)
+    data['is_contaminated'] = data['is_contaminated'].astype('bool')
     csvutils.write_dataframe_to_csv_and_yaml(
-        data, outfile, dtypes()['metrics']
+        data, outfile, dtypes(genome_labels)
     )
 
 
-def annotate_metrics(
-        metrics, output, sample_info, cells):
-    """
-    adds sample information to metrics in place
-    """
-
-    metrics = csvutils.read_csv_and_yaml(metrics)
-
-    for cellid in cells:
-        cellinfo = sample_info[cellid]
-
-        for colname, value in cellinfo.items():
-            metrics.loc[metrics["cell_id"] == cellid, colname] = value
-
-    csvutils.write_dataframe_to_csv_and_yaml(metrics, output, dtypes()['metrics'])
-
-
-def add_quality(hmmcopy_metrics, alignment_metrics, output, training_data, tempdir):
+def add_quality(hmmcopy_metrics, alignment_metrics, output, training_data, tempdir, genome_labels):
     helpers.makedirs(tempdir)
 
     intermediate_output = os.path.join(tempdir, 'metrics_with_quality.csv')
@@ -86,7 +66,7 @@ def add_quality(hmmcopy_metrics, alignment_metrics, output, training_data, tempd
         intermediate_output,
         predictions)
 
-    csvutils.rewrite_csv_file(intermediate_output, output, dtypes=dtypes()['metrics'])
+    csvutils.rewrite_csv_file(intermediate_output, output, dtypes=dtypes(genome_labels))
 
 
 def merge_metrics(hmmcopy_metrics, alignment_metrics, merged_output):
@@ -104,17 +84,17 @@ def merge_metrics(hmmcopy_metrics, alignment_metrics, merged_output):
 
 def generate_qc_report(
         tempdir, reference_gc, fastqscreen_training_data,
-        metrics_df, gc_metrics_df, qc_report, metrics_df_annotated
+        metrics_df, gc_metrics_df, qc_report, metrics_df_annotated, genome_labels
 ):
     helpers.makedirs(tempdir)
     fastqscreen_classify.classify_fastqscreen(
-        fastqscreen_training_data, metrics_df, metrics_df_annotated, dtypes()['metrics']
+        fastqscreen_training_data, metrics_df, metrics_df_annotated, dtypes(genome_labels)
     )
 
     generate_qc.generate_html_report(tempdir, qc_report, reference_gc, metrics_df_annotated, gc_metrics_df)
 
 
-def cell_cycle_classifier(hmmcopy_reads, hmmcopy_metrics, alignment_metrics, output, tempdir):
+def cell_cycle_classifier(hmmcopy_reads, hmmcopy_metrics, alignment_metrics, output, tempdir, genome_labels):
     helpers.makedirs(tempdir)
     temp_output = os.path.join(tempdir, 'cell_cycle_output.csv')
 
@@ -137,7 +117,7 @@ def cell_cycle_classifier(hmmcopy_reads, hmmcopy_metrics, alignment_metrics, out
 
     hmm_metrics_df = hmm_metrics_df.merge(cell_cycle_df, on=['cell_id'], how='outer')
 
-    out_dtypes = dtypes()['metrics']
+    out_dtypes = dtypes(genome_labels)
     for colname in cols_cell_cycle:
         hmm_metrics_df[colname] = hmm_metrics_df[colname].astype(out_dtypes[colname])
 

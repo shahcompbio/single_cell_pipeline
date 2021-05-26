@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.8.3
+
+### Changes:
+1. updated annotation to handle configurable genomes
+
 ### v0.8.2
 
 ### Changes:
