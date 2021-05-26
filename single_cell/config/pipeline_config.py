@@ -151,7 +151,8 @@ def get_annotation_params(reference_dir, reference):
             ['experimental_condition', 'notin', ["NTC", "NCC", "gDNA", "GM"]],
             ['cell_call', 'in', ['C1']],
             ['is_contaminated', 'in', ['False', 'false', False]],
-        ]
+        ],
+        'fastqscreen_genomes': ['grch37', 'mm10', 'salmon']
     }
 
     return {"annotation": params}

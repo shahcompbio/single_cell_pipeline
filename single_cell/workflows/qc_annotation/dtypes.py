@@ -1,4 +1,4 @@
-def dtypes_ref():
+def metrics_dtypes():
     metrics = {
         'cell_id': 'str',
         'sample_id': 'str',
@@ -64,18 +64,20 @@ def dtypes_ref():
     return metrics
 
 
-def dtypes(colnames):
-    ref_dtypes = dtypes_ref()
+def fastqscreen_dtypes(genome_labels):
+    metrics = {
+        'fastqscreen_nohit': 'int',
+        'fastqscreen_nohit_ratio': 'float',
+        'cell_id': 'str'
+    }
+    for label in genome_labels:
+        metrics['fastqscreen_{}'.format(label)] = 'int'
+        metrics['fastqscreen_{}_multihit'.format(label)] = 'int'
+        metrics['fastqscreen_{}_ratio'.format(label)] = 'float'
 
-    output = {}
+    dtypes = locals()
+    return dtypes
 
-    for col in colnames:
-        if 'fastqscreen' in col:
-            if 'ratio' in col:
-                output[col] = 'float'
-            else:
-                output[col] = 'Int64'
-        else:
-            output[col] = ref_dtypes[col]
 
-    return output
+def dtypes(genome_labels):
+    return {**metrics_dtypes(), **fastqscreen_dtypes(genome_labels)}

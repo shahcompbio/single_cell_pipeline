@@ -24,7 +24,8 @@ def create_qc_annotation_workflow(
             mgd.InputFile(hmmcopy_metrics, extensions=['.yaml']),
             mgd.InputFile(alignment_metrics),
             mgd.TempOutputFile('cell_state_classifier.csv.gz', extensions=['.yaml']),
-            mgd.TempSpace('tempdata_cell_cycle')
+            mgd.TempSpace('tempdata_cell_cycle'),
+            config['fastqscreen_genomes']
         ),
     )
 
@@ -37,7 +38,8 @@ def create_qc_annotation_workflow(
             mgd.InputFile(alignment_metrics, extensions=['.yaml']),
             mgd.TempOutputFile("hmmcopy_quality_metrics.csv.gz", extensions=['.yaml']),
             config['classifier_training_data'],
-            mgd.TempSpace("hmmcopy_classify_tempdir")
+            mgd.TempSpace("hmmcopy_classify_tempdir"),
+            config['fastqscreen_genomes']
         ),
     )
 
@@ -59,7 +61,7 @@ def create_qc_annotation_workflow(
         args=(
             mgd.TempInputFile('merged_metrics.csv.gz', extensions=['.yaml']),
             mgd.TempOutputFile('merged_metrics_contamination.csv.gz', extensions=['.yaml']),
-            alignment_config['fastq_screen_params']
+            config['fastqscreen_genomes']
         ),
         kwargs={
             'reference': config['ref_type'],
@@ -77,6 +79,7 @@ def create_qc_annotation_workflow(
             mgd.InputFile(gc_metrics, extensions=['.yaml']),
             mgd.OutputFile(qc_report),
             mgd.TempOutputFile('merged_metrics_contamination_species.csv.gz', extensions=['.yaml']),
+            config['fastqscreen_genomes']
         )
     )
 
