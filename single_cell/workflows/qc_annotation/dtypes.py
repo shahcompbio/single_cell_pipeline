@@ -1,4 +1,4 @@
-def dtypes():
+def dtypes_ref():
     metrics = {
         'cell_id': 'str',
         'sample_id': 'str',
@@ -39,39 +39,43 @@ def dtypes():
         'is_s_phase': 'bool',
         'is_s_phase_prob': 'float64',
         'quality': 'float64',
-        'fastqscreen_mm10': 'Int64',
         'coverage_depth': 'float64',
         'paired_duplicate_reads': 'Int64',
-        'fastqscreen_grch37': 'Int64',
         'total_reads': 'Int64',
         'unpaired_duplicate_reads': 'Int64',
         'percent_duplicate_reads': 'float64',
         'coverage_breadth': 'float64',
         'mean_insert_size': 'float64',
         'unpaired_mapped_reads': 'Int64',
-        'fastqscreen_grch37_multihit': 'Int64',
         'median_insert_size': 'float64',
-        'fastqscreen_salmon': 'Int64',
         'total_duplicate_reads': 'Int64',
         'is_contaminated': 'bool',
-        'fastqscreen_mm10_multihit': 'Int64',
-        'fastqscreen_salmon_multihit': 'Int64',
         'estimated_library_size': 'Int64',
         'standard_deviation_insert_size': 'float64',
-        'fastqscreen_nohit': 'Int64',
         'unmapped_reads': 'Int64',
         'total_mapped_reads': 'Int64',
         'total_properly_paired': 'Int64',
         'paired_mapped_reads': 'Int64',
         'order_corrupt_tree': 'Int64',
         'species': 'str',
-        'fastqscreen_nohit_ratio': 'float',
-        "fastqscreen_grch37_ratio": 'float',
-        "fastqscreen_mm10_ratio": 'float',
-        "fastqscreen_salmon_ratio": 'float',
         'trim': 'bool'
     }
 
-    dtypes = locals()
+    return metrics
 
-    return dtypes
+
+def dtypes(colnames):
+    ref_dtypes = dtypes_ref()
+
+    output = {}
+
+    for col in colnames:
+        if 'fastqscreen' in col:
+            if 'ratio' in col:
+                output[col] = 'float'
+            else:
+                output[col] = 'Int64'
+        else:
+            output[col] = ref_dtypes[col]
+
+    return output

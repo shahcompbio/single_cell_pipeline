@@ -42,11 +42,9 @@ def add_contamination_status(
         perc_alt = _get_col_data(data, altcol) / data['total_reads']
         data.loc[perc_alt > threshold, 'is_contaminated'] = True
 
-    col_type = dtypes()['metrics']['is_contaminated']
-
-    data['is_contaminated'] = data['is_contaminated'].astype(col_type)
+    data['is_contaminated'] = data['is_contaminated'].astype('bool')
     csvutils.write_dataframe_to_csv_and_yaml(
-        data, outfile, dtypes()['metrics']
+        data, outfile, dtypes(data.columns.values)
     )
 
 
@@ -64,7 +62,7 @@ def annotate_metrics(
         for colname, value in cellinfo.items():
             metrics.loc[metrics["cell_id"] == cellid, colname] = value
 
-    csvutils.write_dataframe_to_csv_and_yaml(metrics, output, dtypes()['metrics'])
+    csvutils.write_dataframe_to_csv_and_yaml(metrics, output, dtypes(metrics.columns.values))
 
 
 def add_quality(hmmcopy_metrics, alignment_metrics, output, training_data, tempdir):
@@ -86,7 +84,7 @@ def add_quality(hmmcopy_metrics, alignment_metrics, output, training_data, tempd
         intermediate_output,
         predictions)
 
-    csvutils.rewrite_csv_file(intermediate_output, output, dtypes=dtypes()['metrics'])
+    csvutils.rewrite_csv_file(intermediate_output, output, dtypes=dtypes(predictions.columns.values))
 
 
 def merge_metrics(hmmcopy_metrics, alignment_metrics, merged_output):
@@ -108,7 +106,7 @@ def generate_qc_report(
 ):
     helpers.makedirs(tempdir)
     fastqscreen_classify.classify_fastqscreen(
-        fastqscreen_training_data, metrics_df, metrics_df_annotated, dtypes()['metrics']
+        fastqscreen_training_data, metrics_df, metrics_df_annotated, dtypes(metrics_df.columns.values)
     )
 
     generate_qc.generate_html_report(tempdir, qc_report, reference_gc, metrics_df_annotated, gc_metrics_df)
@@ -137,7 +135,7 @@ def cell_cycle_classifier(hmmcopy_reads, hmmcopy_metrics, alignment_metrics, out
 
     hmm_metrics_df = hmm_metrics_df.merge(cell_cycle_df, on=['cell_id'], how='outer')
 
-    out_dtypes = dtypes()['metrics']
+    out_dtypes = dtypes(hmm_metrics_df.columns.values)
     for colname in cols_cell_cycle:
         hmm_metrics_df[colname] = hmm_metrics_df[colname].astype(out_dtypes[colname])
 
