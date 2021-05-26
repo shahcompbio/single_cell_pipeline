@@ -75,8 +75,7 @@ def fastqscreen_dtypes(genome_labels):
         metrics['fastqscreen_{}_multihit'.format(label)] = 'int'
         metrics['fastqscreen_{}_ratio'.format(label)] = 'float'
 
-    dtypes = locals()
-    return dtypes
+    return metrics
 
 
 def dtypes(genome_labels):
