@@ -11,7 +11,7 @@ import pypeliner.managed as mgd
 def create_qc_annotation_workflow(
         hmmcopy_metrics, hmmcopy_reads, alignment_metrics, gc_metrics, segs_tar,
         merged_metrics, qc_report, pass_segs, fail_segs,
-        plot_heatmap_ec_filt_output, config, alignment_config
+        plot_heatmap_ec_filt_output, config
 ):
 
     workflow = pypeliner.workflow.Workflow()

@@ -43,7 +43,6 @@ def annotation_workflow(args):
             mgd.OutputFile(annotation_files['segs_fail']),
             mgd.OutputFile(annotation_files['heatmap_filt_pdf']),
             config['annotation'],
-            config['alignment'],
         )
     )
 
