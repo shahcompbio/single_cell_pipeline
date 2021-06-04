@@ -1,0 +1,27 @@
+---
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document
+params:
+  cohort: ""
+  oncoplot: ""
+
+---
+---
+title: `r params$cohort`
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE, fig.align = 'center')
+library(knitr)
+library(DT)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+```
+
+## oncoplot
+```{r adjdist, echo = FALSE, out.width = "100%", out.height = "300",}
+# All defaults
+include_graphics(params$oncoplot)
+```
