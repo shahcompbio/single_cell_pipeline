@@ -18,19 +18,17 @@ tar -xvf refdata.tar.gz
 _note down absolute path to the extracted reference directory. We'll need this later._
 
 
+### 3. version
+Track down the pipeline version. Please refer to [CHANGELOG](../../CHANGELOG.md) for release notes and versions.
 
-### 3. Alignment
+
+### 4. Alignment
 
 create a separate directory for alignment:
 ```
 mkdir ALIGN && cd ALIGN
 ```
 
-build the singularity container
-```
-singularity build scp_alignment.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_alignment:v<version>
-```
-please refer to [CHANGELOG](../../CHANGELOG.md) for release notes and versions.
 
 #### download test dataset:
 ```
@@ -113,17 +111,30 @@ single_cell alignment --input_yaml inputs.yaml \
 
 please replace `<REFERENCE_DIR>` with path to the reference data we extracted in step 2.
 
-create `launch.sh`
+
+##### Singularity:
+
+build the singularity container
+```
+singularity build scp_alignment.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_alignment:v<version>
+```
+please replace `<version>` with the version identified in step 3.
+
+launch:
 ```
 singularity run --bind <MOUNT_DIR>  scp_alignment.sif sh runner.sh
 ```
 please replace `<MOUNT_DIR>` with path to the directory in step 1.
 
 
-run the pipeline:
+##### Docker:
+
 ```
-bash launch.sh
+ docker run -w $PWD -v <MOUNT_DIR>:<MOUNT_DIR> quay.io/singlecellpipeline/single_cell_pipeline_alignment:v<version> sh runner.sh
 ```
+please replace `<version>` with the version identified in step 3.
+please replace `<MOUNT_DIR>` with path to the directory in step 1.
+
 
 ### 4. Hmmcopy
 
@@ -133,12 +144,6 @@ create a separate directory for hmmcopy:
 ```
 mkdir HMMCOPY && cd HMMCOPY
 ```
-
-build the singularity container
-```
-singularity build scp_hmmcopy.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_hmmcopy:v<version>
-```
-please refer to [CHANGELOG](../../CHANGELOG.md) for release notes and versions.
 
 #### download test dataset:
 ```
@@ -204,17 +209,30 @@ create `runner.sh`
 
 please replace `<REFERENCE_DIR>` with path to the reference data we extracted in step 2.
 
-create `launch.sh`
+
+##### Singularity:
+
+build the singularity container
+```
+singularity build scp_hmmcopy.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_hmmcopy:v<version>
+```
+please replace `<version>` with the version identified in step 3.
+
+
+launch:
 ```
 singularity run --bind <MOUNT_DIR>  scp_hmmcopy.sif sh runner.sh
 ```
 please replace `<MOUNT_DIR>` with path to the directory in step 1.
 
 
-run the pipeline:
+##### Docker:
+
 ```
-bash launch.sh
+ docker run -w $PWD -v <MOUNT_DIR>:<MOUNT_DIR> quay.io/singlecellpipeline/single_cell_pipeline_hmmcopy:v<version> sh runner.sh
 ```
+please replace `<version>` with the version identified in step 3.
+please replace `<MOUNT_DIR>` with path to the directory in step 1.
 
 
 
@@ -225,13 +243,6 @@ create a separate directory for annotation:
 ```
 mkdir ANNOTATION && cd ANNOTATION
 ```
-
-build the singularity container
-```
-singularity build scp_annotation.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_annotation:v<version>
-```
-please refer to [CHANGELOG](../../CHANGELOG.md) for release notes and versions.
-
 
 #### download test dataset:
 ```
@@ -262,17 +273,31 @@ create `runner.sh`
 
 please replace `<REFERENCE_DIR>` with path to the reference data we extracted in step 2.
 
-create `launch.sh`
+
+##### Singularity:
+
+build the singularity container
+```
+singularity build scp_annotation.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_annotation:v<version>
+```
+please replace `<version>` with the version identified in step 3.
+
+
+launch:
 ```
 singularity run --bind <MOUNT_DIR>  scp_annotation.sif sh runner.sh
 ```
 please replace `<MOUNT_DIR>` with path to the directory in step 1.
 
 
-run the pipeline:
+##### Docker:
+
 ```
-bash launch.sh
+ docker run -w $PWD -v <MOUNT_DIR>:<MOUNT_DIR> quay.io/singlecellpipeline/single_cell_pipeline_annotation:v<version> sh runner.sh
 ```
+please replace `<version>` with the version identified in step 3.
+please replace `<MOUNT_DIR>` with path to the directory in step 1.
+
 
 
 ### 6. merge cells
@@ -282,13 +307,6 @@ create a separate directory for annotation:
 ```
 mkdir MERGE_CELLS && cd MERGE_CELLS
 ```
-
-build the singularity container
-```
-singularity build scp_merge_cells.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_alignment:v<version>
-```
-please refer to [CHANGELOG](../../CHANGELOG.md) for release notes and versions.
-
 
 #### download test dataset:
 ```
@@ -398,17 +416,30 @@ create `runner.sh`
 
 please replace `<REFERENCE_DIR>` with path to the reference data we extracted in step 2.
 
-create `launch.sh`
+
+##### Singularity:
+
+build the singularity container
+```
+singularity build scp_merge_cells.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_alignment:v<version>
+```
+please replace `<version>` with the version identified in step 3.
+
+
+launch:
 ```
 singularity run --bind <MOUNT_DIR>  scp_merge_cells.sif sh runner.sh
 ```
 please replace `<MOUNT_DIR>` with path to the directory in step 1.
 
 
-run the pipeline:
+##### Docker:
+
 ```
-bash launch.sh
+ docker run -w $PWD -v <MOUNT_DIR>:<MOUNT_DIR> quay.io/singlecellpipeline/single_cell_pipeline_alignment:v<version> sh runner.sh
 ```
+please replace `<version>` with the version identified in step 3.
+please replace `<MOUNT_DIR>` with path to the directory in step 1.
 
 
 
@@ -420,13 +451,6 @@ create a separate directory for annotation:
 ```
 mkdir SPLIT_WGS_BAM && cd SPLIT_WGS_BAM
 ```
-
-build the singularity container
-```
-singularity build scp_split_wgs_bam.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_alignment:v<version>
-```
-please refer to [CHANGELOG](../../CHANGELOG.md) for release notes and versions.
-
 
 #### download test dataset:
 ```
@@ -455,23 +479,29 @@ create `runner.sh`
 
 please replace `<REFERENCE_DIR>` with path to the reference data we extracted in step 2.
 
-create `launch.sh`
+##### Singularity:
+
+build the singularity container
+```
+singularity build scp_split_wgs_bam.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_alignment:v<version>
+```
+please replace `<version>` with the version identified in step 3.
+
+
+launch:
 ```
 singularity run --bind <MOUNT_DIR>  scp_split_wgs_bam.sif sh runner.sh
 ```
 please replace `<MOUNT_DIR>` with path to the directory in step 1.
 
 
-run the pipeline:
+##### Docker:
+
 ```
-bash launch.sh
+ docker run -w $PWD -v <MOUNT_DIR>:<MOUNT_DIR> quay.io/singlecellpipeline/single_cell_pipeline_annotation:v<version> sh runner.sh
 ```
-
-
-
-
-
-
+please replace `<version>` with the version identified in step 3.
+please replace `<MOUNT_DIR>` with path to the directory in step 1.
 
 
 ### 8. variant calling
@@ -481,13 +511,6 @@ create a separate directory for annotation:
 ```
 mkdir VARIANT_CALLING && cd VARIANT_CALLING
 ```
-
-build the singularity container
-```
-singularity build scp_variant_calling.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_variant:v<version>
-```
-please refer to [CHANGELOG](../../CHANGELOG.md) for release notes and versions.
-
 
 #### download test dataset:
 ```
@@ -683,17 +706,31 @@ create `runner.sh`
 
 please replace `<REFERENCE_DIR>` with path to the reference data we extracted in step 2.
 
-create `launch.sh`
+
+##### Singularity:
+
+build the singularity container
 ```
-singularity run --bind <MOUNT_DIR>  scp_variant_calling.sif sh runner.sh
+singularity build scp_variant.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_variant:v<version>
+```
+please replace `<version>` with the version identified in step 3.
+
+
+launch:
+```
+singularity run --bind <MOUNT_DIR>  scp_variant.sif sh runner.sh
 ```
 please replace `<MOUNT_DIR>` with path to the directory in step 1.
 
 
-run the pipeline:
+##### Docker:
+
 ```
-bash launch.sh
+ docker run -w $PWD -v <MOUNT_DIR>:<MOUNT_DIR> quay.io/singlecellpipeline/single_cell_pipeline_variant:v<version> sh runner.sh
 ```
+please replace `<version>` with the version identified in step 3.
+please replace `<MOUNT_DIR>` with path to the directory in step 1.
+
 
 
 
@@ -706,13 +743,6 @@ create a separate directory for annotation:
 ```
 mkdir BREAKPOINT_CALLING && cd BREAKPOINT_CALLING
 ```
-
-build the singularity container
-```
-singularity build scp_breakpoint_calling.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_breakpoint:v<version>
-```
-please refer to [CHANGELOG](../../CHANGELOG.md) for release notes and versions.
-
 
 #### download test dataset:
 ```
@@ -845,17 +875,30 @@ create `runner.sh`
 
 please replace `<REFERENCE_DIR>` with path to the reference data we extracted in step 2.
 
-create `launch.sh`
+
+##### Singularity:
+
+build the singularity container
+```
+singularity build scp_breakpoint_calling.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_breakpoint:v<version>
+```
+please replace `<version>` with the version identified in step 3.
+
+
+launch:
 ```
 singularity run --bind <MOUNT_DIR>  scp_breakpoint_calling.sif sh runner.sh
 ```
 please replace `<MOUNT_DIR>` with path to the directory in step 1.
 
 
-run the pipeline:
+##### Docker:
+
 ```
-bash launch.sh
+ docker run -w $PWD -v <MOUNT_DIR>:<MOUNT_DIR> quay.io/singlecellpipeline/single_cell_pipeline_breakpoint:v<version> sh runner.sh
 ```
+please replace `<version>` with the version identified in step 3.
+please replace `<MOUNT_DIR>` with path to the directory in step 1.
 
 
 
@@ -867,13 +910,6 @@ create a separate directory for annotation:
 ```
 mkdir INFER_HAPS && cd INFER_HAPS
 ```
-
-build the singularity container
-```
-singularity build scp_infer_haps.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_haplotypes:v<version>
-```
-please refer to [CHANGELOG](../../CHANGELOG.md) for release notes and versions.
-
 
 #### download test dataset:
 ```
@@ -901,17 +937,31 @@ create `runner.sh`
 
 please replace `<REFERENCE_DIR>` with path to the reference data we extracted in step 2.
 
-create `launch.sh`
+##### Singularity:
+
+build the singularity container
+```
+singularity build scp_infer_haps.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_haplotypes:v<version>
+```
+please replace `<version>` with the version identified in step 3.
+
+
+launch:
 ```
 singularity run --bind <MOUNT_DIR>  scp_infer_haps.sif sh runner.sh
 ```
 please replace `<MOUNT_DIR>` with path to the directory in step 1.
 
 
-run the pipeline:
+##### Docker:
+
 ```
-bash launch.sh
+ docker run -w $PWD -v <MOUNT_DIR>:<MOUNT_DIR> quay.io/singlecellpipeline/single_cell_pipeline_haplotypes:v<version> sh runner.sh
 ```
+please replace `<version>` with the version identified in step 3.
+please replace `<MOUNT_DIR>` with path to the directory in step 1.
+
+
 
 ### 11. count haplotypes
 
@@ -920,12 +970,6 @@ create a separate directory for annotation:
 ```
 mkdir COUNT_HAPS && cd COUNT_HAPS
 ```
-
-build the singularity container
-```
-singularity build scp_count_haps.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_haplotypes:v<version>
-```
-please refer to [CHANGELOG](../../CHANGELOG.md) for release notes and versions.
 
 
 #### download test dataset:
@@ -962,17 +1006,29 @@ create `runner.sh`
 
 please replace `<REFERENCE_DIR>` with path to the reference data we extracted in step 2.
 
-create `launch.sh`
+##### Singularity:
+
+build the singularity container
+```
+singularity build scp_count_haps.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_haplotypes:v<version>
+```
+please replace `<version>` with the version identified in step 3.
+
+
+launch:
 ```
 singularity run --bind <MOUNT_DIR>  scp_count_haps.sif sh runner.sh
 ```
 please replace `<MOUNT_DIR>` with path to the directory in step 1.
 
 
-run the pipeline:
+##### Docker:
+
 ```
-bash launch.sh
+ docker run -w $PWD -v <MOUNT_DIR>:<MOUNT_DIR> quay.io/singlecellpipeline/single_cell_pipeline_haplotypes:v<version> sh runner.sh
 ```
+please replace `<version>` with the version identified in step 3.
+please replace `<MOUNT_DIR>` with path to the directory in step 1.
 
 
 
@@ -983,12 +1039,6 @@ create a separate directory for annotation:
 ```
 mkdir SNV_GENOTYPING && cd SNV_GENOTYPING
 ```
-
-build the singularity container
-```
-singularity build scp_snv_genotyping.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_variant:v<version>
-```
-please refer to [CHANGELOG](../../CHANGELOG.md) for release notes and versions.
 
 
 #### download test dataset:
@@ -1058,17 +1108,29 @@ create `runner.sh`
 
 please replace `<REFERENCE_DIR>` with path to the reference data we extracted in step 2.
 
-create `launch.sh`
+##### Singularity:
+
+build the singularity container
+```
+singularity build scp_snv_genotyping.sif docker://quay.io/singlecellpipeline/single_cell_pipeline_variant:v<version>
+```
+please replace `<version>` with the version identified in step 3.
+
+
+launch:
 ```
 singularity run --bind <MOUNT_DIR>  scp_snv_genotyping.sif sh runner.sh
 ```
 please replace `<MOUNT_DIR>` with path to the directory in step 1.
 
 
-run the pipeline:
+##### Docker:
+
 ```
-bash launch.sh
+ docker run -w $PWD -v <MOUNT_DIR>:<MOUNT_DIR> quay.io/singlecellpipeline/single_cell_pipeline_variant:v<version> sh runner.sh
 ```
+please replace `<version>` with the version identified in step 3.
+please replace `<MOUNT_DIR>` with path to the directory in step 1.
 
 
 
@@ -1083,10 +1145,7 @@ wget https://singlecelltestsets.s3.amazonaws.com/refdata_full_genome.tar.gz
 tar -xvf refdata_full_genome.tar.gz
 ```
 
-#### Config override
-update the config overrides to run the pipeline over the full genome
-
-for Hmmcopy and Annotation, the config override in the launch section should be:
+update the config overrides to run the pipeline over the full genome, the config override in the launch section should point to the full reference dir:
  ```
 --config_override '{"refdir": "refdata"}'
 ```
