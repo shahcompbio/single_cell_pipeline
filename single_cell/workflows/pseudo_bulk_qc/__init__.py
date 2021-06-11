@@ -74,16 +74,15 @@ def create_sample_level_plots(
         indel_file, reporthtml, maf, snvs_all_csv, out_dir, config
 ):
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1}
-
     vep_reference = config['vep']
 
-    prefix = os.path.join(out_dir, patient, cell_id, library_id)
+    prefix = os.path.join(out_dir, patient, cell_id, library_id, "supporting_files")
 
     summary_csv = os.path.join(prefix, "summary.csv")
     snvs_high_impact_csv = os.path.join(prefix, "snvs_high_impact.csv")
     trinuc_csv = os.path.join(prefix, "trinuc.csv")
     datatype_summary_csv = os.path.join(prefix, "datatype_summary.csv")
-
+        
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     workflow.transform(
@@ -133,9 +132,9 @@ def create_sample_level_plots(
             mgd.TempOutputFile('snv_genome_count.png'),
             mgd.TempOutputFile('snv_cell_counts.png'),
             mgd.TempOutputFile('snv_alt_counts.png'),
-            mgd.TempOutputFile('destruct_rearrangement_plots_unfiltered.pdf'),
-            mgd.TempOutputFile('destruct_rearrangement_plots_filtered.pdf'),
-            mgd.TempOutputFile('lumpy_rearrangement_plots_unfiltered.pdf'),
+            mgd.TempOutputFile('destruct_rearrangement_plots_unfiltered.png'),
+            mgd.TempOutputFile('destruct_rearrangement_plots_filtered.png'),
+            mgd.TempOutputFile('lumpy_rearrangement_plots_unfiltered.png'),
             mgd.TempOutputFile('baf_plot.png'),
             mgd.TempOutputFile('cn_plot.png'),
             mgd.OutputFile(datatype_summary_csv),
@@ -155,9 +154,9 @@ def create_sample_level_plots(
             mgd.TempInputFile('snv_genome_count.png'),
             mgd.TempInputFile('snv_cell_counts.png'),
             mgd.TempInputFile('snv_alt_counts.png'),
-            mgd.TempInputFile('destruct_rearrangement_plots_unfiltered.pdf'),
-            mgd.TempInputFile('destruct_rearrangement_plots_filtered.pdf'),
-            mgd.TempInputFile('lumpy_rearrangement_plots_unfiltered.pdf'),
+            mgd.TempInputFile('destruct_rearrangement_plots_unfiltered.png'),
+            mgd.TempInputFile('destruct_rearrangement_plots_filtered.png'),
+            mgd.TempInputFile('lumpy_rearrangement_plots_unfiltered.png'),
             mgd.TempInputFile('baf_plot.png'),
             mgd.TempInputFile('cn_plot.png'),
             mgd.InputFile(datatype_summary_csv),
