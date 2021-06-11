@@ -1,30 +1,38 @@
-certifi==2020.12.5
+certifi==2021.5.30
+cffi==1.14.5
 chardet==4.0.0
-classifycopynumber @ git+https://github.com/shahcompbio/classifycopynumber.git@3b0094be4e7874abd604f753e827ff70e018233b
 click==7.1.2
 cycler==0.10.0
 decorator==4.4.2
 dill==0.3.3
 idna==2.10
+Jinja2==3.0.0
 kiwisolver==1.3.1
 mafannotator @ git+https://github.com/shahcompbio/mafannotator.git@df2f6440cd7ec9b11f02d7ffe3facab94b7418af
+MarkupSafe==2.0.0
 matplotlib==3.4.1
 networkx==2.5.1
 numexpr==2.7.3
 numpy==1.20.2
 pandas==1.2.4
 Pillow==8.2.0
+pycparser==2.20
 pyparsing==2.4.7
 pypeliner @ git+https://github.com/shahcompbio/pypeliner.git@b452c14c4abc6e653ac8e8f52d3c9b9a158becd1
 python-dateutil==2.8.1
 pytz==2021.1
 PyYAML==5.4.1
 requests==2.25.1
-scgenome @ git+https://github.com/shahcompbio/scgenome.git@179017b23b423b17c9a40450927ed6bbbd21cc7b
+rpy2==3.4.4
+#scgenome @ git+https://github.com/shahcompbio/scgenome.git@179017b23b423b17c9a40450927ed6bbbd21cc7b
 scipy==1.6.3
 seaborn==0.11.1
--e git+https://github.com/shahcompbio/single_cell_pipeline.git@020e2e46b11823c17725d0c281b4c5e172381ec8#egg=single_cell
+# Editable install with no version control (single-cell==0.7.6+14.gc0a7879.dirty)
+#-e /juno/home/abramsd/miniconda3/envs/scp_cohort_qc/lib/python3.9/site-packages/single_cell-0.7.6+14.gc0a7879.dirty-py3.9.egg
 six==1.15.0
 tables==3.6.1
+tzlocal==2.1
 urllib3==1.26.4
 wgs-analysis @ git+https://github.com/amcpherson/wgs_analysis.git@e86b3a158f4cbc2e43fab0e24b8c2b7dded360ad
+#classifycopynumber @ git+https://github.com/shahcompbio/classifycopynumber.git@1c7c81ada82b885b8da6d540cd6cd3ccf2656f1e
+

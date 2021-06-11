@@ -116,7 +116,7 @@ def generate_gistic_outputs(gistic_data, hdel_data, cbio_table):
         hdel_data[['Hugo_Symbol', 'sample', 'is_hdel']], how='left'
     )
     gistic_data['is_hdel'] = gistic_data['is_hdel'].fillna(0).astype(int)
-    gistic_data.loc[gistic_data['is_hdel'] == 1, 'gistic_value'] = -2
+    gistic_data.loc[gistic_data['iclassify_hmmcopy_files s_hdel'] == 1, 'gistic_value'] = -2
 
     # Gistic_data generation
     gistic_data = gistic_data[['Hugo_Symbol', 'sample', 'gistic_value']]
@@ -140,15 +140,16 @@ def make_cbio_cna_table(cn_change_filename, cbio_table):
 
 
 def make_maftools_cna_table(cn_change_filename, maftools_table):
+    print(cn_change_filename)
     cn_change = pd.read_csv(cn_change_filename, sep="\t",
-                            usecols=["gene_name", "sample", "is_hdel", "is_loh", "is_hlamp"])
+                            usecols=["gene_name", "sample", "is_hdel", "has_loh", "is_hlamp"])
 
-    cn_change = cn_change[cn_change['is_hdel'] | cn_change['is_loh'] | cn_change['is_hlamp']]
+    cn_change = cn_change[cn_change['is_hdel'] | cn_change['has_loh'] | cn_change['is_hlamp']]
 
-    cn_change["is_loh"] = cn_change.is_loh.replace({False: "", True: "loh"})
+    cn_change["has_loh"] = cn_change.has_loh.replace({False: "", True: "loh"})
     cn_change["is_hdel"] = cn_change.is_hdel.replace({False: "", True: "hdel"})
     cn_change["is_hlamp"] = cn_change.is_hlamp.replace({False: "", True: "hlamp"})
-    cn_change["CN"] = cn_change[["is_hdel", "is_loh", "is_hlamp"]].apply(
+    cn_change["CN"] = cn_change[["is_hdel", "has_loh", "is_hlamp"]].apply(
         lambda row: "".join(map(str, row)) ,axis=1
     )
 
@@ -191,7 +192,7 @@ def _get_hmmcopy_sample_ids(files):
 
 def classify_hmmcopy(
     hmmcopy_files, gtf, output_dir,
-    amps, dels, docker_image=None
+    cn_change, docker_image=None
 ):
     '''
     run classify_copynumber on hmmcopy data
@@ -209,8 +210,7 @@ def classify_hmmcopy(
     sample_ids = _get_hmmcopy_sample_ids(hmmcopy_files)
     files = list(hmmcopy_files.values())
     cmd = [
-        "classifycopynumber", gtf, output_dir,
-         amps, dels
+        "classifycopynumber", gtf, cn_change
     ]
     for f in files:
         cmd.extend(["--hmmcopy_csv_filenames", f])
@@ -302,8 +302,8 @@ def vcf2maf(vcf_file, output_maf, tempdir, vep_ref):
         output_maf,
         vep_ref['reference_fasta'],
         vep_ref['reference_dir'],
-        # "--buffer_size",
-        # "20"
+        "--buffer_size",
+        "10"
     ]
 
     pypeliner.commandline.execute(*cmd)
@@ -374,6 +374,8 @@ def make_oncoplot(
 def create_report(
         cohort, oncoplot, report
 ):
+    oncoplot = os.path.abspath(oncoplot)
+    report = os.path.abspath(report)
     rmd_script = os.path.join(os.path.dirname(os.path.realpath(__file__)),
         'scripts', 'report.Rmd'
     )

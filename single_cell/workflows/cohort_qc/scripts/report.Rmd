@@ -14,10 +14,7 @@ title: `r params$cohort`
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE, fig.align = 'center')
 library(knitr)
-library(DT)
-library(tidyr)
-library(dplyr)
-library(ggplot2)
+
 ```
 
 ## oncoplot
