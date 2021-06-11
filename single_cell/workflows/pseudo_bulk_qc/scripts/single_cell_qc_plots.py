@@ -218,11 +218,7 @@ def load_breakpoint_data(
         sample_id, library_id, breakpoint_annotation, breakpoint_count,
         lumpy=False, filter_data=False
 ):
-    #breakpoint_results = scgenome.loaders.breakpoint.load_breakpoint_data_from_files(
-    #    [breakpoint_annotation],
-    #    [breakpoint_count],
-    #    lumpy=lumpy
-    #)
+
     if lumpy:
         breakpoint_data = scgenome.loaders.breakpoint.load_lumpy(breakpoint_annotation)
         breakpoint_count_data = scgenome.loaders.breakpoint.load_lumpy_counts(breakpoint_count)
@@ -404,7 +400,6 @@ def plotbaf(allele_data, baf_plot):
     plt.close()
 
 
-
 def load_qc_data(
         sample_id, annotation_metrics, hmmcopy_reads, hmmcopy_segs,
         hmmcopy_metrics, alignment_metrics, gc_metrics
@@ -418,8 +413,6 @@ def load_qc_data(
     )
     cn_data = results_tables_new['hmmcopy_reads']
     metrics_data = results_tables_new['annotation_metrics']
-
-    
     metrics_data = scgenome.cnfilter.calculate_filter_metrics(
         metrics_data,
         cn_data,

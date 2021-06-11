@@ -77,9 +77,6 @@ def cohort_qc_pipeline(args):
 
     pyp = pypeliner.app.Pypeline(config=args)
 
-#    workflow = pypeliner.workflow.Workflow(
-#        ctx={'docker_image': config['docker']['single_cell_pipeline']}
-#    )
     workflow = pypeliner.workflow.Workflow()
 
     out_dir = args["out_dir"]
@@ -136,6 +133,7 @@ def cohort_qc_pipeline(args):
             mgd.TempOutputFile('somatic_maf', 'sample_label')
         ),
     )
+    
     workflow.subworkflow(
         name="classifycopynumber",
         func="single_cell.workflows.cohort_qc.cna_annotation_workflow",

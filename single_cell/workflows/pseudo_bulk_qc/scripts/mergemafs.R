@@ -7,7 +7,6 @@ args <- commandArgs(TRUE)
 input = args[1]
 output = args[2]
 maf = data.table::fread(input)
-# maf = filter(maf, t_alt_count > 2)
 
 filtmaf <- filter(maf, str_detect(Consequence, "frameshift|stop") | IMPACT == "HIGH") %>%
     group_by_at(vars(-contains("depth"), -contains("count"))) %>%

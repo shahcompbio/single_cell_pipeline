@@ -1,4 +1,4 @@
-mport yaml
+import yaml
 from single_cell.utils.validator import validate
 
 

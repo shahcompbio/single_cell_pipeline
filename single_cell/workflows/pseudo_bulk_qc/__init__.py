@@ -82,7 +82,7 @@ def create_sample_level_plots(
     snvs_high_impact_csv = os.path.join(prefix, "snvs_high_impact.csv")
     trinuc_csv = os.path.join(prefix, "trinuc.csv")
     datatype_summary_csv = os.path.join(prefix, "datatype_summary.csv")
-        
+
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     workflow.transform(
