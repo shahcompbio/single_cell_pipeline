@@ -1,5 +1,4 @@
 import matplotlib
-
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn
@@ -10,6 +9,7 @@ import wgs_analysis.plots.rearrangement
 import wgs_analysis.snvs.mutsig
 import wgs_analysis.plots.snv
 import wgs_analysis.annotation.position
+import wgs_analysis.algorithms.rearrangement
 from scgenome.loaders.qc import load_qc_data_from_files
 from scgenome.snvdata import run_bulk_snv_analysis
 import scgenome
@@ -27,6 +27,7 @@ from scgenome.snvdata import filter_snv_data
 
 from single_cell.utils import csvutils
 import matplotlib.backends.backend_pdf
+import matplotlib.gridspec as gridspec
 
 
 lumpy_to_destruct_breakpoint_labels = {'INV': 'inversion',
@@ -88,7 +89,7 @@ def load_snv_data(
 
 def plot_mutations_per_cell(snv_data, snv_count_data, mutations_per_cell, prefix):
     allcells = snv_count_data.loc[:, ["cell_id"]].drop_duplicates()
-    run_bulk_snv_analysis(snv_data, snv_count_data, allcells, results_prefix=prefix)
+    run_bulk_snv_analysis(snv_data, snv_count_data, allcells, results_prefix=prefix + "/")
 
     # Plot number of mutations per cell
     percell = snv_count_data[snv_count_data.alt_counts > 0].groupby('cell_id').size()
@@ -217,16 +218,21 @@ def load_breakpoint_data(
         sample_id, library_id, breakpoint_annotation, breakpoint_count,
         lumpy=False, filter_data=False
 ):
-    breakpoint_results = scgenome.loaders.breakpoint.load_breakpoint_data_from_files(
-        [breakpoint_annotation],
-        [breakpoint_count],
-        lumpy=lumpy
-    )
+    #breakpoint_results = scgenome.loaders.breakpoint.load_breakpoint_data_from_files(
+    #    [breakpoint_annotation],
+    #    [breakpoint_count],
+    #    lumpy=lumpy
+    #)
+    if lumpy:
+        breakpoint_data = scgenome.loaders.breakpoint.load_lumpy(breakpoint_annotation)
+        breakpoint_count_data = scgenome.loaders.breakpoint.load_lumpy_counts(breakpoint_count)
+    else:
+        breakpoint_data = scgenome.loaders.breakpoint.load_destruct(breakpoint_annotation)
+        breakpoint_count_data = scgenome.loaders.breakpoint.load_destruct_counts(breakpoint_count)
 
-    breakpoint_data = breakpoint_results['breakpoint_data']
+
     breakpoint_data["library_id"] = library_id
     breakpoint_data["sample_id"] = sample_id
-    breakpoint_count_data = breakpoint_results['breakpoint_count_data']
     breakpoint_count_data["library_id"] = library_id
     breakpoint_count_data["sample_id"] = sample_id
 
@@ -243,88 +249,96 @@ def load_breakpoint_data(
 
     return breakpoint_data
 
+def _no_data():
+    fig, ax = plt.subplots(1,1, figsize=(15, 4))
+    ax.text(0.4,0.5, "breakpoint data is empty")
+    ax.set_yticks([])
+    ax.set_xticks([])
+    ax.set_xticklabels([])
+    ax.set_xticklabels([])
+    return fig
 
-def plot_breakpoint_distribution(breakpoint_data, plot_pdf):
-    pdf = matplotlib.backends.backend_pdf.PdfPages(plot_pdf)
+def make_breakpoint_plots(breakpoint_data, output):
+    if breakpoint_data.empty:
+        fig = _no_data()
+        plt.savefig(output, bbox_inches='tight', format="png")
+        return
+    fig = plt.figure(figsize=(15, 4))
+    outer = gridspec.GridSpec(1, 2)
+    plt.tight_layout()
+    left = gridspec.GridSpecFromSubplotSpec(2, 1,
+                        subplot_spec=outer[0], wspace=0.1, hspace=0.5)
+    fig.add_subplot(left[:]).set_title("\"type\" column")
+    plt.axis("off")                                                
 
-    type_distribution = plot_type_distribution(breakpoint_data, "type")
-    rearrangement_type_distribution = plot_type_distribution(breakpoint_data, "rearrangement_type")
+    inner_left = gridspec.GridSpecFromSubplotSpec(1, 2,
+                        subplot_spec=left[0], wspace=0.5, hspace=0.1)
+                                          
+    right = gridspec.GridSpecFromSubplotSpec(2, 1,
+                        subplot_spec=outer[1], wspace=0.1, hspace=0.5)      
+    fig.add_subplot(right[:]).set_title("\"rearrangement_type\" column")
+                   
+    inner_right = gridspec.GridSpecFromSubplotSpec(1, 2,
+                        subplot_spec=right[0], wspace=0.5, hspace=0.1)  
+                        
+    plt.axis("off")                                                
+    plot_types(breakpoint_data, "type", inner_left[0], fig)
+    plot_across_genome(breakpoint_data, "type", left[1], fig)
+    plot_sizes(breakpoint_data, "type", inner_left[1], fig)
 
-    type_genome_distribution = plot_genome_type_distribution(breakpoint_data, "type")
-    rearrangement_type_genome_didstribution = plot_genome_type_distribution(breakpoint_data, "rearrangement_type")
-
-    type_size_distribution = plot_type_size_distribution(breakpoint_data, "type")
-    rearrangement_type_size_distribution = plot_type_size_distribution(breakpoint_data, "rearrangement_type")
-
-    pdf.savefig(type_distribution)
-    pdf.savefig(rearrangement_type_distribution)
-    pdf.savefig(type_genome_distribution)
-    pdf.savefig(rearrangement_type_genome_didstribution)
-    pdf.savefig(type_size_distribution)
-    pdf.savefig(rearrangement_type_size_distribution)
-
-    pdf.close()
+    plot_types(breakpoint_data, "rearrangement_type", inner_right[0], fig)
+    plot_across_genome(breakpoint_data, "rearrangement_type", right[1], fig)
+    plot_sizes(breakpoint_data, "rearrangement_type", inner_right[1], fig)
+    plt.savefig(output, bbox_inches='tight', format="png")
 
 
-def plot_genome_type_distribution(breakpoint_data, type_col):
-    genome_distribution, axis = plt.subplots(1,1, figsize=(30, 5))
-    breakends = wgs_analysis.plots.rearrangement.create_breakends(
+def plot_across_genome(breakpoint_data, type_col, gs, fig):
+    axis = plt.Subplot(fig, gs)
+    breakends = wgs_analysis.algorithms.rearrangement.create_breakends(
         breakpoint_data, data_cols=[type_col]
     )
     breakends.rename(columns={type_col: "rearrangement_type"}, inplace=True)
     wgs_analysis.plots.rearrangement.chromosome_type_plot(
         axis, breakends, rearrangement_types=breakpoint_data[type_col].unique()
     )
-    axis.set_title(f'Chromosome types')
-    plt.tight_layout()
-    plt.title("Breakpoint distribution over the genome")
-    return genome_distribution
+
+    fig.add_subplot(axis)
 
 
-def plot_type_distribution(breakpoint_data, type_col):
-    type_distribution, axis = plt.subplots(1,1, figsize=(30, 3))
+def plot_types(breakpoint_data, type_col, gs, fig):
+    axis = plt.Subplot(fig, gs)
     seaborn.countplot(x=type_col, data=breakpoint_data,  ax=axis, palette = "Dark2")
-    axis.set_ylabel("count inter and intra chromosomal")
-    axis.set_title('Counts by rearrangement type')
+    axis.set_ylabel("count")
     axis.set_xlabel('', visible=False)
-    plt.title("Distribution of rearrangement types")
-    type_distribution.patch.set_facecolor('xkcd:white')
+    for tick in axis.get_xticklabels():
+        tick.set_fontsize(10)
+        tick.set_rotation(15)
 
-    return type_distribution
+    fig.add_subplot(axis)
 
 
-def plot_type_size_distribution(breakpoint_data, type_col):
+def plot_sizes(breakpoint_data, type_col, gs, fig):
+
     ntypes = len(breakpoint_data[type_col].unique())
 
     breakpoint_data["break_dist"] = abs(breakpoint_data.position_1 - breakpoint_data.position_2)
-    breakpoint_data["interchrom"] = breakpoint_data.chromosome_1 != breakpoint_data.chromosome_2
-    intrachrom_data = breakpoint_data[~breakpoint_data.interchrom]
-    interchrom_data = breakpoint_data[breakpoint_data.interchrom]
 
-    colors = seaborn.color_palette('Dark2', len(breakpoint_data[type_col].unique()))
+    axis = plt.Subplot(fig, gs)
 
-    typesizes = plt.figure(figsize=(20, 2))
-    gs = typesizes.add_gridspec(1, ntypes + 1, width_ratios=[1]*(ntypes) + [0.2])
-    axes=[]
-    
-    for i, gs in  enumerate(gs):
-        if i == 0:
-            axes.append(typesizes.add_subplot(gs))
-        if i > 0:
-            axes.append(typesizes.add_subplot(gs, sharey=axes[0]))
-
-    for ax, group, color in zip(axes[:ntypes], breakpoint_data[type_col].unique(), colors):
-        pltdata = intrachrom_data[intrachrom_data[type_col] == group]
-        ax.hist(pltdata.break_dist, color=color)
-        ax.set_title(group)
-
-    axes[ntypes].bar(1, len(interchrom_data.index), color="black")
-    axes[ntypes].set_title("interchromosomal")
-    axes[ntypes].set_xticklabels([])
-    axes[0].set_xlabel("size of breakpoint")
-    axes[0].set_ylabel("count")
-    plt.title("rearrangement size distribution")
-    return typesizes
+    breakpoint_data = breakpoint_data.dropna(subset=["break_dist", type_col])
+    seaborn.histplot(
+        breakpoint_data,
+        x="break_dist", hue=type_col,
+        multiple="stack",
+        palette="Dark2",
+        edgecolor=".3",
+        linewidth=.5,
+        ax=axis,
+        legend=False,
+        log_scale=True,
+    )
+    axis.set_xlabel("size")
+    fig.add_subplot(axis)
 
 
 def load_allele_data(haplotype_allele_data):
@@ -341,7 +355,7 @@ def load_allele_data(haplotype_allele_data):
 
         chunk.reset_index(inplace=True)
 
-        chunk.rename(columns={0: 'allele_1', 1: 'allele_2'}, inplace=True)
+        chunk.rename(columns={"0": 'allele_1', "1": 'allele_2'}, inplace=True)
 
         chunk['total_counts'] = chunk['allele_1'] + chunk['allele_2']
 
@@ -390,6 +404,7 @@ def plotbaf(allele_data, baf_plot):
     plt.close()
 
 
+
 def load_qc_data(
         sample_id, annotation_metrics, hmmcopy_reads, hmmcopy_segs,
         hmmcopy_metrics, alignment_metrics, gc_metrics
@@ -399,10 +414,12 @@ def load_qc_data(
         [hmmcopy_reads],
         [hmmcopy_segs],
         [hmmcopy_metrics], [alignment_metrics], [gc_metrics],
-        sample_ids=[sample_id], additional_hmmcopy_reads_cols=None
+        sample_ids=None, additional_hmmcopy_reads_cols=None
     )
     cn_data = results_tables_new['hmmcopy_reads']
     metrics_data = results_tables_new['annotation_metrics']
+
+    
     metrics_data = scgenome.cnfilter.calculate_filter_metrics(
         metrics_data,
         cn_data,
@@ -497,17 +514,15 @@ def qc_plots(
         sample_id, library_id,
         destruct_breakpoint_annotation,
         destruct_breakpoint_count)
-
-    plot_breakpoint_distribution(destruct_breakpoint_data_unfiltered, destruct_rearrangement_plots_unfiltered)
+    make_breakpoint_plots(destruct_breakpoint_data_unfiltered, destruct_rearrangement_plots_unfiltered)
 
     destruct_breakpoint_data_filtered = load_breakpoint_data(
         sample_id, library_id,
         destruct_breakpoint_annotation, destruct_breakpoint_count,
         filter_data=True)
 
-    plot_breakpoint_distribution(destruct_breakpoint_data_filtered, destruct_rearrangement_plots_filtered)
+    make_breakpoint_plots(destruct_breakpoint_data_filtered, destruct_rearrangement_plots_filtered)
 
-    
     lumpy_breakpoint_data_unfiltered = load_breakpoint_data(
         sample_id, library_id,
         lumpy_breakpoint_annotation, lumpy_breakpoint_evidence,
@@ -523,7 +538,7 @@ def qc_plots(
             'start2': "position_2"
         }
     )
-    plot_breakpoint_distribution(lumpy_breakpoint_data_unfiltered, lumpy_rearrangement_plots_unfiltered)
+    make_breakpoint_plots(lumpy_breakpoint_data_unfiltered, lumpy_rearrangement_plots_unfiltered)
 
     # Analyse SNP data
     allele_data, unique_cells = load_allele_data(haplotype_allele_data)
