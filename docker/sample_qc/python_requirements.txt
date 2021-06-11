@@ -1,0 +1,43 @@
+adjustText==0.7.3
+brewer2mpl==1.4.1
+certifi==2020.12.5
+cffi==1.14.5
+click==8.0.0a1
+cycler==0.10.0
+Cython==0.29.22
+decorator==4.4.2
+dill==0.3.3
+hdbscan==0.8.27
+hmmlearn==0.2.5
+Jinja2==2.11.3
+joblib==1.0.1
+kiwisolver==1.3.1
+lda==2.0.0
+MarkupSafe==1.1.1
+matplotlib==3.4.1
+networkx==2.5
+numexpr==2.7.3
+numpy==1.20.2
+packaging==20.9
+pandas==1.2.3
+pbr==3.1.1
+Pillow==8.1.2
+pycparser==2.20
+pyparsing==2.4.7
+pypeliner @ git+https://github.com/shahcompbio/pypeliner.git@b452c14c4abc6e653ac8e8f52d3c9b9a158becd1
+python-dateutil==2.8.1
+pytz==2021.1
+PyYAML==5.4.1
+rpy2==3.4.3
+scgenome @ git+https://github.com/DouglasAbrams/scgenome.git@fb2e01e16bce038367d8e45184f2d14dde200fb5
+scikit-learn==0.24.1
+scipy==1.6.2
+seaborn==0.11.1
+single-cell @ git+https://github.com/shahcompbio/single_cell_pipeline.git@f3ac2b7b1857a64279fe2b2b8a7ae3d9c13df45d
+six==1.15.0
+sklearn==0.0
+tables==3.6.1
+threadpoolctl==2.1.0
+tzlocal==2.1
+umap==0.1.1
+-e git+https://github.com/amcpherson/wgs_analysis.git@c73a9bd0268b5e6fb55a8c18a58ac28e5f918482#egg=wgs_analysis
