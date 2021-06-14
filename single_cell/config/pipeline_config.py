@@ -406,7 +406,7 @@ def get_cohort_qc_params(reference_dir, reference):
     params = {
         'ref_genome': referencedata['ref_genome'],
         'vep': referencedata['vep'],
-        'gtf': referencedata['destruct_gtf_file'],
+        'gtf': referencedata['qc_gtf_file'],
         'non_synonymous_labels': non_synonymous_labels,
         'memory': {'low': 4, 'med': 6, 'high': 16},
     }
