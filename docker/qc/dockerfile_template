@@ -7,7 +7,7 @@ RUN rm -rf /opt/conda/lib/python3.7/site-packages/single_cell* && pip install gi
 RUN rm -rf /opt/conda/lib/python3.7/site-packages/biowrappers* && pip install git+https://github.com/shahcompbio/biowrappers.git@master
 RUN pip install git+https://github.com/amcpherson/wgs_analysis.git@v0.0.1
 RUN pip install git+https://github.com/shahcompbio/classifycopynumber.git@e93b5740ee916bc3
-RUN pip install git+https://github.com/shahcompbio/scgenome.git@687627ae1
+RUN pip install git+https://github.com/shahcompbio/scgenome.git@v0.0.1
 RUN cp /app/oncokb-annotator/MafAnnotator.py /app/oncokb-annotator/AnnotatorCore.py /opt/conda/bin && chmod 777 /opt/conda/bin/MafAnnotator.py  /opt/conda/bin/AnnotatorCore.py
 RUN pip install brewer2mpl lda umap adjusttext hmmlearn pandas seaborn packaging
 RUN apt update && apt install build-essential -y
@@ -18,3 +18,5 @@ RUN conda install -c shahcompbio pseudo_bulk_qc_html_report --force-reinstall
 RUN conda install -c shahcompbio -c bioconda vcf2maf_shahcompbio
 RUN rm -rf /opt/conda/bin/samtools
 RUN pip install azure-batch azure-common azure-core azure-storage-blob azure-identity
+RUN pip install rpy2
+RUN pip install git+https://github.com/amcpherson/wgs_analysis.git@v0.0.2
