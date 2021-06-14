@@ -140,7 +140,6 @@ def make_cbio_cna_table(cn_change_filename, cbio_table):
 
 
 def make_maftools_cna_table(cn_change_filename, maftools_table):
-    print(cn_change_filename)
     cn_change = pd.read_csv(cn_change_filename, sep="\t",
                             usecols=["gene_name", "sample", "is_hdel", "has_loh", "is_hlamp"])
 
@@ -192,7 +191,7 @@ def _get_hmmcopy_sample_ids(files):
 
 def classify_hmmcopy(
     hmmcopy_files, gtf, output_dir,
-    cn_change, docker_image=None
+    cn_change
 ):
     '''
     run classify_copynumber on hmmcopy data
@@ -217,7 +216,7 @@ def classify_hmmcopy(
     for s_id in sample_ids:
         cmd.extend(["--sample_ids", s_id])
 
-    pypeliner.commandline.execute(*cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*cmd)
 
 
 def annotate_maf_with_oncokb(
@@ -350,7 +349,7 @@ def prepare_maf_for_maftools(
 
 
 def make_oncoplot(
-    prepped_maf, cna_table, oncoplot, vcNames, docker_image=None
+    prepped_maf, cna_table, oncoplot, vcNames
 ):
     '''
     run R script to make oncoplot with prepped, annotatedd maf
@@ -368,7 +367,7 @@ def make_oncoplot(
     plots_cmd = [
         "Rscript", script_path, prepped_maf, vcNames, cna_table, oncoplot
     ]
-    pypeliner.commandline.execute(*plots_cmd, docker_image=docker_image)
+    pypeliner.commandline.execute(*plots_cmd)
 
 
 def create_report(

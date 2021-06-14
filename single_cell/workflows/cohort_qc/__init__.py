@@ -299,8 +299,8 @@ def create_cohort_oncoplot(
             mgd.TempInputFile("vcNames")
 
         ),
-        #kwargs={'docker_image': config["docker"]["pseudo_bulk_qc_html_report"]},
     )
+    
     workflow.transform(
         name='create_report',
         func='single_cell.workflows.cohort_qc.tasks.create_report',
