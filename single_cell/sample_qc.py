@@ -5,7 +5,7 @@ import pypeliner.managed as mgd
 from single_cell.utils import inpututils
 
 
-def pseudo_bulk_qc_workflow(args):
+def sample_qc_workflow(args):
     data, patient = inpututils.load_qc_input(args["input_yaml"])
     config = inpututils.load_config(args)
     config = config["qc"]
@@ -151,13 +151,13 @@ def make_meta(args):
     return workflow
 
 
-def pseudo_bulk_qc_pipeline(args):
+def sample_qc_pipeline(args):
     args["out_dir"] = os.path.realpath(args["out_dir"])
     args["tmpdir"] = os.path.realpath(args["tmpdir"])
 
     pyp = pypeliner.app.Pypeline(config=args)
 
-    workflow = pseudo_bulk_qc_workflow(args)
+    workflow = sample_qc_workflow(args)
     pyp.run(workflow)
 
     workflow = make_meta(args)
