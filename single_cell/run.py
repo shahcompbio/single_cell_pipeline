@@ -67,7 +67,7 @@ def main():
         sv_genotyping_pipeline(args)
 
     if args["which"] == "sample_qc":
-        pseudo_bulk_qc_pipeline(args)
+        sample_qc_pipeline(args)
 
     if args["which"] == "cohort_qc":
         cohort_qc_pipeline(args)
