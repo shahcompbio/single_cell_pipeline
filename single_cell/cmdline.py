@@ -209,8 +209,8 @@ def parse_args():
     # qc
     # ================
     qc = add_global_args(
-        subparsers.add_parser("pseudo_bulk_qc"))
-    qc.set_defaults(which='pseudo_bulk_qc')
+        subparsers.add_parser("sample_qc"))
+    qc.set_defaults(which='sample_qc')
     
     # ================
     # cohortqc

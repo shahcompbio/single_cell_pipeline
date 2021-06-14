@@ -1,33 +1,108 @@
+import logging
+import os
 import pypeliner
 import pypeliner.managed as mgd
 
 
+def merge_somatic_mafs(
+        individual,
+        config,
+        museq,
+        strelka_snv,
+        strelka_indel,
+        somatic_maf,
+):
+    workflow = pypeliner.workflow.Workflow()
+    workflow.setobj(
+        obj=mgd.OutputChunks('library'),
+        value=list(museq.keys()),
+    )
+    vep_reference = config["vep"]
+    workflow.transform(
+        name='museq_vcf2maf',
+        func='single_cell.workflows.cohort_qc.tasks.vcf2maf',
+        axes=("library",),
+        args=(
+            mgd.InputFile("museq", 'library', fnames=museq),
+            mgd.TempOutputFile("museq_maf", 'library'),
+            mgd.TempSpace('vcf2maf_temp_museq', 'library'),
+            vep_reference,
+        ),
+    )
+
+    workflow.transform(
+        name='strelka_snv_vcf2maf',
+        func='single_cell.workflows.cohort_qc.tasks.vcf2maf',
+        axes=("library",),
+        args=(
+            mgd.InputFile("strelka_snv", 'library', fnames=strelka_snv),
+            mgd.TempOutputFile("strelka_snv_maf", 'library'),
+            mgd.TempSpace('vcf2maf_temp_strelka_snv', 'library'),
+            vep_reference,
+        ),
+    )
+    workflow.transform(
+        name='strelka_indel_vcf2maf',
+        func='single_cell.workflows.cohort_qc.tasks.vcf2maf',
+        axes=("library",),
+        args=(
+            mgd.InputFile("strelka_indel", 'library', fnames=strelka_indel),
+            mgd.TempOutputFile("strelka_indel_maf", 'library'),
+            mgd.TempSpace('vcf2maf_temp_strelka_indel', 'library'),
+            vep_reference,
+        ),
+    )
+
+    workflow.transform(
+        name='merge_vcfs_mafs',
+        func='single_cell.workflows.cohort_qc.tasks.merge_vcfs_mafs',
+        axes=("library",),
+        args=(
+            mgd.TempInputFile('museq_maf', "library"),
+            mgd.TempInputFile('strelka_snv_maf', "library"),
+            mgd.TempInputFile('strelka_indel_maf', "library"),
+            mgd.TempOutputFile("library_merged_maf", "library"),
+            individual,
+        ),
+    )
+    workflow.transform(
+        name='merge_somatic_library_mafs',
+        func='single_cell.workflows.cohort_qc.tasks.merge_mafs',
+        args=(
+            mgd.TempInputFile(
+                "library_merged_maf", 'library',  axes_origin=[]
+            ),
+            mgd.OutputFile(somatic_maf),
+            individual,
+        ),
+    )
+
+    return workflow
+
+
 def cna_annotation_workflow(
+        config,
         hmmcopy_dict,
-        hmmcopy_samples,
         output_cbio_table,
         output_maftools_table,
         output_segs,
         gtf
 ):
     """Run classify copynumber on hmmcopy dictionary and generate a cohort cna table and file containg segments.
-
     Args:
         config ([dict]): [config]
         hmmcopy_dict ([dict]): [dictionary of sample: hmmcopy file]
-        hmmcopy_dict ([dict]): [dictionary of sample: sample_id]
         output_cbio_table ([str]): [path to cna data for cbio]
         output_maftools_table ([str]): [path to cna data for maftools]
         output_segs ([str]): [path to output segments for cbio]
         gtf ([str]): [path to gtf file]
-
     Returns:
     """
     workflow = pypeliner.workflow.Workflow()
 
     workflow.setobj(
-        obj=mgd.TempOutputObj('sample_ids', 'sample_label', 'library_label'),
-        value=hmmcopy_samples,
+        obj=mgd.OutputChunks('sample_label', 'library_label'),
+        value=list(hmmcopy_dict.keys()),
     )
 
     workflow.transform(
@@ -36,33 +111,21 @@ def cna_annotation_workflow(
         axes=("sample_label",),
         args=(
             mgd.InputFile(
-                'hmmcopy', 'sample_label', 'library_label', fnames=hmmcopy_dict,
-            ),
-            mgd.TempInputObj(
-                'sample_ids', 'sample_label', 'library_label',
+                'hmmcopy', 'sample_label', 'library_label', fnames=hmmcopy_dict, axes_origin=[]
             ),
             gtf,
             mgd.TempSpace("annotated_maf_tmp", "sample_label"),
-            mgd.TempOutputFile('amps', 'sample_label'),
-            mgd.TempOutputFile('dels', 'sample_label'),
+            mgd.TempOutputFile('cn_change', 'sample_label'),
+
         ),
     )
 
     workflow.transform(
-        name='merge_amp_tables',
+        name='merge_cn_tables',
         func='single_cell.workflows.cohort_qc.tasks.merge_cna_tables',
         args=(
-            mgd.TempInputFile('amps', 'sample_label', axes_origin=[]),
-            mgd.TempOutputFile("merged_amps"),
-        ),
-    )
-
-    workflow.transform(
-        name='merge_del_tables',
-        func='single_cell.workflows.cohort_qc.tasks.merge_cna_tables',
-        args=(
-            mgd.TempInputFile('dels', 'sample_label', axes_origin=[]),
-            mgd.TempOutputFile("merged_dels"),
+            mgd.TempInputFile('cn_change', 'sample_label', axes_origin=[]),
+            mgd.TempOutputFile("merged_cn_change"),
         ),
     )
 
@@ -70,8 +133,7 @@ def cna_annotation_workflow(
         name='make_cbio_cna_table',
         func='single_cell.workflows.cohort_qc.tasks.make_cbio_cna_table',
         args=(
-            mgd.TempInputFile('merged_amps'),
-            mgd.TempInputFile('merged_dels'),
+            mgd.TempInputFile('merged_cn_change'),
             mgd.OutputFile(output_cbio_table),
         ),
     )
@@ -80,8 +142,7 @@ def cna_annotation_workflow(
         name='make_maftools_cna_table',
         func='single_cell.workflows.cohort_qc.tasks.make_maftools_cna_table',
         args=(
-            mgd.TempInputFile('merged_amps'),
-            mgd.TempInputFile('merged_dels'),
+            mgd.TempInputFile('merged_cn_change'),
             output_maftools_table
         ),
     )
@@ -92,11 +153,8 @@ def cna_annotation_workflow(
         axes=("sample_label",),
         args=(
             mgd.InputFile('hmmcopy', 'sample_label', 'library_label', fnames=hmmcopy_dict),
-            mgd.TempInputObj(
-                'sample_ids', 'sample_label', 'library_label',
-            ),
             mgd.TempOutputFile('segmental_cn', 'sample_label'),
-            mgd.InputInstance('sample_label'),
+            mgd.InputInstance('sample_label')
         ),
     )
 
@@ -113,11 +171,10 @@ def cna_annotation_workflow(
 
 
 def preprocess_mafs_workflow(
-        germline_mafs, somatic_mafs,
-        cohort_germline_maf, cohort_somatic_maf, api_key
+    config, germline_mafs, somatic_mafs,
+    cohort_germline_maf, cohort_somatic_maf, api_key
 ):
     """Take germline and somatic mafs, annotates, filters and merges them.
-
     Args:
         config ([dict]): [config]
         germline_mafs ([dic]): [sample: germline maf path]
@@ -125,7 +182,6 @@ def preprocess_mafs_workflow(
         cohort_germline_maf ([str]): [merged germline output]
         cohort_somatic_maf ([str]): [merged somatic output]
         api_key ([str]): [API key for onckb annotator]
-
     Returns:
     """
     workflow = pypeliner.workflow.Workflow()
@@ -164,7 +220,7 @@ def preprocess_mafs_workflow(
         func='single_cell.workflows.cohort_qc.tasks.merge_mafs',
         args=(
             mgd.TempInputFile(
-                "filtered_germline_maf", 'sample_label', axes_origin=[]
+                "filtered_germline_maf", 'sample_label',  axes_origin=[]
             ),
             mgd.OutputFile(cohort_germline_maf)
         ),
@@ -196,11 +252,11 @@ def preprocess_mafs_workflow(
 
 
 def create_cohort_oncoplot(
-        config, merged_germline,
-        merged_somatic, maftools_cna, maftools_maf, oncoplot
+    config, merged_germline, 
+    merged_somatic, maftools_cna, maftools_maf, oncoplot,
+    report, cohort
 ):
     """create oncoplot from cna table, and germlinne/somatic dataa.
-
     Args:
         config ([dict]): [config]
         merged_germline ([str]): [path to merged germline file]
@@ -208,11 +264,16 @@ def create_cohort_oncoplot(
         maftools_cna ([str]): [path to merged cna data]
         maftools_maf ([sstr]): [path to output prepped maftools input maf]
         oncoplot ([str]): [path to output oncoplot]
-
     Returns:
         [type]: [description]
     """
-    workflow = pypeliner.workflow.Workflow()
+
+    ctx = {'mem': config["memory"]['low'],
+           'mem_retry_increment': 2,
+           'disk_retry_increment': 50,
+           'ncpus': 1}
+
+    workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     non_synonymous_labels = config["non_synonymous_labels"]
 
@@ -239,5 +300,15 @@ def create_cohort_oncoplot(
 
         ),
     )
+    
+    workflow.transform(
+        name='create_report',
+        func='single_cell.workflows.cohort_qc.tasks.create_report',
+        args=(
+            cohort,
+            mgd.InputFile(oncoplot),
+            report
 
+        ),
+    )
     return workflow
