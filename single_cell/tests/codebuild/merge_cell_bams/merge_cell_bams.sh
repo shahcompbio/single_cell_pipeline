@@ -20,7 +20,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \
   --tmpdir MERGE_CELL_BAMS/temp \
   --pipelinedir MERGE_CELL_BAMS/pipeline \
   --submit local \
-  --out_dir MERGE_CELL_BAMS/output \
+  --out_dir MERGE_CELL_BAMS/output --config_override '{"merge_bams": {"chromosomes": ["6", "8", "17"]}}'
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \
   $1/single_cell_pipeline_alignment:$TAG \
