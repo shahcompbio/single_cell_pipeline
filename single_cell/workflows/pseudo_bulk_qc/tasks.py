@@ -67,7 +67,7 @@ def vcf2maf(vcf_file, output_maf, tempdir, vep_ref):
     os.path.realpath(
         os.path.dirname(__file__)),
     'scripts')
-    vcf2maf_path = os.path.join(scripts_directory, 'vcf2maf')
+    vcf2maf_path = os.path.join(scripts_directory, 'vcf2maf.sh')
     
     cmd = [
         vcf2maf_path, 
