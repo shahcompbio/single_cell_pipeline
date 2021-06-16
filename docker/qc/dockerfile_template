@@ -20,4 +20,4 @@ RUN rm -rf /opt/conda/bin/samtools
 RUN pip install azure-batch azure-common azure-core azure-storage-blob azure-identity
 RUN pip install rpy2
 RUN pip install git+https://github.com/amcpherson/wgs_analysis.git@v0.0.2
-RUN pip install --file /app/conda_requirements.txt
+RUN pip install -r /app/conda_requirements.txt
