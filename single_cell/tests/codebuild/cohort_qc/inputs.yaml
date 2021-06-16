@@ -1,12 +1,14 @@
-mafs:
-    SPECTRUM-OV-042:
-      germline_maf: COHORT_QC/testdata/museq.maf
-      somatic_maf: COHORT_QC/testdata/museq.maf
-hmmcopy:
-    SPECTRUM-OV-042:
-      A108838B:
-        sample_id: "SA1256PP"
-        hmmcopy_reads: COHORT_QC/testdata/A108838B_reads.csv.gz
-      A108836A:
-        sample_id: "SA1256PP"
-        hmmcopy_reads: COHORT_QC/testdata/A108836A_reads.csv.gz
+SIGNATURES:
+  DG1134:
+    libdata:
+      A96168B:
+        hmmcopy_reads: COHORT_QC/testdata/A96168B_reads.csv.gz
+        museq: COHORT_QC/testdata/museq.vcf.gz
+        strelka_snv: COHORT_QC/testdata/strelka_s.vcf.gz
+        strelka_indel: COHORT_QC/testdata/strelka_i.vcf.gz
+      A96168C:
+        hmmcopy_reads: COHORT_QC/testdata/A96168B_reads.csv.gz
+        museq: COHORT_QC/testdata/museq.vcf.gz
+        strelka_snv: COHORT_QC/testdata/strelka_s.vcf.gz
+        strelka_indel: COHORT_QC/testdata/strelka_i.vcf.gz
+    germline_maf: COHORT_QC/testdata/germline_small.maf
