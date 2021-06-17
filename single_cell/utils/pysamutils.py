@@ -64,6 +64,7 @@ def _fraction_softclipped(x):
 def remove_softclipped_reads(infile, outfile, softclipped_reads_threshold):
     if softclipped_reads_threshold == 1:
         shutil.copyfile(infile, outfile)
+        shutil.copyfile(infile+'.bai', outfile+'.bai')
         return
 
     bamfile = pysam.AlignmentFile(infile, "rb")
@@ -75,7 +76,3 @@ def remove_softclipped_reads(infile, outfile, softclipped_reads_threshold):
     filteredbam.close()
 
     bam_index(outfile, outfile+'.bai')
-
-    print(outfile, outfile+'.bai')
-
-    print(os.path.exists(outfile+'.bai'))
