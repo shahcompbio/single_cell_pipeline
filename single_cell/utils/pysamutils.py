@@ -7,6 +7,7 @@ import shutil
 from collections import OrderedDict
 
 import pysam
+import os
 
 
 from single_cell.utils.bamutils import bam_index
@@ -74,3 +75,7 @@ def remove_softclipped_reads(infile, outfile, softclipped_reads_threshold):
     filteredbam.close()
 
     bam_index(outfile, outfile+'.bai')
+
+    print(outfile, outfile+'.bai')
+
+    print(os.path.exists(outfile+'.bai'))
