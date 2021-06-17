@@ -102,7 +102,9 @@ def cohort_qc_pipeline(args):
     hmmcopy_files = {
         label: data["hmmcopy"] for label, data in hmmcopy.items()
     }
-
+    hmmcopy_metrics_files = {
+        label: data["hmmcopy_metrics"] for label, data in hmmcopy.items()
+    }
     # outputs
     cbiofile_paths = get_cbioportal_paths(os.path.join(out_dir, cohort))
     maftools_filepaths = get_maftools_paths(os.path.join(out_dir, cohort))
@@ -142,6 +144,10 @@ def cohort_qc_pipeline(args):
             mgd.InputFile(
                 'hmmcopy_dict', 'sample_label', 'library_label',
                 fnames=hmmcopy_files, axes_origin=[]
+            ),
+            mgd.InputFile(
+                'hmmcopy_metrics_dict', 'sample_label', 'library_label',
+                fnames=hmmcopy_metrics_files, axes_origin=[]
             ),
             mgd.OutputFile(cbiofile_paths["cna_table"]),
             mgd.OutputFile(maftools_filepaths["maftools_cna"]),

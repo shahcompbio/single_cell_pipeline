@@ -180,17 +180,15 @@ def merge_cna_tables(tables, output):
         data.to_csv(output, index=False, mode='a', header=header, sep="\t")
 
 
-def _get_hmmcopy_sample_ids(files):
+def _get_hmmcopy_sample_ids(metrics):
     samples = []
-    for library, f in files.items():
-        mf = yaml.load(open(os.path.join(os.path.dirname(f), "metadata.yaml")))
-        ids = mf["meta"]["cell_ids"]
-        samples += [id.split("-")[0] for id in ids]
+    for library, f in metrics.items():
+        samples += pd.read_csv(f).sample_id.unique().tolist()
     return pd.Series(samples).unique().tolist()
 
 
 def classify_hmmcopy(
-    hmmcopy_files, gtf, output_dir,
+    hmmcopy_files, metrics, gtf, output_dir,
     cn_change
 ):
     '''
@@ -206,7 +204,7 @@ def classify_hmmcopy(
     Returns
     -------
     '''
-    sample_ids = _get_hmmcopy_sample_ids(hmmcopy_files)
+    sample_ids = _get_hmmcopy_sample_ids(metrics)
     files = list(hmmcopy_files.values())
     cmd = [
         "classifycopynumber", gtf, cn_change

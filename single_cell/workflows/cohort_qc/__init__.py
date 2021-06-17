@@ -83,6 +83,7 @@ def merge_somatic_mafs(
 def cna_annotation_workflow(
         config,
         hmmcopy_dict,
+        hmmcopy_metrics_dict,
         output_cbio_table,
         output_maftools_table,
         output_segs,
@@ -112,6 +113,9 @@ def cna_annotation_workflow(
         args=(
             mgd.InputFile(
                 'hmmcopy', 'sample_label', 'library_label', fnames=hmmcopy_dict, axes_origin=[]
+            ),
+            mgd.InputFile(
+                'hmmcopy_metrics', 'sample_label', 'library_label', fnames=hmmcopy_metrics_dict, axes_origin=[]
             ),
             gtf,
             mgd.TempSpace("annotated_maf_tmp", "sample_label"),

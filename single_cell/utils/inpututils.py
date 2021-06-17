@@ -247,7 +247,8 @@ def load_cohort_qc_inputs(yaml_file):
     for sample, data in data.items():
         germline_mafs[sample] = data["germline_maf"]
         for library, data in data["libdata"].items():
-            hmmcopy[(sample, library)] = {"hmmcopy": data["hmmcopy_reads"]}
+            hmmcopy[(sample, library)] = {"hmmcopy": data["hmmcopy_reads"],
+                "hmmcopy_metrics": data["hmmcopy_metrics"]}
             vcfs[(sample, library)] = {"museq": data["museq"],
                                        "strelka_snv": data["strelka_snv"],
                                        "strelka_indel": data["strelka_indel"]}
