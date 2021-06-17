@@ -1,5 +1,12 @@
 # Change Log
 
+### v0.8.4
+
+### changes:
+1. updated test datasets
+2. added softclipped read filter to merge bams
+
+
 ### v0.8.3
 
 ### Changes:

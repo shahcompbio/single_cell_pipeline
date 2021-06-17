@@ -20,7 +20,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \
   --pipelinedir INFER_HAPS/pipeline \
   --submit local \
   --out_dir INFER_HAPS/output \
-  --config_override '{"infer_haps":{"chromosomes":["15"], "extract_seqdata": {"genome_fai_template": "/refdata/human/infer_haps/GRCh37-lite.fa.fai", "genome_fasta_template": "/refdata/human/infer_haps/GRCh37-lite.fa"}, "ref_data_dir": "/refdata/human/infer_haps/"}}' \
+  --config_override '{"infer_haps":{"chromosomes":["15"], "ref_data_dir": "/refdata/human/infer_haps/"}}' \
 
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \

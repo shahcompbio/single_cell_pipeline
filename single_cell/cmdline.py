@@ -139,6 +139,12 @@ def parse_args():
     # ===========
     merge_bams = add_global_args(subparsers.add_parser("merge_cell_bams"))
     merge_bams.set_defaults(which='merge_cell_bams')
+    merge_bams.add_argument(
+        "--softclipped_reads_threshold",
+        default=1,
+        type=float,
+        help='''reads with softclipped area ratio more than threshold will be removed, use 1 to disable'''
+    )
 
     # ===========
     # split bam
