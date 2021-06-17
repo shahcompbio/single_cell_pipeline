@@ -3,11 +3,13 @@ SIGNATURES:
     libdata:
       A96168B:
         hmmcopy_reads: COHORT_QC/testdata/A96168B_reads.csv.gz
+        hmmcopy_metrics: COHORT_QC/testdata/A96168B_hmmcopy_metrics.csv.gz
         museq: COHORT_QC/testdata/museq.vcf.gz
         strelka_snv: COHORT_QC/testdata/strelka_s.vcf.gz
         strelka_indel: COHORT_QC/testdata/strelka_i.vcf.gz
       A96168C:
         hmmcopy_reads: COHORT_QC/testdata/A96168B_reads.csv.gz
+        hmmcopy_metrics: COHORT_QC/testdata/A96168B_hmmcopy_metrics.csv.gz
         museq: COHORT_QC/testdata/museq.vcf.gz
         strelka_snv: COHORT_QC/testdata/strelka_s.vcf.gz
         strelka_indel: COHORT_QC/testdata/strelka_i.vcf.gz
