@@ -43,11 +43,22 @@ def merge_bams_workflow(args):
         )
     )
 
+    workflow.transform(
+        name="remove_softclipped_reads",
+        func="single_cell.utils.pysamutils.remove_softclipped_reads",
+        ret=pypeliner.managed.OutputChunks('region'),
+        args=(
+            mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files, extensions=['.bai']),
+            mgd.TempOutputFile('bam_rm_softclipped.bam', 'cell_id', extensions=['.bai']),
+            args['softclipped_reads_threshold']
+        )
+    )
+
     workflow.subworkflow(
         name="wgs_merge_workflow",
         func=merge_bams.create_merge_bams_workflow,
         args=(
-            mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files, extensions=['.bai']),
+            mgd.TempInputFile('bam_rm_softclipped.bam', 'cell_id', extensions=['.bai']),
             mgd.OutputFile("merged.bam", "region", axes_origin=[], extensions=['.bai'], template=merge_out_template),
             mgd.InputChunks("region"),
             config,
