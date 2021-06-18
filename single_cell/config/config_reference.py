@@ -34,6 +34,7 @@ def get_reference_data(reference, rootdir):
         chromosomes = get_chromosomes('grch37')
         destruct_ref_data = os.path.join(rootdir, 'human/')
         destruct_gtf_file = os.path.join(rootdir, 'human/GRCh37-lite.gtf')
+        qc_gtf_file = os.path.join(rootdir, 'human/Homo_sapiens.GRCh37.73.gtf')
         reference_gc_qc = os.path.join(rootdir, 'human/reference_gc_grch37.csv')
         databases = {
             'mappability': {
