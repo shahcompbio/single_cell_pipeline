@@ -6,7 +6,7 @@ RUN rm -rf /opt/conda/lib/python3.7/site-packages/pypeliner* && pip install git+
 RUN rm -rf /opt/conda/lib/python3.7/site-packages/single_cell* && pip install git+https://github.com/shahcompbio/single_cell_pipeline.git@{git_commit}
 RUN rm -rf /opt/conda/lib/python3.7/site-packages/biowrappers* && pip install git+https://github.com/shahcompbio/biowrappers.git@master
 RUN pip install git+https://github.com/amcpherson/wgs_analysis.git@v0.0.2
-RUN pip install git+https://github.com/shahcompbio/classifycopynumber.git@refactoramps
+RUN pip install git+https://github.com/shahcompbio/classifycopynumber.git@v0.0.5
 RUN pip install git+https://github.com/shahcompbio/scgenome.git@v0.0.1
 RUN cp /app/oncokb-annotator/MafAnnotator.py /app/oncokb-annotator/AnnotatorCore.py /opt/conda/bin && chmod 777 /opt/conda/bin/MafAnnotator.py  /opt/conda/bin/AnnotatorCore.py
 RUN pip install brewer2mpl lda umap adjusttext hmmlearn pandas seaborn packaging
