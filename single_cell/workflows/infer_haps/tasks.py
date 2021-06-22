@@ -16,9 +16,8 @@ def annotate_ref_alt(haps_csv, refdir, output_csv):
 
     with helpers.getFileHandle(haps_csv, 'rt') as reader, helpers.getFileHandle(output_csv, 'wt') as writer:
 
-        header = reader.readline()
-
-        header += ',ref,alt\n'
+        header = reader.readline().strip()
+        header += '\tref\talt\n'
         writer.write(header)
 
         for line in reader:
@@ -34,6 +33,6 @@ def annotate_ref_alt(haps_csv, refdir, output_csv):
                 ref = 'NA'
                 alt = 'NA'
 
-            line += ',{},{}\n'.format(ref, alt)
+            line += '\t{}\t{}\n'.format(ref, alt)
 
             writer.write(line)
