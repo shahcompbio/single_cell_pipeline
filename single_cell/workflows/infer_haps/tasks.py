@@ -23,7 +23,7 @@ def annotate_ref_alt(haps_csv, refdir, output_csv):
 
         for line in reader:
             line = line.strip()
-            l_split = line.split(',')
+            l_split = line.split('\t')
 
             chrom = l_split[0]
             pos = l_split[1]
