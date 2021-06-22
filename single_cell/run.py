@@ -11,7 +11,7 @@ from single_cell.hmmcopy import hmmcopy_pipeline
 from single_cell.infer_haps import count_haps_pipeline
 from single_cell.infer_haps import infer_haps_pipeline
 from single_cell.merge_bams import merge_bams_pipeline
-from single_cell.pseudo_bulk_qc import pseudo_bulk_qc_pipeline
+from single_cell.sample_qc import sample_qc_pipeline
 from single_cell.snv_genotyping import snv_genotyping_pipeline
 from single_cell.split_bam import split_bam_pipeline
 from single_cell.sv_genotyping import sv_genotyping_pipeline
@@ -66,8 +66,8 @@ def main():
     if args["which"] == "sv_genotyping":
         sv_genotyping_pipeline(args)
 
-    if args["which"] == "pseudo_bulk_qc":
-        pseudo_bulk_qc_pipeline(args)
+    if args["which"] == "sample_qc":
+        sample_qc_pipeline(args)
 
     if args["which"] == "cohort_qc":
         cohort_qc_pipeline(args)

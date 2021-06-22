@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.8.5
+
+###  changes:
+1. merged development QC pipeline changes
+
 ### v0.8.4
 
 ### changes:
