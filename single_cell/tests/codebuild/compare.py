@@ -150,6 +150,8 @@ def compare_infer_haps(data, refdata):
     data = pd.read_csv(data)
     refdata = pd.read_csv(refdata)
 
+    data = data[['chromosome','position','allele','hap_label','allele_id']]
+
     assert data.equals(refdata)
 
 
