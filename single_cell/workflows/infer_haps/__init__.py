@@ -111,11 +111,22 @@ def infer_haps(
     )
 
     workflow.transform(
+        name='annotate_haps',
+        ctx={'mem': 16},
+        func='single_cell.workflows.infer_haps.tasks.annotate_ref_alt',
+        args=(
+            mgd.TempInputFile('haplotypes_merged.tsv'),
+            remixt_ref_data_dir,
+            mgd.TempOutputFile('haplotypes_annotated.tsv'),
+        )
+    )
+
+    workflow.transform(
         name='finalize_csv',
         ctx={'mem': 16},
         func='single_cell.utils.csvutils.rewrite_csv_file',
         args=(
-            mgd.TempInputFile('haplotypes_merged.tsv'),
+            mgd.TempInputFile('haplotypes_annotated.tsv'),
             mgd.OutputFile(haplotypes_filename, extensions=['.yaml']),
         ),
         kwargs={

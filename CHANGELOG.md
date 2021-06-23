@@ -1,5 +1,11 @@
 # Change Log
 
+
+### v0.8.6 
+
+### Changes:
+1. added ref and alt to infer haps output
+
 ### v0.8.5
 
 ###  changes:
