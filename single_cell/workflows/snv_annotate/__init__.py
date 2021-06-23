@@ -1,25 +1,23 @@
 import pypeliner
 import pypeliner.managed as mgd
 
-from single_cell.workflows.snv_annotate.dtypes import dtypes
-
 
 def create_snv_annotate_workflow(
         config,
         museq_vcf,
         strelka_vcf,
-        cosmic_csv,
-        dbsnp_csv,
         mappability_csv,
         snpeff_csv,
         trinuc_csv,
+        additional_csv,
         memory_config,
 ):
-
     ctx = {
         'mem': memory_config['low'], 'num_retry': 3, 'mem_retry_increment': 2, 'ncpus': 1,
         'disk_retry_increment': 50,
     }
+    split_size = config['split_size']
+
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
     workflow.transform(
@@ -46,72 +44,49 @@ def create_snv_annotate_workflow(
     )
 
     workflow.subworkflow(
-        name='annotate_snvs',
-        axes=(),
-        ctx=ctx,
-        func="biowrappers.pipelines.snv_call_and_annotate.create_annotation_workflow",
+        name='snpeff_annotation',
+        func="single_cell.workflows.snpeff_annotation.create_snpeff_annotation_workflow",
         args=(
-            config,
             mgd.TempInputFile('all.snv.vcf.gz', extensions=['.tbi', '.csi']),
-            mgd.TempOutputFile('cosmic.csv.gz'),
-            mgd.TempOutputFile('dbsnp.csv.gz'),
-            mgd.TempOutputFile('mappability.csv.gz'),
-            mgd.TempOutputFile('snpeff.csv.gz'),
-            mgd.TempOutputFile('trinuc.csv.gz'),
-        ),
-        kwargs={
-            'variant_type': 'snv',
-        }
+            mgd.OutputFile(snpeff_csv, extensions=['.yaml']),
+            config['databases']['snpeff']['db'],
+            config['databases']['snpeff']['path'],
+        )
     )
 
-    workflow.transform(
-        name='prep_cosmic_csv',
-        func='single_cell.utils.csvutils.rewrite_csv_file',
+    workflow.subworkflow(
+        name='trinuc_annotation',
+        func="single_cell.workflows.trinuc_annotation.create_trinuc_annotation_workflow",
         args=(
-            mgd.TempInputFile('cosmic.csv.gz'),
-            mgd.OutputFile(cosmic_csv, extensions=['.yaml'])
+            mgd.TempInputFile('all.snv.vcf.gz', extensions=['.tbi', '.csi']),
+            mgd.OutputFile(trinuc_csv, extensions=['.yaml']),
+            config['ref_genome'],
         ),
-        kwargs={'dtypes': dtypes()['snv_annotate']}
+        kwargs={'split_size': split_size}
     )
 
-    workflow.transform(
-        name='prep_dbsnp_csv',
-        func='single_cell.utils.csvutils.rewrite_csv_file',
+    workflow.subworkflow(
+        name='mappability_annotation',
+        func="single_cell.workflows.mappability_annotation.create_mappability_annotation_workflow",
         args=(
-            mgd.TempInputFile('dbsnp.csv.gz'),
-            mgd.OutputFile(dbsnp_csv, extensions=['.yaml'])
+            mgd.TempInputFile('all.snv.vcf.gz', extensions=['.tbi', '.csi']),
+            mgd.OutputFile(mappability_csv, extensions=['.yaml']),
+            config['databases']['mappability']['path'],
         ),
-        kwargs={'dtypes': dtypes()['snv_annotate']}
+        kwargs={'split_size': split_size}
     )
 
-    workflow.transform(
-        name='prep_mappability_csv',
-        func='single_cell.utils.csvutils.rewrite_csv_file',
-        args=(
-            mgd.TempInputFile('mappability.csv.gz'),
-            mgd.OutputFile(mappability_csv, extensions=['.yaml'])
-        ),
-        kwargs={'dtypes': dtypes()['snv_annotate']}
-    )
-
-    workflow.transform(
-        name='prep_snpeff_csv',
-        func='single_cell.utils.csvutils.rewrite_csv_file',
-        args=(
-            mgd.TempInputFile('snpeff.csv.gz'),
-            mgd.OutputFile(snpeff_csv, extensions=['.yaml'])
-        ),
-        kwargs={'dtypes': dtypes()['snv_annotate']}
-    )
-
-    workflow.transform(
-        name='prep_trinuc_csv',
-        func='single_cell.utils.csvutils.rewrite_csv_file',
-        args=(
-            mgd.TempInputFile('trinuc.csv.gz'),
-            mgd.OutputFile(trinuc_csv, extensions=['.yaml'])
-        ),
-        kwargs={'dtypes': dtypes()['snv_annotate']}
-    )
+    for k, v in config['databases']['additional_databases'].items():
+        workflow.subworkflow(
+            name='{}_status'.format(k),
+            func='single_cell.workflows.db_annotation.create_db_annotation_workflow',
+            ctx=dict(mem=4, mem_retry_increment=2),
+            args=(
+                mgd.TempInputFile('all.snv.vcf.gz', extensions=['.tbi', '.csi']),
+                mgd.OutputFile(additional_csv[k], extensions=['.yaml']),
+                v['path'],
+            ),
+            kwargs={'split_size': split_size}
+        )
 
     return workflow

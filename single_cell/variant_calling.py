@@ -15,11 +15,9 @@ from single_cell.workflows import snv_annotate
 from single_cell.workflows import strelka
 
 
-def get_file_paths(root_dir):
+def get_file_paths(root_dir, config):
     data = {
         'museq_vcf': os.path.join(root_dir, 'museq.vcf.gz'),
-        'cosmic_csv': os.path.join(root_dir, 'snv_cosmic_status.csv.gz'),
-        'dbsnp_csv': os.path.join(root_dir, 'snv_dbsnp_status.csv.gz'),
         'mappability_csv': os.path.join(root_dir, 'snv_mappability.csv.gz'),
         'snpeff_csv': os.path.join(root_dir, 'snv_snpeff.csv.gz'),
         'museq_csv': os.path.join(root_dir, 'snv_museq.csv.gz'),
@@ -28,6 +26,10 @@ def get_file_paths(root_dir):
         'strelka_indel': os.path.join(root_dir, 'strelka_indel.vcf.gz'),
         'strelka_snv': os.path.join(root_dir, 'strelka_snv.vcf.gz'),
     }
+
+
+    data['additional_databases'] = {k: os.path.join(root_dir, 'snv_{}_status.csv.gz'.format(k)) for k in config['databases']['additional_databases']}
+
 
     return data
 
@@ -38,7 +40,7 @@ def variant_calling_workflow(args):
 
     normal_bams, tumour_bams = inpututils.load_variant_calling_input(args['input_yaml'])
 
-    filepaths = get_file_paths(args['out_dir'])
+    filepaths = get_file_paths(args['out_dir'], config)
 
     meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
     input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
@@ -55,6 +57,7 @@ def variant_calling_workflow(args):
         obj=mgd.OutputChunks('region'),
         value=list(normal_bams.keys()),
     )
+
     workflow.subworkflow(
         name='museq',
         func=mutationseq.create_museq_workflow,
@@ -91,14 +94,16 @@ def variant_calling_workflow(args):
             config,
             mgd.InputFile(filepaths['museq_vcf'], extensions=['.tbi', '.csi']),
             mgd.InputFile(filepaths['strelka_snv'], extensions=['.tbi', '.csi']),
-            mgd.OutputFile(filepaths['cosmic_csv'], extensions=['.yaml']),
-            mgd.OutputFile(filepaths['dbsnp_csv'], extensions=['.yaml']),
             mgd.OutputFile(filepaths['mappability_csv'], extensions=['.yaml']),
             mgd.OutputFile(filepaths['snpeff_csv'], extensions=['.yaml']),
             mgd.OutputFile(filepaths['trinuc_csv'], extensions=['.yaml']),
+            {k:mgd.OutputFile(v) for k,v in filepaths['additional_databases'].items()},
             config['memory']
         )
     )
+
+    allfiles = [filepaths[k] for k in filepaths if not k == 'additional_databases']
+    allfiles += filepaths['additional_databases'].values()
 
     workflow.transform(
         name='generate_meta_files_results',
@@ -106,7 +111,7 @@ def variant_calling_workflow(args):
         args=(
             sys.argv[0:],
             args['out_dir'],
-            list(filepaths.values()),
+            allfiles,
             mgd.OutputFile(meta_yaml)
         ),
         kwargs={

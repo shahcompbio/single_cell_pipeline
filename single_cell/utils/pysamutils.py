@@ -7,9 +7,6 @@ import shutil
 from collections import OrderedDict
 
 import pysam
-import os
-
-
 from single_cell.utils.bamutils import bam_index
 
 
@@ -64,7 +61,7 @@ def _fraction_softclipped(x):
 def remove_softclipped_reads(infile, outfile, softclipped_reads_threshold):
     if softclipped_reads_threshold == 1:
         shutil.copyfile(infile, outfile)
-        shutil.copyfile(infile+'.bai', outfile+'.bai')
+        shutil.copyfile(infile + '.bai', outfile + '.bai')
         return
 
     bamfile = pysam.AlignmentFile(infile, "rb")
@@ -75,4 +72,4 @@ def remove_softclipped_reads(infile, outfile, softclipped_reads_threshold):
             filteredbam.write(read)
     filteredbam.close()
 
-    bam_index(outfile, outfile+'.bai')
+    bam_index(outfile, outfile + '.bai')
