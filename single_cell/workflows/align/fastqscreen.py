@@ -4,6 +4,7 @@ from collections import defaultdict
 
 import pandas as pd
 import pypeliner
+import single_cell.workflows.align.fastqscreen_utils as utils
 from single_cell.utils import csvutils
 from single_cell.utils import fastqutils
 from single_cell.utils import helpers
@@ -17,16 +18,9 @@ def merge_fastq_screen_counts(
 ):
     genome_labels = [genome['name'] for genome in fastqscreen_config['genomes']]
 
-    if isinstance(all_detailed_counts, dict):
-        all_detailed_counts = all_detailed_counts.values()
-
-    detailed_data = []
-    for countsfile in all_detailed_counts:
-        if os.stat(countsfile).st_size == 0:
-            continue
-        detailed_data.append(pd.read_csv(countsfile))
-
-    df = pd.concat(detailed_data)
+    all_detailed_counts = helpers.flatten(all_detailed_counts)
+    all_detailed_counts = [pd.read_csv(file) for file in all_detailed_counts if not helpers.is_empty(file)]
+    df = pd.concat(all_detailed_counts)
 
     index_cols = [v for v in df.columns.values if v != "count"]
 
@@ -39,12 +33,9 @@ def merge_fastq_screen_counts(
         fastqscreen_dtypes(genome_labels)['fastqscreen_detailed'], write_header=True
     )
 
-    if isinstance(all_summary_counts, dict):
-        all_summary_counts = all_summary_counts.values()
-
-    summary_counts = [pd.read_csv(countsfile) for countsfile in all_summary_counts]
-
-    df = pd.concat(summary_counts)
+    all_summary_counts = helpers.flatten(all_summary_counts)
+    all_summary_counts = [pd.read_csv(file) for file in all_summary_counts if not helpers.is_empty(file)]
+    df = pd.concat(all_summary_counts)
 
     update_cols = [v for v in df.columns.values if v != 'cell_id']
 
@@ -60,60 +51,37 @@ def merge_fastq_screen_counts(
 
 
 def run_fastq_screen_paired_end(fastq_r1, fastq_r2, tempdir, params):
-    def get_basename(filepath):
-        filepath_base = os.path.basename(filepath)
+    r1_basename, r1_ext = utils.get_basename(fastq_r1)
+    tagged_fastq_r1 = os.path.join(tempdir, '{}.tagged{}'.format(r1_basename, r1_ext))
 
-        if filepath_base.endswith('.fastq.gz'):
-            filepath_base = filepath_base[:-len('.fastq.gz')]
-            extension = '.fastq.gz'
-        elif filepath_base.endswith('.fq.gz'):
-            filepath_base = filepath_base[:-len('.fq.gz')]
-            extension = '.fastq.gz'
-        elif filepath_base.endswith('.fastq'):
-            filepath_base = filepath_base[:-len('.fastq')]
-            extension = '.fastq'
-        elif filepath_base.endswith('.fq'):
-            filepath_base = filepath_base[:-len('.fq')]
-            extension = '.fastq'
-        else:
-            raise Exception('unknown file format. {}'.format(filepath))
-        return filepath_base, extension
+    r2_basename, r2_ext = utils.get_basename(fastq_r2)
+    tagged_fastq_r2 = os.path.join(tempdir, '{}.tagged{}'.format(r2_basename, r2_ext))
 
-    basename, ext = get_basename(fastq_r1)
-    tagged_fastq_r1 = os.path.join(tempdir, '{}.tagged{}'.format(basename, ext))
-
-    basename, ext = get_basename(fastq_r2)
-    tagged_fastq_r2 = os.path.join(tempdir, '{}.tagged{}'.format(basename, ext))
-
-    # fastq screen fails if run on empty files
-    with helpers.getFileHandle(fastq_r1) as reader:
-        if not reader.readline():
-            shutil.copy(fastq_r1, tagged_fastq_r1)
-            shutil.copy(fastq_r2, tagged_fastq_r2)
-            return tagged_fastq_r1, tagged_fastq_r2
+    if helpers.is_empty(fastq_r1):
+        shutil.copy(fastq_r1, tagged_fastq_r1)
+        shutil.copy(fastq_r2, tagged_fastq_r2)
+        return tagged_fastq_r1, tagged_fastq_r2
 
     config = os.path.join(tempdir, 'fastq_screen.config')
+    utils.generate_fastqscreen_config(config, params)
 
-    with open(config, 'w') as config_writer:
-        for genome in params['genomes']:
-            genome_name = genome['name']
-            genome_path = genome['path']
-            outstr = '\t'.join(['DATABASE', genome_name, genome_path]) + '\n'
-            config_writer.write(outstr)
-
-    cmd = [
+    pypeliner.commandline.execute(
         'fastq_screen',
         '--aligner', params['aligner'],
         '--conf', config,
         '--outdir', tempdir,
         '--tag',
-        fastq_r1,
-        fastq_r2,
-    ]
+        fastq_r1, fastq_r2,
+    )
 
-    pypeliner.commandline.execute(*cmd)
-
-    return tagged_fastq_r1, tagged_fastq_r2
+    if utils.regroup_needed(params):
+        fixed_fastq_r1 = os.path.join(tempdir, '{}.tagged.fixed{}'.format(r1_basename, r1_ext))
+        fixed_fastq_r2 = os.path.join(tempdir, '{}.tagged.fixed{}'.format(r2_basename, r2_ext))
+        utils.regroup_genomes(tagged_fastq_r1, fixed_fastq_r1)
+        utils.regroup_genomes(tagged_fastq_r2, fixed_fastq_r2)
+        return fixed_fastq_r1, fixed_fastq_r2
+    else:
+        return tagged_fastq_r1, tagged_fastq_r2
 
 
 def write_detailed_counts(counts, outfile, cell_id, fastqscreen_params):
@@ -186,31 +154,12 @@ def write_summary_counts(counts, outfile, cell_id, fastqscreen_params):
         writer.write(values)
 
 
-def filter_tag_reads(
-        input_r1, input_r2, output_r1, output_r2, inclusive_filters, exclusive_filters
-):
-    reader = fastqutils.PairedTaggedFastqReader(input_r1, input_r2)
-
-    with helpers.getFileHandle(output_r1, 'wt') as writer_r1, helpers.getFileHandle(output_r2, 'wt') as writer_r2:
-        for read_1, read_2 in reader.filter_read_iterator(inclusive_filters, exclusive_filters):
-
-            read_1 = reader.add_tag_to_read_comment(read_1)
-            read_2 = reader.add_tag_to_read_comment(read_2)
-
-            for line in read_1:
-                writer_r1.write(line)
-
-            for line in read_2:
-                writer_r2.write(line)
 
 
 def organism_filter(
         fastq_r1, fastq_r2, filtered_fastq_r1, filtered_fastq_r2,
         detailed_metrics, summary_metrics, tempdir, cell_id, params
 ):
-    inclusive_filters = {genome['name']: genome['filter_inclusive'] for genome in params['genomes']}
-    exclusive_filters = {genome['name']: genome['filter_exclusive'] for genome in params['genomes']}
-
     # fastq screen tries to skip if files from old runs are available
     if os.path.exists(tempdir):
         shutil.rmtree(tempdir)
@@ -227,7 +176,7 @@ def organism_filter(
     write_detailed_counts(counts, detailed_metrics, cell_id, params)
     write_summary_counts(counts, summary_metrics, cell_id, params)
 
-    filter_tag_reads(
+    utils.filter_tag_reads(
         tagged_fastq_r1, tagged_fastq_r2, filtered_fastq_r1,
-        filtered_fastq_r2, inclusive_filters, exclusive_filters
+        filtered_fastq_r2, params
     )

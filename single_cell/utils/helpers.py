@@ -22,6 +22,26 @@ class InputException(Exception):
     pass
 
 
+def is_empty(filepath):
+    if get_file_format(filepath) == 'gzip':
+        with gzip.open(filepath, 'rt') as reader:
+            if reader.readline():
+                return False
+            else:
+                return True
+    else:
+        if os.stat(filepath).st_size == 0:
+            return True
+        else:
+            return False
+
+
+def flatten(data):
+    if isinstance(data, dict):
+        data = data.values()
+    return data
+
+
 def generate_and_upload_metadata(
         command, root_dir, filepaths, output, template=None,
         input_yaml_data=None, input_yaml=None, metadata={}, type=None
