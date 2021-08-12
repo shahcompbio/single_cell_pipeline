@@ -100,24 +100,19 @@ def get_align_params(reference_dir, reference):
         'gc_windows': referencedata['gc_windows'],
         'fastq_screen_params': {
             'aligner': 'bwa',
+            'filter_tags': None,
             'genomes': [
                 {
                     'name': 'grch37',
-                    'path': refdata_callback(reference_dir, 'grch37')['ref_genome'],
-                    'filter_inclusive': False,
-                    'filter_exclusive': False
+                    'paths': refdata_callback(reference_dir, 'grch37')['ref_genome'],
                 },
                 {
                     'name': 'mm10',
-                    'path': refdata_callback(reference_dir, 'mm10')['ref_genome'],
-                    'filter_inclusive': False,
-                    'filter_exclusive': False
+                    'paths': refdata_callback(reference_dir, 'mm10')['ref_genome'],
                 },
                 {
                     'name': 'salmon',
-                    'path': refdata_callback(reference_dir, 'GCF_002021735')['ref_genome'],
-                    'filter_inclusive': False,
-                    'filter_exclusive': False
+                    'paths': refdata_callback(reference_dir, 'GCF_002021735')['ref_genome'],
                 },
             ]
         }
