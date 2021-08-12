@@ -1,5 +1,11 @@
 # Change Log
 
+### v0.8.7
+
+### Changes:
+1. fastqscreen tags limited to [0,1]
+2. fastqscreen now can filter out custom tag combinations
+3.  supports list of references per organism 
 
 ### v0.8.6 
 
