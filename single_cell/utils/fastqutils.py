@@ -76,7 +76,7 @@ class TaggedFastqReader(FastqReader):
 
         flag = map(int, list(fq_tag[-1]))
 
-        flag_map = {self.indices[i]: v for i, v in enumerate(flag)}
+        flag_map = {self.indices[i]: 0 if v == 0 else 1 for i, v in enumerate(flag)}
 
         return flag_map
 
@@ -96,27 +96,18 @@ class TaggedFastqReader(FastqReader):
 
         return read
 
-    def filter_read_iterator(self, inclusive_filters, exclusive_filters):
-        no_filter = False
-        if not any(inclusive_filters.values()) and not any(exclusive_filters.values()):
-            no_filter = True
+    @staticmethod
+    def __filter(genomes, filter_tags, tags):
+        tags = ''.join([str(tags[genome]) for genome in genomes])
+        if tags in filter_tags:
+            return True
 
+    def filter_read_iterator(self, genomes, filter_tags):
         for read in self.get_read_iterator():
             read_tags = self.get_read_tag(read)
 
-            if no_filter:
-                yield read
+            if self.__filter(genomes, filter_tags, read_tags):
                 continue
-
-            for tag in read_tags:
-
-                if inclusive_filters[tag]:
-                    if read_tags[tag]:
-                        continue
-
-                if exclusive_filters[tag]:
-                    if read_tags[tag] and not any([v for k, v in read_tags.items() if not k == tag]):
-                        continue
 
             yield read
 
@@ -142,39 +133,21 @@ class PairedTaggedFastqReader(PairedFastqReader, TaggedFastqReader):
         super(PairedTaggedFastqReader, self).__init__(fastq_r1, fastq_r2)
         self.indices = None
 
-    def filter_read_iterator(self, inclusive_filters, exclusive_filters):
+    @staticmethod
+    def __filter(genomes, filter_tags, tags_r1, tags_r2):
+        tags_r1 = ''.join([str(tags_r1[genome]) for genome in genomes])
+        tags_r2 = ''.join([str(tags_r2[genome]) for genome in genomes])
 
-        inclusive_filters = [k for k,v in inclusive_filters.items() if v]
-        exclusive_filters = [k for k,v in exclusive_filters.items() if v]
+        if tags_r1 in filter_tags or tags_r2 in filter_tags:
+            return True
 
+    def filter_read_iterator(self, genomes, filter_tags):
         for read_1, read_2 in self.get_read_pair_iterator():
 
             tags_r1 = self.get_read_tag(read_1)
             tags_r2 = self.get_read_tag(read_2)
 
-            if not inclusive_filters and not exclusive_filters:
-                yield read_1, read_2
-                continue
-
-            filter_out = False
-            if inclusive_filters:
-                for filt in inclusive_filters:
-                    if tags_r1[filt] or tags_r2[filt]:
-                        filter_out=True
-                        break
-            if filter_out:
-                continue
-
-            if exclusive_filters:
-                for tag in exclusive_filters:
-                    if tags_r1[tag] and not any([v for k, v in tags_r1.items() if not k == tag]):
-                        filter_out = True
-                        break
-
-                    if tags_r2[tag] and not any([v for k, v in tags_r2.items() if not k == tag]):
-                        filter_out = True
-                        break
-            if filter_out:
+            if self.__filter(genomes, filter_tags, tags_r1, tags_r2):
                 continue
 
             yield read_1, read_2
