@@ -1,4 +1,4 @@
-FROM quay.io/singlecellpipelinetest/miniconda3:4.8.2
+FROM quay.io/singlecellpipelinetest/miniconda3:4.10.3
 ADD . /app
 
 
