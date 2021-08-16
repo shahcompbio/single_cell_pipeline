@@ -10,7 +10,7 @@ RUN pip install git+https://github.com/shahcompbio/scgenome.git@v0.0.1
 RUN pip install git+https://github.com/shahcompbio/classifycopynumber.git@v0.0.5
 RUN cp /app/oncokb-annotator/MafAnnotator.py /app/oncokb-annotator/AnnotatorCore.py /opt/conda/bin && chmod 777 /opt/conda/bin/MafAnnotator.py  /opt/conda/bin/AnnotatorCore.py
 RUN pip install brewer2mpl lda umap adjusttext hmmlearn pandas seaborn packaging
-RUN apt update && apt install build-essential -y
+RUN apt update -y && apt install build-essential -y
 RUN pip install hdbscan numpy --force-reinstall
 RUN apt update && apt install samtools -y
 RUN conda install -c bioconda bioconductor-maftools
