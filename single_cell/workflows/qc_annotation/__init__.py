@@ -13,7 +13,6 @@ def create_qc_annotation_workflow(
         merged_metrics, qc_report, pass_segs, fail_segs,
         plot_heatmap_ec_filt_output, config
 ):
-
     workflow = pypeliner.workflow.Workflow()
 
     workflow.transform(

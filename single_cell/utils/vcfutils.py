@@ -3,10 +3,12 @@ Created on Feb 27, 2018
 
 @author: dgrewal
 '''
+import itertools
 import logging
 import os
 
 import biowrappers.components.io.vcf.tasks as vcf_tasks
+import vcf
 from single_cell.utils import helpers
 
 
@@ -88,3 +90,31 @@ def merge_vcf(infiles, outfile, tempdir):
     vcf_tasks.merge_vcfs(vcf_files, temp_output)
 
     vcf_tasks.finalise_vcf(temp_output, outfile)
+
+
+def split_vcf(in_file, out_files, lines_per_file):
+    """ Split a VCF file into smaller files.
+
+    :param in_file: Path of VCF file to split.
+
+    :param out_files: Callback function which supplies file name given index of split.
+
+    :param lines_per_file: Maximum number of lines to be written per file.
+
+     """
+
+    def line_group(_, line_idx=itertools.count()):
+        return int(next(line_idx) / lines_per_file)
+
+    reader = vcf.Reader(filename=in_file)
+
+    for file_idx, records in itertools.groupby(reader, key=line_group):
+        file_name = out_files[file_idx]
+
+        with open(file_name, 'w') as out_fh:
+            writer = vcf.Writer(out_fh, reader)
+
+            for record in records:
+                writer.write_record(record)
+
+            writer.close()

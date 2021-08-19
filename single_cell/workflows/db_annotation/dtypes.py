@@ -24,6 +24,5 @@ def dtypes():
         'tri_nucleotide_context': 'str',
     }
 
-    dtypes = locals()
 
-    return dtypes
+    return snv_annotate

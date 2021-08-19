@@ -1,6 +1,9 @@
-FROM quay.io/singlecellpipelinetest/miniconda3:4.8.2
+FROM quay.io/singlecellpipelinetest/miniconda3:4.10.3
 
 ADD . /app
+
+RUN conda install --file /app/conda_requirements.txt
+RUN pip install -r /app/pip_requirements.txt
 
 RUN rm -rf /opt/conda/lib/python3.7/site-packages/pypeliner* && pip install git+https://github.com/shahcompbio/pypeliner.git@v0.6.2
 RUN rm -rf /opt/conda/lib/python3.7/site-packages/single_cell* && pip install git+https://github.com/shahcompbio/single_cell_pipeline.git@{git_commit}
@@ -10,14 +13,9 @@ RUN pip install git+https://github.com/shahcompbio/scgenome.git@v0.0.1
 RUN pip install git+https://github.com/shahcompbio/classifycopynumber.git@v0.0.5
 RUN cp /app/oncokb-annotator/MafAnnotator.py /app/oncokb-annotator/AnnotatorCore.py /opt/conda/bin && chmod 777 /opt/conda/bin/MafAnnotator.py  /opt/conda/bin/AnnotatorCore.py
 RUN pip install brewer2mpl lda umap adjusttext hmmlearn pandas seaborn packaging
-RUN apt update && apt install build-essential -y
+RUN apt update && apt install build-essential samtools -y
 RUN pip install hdbscan numpy --force-reinstall
-RUN apt update && apt install samtools -y
-RUN conda install -c bioconda bioconductor-maftools
-RUN conda install -c shahcompbio pseudo_bulk_qc_html_report --force-reinstall
-RUN conda install -c shahcompbio -c bioconda vcf2maf_shahcompbio
 RUN rm -rf /opt/conda/bin/samtools
 RUN pip install azure-batch azure-common azure-core azure-storage-blob azure-identity
 RUN pip install rpy2
 RUN pip install git+https://github.com/amcpherson/wgs_analysis.git@v0.0.2
-RUN pip install -r /app/conda_requirements.txt

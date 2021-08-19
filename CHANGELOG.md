@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.8.8
+
+### Changes:
+1. annotation pipeline for variant calling can now be configured in config file
+
 ### v0.8.7
 
 ### Changes:

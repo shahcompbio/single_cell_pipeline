@@ -4,7 +4,6 @@ Created on Jun 6, 2018
 @author: dgrewal
 '''
 import collections
-import copy
 
 import yaml
 from single_cell.config import config_reference
@@ -227,11 +226,11 @@ def get_germline_calling_params(reference_dir, reference):
 def get_variant_calling_params(reference_dir, reference):
     referencedata = config_reference.get_cluster_reference_data(reference_dir, reference)
 
-    status_data = {
-        'kwargs': {
-            'split_size': 10000000
-        }
-    }
+    additional_dbs = {}
+    for k, v in referencedata['databases'].items():
+        if k == 'mappability' or k == 'snpeff':
+            continue
+        additional_dbs[k] = {'path': v['local_path']}
 
     params = {
         'memory': {'low': 4, 'med': 6, 'high': 16},
@@ -239,41 +238,14 @@ def get_variant_calling_params(reference_dir, reference):
         'ref_genome': referencedata['ref_genome'],
         'chromosomes': referencedata['chromosomes'],
         'use_depth_thresholds': True,
-        'split_size': 10000000,
-        'cosmic_status': copy.deepcopy(status_data),
-        'dbsnp_status': copy.deepcopy(status_data),
-        'mappability': copy.deepcopy(status_data),
-        'snpeff': copy.deepcopy(status_data),
-        'tri_nucleotide_context': copy.deepcopy(status_data),
+        'split_size': int(1e7),
         'databases': {
-            'cosmic': {
-                'download_method': 'sftp',
-                'user_name': 'awm3@sfu.ca',
-                'password': 'shahlabith',
-                'host': 'sftp-cancer.sanger.ac.uk',
-                'remote_paths': {
-                    'coding': '/files/grch37/cosmic/v75/VCF/CosmicCodingMuts.vcf.gz',
-                    'non_coding': '/files/grch37/cosmic/v75/VCF/CosmicNonCodingVariants.vcf.gz',
-                },
-                'local_path': referencedata['databases']['cosmic']['local_path'],
-            },
-            'dbsnp': {
-                'url': 'ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b146_GRCh37p13/VCF/common_all_20151104.vcf.gz',
-                'local_path': referencedata['databases']['dbsnp']['local_path'],
-            },
-            'mappability': {
-                'url': 'http://hgdownload-test.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/release3'
-                       '/wgEncodeCrgMapabilityAlign50mer.bigWig',
-                'local_path': referencedata['databases']['mappability']['local_path'],
-            },
-            'ref_genome': {
-                'url': 'http://www.bcgsc.ca/downloads/genomes/9606/hg19/1000genomes/bwa_ind/genome/GRCh37-lite.fa',
-                'local_path': referencedata['ref_genome'],
-            },
+            'mappability': {"path": referencedata['databases']['mappability']['local_path']},
             'snpeff': {
-                "db": 'GRCh37.75',
-                "data_dir": referencedata['databases']['snpeff']['local_path']
+                'db': referencedata["databases"]["snpeff"]["db"],
+                "path": referencedata["databases"]["snpeff"]["local_path"]
             },
+            'additional_databases': additional_dbs,
         },
         'museq_params': {
             'threshold': 0.5,
