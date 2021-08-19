@@ -3,15 +3,14 @@ Created on Jun 26, 2018
 
 @author: dgrewal
 '''
-import argparse
-import pandas as pd
-import numpy as np
-import single_cell.utils.helpers
 import shutil
 
-from sklearn.ensemble import RandomForestClassifier
-
+import argparse
+import numpy as np
+import pandas as pd
+import single_cell.utils.helpers
 from single_cell.utils import csvutils
+from sklearn.ensemble import RandomForestClassifier
 
 
 def parse_args():
@@ -90,7 +89,6 @@ def train_classifier(filename):
 
 def load_data(hmmcopy_filename, alignment_filename,
               colnames):
-
     hmmcopy_data = csvutils.read_csv_and_yaml(hmmcopy_filename)
     alignment_data = csvutils.read_csv_and_yaml(alignment_filename)
 
@@ -116,6 +114,7 @@ def load_data(hmmcopy_filename, alignment_filename,
     data = data.fillna(0)
 
     return data
+
 
 def classify(model, data):
     predictions = model.predict_proba(data)

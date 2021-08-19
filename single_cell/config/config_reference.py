@@ -47,7 +47,8 @@ def get_reference_data(reference, rootdir):
                 'local_path': os.path.join(rootdir, 'human/dbsnp_b146_GRCh37p13.vcf.gz'),
             },
             'snpeff': {
-                'local_path': os.path.join(rootdir, 'snpeff/data/')
+                'local_path': os.path.join(rootdir, 'snpeff/data/'),
+                'db': 'GRCh37.75'
             }
         }
 
@@ -75,19 +76,22 @@ def get_reference_data(reference, rootdir):
         chromosomes = get_chromosomes('mm10')
         destruct_ref_data = os.path.join(rootdir, 'mouse/')
         destruct_gtf_file = os.path.join(rootdir, 'mouse/mm10_build38_mouse.gtf')
+        qc_gtf_file = None
         reference_gc_qc = None
+        qc_gtf_file = None
         databases = {
             'mappability': {
-                'local_path': None,
+                'local_path': os.path.join(rootdir, 'mouse/k50.Umap.MultiTrackMappability.bw'),
             },
-            'cosmic': {
-                'local_path': None,
+            'mgp_indel': {
+                'local_path': os.path.join(rootdir, 'mouse/mgp.v3.indels.rsIDdbSNPv137.vcf.gz'),
             },
-            'dbsnp': {
-                'local_path': None,
+            'mgp_snv': {
+                'local_path': os.path.join(rootdir, 'mouse/mgp.v3.snps.rsIDdbSNPv137.vcf.gz'),
             },
             'snpeff': {
-                'local_path': None
+                'local_path': os.path.join(rootdir, 'snpeff/data'),
+                'db': 'mm10'
             }
         }
     else:

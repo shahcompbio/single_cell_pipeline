@@ -1,7 +1,7 @@
-FROM quay.io/singlecellpipelinetest/miniconda3:4.8.2
+FROM quay.io/singlecellpipelinetest/miniconda3:4.10.3
 ADD . /app
 RUN conda install --file /app/conda_requirements.yml
-
+RUN wget https://bootstrap.pypa.io/get-pip.py && python get-pip.py
 RUN pip install git+https://github.com/shahcompbio/pypeliner.git@v0.6.2
 RUN pip install git+https://github.com/shahcompbio/single_cell_pipeline.git@{git_commit}
 RUN pip install git+https://github.com/shahcompbio/cell_cycle_classifier.git@v0.0.3
