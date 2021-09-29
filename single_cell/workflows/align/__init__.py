@@ -99,6 +99,7 @@ def bam_metrics_workflow(
         args=(
             mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename),
             mgd.TempOutputFile('coverage_metrics.yaml', 'cell_id'),
+            mgd.InputInstance('cell_id')
         ),
     )
 
