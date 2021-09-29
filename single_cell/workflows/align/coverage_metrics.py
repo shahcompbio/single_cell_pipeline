@@ -38,7 +38,7 @@ class CoverageMetrics(object):
 
     @property
     def genome_length(self):
-        lengths = [val for val in self._bam_reader.header['SQ']]
+        lengths = [val['LN'] for val in self._bam_reader.header['SQ']]
         return sum(lengths)
 
     def _get_read_intervals(self, read):
