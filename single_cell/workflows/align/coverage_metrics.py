@@ -142,7 +142,7 @@ class CoverageMetrics(object):
 
 def expected_and_aligned_coverage(bamfile):
     with CoverageMetrics(bamfile) as cov:
-        genome_length = cov.genome_length()
+        genome_length = cov.genome_length
 
     bam = pysam.AlignmentFile(bamfile, 'rb')
     expected_length = 0
