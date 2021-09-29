@@ -28,6 +28,7 @@ class CoverageMetrics(object):
 
     def __enter__(self):
         self._bam_reader = self._get_bam_reader()
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._bam_reader.close()
