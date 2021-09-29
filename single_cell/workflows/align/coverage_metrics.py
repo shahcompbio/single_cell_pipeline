@@ -117,7 +117,7 @@ class CoverageMetrics(object):
                 continue
 
             regions = self._get_read_intervals(read)
-            read_dict[read.query_name][read.reference_name].append(regions)
+            read_dict[read.query_name][read.reference_name].extend(regions)
         return read_dict
 
     def get_coverage(self, read_dict):
