@@ -148,8 +148,7 @@ def bam_metrics_workflow(
             mgd.TempInputFile("alignment_metrics_annotated.csv.gz", extensions=['.yaml']),
             mgd.TempInputFile('coverage_metrics.yaml', 'cell_id'),
             mgd.TempOutputFile('alignment_metrics_annotated_coverage.csv.gz', extensions=['.yaml']),
-        ),
-        kwargs={'annotation_dtypes': dtypes()['metrics']}
+        )
     )
 
     workflow.transform(
