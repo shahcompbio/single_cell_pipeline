@@ -37,6 +37,7 @@ def dtypes():
         'overlap_with_all_filters_and_qual': 'float',
         'overlap_with_dups': 'float',
         'overlap_without_dups': 'float',
+        'is_control': 'bool',
     }
 
     gc = {str(i): 'float' for i in range(0, 101)}
