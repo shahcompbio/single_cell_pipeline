@@ -30,7 +30,13 @@ def dtypes():
         'sample_type': 'str',
         'is_contaminated': 'bool',
         'trim': 'bool',
-        'sample_id': 'str'
+        'sample_id': 'str',
+        'aligned': 'float',
+        'expected': 'float',
+        'overlap_with_all_filters': 'float',
+        'overlap_with_all_filters_and_qual': 'float',
+        'overlap_with_dups': 'float',
+        'overlap_without_dups': 'float',
     }
 
     gc = {str(i): 'float' for i in range(0, 101)}
