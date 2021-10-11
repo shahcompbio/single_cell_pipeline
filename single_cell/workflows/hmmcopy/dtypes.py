@@ -78,7 +78,8 @@ def dtypes():
         'index_i7': 'str',
         'order': 'int',
         'row': 'int',
-        'trim': 'bool'
+        'trim': 'bool',
+        'is_control': 'bool'
     }
 
     dtypes = locals()
