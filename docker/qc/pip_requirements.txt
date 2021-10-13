@@ -1,1 +1,1 @@
-mafannotator @ git+https://github.com/shahcompbio/mafannotator.git@df2f6440cd7ec9b11f02d7ffe3facab94b7418af
+mafannotator @ git+https://github.com/shahcompbio/mafannotator.git@2d773b4fe77b1408d60916ef70f47183adbba5b0
