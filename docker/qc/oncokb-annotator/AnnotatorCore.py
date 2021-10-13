@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 import json
 import sys
 import csv
@@ -158,6 +158,7 @@ REQUIRED_QUERY_TYPE_COLUMNS = {
 }
 
 POST_QUERIES_THRESHOLD = 1000
+POST_QUERIES_THRESHOLD_GC_HGVSG = 100
 
 def getOncokbInfo():
     ret = ['Files annotated on ' + date.today().strftime('%m/%d/%Y') + "\nOncoKB API URL: "+oncokbapiurl]
@@ -505,8 +506,13 @@ def get_var_allele(ref_allele, tumor_seq_allele1, tumor_seq_allele2):
     # this will be used to resolve the variant classification and variant type
     # if there are no tumor alleles that do not match the ref allele then use empty string
     # in the event that this happens then there might be something wrong with the data itself
+    # if both alleles are different, use allele2. Stick with the logic of GenomeNexus
     try:
-        tumor_seq_allele = [allele for allele in [tumor_seq_allele1, tumor_seq_allele2] if allele != ref_allele][0]
+        tumor_seq_allele = ""
+        if ref_allele != tumor_seq_allele2:
+            tumor_seq_allele = tumor_seq_allele2
+        elif ref_allele != tumor_seq_allele1:
+            tumor_seq_allele = tumor_seq_allele1
     except:
         tumor_seq_allele = ""
 
@@ -532,7 +538,7 @@ def process_genomic_change(maffilereader, outf, maf_headers, ncols, nannotationc
     for row in maffilereader:
         i = i + 1
 
-        if i % POST_QUERIES_THRESHOLD == 0:
+        if i % POST_QUERIES_THRESHOLD_GC_HGVSG == 0:
             log.info(i)
 
         row = padrow(row, ncols)
@@ -556,7 +562,7 @@ def process_genomic_change(maffilereader, outf, maf_headers, ncols, nannotationc
         queries.append(query)
         rows.append(row)
 
-        if len(queries) == POST_QUERIES_THRESHOLD:
+        if len(queries) == POST_QUERIES_THRESHOLD_GC_HGVSG:
             annotations = pull_genomic_change_info(queries,annotatehotspots)
             append_annotation_to_file(outf, ncols+nannotationcols, rows, annotations)
             queries = []
@@ -578,7 +584,7 @@ def process_hvsg(maffilereader, outf, maf_headers, alteration_column_names, ncol
     for row in maffilereader:
         i = i + 1
 
-        if i % POST_QUERIES_THRESHOLD == 0:
+        if i % POST_QUERIES_THRESHOLD_GC_HGVSG == 0:
             log.info(i)
 
         row = padrow(row, ncols)
@@ -604,7 +610,7 @@ def process_hvsg(maffilereader, outf, maf_headers, alteration_column_names, ncol
             queries.append(query)
             rows.append(row)
 
-        if len(queries) == POST_QUERIES_THRESHOLD:
+        if len(queries) == POST_QUERIES_THRESHOLD_GC_HGVSG:
             annotations = pull_hgvsg_info(queries, annotatehotspots)
             append_annotation_to_file(outf, ncols+nannotationcols, rows, annotations)
             queries = []
@@ -1416,7 +1422,9 @@ def getimplications(oncokbdata, levels, implications):
                 log.info(level + " is ignored")
             else:
                 if 'tumorType' in implication:
-                    oncokbdata[level].append(gettumortypename(implication['tumorType']))
+                    tumortypename = gettumortypename(implication['tumorType'])
+                    if tumortypename not in oncokbdata[level]:
+                        oncokbdata[level].append(tumortypename)
 
 
 class GenomicChangeQuery:
@@ -1451,6 +1459,8 @@ class StructuralVariantQuery:
 def pull_protein_change_info(queries, annotate_hotspot):
     url = oncokbapiurl + '/annotate/mutations/byProteinChange'
     response = makeoncokbpostrequest(url, queries)
+    if response.status_code == 401:
+        raise Exception('unauthorized')
     annotation = []
     if response.status_code == 200:
         annotation = response.json()
@@ -1460,11 +1470,11 @@ def pull_protein_change_info(queries, annotate_hotspot):
             geturl += 'hugoSymbol=' + query.gene.hugoSymbol
             geturl += '&alteration=' + query.alteration
             geturl += '&tumorType=' + query.tumorType
-            if query.consequence:
+            if hasattr(query, 'consequence') and query.consequence:
                 geturl += '&consequence=' + query.consequence
-            if query.proteinStart and query.proteinStart != '\\N' and query.proteinStart != 'NULL' and query.proteinStart != '':
+            if hasattr(query, 'proteinStart') and query.proteinStart and query.proteinStart != '\\N' and query.proteinStart != 'NULL' and query.proteinStart != '':
                 geturl += '&proteinStart=' + str(query.proteinStart)
-            if query.proteinEnd and query.proteinEnd != '\\N' and query.proteinEnd != 'NULL' and query.proteinEnd != '':
+            if hasattr(query, 'proteinEnd') and query.proteinEnd and query.proteinEnd != '\\N' and query.proteinEnd != 'NULL' and query.proteinEnd != '':
                 geturl += '&proteinEnd=' + str(query.proteinEnd)
             getresponse = makeoncokbgetrequest(geturl)
             if getresponse.status_code == 200:
@@ -1483,6 +1493,8 @@ def pull_protein_change_info(queries, annotate_hotspot):
 def pull_hgvsg_info(queries, annotate_hotspot):
     url = oncokbapiurl + '/annotate/mutations/byHGVSg'
     response = makeoncokbpostrequest(url, queries)
+    if response.status_code == 401:
+        raise Exception('unauthorized')
     annotation = []
     if response.status_code == 200:
         annotation = response.json()
@@ -1497,6 +1509,7 @@ def pull_hgvsg_info(queries, annotate_hotspot):
             else:
                 # if the api call fails, we should still push a None into the list
                 # to keep the same length of the queries
+                print('Error on annotating the url ' + geturl)
                 annotation.append(None)
 
     processed_annotation = []
@@ -1507,6 +1520,8 @@ def pull_hgvsg_info(queries, annotate_hotspot):
 def pull_genomic_change_info(queries, annotate_hotspot):
     url = oncokbapiurl + '/annotate/mutations/byGenomicChange'
     response = makeoncokbpostrequest(url, queries)
+    if response.status_code == 401:
+        raise Exception('unauthorized')
     annotation = []
     if response.status_code == 200:
         annotation = response.json()
@@ -1521,6 +1536,7 @@ def pull_genomic_change_info(queries, annotate_hotspot):
             else:
                 # if the api call fails, we should still push a None into the list
                 # to keep the same length of the queries
+                print('Error on annotating the url ' + geturl)
                 annotation.append(None)
 
     processed_annotation = []
@@ -1530,9 +1546,11 @@ def pull_genomic_change_info(queries, annotate_hotspot):
 
 
 def pull_cna_info(queries):
-    url = oncokbapiurl + '/annotate/copyNumberAlterations?'
+    url = oncokbapiurl + '/annotate/copyNumberAlterations'
 
     response = makeoncokbpostrequest(url, queries)
+    if response.status_code == 401:
+        raise Exception('unauthorized')
     annotation = []
     if response.status_code == 200:
         annotation = response.json()
@@ -1548,6 +1566,7 @@ def pull_cna_info(queries):
             else:
                 # if the api call fails, we should still push a None into the list
                 # to keep the same length of the queries
+                print('Error on annotating the url ' + geturl)
                 annotation.append(None)
 
     processed_annotation = []
@@ -1561,6 +1580,8 @@ def pull_structural_variant_info(queries):
     url = oncokbapiurl + '/annotate/structuralVariants'
 
     response = makeoncokbpostrequest(url, queries)
+    if response.status_code == 401:
+        raise Exception('unauthorized')
     annotation = []
     if response.status_code == 200:
         annotation = response.json()
@@ -1579,6 +1600,7 @@ def pull_structural_variant_info(queries):
             else:
                 # if the api call fails, we should still push a None into the list
                 # to keep the same length of the queries
+                print('Error on annotating the url ' + geturl)
                 annotation.append(None)
 
     processed_annotation = []
@@ -1646,7 +1668,9 @@ def process_oncokb_annotation(annotation, annotate_hotspot):
                     drugnames = []
                     for drug in drugs:
                         drugnames.append(drug['drugName'])
-                    oncokbdata[level].append('+'.join(drugnames))
+                    treatmentname = '+'.join(drugnames)
+                    if treatmentname not in oncokbdata[level]:
+                        oncokbdata[level].append('+'.join(drugnames))
         if annotation['diagnosticImplications'] is not None:
             getimplications(oncokbdata, dxLevels, annotation['diagnosticImplications'])
 
