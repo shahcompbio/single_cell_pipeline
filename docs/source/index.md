@@ -694,10 +694,8 @@ meta:
 
 ```
 vcf_files:
-  SA123N:
-    A1234:
-      museq_vcf: vcfs/museq.vcf
-      strelka_snv_vcf: vcfs/strelka.vcf
+  - vcfs/museq.vcf
+  - vcfs/strelka.vcf
 tumour_cells:
   SA123N:
     SA123N-A12345-R04-C03:
