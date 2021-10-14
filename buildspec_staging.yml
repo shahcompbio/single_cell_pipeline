@@ -3,25 +3,25 @@ version: 0.2
 phases:
   pre_build:
     commands:
-#      - cd docker/alignment/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
-#      - cd docker/hmmcopy/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
-#      - cd docker/annotation/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
-#      - cd docker/variant/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
-#      - cd docker/breakpoint/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
-#      - cd docker/haplotypes/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
+      - cd docker/alignment/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
+      - cd docker/hmmcopy/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
+      - cd docker/annotation/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
+      - cd docker/variant/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
+      - cd docker/breakpoint/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
+      - cd docker/haplotypes/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
       - cd docker/qc/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
   build:
     commands:
       - bash single_cell/tests/codebuild/refdata/download.sh
-#      - bash single_cell/tests/codebuild/align/align.sh quay.io/singlecellpipelinetest
-#      - bash single_cell/tests/codebuild/hmmcopy/hmmcopy.sh quay.io/singlecellpipelinetest
-#      - bash single_cell/tests/codebuild/annotation/annotation.sh quay.io/singlecellpipelinetest
-#      - bash single_cell/tests/codebuild/merge_cell_bams/merge_cell_bams.sh quay.io/singlecellpipelinetest
-#      - bash single_cell/tests/codebuild/split_wgs_bam/split_wgs_bam.sh quay.io/singlecellpipelinetest
-#      - bash single_cell/tests/codebuild/variant_calling/variant_calling.sh quay.io/singlecellpipelinetest
-#      - bash single_cell/tests/codebuild/breakpoint_calling/breakpoint_calling.sh quay.io/singlecellpipelinetest
-#      - bash single_cell/tests/codebuild/infer_haps/infer_haps.sh quay.io/singlecellpipelinetest
-#      - bash single_cell/tests/codebuild/count_haps/count_haps.sh quay.io/singlecellpipelinetest
+      - bash single_cell/tests/codebuild/align/align.sh quay.io/singlecellpipelinetest
+      - bash single_cell/tests/codebuild/hmmcopy/hmmcopy.sh quay.io/singlecellpipelinetest
+      - bash single_cell/tests/codebuild/annotation/annotation.sh quay.io/singlecellpipelinetest
+      - bash single_cell/tests/codebuild/merge_cell_bams/merge_cell_bams.sh quay.io/singlecellpipelinetest
+      - bash single_cell/tests/codebuild/split_wgs_bam/split_wgs_bam.sh quay.io/singlecellpipelinetest
+      - bash single_cell/tests/codebuild/variant_calling/variant_calling.sh quay.io/singlecellpipelinetest
+      - bash single_cell/tests/codebuild/breakpoint_calling/breakpoint_calling.sh quay.io/singlecellpipelinetest
+      - bash single_cell/tests/codebuild/infer_haps/infer_haps.sh quay.io/singlecellpipelinetest
+      - bash single_cell/tests/codebuild/count_haps/count_haps.sh quay.io/singlecellpipelinetest
       - bash single_cell/tests/codebuild/pseudo_bulk_qc/pseudo_bulk_qc.sh quay.io/singlecellpipelinetest
       - bash single_cell/tests/codebuild/cohort_qc/cohort_qc.sh quay.io/singlecellpipelinetest
-#      - bash single_cell/tests/codebuild/snv_genotyping/snv_genotyping.sh quay.io/singlecellpipelinetest
+      - bash single_cell/tests/codebuild/snv_genotyping/snv_genotyping.sh quay.io/singlecellpipelinetest
