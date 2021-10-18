@@ -11,6 +11,7 @@ SA1090-A96213A-R20-C28:
   row: 20
   sample_id: SA1090
   library_id: A96213A
+  is_control: True
 SA1090-A96213A-R20-C62:
   bam: HMMCOPY/ref_test_data/testdata/SA1090-A96213A-R20-C62.bam
   column: 62
@@ -24,6 +25,7 @@ SA1090-A96213A-R20-C62:
   row: 20
   sample_id: SA1090
   library_id: A96213A
+  is_control: False
 SA1090-A96213A-R22-C43:
   bam: HMMCOPY/ref_test_data/testdata/SA1090-A96213A-R22-C43.bam
   column: 43
@@ -37,3 +39,4 @@ SA1090-A96213A-R22-C43:
   row: 22
   sample_id: SA1090
   library_id: A96213A
+  is_control: False

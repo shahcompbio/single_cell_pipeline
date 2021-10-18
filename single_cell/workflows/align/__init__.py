@@ -92,6 +92,18 @@ def bam_metrics_workflow(
     )
 
     workflow.transform(
+        name='bam_coverage_metrics',
+        ctx={'mem': config['memory']['med'], 'ncpus': 1},
+        func="single_cell.workflows.align.coverage_metrics.get_coverage_data",
+        axes=('cell_id',),
+        args=(
+            mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename),
+            mgd.TempOutputFile('coverage_metrics.yaml', 'cell_id'),
+            mgd.InputInstance('cell_id')
+        ),
+    )
+
+    workflow.transform(
         name="collect_gc_metrics",
         func="single_cell.workflows.align.tasks.collect_gc",
         ctx={'mem': config['memory']['med'], 'ncpus': 1},
@@ -129,12 +141,23 @@ def bam_metrics_workflow(
     )
 
     workflow.transform(
+        name='annotate_coverage_metrics',
+        ctx={'mem': config['memory']['med'], 'ncpus': 1},
+        func="single_cell.workflows.align.coverage_metrics.annotate_coverage_metrics",
+        args=(
+            mgd.TempInputFile("alignment_metrics_annotated.csv.gz", extensions=['.yaml']),
+            mgd.TempInputFile('coverage_metrics.yaml', 'cell_id'),
+            mgd.TempOutputFile('alignment_metrics_annotated_coverage.csv.gz', extensions=['.yaml']),
+        )
+    )
+
+    workflow.transform(
         name='add_fastqscreen_metrics',
         ctx={'mem': config['memory']['med'], 'ncpus': 1},
         func="single_cell.utils.csvutils.merge_csv",
         args=(
             [
-                mgd.TempInputFile("alignment_metrics_annotated.csv.gz", extensions=['.yaml']),
+                mgd.TempInputFile("alignment_metrics_annotated_coverage.csv.gz", extensions=['.yaml']),
                 mgd.InputFile(summary_fastq_screen_count_per_cell, extensions=['.yaml']),
             ],
             mgd.OutputFile(alignment_metrics, extensions=['.yaml']),
@@ -164,7 +187,6 @@ def create_alignment_workflow(
         trim,
         center
 ):
-
     ctx = {'mem': 7, 'ncpus': 1}
 
     bam_filename = dict([(cellid, bam_filename[cellid])
