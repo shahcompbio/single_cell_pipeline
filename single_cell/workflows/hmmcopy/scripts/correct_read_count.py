@@ -9,8 +9,8 @@ import argparse
 import numpy as np
 import pandas as pd
 import statsmodels.formula.api as smf
-from statsmodels.nonparametric.smoothers_lowess import lowess
 from scipy.stats.mstats import mquantiles
+from statsmodels.nonparametric.smoothers_lowess import lowess
 
 
 class CorrectReadCount(object):
@@ -42,6 +42,9 @@ class CorrectReadCount(object):
         with open(infile) as wig:
             for line in wig:
                 line = line.strip()
+
+                if line.startswith("track type"):
+                    continue
 
                 if line.startswith('fixedStep'):
                     line = line.strip().split()
@@ -99,7 +102,6 @@ class CorrectReadCount(object):
 
         return df
 
-
     def create_dataframe(self, reads, mapp, gc):
         """merge data from reads, mappability and gc wig files
         into pandas dataframe
@@ -111,8 +113,8 @@ class CorrectReadCount(object):
         :param reads: list of tuples, formatted as [(chromosome,
                     start, end, gc content), ]
         """
-        err_str = 'please ensure that reads, mappability and '\
-            'gc wig files have the same sort order'
+        err_str = 'please ensure that reads, mappability and ' \
+                  'gc wig files have the same sort order'
 
         data = []
         for read_v, mapp_v, gc_v in zip(reads, mapp, gc):
@@ -129,63 +131,63 @@ class CorrectReadCount(object):
 
         return data
 
-
     def modal_quantile_regression(self, df_regression, lowess_frac=0.2):
         '''
         Compute quantile regression curves and select the modal quantile.
         '''
         # 2nd order polynomial quantile regression 
-        
+
         q_range = range(10, 91, 1)
         quantiles = np.array(q_range) / 100
         quantile_names = [str(x) for x in q_range]
 
-        #need at least 3 values to compute the quantiles
+        # need at least 3 values to compute the quantiles
         if len(df_regression) < 10:
             return df_regression
 
         poly2_quantile_model = smf.quantreg('reads ~ gc + I(gc ** 2.0)', data=df_regression)
         poly2_quantile_fit = [poly2_quantile_model.fit(q=q) for q in quantiles]
         poly2_quantile_predict = [poly2_quantile_fit[i].predict(df_regression) for i in range(len(quantiles))]
-        
+
         poly2_quantile_params = pd.DataFrame()
-        
+
         for i in range(len(quantiles)):
             df_regression[quantile_names[i]] = poly2_quantile_predict[i]
             poly2_quantile_params[quantile_names[i]] = poly2_quantile_fit[i].params
-        
+
         # integration and mode selection
-        
+
         gc_min = df_regression['gc'].quantile(q=0.10)
         gc_max = df_regression['gc'].quantile(q=0.90)
-        
-        poly2_quantile_integration = np.zeros(len(quantiles)+1)
-        
+
+        poly2_quantile_integration = np.zeros(len(quantiles) + 1)
+
         for i in range(len(quantiles)):
             params = poly2_quantile_params[quantile_names[i]].tolist()
             params.reverse()
             poly2 = np.poly1d(params)
             integ = poly2.integ()
             integrand = integ(gc_max) - integ(gc_min)
-            poly2_quantile_integration[i+1] = integrand
-        
+            poly2_quantile_integration[i + 1] = integrand
+
         # find the modal quantile
-        
+
         distances = poly2_quantile_integration[1:] - poly2_quantile_integration[:-1]
-        
+
         df_dist = pd.DataFrame({'quantiles': quantiles, 'quantile_names': quantile_names, 'distances': distances})
         dist_max = df_dist['distances'].quantile(q=0.95)
-        df_dist_filter = df_dist[df_dist['distances']<dist_max]
-        df_dist_filter['lowess'] = lowess(df_dist_filter['distances'], df_dist_filter['quantiles'], frac=lowess_frac, return_sorted=False)
-        
+        df_dist_filter = df_dist[df_dist['distances'] < dist_max]
+        df_dist_filter['lowess'] = lowess(df_dist_filter['distances'], df_dist_filter['quantiles'], frac=lowess_frac,
+                                          return_sorted=False)
+
         modal_quantile = quantile_names[np.argmin(df_dist_filter['lowess'])]
-        
+
         # add values to table
-        
+
         df_regression['modal_quantile'] = modal_quantile
         df_regression['modal_curve'] = df_regression[modal_quantile]
         df_regression['modal_corrected'] = df_regression['reads'] / df_regression[modal_quantile]
-        
+
         return df_regression
 
     def write(self, df):
@@ -211,9 +213,9 @@ class CorrectReadCount(object):
         df['modal_corrected'] = 'NaN'
 
         # filtering and sorting
-        df_valid_gc = df[df['gc']>0]
+        df_valid_gc = df[df['gc'] > 0]
 
-        df_non_zero = df_valid_gc[df_valid_gc['reads']>0]
+        df_non_zero = df_valid_gc[df_valid_gc['reads'] > 0]
 
         df_regression = pd.DataFrame.copy(df_non_zero)
 
@@ -226,19 +228,17 @@ class CorrectReadCount(object):
         df.ix[df_regression.index, 'modal_quantile'] = df_regression['modal_quantile']
         df.ix[df_regression.index, 'modal_curve'] = df_regression['modal_curve']
         df.ix[df_regression.index, 'modal_corrected'] = df_regression['modal_corrected']
-        
+
         # filter by mappability
         df['copy'] = df['modal_corrected']
         df['copy'][df['map'] < self.mappability] = float('NaN')
 
-        df = df.rename(columns=({ "modal_corrected" : "cor_gc"}))
+        df = df.rename(columns=({"modal_corrected": "cor_gc"}))
 
         df["cor_map"] = float("NaN")
 
         # save
         self.write(df)
-
-
 
 
 def parse_args():

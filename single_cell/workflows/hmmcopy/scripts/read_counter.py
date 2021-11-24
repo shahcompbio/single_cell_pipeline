@@ -3,13 +3,14 @@ Created on Oct 10, 2017
 
 @author: dgrewal
 '''
-import argparse
+import logging
 import os
 
+import argparse
 import numpy as np
 import pandas as pd
 import pysam
-import logging
+
 
 class ReadCounter(object):
     """
@@ -17,10 +18,12 @@ class ReadCounter(object):
     """
 
     def __init__(
-            self, bam, output, window_size, chromosomes, mapq,
+            self, bam, output, window_size, chromosomes, mapq, cell_id,
             seg=None, excluded=None, reference=None
     ):
         self.bam = bam
+
+        self.cell_id = cell_id
 
         self.output = output
 
@@ -208,6 +211,8 @@ class ReadCounter(object):
         with open(self.output, 'w') as outfile:
             if self.seg:
                 self.write_header(None, outfile)
+            else:
+                outfile.write("track type=wiggle_0 name={}\n".format(self.cell_id))
 
             for chrom in self.chromosomes:
                 if not self.seg:
