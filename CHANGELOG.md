@@ -1,5 +1,12 @@
 # Change Log
 
+### v0.8.10
+1. adding track type header to wig
+
+
+### v0.8.9
+1. adding is_control and coverage
+
 ### v0.8.8
 
 ### Changes:
