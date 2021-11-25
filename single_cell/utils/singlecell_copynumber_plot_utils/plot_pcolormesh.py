@@ -364,10 +364,6 @@ class PlotPcolor(object):
         for sample in samples:
             cndata = [data[sample][bin_v] for bin_v in bins]
 
-            # skip sample if all vals are nan or inf
-            if np.isnan(cndata).all() or np.isinf(cndata).all():
-                continue
-
             outdata[sample] = cndata
 
         return outdata

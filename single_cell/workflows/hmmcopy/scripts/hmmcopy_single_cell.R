@@ -55,7 +55,7 @@ error_exit_clean <- function(samp.uncorrected, chromosomes, sample_id, out_reads
         samp.uncorrected$cor_map <- NA
         samp.uncorrected$ideal <- FALSE
         samp.uncorrected$valid <- FALSE
-        samp.uncorrected$state <- -1
+        samp.uncorrected$state <- NA
         samp.uncorrected$copy <- NA
         samp.uncorrected$multiplier <- multiplier
 
