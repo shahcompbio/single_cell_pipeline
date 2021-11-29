@@ -1,5 +1,13 @@
 # Change Log
 
+### v0.8.10
+1. adding track type header to wig
+2. hmmcopy: updating state to NA, allow failed cells in heatmap
+
+
+### v0.8.9
+1. adding is_control and coverage
+
 ### v0.8.8
 
 ### Changes:

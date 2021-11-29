@@ -38,14 +38,14 @@ def get_max_cn(reads):
 
 
 def run_correction_hmmcopy(
-        bam_file, correct_reads_out, readcount_wig, hmmparams
+        bam_file, correct_reads_out, readcount_wig, hmmparams, cell_id
 ):
     run_readcount_rscript = os.path.join(
         scripts_directory,
         'correct_read_count.R')
 
     rc = ReadCounter(bam_file, readcount_wig, hmmparams['bin_size'], hmmparams['chromosomes'],
-                     hmmparams['min_mqual'], excluded=hmmparams['exclude_list'])
+                     hmmparams['min_mqual'], cell_id, excluded=hmmparams['exclude_list'])
     rc.main()
 
     if hmmparams["smoothing_function"] == 'loess':
@@ -122,7 +122,8 @@ def run_hmmcopy(
         bam_file,
         corrected_reads,
         readcount_wig,
-        hmmparams
+        hmmparams,
+        cell_id
     )
 
     hmmcopy_tempdir = os.path.join(tempdir, '{}_hmmcopy'.format(cell_id))
