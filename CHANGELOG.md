@@ -1,12 +1,15 @@
 # Change Log
 
+### v0.8.11
+1. add subsampling prior to museq to remove read sinks
+
 ### v0.8.10
 1. adding track type header to wig
 2. hmmcopy: updating state to NA, allow failed cells in heatmap
 
 
 ### v0.8.9
-1. adding is_control and coverage
+1. adding is_control and read attrition metrics
 
 ### v0.8.8
 
