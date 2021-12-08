@@ -7,7 +7,7 @@ import pypeliner
 from single_cell.utils import vcfutils
 
 
-def subsample(input_bam, output_bam, max_coverage=1000):
+def subsample(input_bam, output_bam, max_coverage=10000):
     cmd = ['variant', input_bam, '-m', max_coverage, '-v', '-b', '-o', output_bam]
     pypeliner.commandline.execute(*cmd)
 
