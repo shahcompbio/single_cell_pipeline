@@ -6,7 +6,7 @@ phases:
 #      - cd docker/alignment/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
 #      - cd docker/hmmcopy/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
 #      - cd docker/annotation/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
-#      - cd docker/variant/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
+      - cd docker/variant/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
 #      - cd docker/breakpoint/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
 #      - cd docker/haplotypes/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
 #      - cd docker/qc/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
