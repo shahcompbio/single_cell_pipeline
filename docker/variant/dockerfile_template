@@ -9,7 +9,7 @@ RUN conda install -c bioconda variantbam
 SHELL ["conda", "run", "-n", "base", "/bin/bash", "-c"]
 
 RUN conda install --file /app/conda_base_requirements.yml
-RUN apt update && apt install samtools && rm -rf /var/lib/apt/lists/*
+RUN apt update -y && apt install samtools -y && rm -rf /var/lib/apt/lists/*
 ENV PATH="${PATH}:/opt/conda/envs/museq/bin"
 
 RUN pip install git+https://github.com/shahcompbio/pypeliner.git@v0.6.2
