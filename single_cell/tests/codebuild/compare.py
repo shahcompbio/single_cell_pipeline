@@ -115,9 +115,9 @@ def _call_positions_similar(data, refdata, strict=False,
     percentage_shared = n_shared / len(refdata)
 
     if 1 - percentage_shared < loose:
-        return True, shared
+        return True, shared, different
 
-    return False, shared
+    return False, shared, different
 
 
 def _check_for_missing_cols(data, refdata):
@@ -180,8 +180,8 @@ def compare_annotation(annotation, refannotation):
 def compare_variant_calls(callsdata, refcallsdata):
     by = ["chrom", "coord"]
 
-    calls = _load(callsdata, by, reindex=True)
-    refcalls = _load(refcallsdata, by, reindex=True)
+    calls = _load(callsdata, by, reindex=False)
+    refcalls = _load(refcallsdata, by, reindex=False)
 
     assert calls.index.size > 0
     assert refcalls.index.size > 0
