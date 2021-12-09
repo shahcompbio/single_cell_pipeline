@@ -3,9 +3,16 @@ Created on Jul 24, 2017
 
 @author: dgrewal
 '''
+import pypeliner
 from single_cell.utils import vcfutils
 
-import pypeliner
+
+def subsample(input_bam, output_bam, max_coverage=10000):
+    cmd = ['variant', input_bam, '-m', max_coverage, '-v', '-b', '-o', output_bam]
+    pypeliner.commandline.execute(*cmd)
+
+    cmd = ['samtools', 'index', output_bam]
+    pypeliner.commandline.execute(*cmd)
 
 
 def run_museq(tumour, normal, out, log, region, config):
