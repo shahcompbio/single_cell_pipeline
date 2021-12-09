@@ -15,7 +15,6 @@ def museq_callback(record):
 def create_museq_workflow(
         normal_bam, tumour_bam, snv_vcf, museq_csv,
         config):
-
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1, 'num_retry': 3}
 
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
@@ -26,13 +25,35 @@ def create_museq_workflow(
     )
 
     workflow.transform(
+        name='subsample_tumour',
+        ctx=dict(mem=config["memory"]['med']),
+        axes=('region',),
+        func='single_cell.workflows.mutationseq.tasks.subsample',
+        args=(
+            mgd.InputFile('merged_bam', 'region', fnames=tumour_bam, extensions=['.bai']),
+            mgd.TempOutputFile("tumour_subsample.bam", "region", extensions=['.bai'])
+        ),
+    )
+
+    workflow.transform(
+        name='subsample_normal',
+        ctx=dict(mem=config["memory"]['med']),
+        axes=('region',),
+        func='single_cell.workflows.mutationseq.tasks.subsample',
+        args=(
+            mgd.InputFile('normal.split.bam', 'region', fnames=normal_bam, extensions=['.bai']),
+            mgd.TempOutputFile("normal_subsample.bam", "region", extensions=['.bai'])
+        ),
+    )
+
+    workflow.transform(
         name='run_museq',
         ctx=dict(mem=config["memory"]['med']),
         axes=('region',),
         func='single_cell.workflows.mutationseq.tasks.run_museq',
         args=(
-            mgd.InputFile('merged_bam', 'region', fnames=tumour_bam, extensions=['.bai']),
-            mgd.InputFile('normal.split.bam', 'region', fnames=normal_bam, extensions=['.bai']),
+            mgd.TempInputFile("tumour_subsample.bam", "region", extensions=['.bai']),
+            mgd.TempInputFile("normal_subsample.bam", "region", extensions=['.bai']),
             mgd.TempOutputFile('museq.vcf', 'region'),
             mgd.TempOutputFile('museq.log', 'region'),
             mgd.InputInstance('region'),

@@ -107,15 +107,17 @@ def _call_positions_similar(data, refdata, strict=False,
     if strict:
         assert refdata.index.equals(data.index)
 
-    shared_calls = refdata.index.intersection(data.index)
-    diff_calls = refdata.index.difference(data.index)
+    shared = refdata.merge(data, how='inner')
 
-    n_shared = shared_calls.size
-    percentage_shared = n_shared / refdata.index.size
+    different = data[~data.isin(shared)].dropna(subset=['chrom', 'coord'])
+
+    n_shared = len(shared)
+    percentage_shared = n_shared / len(refdata)
 
     if 1 - percentage_shared < loose:
-        return True, shared_calls, diff_calls
-    return False, shared_calls, diff_calls
+        return True, shared, different
+
+    return False, shared, different
 
 
 def _check_for_missing_cols(data, refdata):
@@ -150,7 +152,7 @@ def compare_infer_haps(data, refdata):
     data = pd.read_csv(data)
     refdata = pd.read_csv(refdata)
 
-    data = data[['chromosome','position','allele','hap_label','allele_id']]
+    data = data[['chromosome', 'position', 'allele', 'hap_label', 'allele_id']]
 
     assert data.equals(refdata)
 
@@ -178,8 +180,8 @@ def compare_annotation(annotation, refannotation):
 def compare_variant_calls(callsdata, refcallsdata):
     by = ["chrom", "coord"]
 
-    calls = _load(callsdata, by, reindex=True)
-    refcalls = _load(refcallsdata, by, reindex=True)
+    calls = _load(callsdata, by, reindex=False)
+    refcalls = _load(refcallsdata, by, reindex=False)
 
     assert calls.index.size > 0
     assert refcalls.index.size > 0
