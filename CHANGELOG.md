@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.8.12
+1. dtype for state should be float to NA values from failed cells
+
 ### v0.8.11
 1. add subsampling prior to museq to remove read sinks
 
