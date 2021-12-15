@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.8.13
+1. dtype for is_control in annotation
+
 ### v0.8.12
 1. dtype for state should be float to NA values from failed cells
 

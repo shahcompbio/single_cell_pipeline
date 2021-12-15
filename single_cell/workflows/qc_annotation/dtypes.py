@@ -50,6 +50,7 @@ def metrics_dtypes():
         'median_insert_size': 'float64',
         'total_duplicate_reads': 'Int64',
         'is_contaminated': 'bool',
+        'is_control': 'bool',
         'estimated_library_size': 'Int64',
         'standard_deviation_insert_size': 'float64',
         'unmapped_reads': 'Int64',
