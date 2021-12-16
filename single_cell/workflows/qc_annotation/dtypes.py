@@ -59,7 +59,13 @@ def metrics_dtypes():
         'paired_mapped_reads': 'Int64',
         'order_corrupt_tree': 'Int64',
         'species': 'str',
-        'trim': 'bool'
+        'trim': 'bool',
+        'aligned': 'float',
+        'expected': 'float',
+        'overlap_with_all_filters': 'float',
+        'overlap_with_all_filters_and_qual': 'float',
+        'overlap_with_dups': 'float',
+        'overlap_without_dups': 'float',
     }
 
     return metrics
