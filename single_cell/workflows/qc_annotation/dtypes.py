@@ -50,6 +50,7 @@ def metrics_dtypes():
         'median_insert_size': 'float64',
         'total_duplicate_reads': 'Int64',
         'is_contaminated': 'bool',
+        'is_control': 'bool',
         'estimated_library_size': 'Int64',
         'standard_deviation_insert_size': 'float64',
         'unmapped_reads': 'Int64',
@@ -58,7 +59,13 @@ def metrics_dtypes():
         'paired_mapped_reads': 'Int64',
         'order_corrupt_tree': 'Int64',
         'species': 'str',
-        'trim': 'bool'
+        'trim': 'bool',
+        'aligned': 'float',
+        'expected': 'float',
+        'overlap_with_all_filters': 'float',
+        'overlap_with_all_filters_and_qual': 'float',
+        'overlap_with_dups': 'float',
+        'overlap_without_dups': 'float',
     }
 
     return metrics
