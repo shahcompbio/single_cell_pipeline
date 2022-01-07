@@ -48,7 +48,8 @@ class CoverageMetrics(object):
         regions = []
         start = None
 
-        read_quals = read.get_forward_qualities()
+        # reversing is unnecessary since we're just calculating ratios
+        read_quals = read.query_alignment_qualities
         for i, qual in zip(range(read.reference_start, read.reference_end), read_quals):
             if start is None and qual >= self.min_base_qual:
                 start = i
