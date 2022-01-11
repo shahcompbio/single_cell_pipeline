@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.8.14
+1. bugfix in read attrition metrics
+
 ### v0.8.13
 1. dtype for is_control in annotation
 
