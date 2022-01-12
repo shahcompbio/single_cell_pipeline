@@ -4,6 +4,7 @@ import pypeliner
 import pysam
 import single_cell.utils.helpers as helpers
 import yaml
+import shutil
 from single_cell.workflows.lumpy import generate_histogram
 
 
@@ -19,19 +20,19 @@ def process_bam(
     run_samtools_view(input_bam, discordants)
     if tag:
         sorted_discordants = os.path.join(tempdir, 'discordants.sorted.bam')
-        run_samtools_sort(discordants, sorted_discordants)
+        run_samtools_sort(discordants, sorted_discordants, os.path.join(tempdir, 'sorted_discordants'))
         tag_reads(sorted_discordants, discordant_bam, tag)
     else:
-        run_samtools_sort(discordants, discordant_bam)
+        run_samtools_sort(discordants, discordant_bam, os.path.join(tempdir, 'sorted_discordants'))
 
     split_reads = os.path.join(tempdir, "split_reads.bam")
     run_lumpy_extract_split_reads_bwamem(input_bam, split_reads)
     if tag:
         sorted_split_reads = os.path.join(tempdir, 'split.sorted.bam')
-        run_samtools_sort(split_reads, sorted_split_reads)
+        run_samtools_sort(split_reads, sorted_split_reads, os.path.join(tempdir, 'sorted_split'))
         tag_reads(sorted_split_reads, split_bam, tag)
     else:
-        run_samtools_sort(split_reads, split_bam)
+        run_samtools_sort(split_reads, split_bam, os.path.join(tempdir, 'sorted_split'))
 
     generate_histogram.gen_histogram(
         input_bam, histogram, N=N, skip=skip, min_elements=min_elements,
@@ -66,8 +67,13 @@ def run_lumpy_extract_split_reads_bwamem(infile, outfile):
     pypeliner.commandline.execute(*cmd)
 
 
-def run_samtools_sort(infile, outfile):
-    cmd = ['samtools', 'sort', infile, '-o', outfile]
+def run_samtools_sort(infile, outfile, tempdir):
+
+    if os.path.exists(tempdir):
+        shutil.rmtree(tempdir)
+    helpers.makedirs(tempdir)
+
+    cmd = ['samtools', 'sort', infile, '-T', tempdir, '-o', outfile]
     pypeliner.commandline.execute(*cmd)
 
     cmd = ['samtools', 'index', outfile]

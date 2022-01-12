@@ -9,7 +9,6 @@ def lumpy_preprocess_workflow(
 ):
     ctx = {'mem_retry_increment': 2, 'disk_retry_increment': 50, 'ncpus': 1}
 
-
     histogram_settings = dict(
         N=10000, skip=0, min_elements=100, mads=10, X=4, read_length=101
     )
