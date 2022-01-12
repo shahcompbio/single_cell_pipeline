@@ -71,7 +71,7 @@ def run_samtools_sort(infile, outfile, tempdir):
 
     if os.path.exists(tempdir):
         shutil.rmtree(tempdir)
-        os.makedirs(tempdir)
+    helpers.makedirs(tempdir)
 
     cmd = ['samtools', 'sort', infile, '-T', tempdir, '-o', outfile]
     pypeliner.commandline.execute(*cmd)
