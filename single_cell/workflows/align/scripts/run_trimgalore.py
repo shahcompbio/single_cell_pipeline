@@ -117,7 +117,7 @@ class RunTrimGalore(object):
         if self.adapter2:
             cmd.extend(['--adapter2', self.adapter2])
 
-        cmd.extend(['--fastqc_args', '--threads', '2'])
+        cmd.extend(['--fastqc_args', '--threads 2'])
 
         cmd.extend([self.seq1, self.seq2, ])
 
