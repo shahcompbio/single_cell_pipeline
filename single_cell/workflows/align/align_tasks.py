@@ -146,7 +146,7 @@ def align_pe(
         lane_id, cell_id, library_id, center, sample_info
     )
 
-    run_fastqc(filtered_fastq_r1, filtered_fastq_r2, reports_dir, tempdir)
+    # run_fastqc(filtered_fastq_r1, filtered_fastq_r2, reports_dir, tempdir)
 
     aln_temp = os.path.join(tempdir, "temp_alignments.bam")
 
