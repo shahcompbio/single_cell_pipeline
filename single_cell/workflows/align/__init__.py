@@ -97,7 +97,7 @@ def bam_metrics_workflow(
         func="single_cell.workflows.align.coverage_metrics.get_coverage_data",
         axes=('cell_id',),
         args=(
-            mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename),
+            mgd.InputFile('sorted_markdups', 'cell_id', fnames=bam_filename, extensions=['.bai']),
             mgd.TempOutputFile('coverage_metrics.yaml', 'cell_id'),
             mgd.InputInstance('cell_id')
         ),
