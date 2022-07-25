@@ -17,3 +17,4 @@ RUN pip install git+https://github.com/shahcompbio/classifycopynumber.git@v0.0.5
 RUN pip install git+https://github.com/shahcompbio/mafannotator.git@master
 
 RUN cp /app/oncokb-annotator/MafAnnotator.py /app/oncokb-annotator/AnnotatorCore.py /opt/conda/bin && chmod 777 /opt/conda/bin/MafAnnotator.py  /opt/conda/bin/AnnotatorCore.py
+RUN rm -rf /opt/conda/bin/samtools
