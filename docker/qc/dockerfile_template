@@ -4,7 +4,6 @@ ADD . /app
 
 RUN apt update && apt install build-essential samtools -y
 
-
 RUN conda install --file /app/conda_requirements.txt
 RUN pip install -r /app/pip_requirements.txt
 
@@ -15,5 +14,6 @@ RUN rm -rf /opt/conda/lib/python3.7/site-packages/biowrappers* && pip install gi
 RUN pip install git+https://github.com/amcpherson/wgs_analysis.git@v0.0.2
 RUN pip install git+https://github.com/shahcompbio/scgenome.git@v0.0.1
 RUN pip install git+https://github.com/shahcompbio/classifycopynumber.git@v0.0.5
+RUN pip install git+https://github.com/shahcompbio/mafannotator.git@master
 
 RUN cp /app/oncokb-annotator/MafAnnotator.py /app/oncokb-annotator/AnnotatorCore.py /opt/conda/bin && chmod 777 /opt/conda/bin/MafAnnotator.py  /opt/conda/bin/AnnotatorCore.py
