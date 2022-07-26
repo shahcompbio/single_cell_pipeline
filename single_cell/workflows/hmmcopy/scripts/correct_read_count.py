@@ -180,7 +180,7 @@ class CorrectReadCount(object):
         df_dist_filter['lowess'] = lowess(df_dist_filter['distances'], df_dist_filter['quantiles'], frac=lowess_frac,
                                           return_sorted=False)
 
-        modal_quantile = quantile_names[np.argmin(df_dist_filter['lowess'])]
+        modal_quantile = df_dist_filter.set_index('quantile_names')['lowess'].idxmin()
 
         # add values to table
 
