@@ -15,6 +15,7 @@ from single_cell.utils import inpututils
 def infer_haps_workflow(args):
     config = inpututils.load_config(args)
     config = config['infer_haps']
+    config['is_female'] = True if args['sex'] == 'female' else False
 
     ctx = dict(mem_retry_increment=2, disk_retry_increment=50, ncpus=1)
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
