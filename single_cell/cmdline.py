@@ -170,6 +170,12 @@ def parse_args():
     infer_haps = add_global_args(
         subparsers.add_parser("infer_haps"))
     infer_haps.set_defaults(which='infer_haps')
+    infer_haps.add_argument(
+        "--sex",
+        default='female',
+        choices=['female', 'male'],
+        help='''remixt is_female flag'''
+    )
 
     # ===========
     # haplotype counts
