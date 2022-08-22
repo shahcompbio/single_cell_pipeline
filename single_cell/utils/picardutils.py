@@ -10,11 +10,11 @@ from single_cell.utils.helpers import makedirs
 import pypeliner.commandline
 
 
-def merge_bams(inputs, output, mem="8G", mems="2G"):
+def merge_bams(inputs, output, mem="2G"):
     if isinstance(inputs, dict):
         inputs = inputs.values()
 
-    cmd = ['picard', '-Xmx' + mem, '-Xms' + mems,
+    cmd = ['picard', '-Xmx8g', '-Xms2g',
            '-XX:ParallelGCThreads=1',
            'MergeSamFiles',
            'OUTPUT=' + output,
@@ -31,12 +31,12 @@ def merge_bams(inputs, output, mem="8G", mems="2G"):
     pypeliner.commandline.execute(*cmd)
 
 
-def bam_sort(bam_filename, sorted_bam_filename, tempdir, mem="8G", mems="2G"):
+def bam_sort(bam_filename, sorted_bam_filename, tempdir, mem="2G"):
     if not os.path.exists(tempdir):
         makedirs(tempdir)
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx' + mem, '-Xms' + mems,
+        'picard', '-Xmx8g', '-Xms2g',
         '-XX:ParallelGCThreads=1',
         'SortSam',
                   'INPUT=' + bam_filename,
@@ -50,12 +50,12 @@ def bam_sort(bam_filename, sorted_bam_filename, tempdir, mem="8G", mems="2G"):
 
 
 def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename,
-                 tempdir, mem="8G", mems="2G"):
+                 tempdir, mem="2G"):
     if not os.path.exists(tempdir):
         makedirs(tempdir)
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx' + mem, '-Xms' + mems,
+        'picard', '-Xmx8g', '-Xms2g',
         '-XX:ParallelGCThreads=1',
         'MarkDuplicates',
                   'INPUT=' + bam_filename,
@@ -71,12 +71,12 @@ def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename,
 
 
 def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename,
-                            config, tempdir, mem="8G", mems="2G"):
+                            config, tempdir, mem="2G"):
     if not os.path.exists(tempdir):
         makedirs(tempdir)
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx' + mem, '-Xms' + mems,
+        'picard', '-Xmx8g', '-Xms2g',
         '-XX:ParallelGCThreads=1',
         'CollectWgsMetrics',
                   'INPUT=' + bam_filename,
@@ -98,12 +98,12 @@ def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename,
 
 def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename,
                            summary_filename, chart_filename, tempdir,
-                           mem="8G", mems="2G"):
+                           mem="2G"):
     if not os.path.exists(tempdir):
         makedirs(tempdir)
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx' + mem, '-Xms' + mems,
+        'picard', '-Xmx8g', '-Xms2g',
         '-XX:ParallelGCThreads=1',
         'CollectGcBiasMetrics',
                   'INPUT=' + bam_filename,
@@ -120,7 +120,7 @@ def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename,
 
 def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename,
                                metrics_filename, histogram_filename, tempdir,
-                               mem="8G", mems="2G"):
+                               mem="2G"):
     # Check if any paired reads exist
     has_paired = None
     with open(flagstat_metrics_filename) as f:
@@ -146,7 +146,7 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename,
         makedirs(tempdir)
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx' + mem, '-Xms' + mems,
+        'picard', '-Xmx8g', '-Xms2g',
         '-XX:ParallelGCThreads=1',
         'CollectInsertSizeMetrics',
                   'INPUT=' + bam_filename,
