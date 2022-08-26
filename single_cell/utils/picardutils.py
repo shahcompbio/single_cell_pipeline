@@ -14,7 +14,7 @@ def merge_bams(inputs, output, mem="2G"):
     if isinstance(inputs, dict):
         inputs = inputs.values()
 
-    cmd = ['picard', '-Xmx' + mem, '-Xms' + mem,
+    cmd = ['picard', '-Xmx8g', '-Xms2g',
            '-XX:ParallelGCThreads=1',
            'MergeSamFiles',
            'OUTPUT=' + output,
@@ -36,7 +36,7 @@ def bam_sort(bam_filename, sorted_bam_filename, tempdir, mem="2G"):
         makedirs(tempdir)
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx' + mem, '-Xms' + mem,
+        'picard', '-Xmx8g', '-Xms2g',
         '-XX:ParallelGCThreads=1',
         'SortSam',
                   'INPUT=' + bam_filename,
@@ -55,7 +55,7 @@ def bam_markdups(bam_filename, markduped_bam_filename, metrics_filename,
         makedirs(tempdir)
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx' + mem, '-Xms' + mem,
+        'picard', '-Xmx8g', '-Xms2g',
         '-XX:ParallelGCThreads=1',
         'MarkDuplicates',
                   'INPUT=' + bam_filename,
@@ -76,7 +76,7 @@ def bam_collect_wgs_metrics(bam_filename, ref_genome, metrics_filename,
         makedirs(tempdir)
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx' + mem, '-Xms' + mem,
+        'picard', '-Xmx8g', '-Xms2g',
         '-XX:ParallelGCThreads=1',
         'CollectWgsMetrics',
                   'INPUT=' + bam_filename,
@@ -103,7 +103,7 @@ def bam_collect_gc_metrics(bam_filename, ref_genome, metrics_filename,
         makedirs(tempdir)
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx' + mem, '-Xms' + mem,
+        'picard', '-Xmx8g', '-Xms2g',
         '-XX:ParallelGCThreads=1',
         'CollectGcBiasMetrics',
                   'INPUT=' + bam_filename,
@@ -146,7 +146,7 @@ def bam_collect_insert_metrics(bam_filename, flagstat_metrics_filename,
         makedirs(tempdir)
 
     pypeliner.commandline.execute(
-        'picard', '-Xmx' + mem, '-Xms' + mem,
+        'picard', '-Xmx8g', '-Xms2g',
         '-XX:ParallelGCThreads=1',
         'CollectInsertSizeMetrics',
                   'INPUT=' + bam_filename,
