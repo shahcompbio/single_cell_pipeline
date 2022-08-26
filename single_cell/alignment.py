@@ -25,7 +25,7 @@ def alignment_workflow(args):
     config = config['alignment']
 
     lib = args["library_id"]
-    alignment_dir = args["out_dir"]
+    alignment_dir = args["output_prefix"]
     bams_dir = args["bams_dir"]
 
     trim = args['trim']

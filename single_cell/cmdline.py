@@ -65,7 +65,7 @@ def add_global_args(parser, dont_add_input_yaml=False):
                             required=True,
                             help='''yaml file with fastq files, output bams and cell metadata''')
 
-    parser.add_argument("--out_dir",
+    parser.add_argument("--output_prefix",
                         required=True,
                         help='''Path to output directory.''')
 
