@@ -5,28 +5,26 @@ Created on Feb 19, 2018
 '''
 import os
 import sys
-import re
 
+import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import inpututils
 from single_cell.workflows import hmmcopy
 
-import pypeliner
 
-
-def get_output_files(outdir, lib):
+def get_output_files(outdir):
     data = {
-        'reads_csvs': os.path.join(outdir, '{0}_reads.csv.gz'.format(lib)),
-        'segs_csvs': os.path.join(outdir, '{0}_segments.csv.gz'.format(lib)),
-        'params_csvs': os.path.join(outdir, '{0}_params.csv.gz'.format(lib)),
-        'metrics_csvs': os.path.join(outdir, '{0}_hmmcopy_metrics.csv.gz'.format(lib)),
-        'hmmcopy_data_tar': os.path.join(outdir, '{0}_hmmcopy_data.tar.gz'.format(lib)),
-        'igv_csvs': os.path.join(outdir, '{0}_igv_segments.seg'.format(lib)),
-        'segs_pdf': os.path.join(outdir, '{}_segs.tar.gz'.format(lib)),
-        'bias_pdf': os.path.join(outdir, '{}_bias.tar.gz'.format(lib)),
-        'heatmap_pdf': os.path.join(outdir, '{}_heatmap_by_ec.pdf'.format(lib)),
-        'metrics_pdf': os.path.join(outdir, '{}_hmmcopy_metrics.pdf'.format(lib)),
-        'kernel_density_pdf': os.path.join(outdir, '{}_kernel_density.pdf'.format(lib)),
+        'reads_csvs': outdir + '{0}_reads.csv.gz',
+        'segs_csvs': outdir + '_segments.csv.gz',
+        'params_csvs': outdir + '_params.csv.gz',
+        'metrics_csvs': outdir + '_hmmcopy_metrics.csv.gz',
+        'hmmcopy_data_tar': outdir + '_hmmcopy_data.tar.gz',
+        'igv_csvs': outdir + '_igv_segments.seg',
+        'segs_pdf': outdir + '_segs.tar.gz',
+        'bias_pdf': outdir + '_bias.tar.gz',
+        'heatmap_pdf': outdir + '_heatmap_by_ec.pdf',
+        'metrics_pdf': outdir + '_hmmcopy_metrics.pdf',
+        'kernel_density_pdf': outdir + '_kernel_density.pdf',
     }
 
     return data
