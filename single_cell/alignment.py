@@ -7,7 +7,7 @@ from single_cell.utils import inpututils
 from single_cell.workflows import align
 
 
-def get_output_files(outdir, lib):
+def get_output_files(outdir):
     data = {
         'alignment_metrics_csv': outdir + '_alignment_metrics.csv.gz',
         'gc_metrics_csv': outdir + '_gc_metrics.csv.gz',
@@ -35,7 +35,7 @@ def alignment_workflow(args):
     cellids = inpututils.get_samples(args['input_yaml'])
     fastq1_files, fastq2_files = inpututils.get_fastqs(args['input_yaml'])
 
-    alignment_files = get_output_files(alignment_prefix, lib)
+    alignment_files = get_output_files(alignment_prefix)
     alignment_meta = os.path.join(alignment_prefix, 'metadata.yaml')
 
     bam_files_template = os.path.join(bams_dir, '{cell_id}.bam')
