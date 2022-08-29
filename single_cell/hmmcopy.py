@@ -42,11 +42,11 @@ def hmmcopy_workflow(args):
 
     workflow = pypeliner.workflow.Workflow()
 
-    hmmcopy_dir = args["out_dir"]
+    hmmcopy_prefix = args["output_prefix"]
 
-    hmmcopy_files = get_output_files(hmmcopy_dir, lib)
-    hmmcopy_meta = os.path.join(hmmcopy_dir, 'metadata.yaml')
-    input_yaml_blob = os.path.join(hmmcopy_dir, 'input.yaml')
+    hmmcopy_files = get_output_files(hmmcopy_prefix)
+    hmmcopy_meta = os.path.join(hmmcopy_prefix, 'metadata.yaml')
+    input_yaml_blob = os.path.join(hmmcopy_prefix, 'input.yaml')
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
@@ -80,7 +80,7 @@ def hmmcopy_workflow(args):
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
-            hmmcopy_dir,
+            hmmcopy_prefix,
             list(hmmcopy_files.values()),
             mgd.OutputFile(hmmcopy_meta)
         ),
