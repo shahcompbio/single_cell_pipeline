@@ -20,7 +20,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \
   --tmpdir ALIGN/temp \
   --pipelinedir ALIGN/pipeline \
   --submit local \
-  --out_dir ALIGN/output \
+  --output_prefix ALIGN/output/ \
   --bams_dir ALIGN/bams \
   --sequencing_center TEST --trim
 
