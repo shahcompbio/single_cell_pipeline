@@ -9,11 +9,11 @@ from single_cell.workflows import align
 
 def get_output_files(outdir, lib):
     data = {
-        'alignment_metrics_csv': outdir + '_alignment_metrics.csv.gz'.format(lib),
-        'gc_metrics_csv': outdir + '_{}_gc_metrics.csv.gz'.format(lib),
-        'fastqc_metrics_csv': outdir + '_{}_detailed_fastqscreen_metrics.csv.gz'.format(lib),
-        'plot_metrics_output': outdir + '_{}_alignment_metrics.pdf'.format(lib),
-        'alignment_metrics_tar': outdir + '_{}_alignment_metrics.tar.gz'.format(lib),
+        'alignment_metrics_csv': outdir + '_alignment_metrics.csv.gz',
+        'gc_metrics_csv': outdir + '_gc_metrics.csv.gz',
+        'fastqc_metrics_csv': outdir + '_detailed_fastqscreen_metrics.csv.gz',
+        'plot_metrics_output': outdir + '_alignment_metrics.pdf',
+        'alignment_metrics_tar': outdir + '_alignment_metrics.tar.gz',
     }
 
     return data
