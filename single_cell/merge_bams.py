@@ -26,6 +26,7 @@ def merge_bams_workflow(args):
 
     print('^^^^^^^^^'*80)
     print(args['output_prefix'])
+    raise Exception()
 
     merge_out_template = args['output_prefix'] + '{region}.bam'
     meta_yaml = args['output_prefix'] + 'metadata.yaml'
