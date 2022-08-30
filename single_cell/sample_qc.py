@@ -154,7 +154,7 @@ def make_meta(args):
 
 
 def sample_qc_pipeline(args):
-    args["out_dir"] = os.path.realpath(args["output_prefix"])
+    args["output_prefix"] = os.path.realpath(args["output_prefix"])
     args["tmpdir"] = os.path.realpath(args["tmpdir"])
 
     pyp = pypeliner.app.Pypeline(config=args)

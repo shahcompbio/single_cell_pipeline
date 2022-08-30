@@ -95,9 +95,6 @@ def sample_level_report(
 ):
     helpers.makedirs(html_file, isfile=True)
 
-    print(os.path.exists(os.path.dirname(html_file)))
-    print(os.path.dirname(html_file))
-
     rmd_script = os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
         'scripts', 'report.Rmd'
@@ -115,9 +112,6 @@ def sample_level_report(
         BAFplot_png=baf_plot, cn_plot_png=cn_plot, datatype_summary_csv=datatype_summary,
         maf=maf
     )
-
-    print(os.path.exists(os.path.dirname(html_file)))
-    print(os.path.dirname(html_file))
 
     rmarkdown.render(
         rmd_script, output_file=html_file,
