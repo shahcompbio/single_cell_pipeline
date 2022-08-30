@@ -19,7 +19,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \
   --tmpdir SPLIT_WGS_BAM/temp \
   --pipelinedir SPLIT_WGS_BAM/pipeline \
   --submit local \
-  --out_dir SPLIT_WGS_BAM/output --config_override '{"split_bam": {"chromosomes": ["6", "8", "17"]}}'
+  --output_prefix SPLIT_WGS_BAM/output/ --config_override '{"split_bam": {"chromosomes": ["6", "8", "17"]}}'
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \
   $1/single_cell_pipeline_alignment:$TAG \
