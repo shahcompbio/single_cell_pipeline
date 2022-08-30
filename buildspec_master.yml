@@ -25,7 +25,7 @@ phases:
 #      - bash single_cell/tests/codebuild/count_haps/count_haps.sh quay.io/singlecellpipelinetest
 #      - bash single_cell/tests/codebuild/pseudo_bulk_qc/pseudo_bulk_qc.sh quay.io/singlecellpipelinetest
       - bash single_cell/tests/codebuild/cohort_qc/cohort_qc.sh quay.io/singlecellpipelinetest
-#      - bash single_cell/tests/codebuild/snv_genotyping/snv_genotyping.sh quay.io/singlecellpipelinetest
+      - bash single_cell/tests/codebuild/snv_genotyping/snv_genotyping.sh quay.io/singlecellpipelinetest
 #  post_build:
 #    commands:
 #      - if [ $CODEBUILD_BUILD_SUCCEEDING = 1 ]; then cd docker/alignment/ && bash build.sh quay.io singlecellpipeline $QUAY_USR $QUAY_PSW && cd ../../; fi
