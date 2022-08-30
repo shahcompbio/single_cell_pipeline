@@ -4,7 +4,7 @@ phases:
   pre_build:
     commands:
       - bash single_cell/tests/codebuild/preflight/preflight.sh
-#      - cd docker/alignment/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
+      - cd docker/alignment/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
 #      - cd docker/hmmcopy/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
 #      - cd docker/annotation/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
 #      - cd docker/variant/ && bash build.sh quay.io singlecellpipelinetest $QUAY_USR $QUAY_PSW && cd ../../
