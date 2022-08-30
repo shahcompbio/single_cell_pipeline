@@ -69,7 +69,7 @@ def merge_bams_workflow(args):
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
-            args['out_dir'],
+            args['output_prefix'],
             mgd.Template('bam_filenames', 'region', template=merge_out_template),
             mgd.OutputFile(meta_yaml)
         ),
