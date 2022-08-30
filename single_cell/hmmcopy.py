@@ -14,7 +14,7 @@ from single_cell.workflows import hmmcopy
 
 def get_output_files(outdir):
     data = {
-        'reads_csvs': outdir + '{0}_reads.csv.gz',
+        'reads_csvs': outdir + '_reads.csv.gz',
         'segs_csvs': outdir + '_segments.csv.gz',
         'params_csvs': outdir + '_params.csv.gz',
         'metrics_csvs': outdir + '_hmmcopy_metrics.csv.gz',
@@ -74,26 +74,26 @@ def hmmcopy_workflow(args):
             sampleinfo
         ),
     )
-    #
-    # workflow.transform(
-    #     name='generate_meta_files_results',
-    #     func='single_cell.utils.helpers.generate_and_upload_metadata',
-    #     args=(
-    #         sys.argv[0:],
-    #         hmmcopy_prefix,
-    #         list(hmmcopy_files.values()),
-    #         mgd.OutputFile(hmmcopy_meta)
-    #     ),
-    #     kwargs={
-    #         'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
-    #         'input_yaml': mgd.OutputFile(input_yaml_blob),
-    #         'metadata': {
-    #             'library_id': lib,
-    #             'cell_ids': list(bam_files.keys()),
-    #             'type': 'hmmcopy',
-    #         }
-    #     }
-    # )
+
+    workflow.transform(
+        name='generate_meta_files_results',
+        func='single_cell.utils.helpers.generate_and_upload_metadata',
+        args=(
+            sys.argv[0:],
+            hmmcopy_prefix,
+            list(hmmcopy_files.values()),
+            mgd.OutputFile(hmmcopy_meta)
+        ),
+        kwargs={
+            'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
+            'input_yaml': mgd.OutputFile(input_yaml_blob),
+            'metadata': {
+                'library_id': lib,
+                'cell_ids': list(bam_files.keys()),
+                'type': 'hmmcopy',
+            }
+        }
+    )
 
     return workflow
 
