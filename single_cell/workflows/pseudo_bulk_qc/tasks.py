@@ -95,6 +95,8 @@ def sample_level_report(
 ):
     helpers.makedirs(html_file, isfile=True)
 
+    raise Exception(os.path.exists(os.path.dirname(html_file)))
+
     rmd_script = os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
         'scripts', 'report.Rmd'
