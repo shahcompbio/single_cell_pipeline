@@ -59,7 +59,7 @@ def split_bam_workflow(args):
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
-            args['out_dir'],
+            args['output_prefix'],
             mgd.Template('bam_filenames', 'region', template=split_bam_template),
             mgd.OutputFile(meta_yaml)
         ),
