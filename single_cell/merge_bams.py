@@ -3,7 +3,6 @@ Created on Feb 22, 2018
 
 @author: dgrewal
 '''
-import os
 import sys
 
 import pypeliner
@@ -22,10 +21,10 @@ def merge_bams_workflow(args):
 
     bam_files = inpututils.load_merge_cell_bams(args['input_yaml'])
 
-    merge_out_template = os.path.join(args['out_dir'], '{region}.bam')
+    merge_out_template = args['output_prefix'] + '_{region}.bam'
 
-    meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
-    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
+    meta_yaml = args['output_prefix'] + '_metadata.yaml'
+    input_yaml_blob = args['output_prefix'] + '_input.yaml'
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
