@@ -9,7 +9,9 @@ def sample_qc_workflow(args):
     data, patient = inpututils.load_qc_input(args["input_yaml"])
     config = inpututils.load_config(args)
     config = config["qc"]
-    out_dir = args["out_dir"]
+    out_dir = args["output_prefix"]
+
+
     mutationreports = os.path.join(out_dir, patient, "mutationreport.html")
     grouplevelmafs = os.path.join(out_dir, patient, "supporting_files", "grouplevelmaf.maf")
     grouplevel_high_impact_mafs = os.path.join(out_dir, patient, "supporting_files", "grouplevel_high_impact_maf.maf")
@@ -126,10 +128,10 @@ def sample_qc_workflow(args):
 def make_meta(args):
     workflow = pypeliner.workflow.Workflow()
 
-    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
-    meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args['output_prefix'], 'input.yaml')
+    meta_yaml = os.path.join(args['output_prefix'], 'metadata.yaml')
     filelist = []
-    for root, dirs, files in os.walk(args['out_dir']):
+    for root, dirs, files in os.walk(args['output_prefix']):
         for file in files:
             filelist.append(os.path.join(root,file))
 
@@ -152,7 +154,7 @@ def make_meta(args):
 
 
 def sample_qc_pipeline(args):
-    args["out_dir"] = os.path.realpath(args["out_dir"])
+    args["out_dir"] = os.path.realpath(args["output_prefix"])
     args["tmpdir"] = os.path.realpath(args["tmpdir"])
 
     pyp = pypeliner.app.Pypeline(config=args)
