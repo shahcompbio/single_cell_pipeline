@@ -105,7 +105,7 @@ def count_haps_workflow(args):
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
-            args['out_dir'],
+            args['output_prefix'],
             [allele_counts_filename],
             mgd.OutputFile(meta_yaml)
         ),
