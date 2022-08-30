@@ -116,6 +116,9 @@ def sample_level_report(
         maf=maf
     )
 
+    print(os.path.exists(os.path.dirname(html_file)))
+    print(os.path.dirname(html_file))
+
     rmarkdown.render(
         rmd_script, output_file=html_file,
         output_options=robjects.r.list(self_contained=True), params=parameters
