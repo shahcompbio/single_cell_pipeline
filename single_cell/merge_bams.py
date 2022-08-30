@@ -21,10 +21,12 @@ def merge_bams_workflow(args):
 
     bam_files = inpututils.load_merge_cell_bams(args['input_yaml'])
 
-    merge_out_template = args['output_prefix'] + '_{region}.bam'
+    if not args['output_prefix'].endswith('/'):
+        args['output_prefix'] = args['output_prefix'] + '_'
 
-    meta_yaml = args['output_prefix'] + '_metadata.yaml'
-    input_yaml_blob = args['output_prefix'] + '_input.yaml'
+    merge_out_template = args['output_prefix'] + '{region}.bam'
+    meta_yaml = args['output_prefix'] + 'metadata.yaml'
+    input_yaml_blob = args['output_prefix'] + 'input.yaml'
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
