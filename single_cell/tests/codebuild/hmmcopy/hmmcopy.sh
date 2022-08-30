@@ -25,7 +25,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \
   --tmpdir HMMCOPY/temp \
   --pipelinedir HMMCOPY/pipeline \
   --submit local \
-  --output_prefix HMMCOPY/output/A96213A
+  --output_prefix HMMCOPY/output/A97318A
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \
   $1/single_cell_pipeline_hmmcopy:$TAG \
