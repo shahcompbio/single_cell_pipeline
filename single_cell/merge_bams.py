@@ -24,6 +24,9 @@ def merge_bams_workflow(args):
     if not args['output_prefix'].endswith('/'):
         args['output_prefix'] = args['output_prefix'] + '_'
 
+    print('^^^^^^^^^'*80)
+    print(args['output_prefix'])
+
     merge_out_template = args['output_prefix'] + '{region}.bam'
     meta_yaml = args['output_prefix'] + 'metadata.yaml'
     input_yaml_blob = args['output_prefix'] + 'input.yaml'
