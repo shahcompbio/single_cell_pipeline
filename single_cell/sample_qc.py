@@ -140,7 +140,7 @@ def make_meta(args):
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
-            args['out_dir'],
+            args['output_prefix'],
             filelist,
             mgd.OutputFile(meta_yaml)
         ),
