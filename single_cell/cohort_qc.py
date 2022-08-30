@@ -79,11 +79,11 @@ def cohort_qc_pipeline(args):
 
     workflow = pypeliner.workflow.Workflow()
 
-    out_dir = args["out_dir"]
+    out_dir = args["output_prefix"]
     api_key = args["API_key"]
 
-    meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
-    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
+    meta_yaml = os.path.join(args['output_prefix'], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args['output_prefix'], 'input.yaml')
 
     # inputs
     cohort, germline_mafs, vcfs, hmmcopy = inpututils.load_cohort_qc_inputs(
@@ -195,7 +195,7 @@ def cohort_qc_pipeline(args):
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
-            args['out_dir'],
+            args['output_prefix'],
             list(cbiofile_paths.values()) + list(maftools_filepaths.values()),
             mgd.OutputFile(meta_yaml)
         ),
