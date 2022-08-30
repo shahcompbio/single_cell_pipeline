@@ -23,7 +23,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \
   --tmpdir BREAKPOINT_CALLING/temp \
   --pipelinedir BREAKPOINT_CALLING/pipeline \
   --submit local \
-  --out_dir BREAKPOINT_CALLING/output \
+  --output_prefix BREAKPOINT_CALLING/output/ \
   --config_override '{"variant_calling": {"chromosomes": ["6", "8", "17"]}}'
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \

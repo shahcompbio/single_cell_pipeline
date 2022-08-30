@@ -10,14 +10,14 @@ def get_output_files(bkp_dir, run_destruct, run_lumpy):
     data = {}
 
     if run_destruct:
-        data['destruct_breakpoints_filename'] = os.path.join(bkp_dir, 'destruct_breakpoints.csv.gz')
-        data['destruct_breakpoints_lib_filename'] = os.path.join(bkp_dir, 'destruct_breakpoints_library.csv.gz')
-        data['destruct_cell_counts_filename'] = os.path.join(bkp_dir, 'destruct_cell_counts.csv.gz')
+        data['destruct_breakpoints_filename'] = bkp_dir + 'destruct_breakpoints.csv.gz'
+        data['destruct_breakpoints_lib_filename'] = bkp_dir + 'destruct_breakpoints_library.csv.gz'
+        data['destruct_cell_counts_filename'] = bkp_dir + 'destruct_cell_counts.csv.gz'
 
     if run_lumpy:
-        data['lumpy_breakpoints_bed'] = os.path.join(bkp_dir, 'lumpy_breakpoints.bed')
-        data['lumpy_breakpoints_csv'] = os.path.join(bkp_dir, 'lumpy_breakpoints.csv.gz')
-        data['lumpy_breakpoints_evidence_csv'] = os.path.join(bkp_dir, 'lumpy_breakpoints_evidence.csv.gz')
+        data['lumpy_breakpoints_bed'] = bkp_dir + 'lumpy_breakpoints.bed'
+        data['lumpy_breakpoints_csv'] = bkp_dir + 'lumpy_breakpoints.csv.gz'
+        data['lumpy_breakpoints_evidence_csv'] = bkp_dir + 'lumpy_breakpoints_evidence.csv.gz'
 
     return data
 
@@ -35,9 +35,12 @@ def breakpoint_calling_workflow(args):
 
     normal_data, tumour_cells = inpututils.load_breakpoint_calling_input(args['input_yaml'])
 
-    bkp_dir = os.path.join(args['out_dir'])
-    bkp_meta = os.path.join(args['out_dir'], 'metadata.yaml')
-    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
+    if not args['output_prefix'].endswith('/'):
+        args['output_prefix'] = args['output_prefix'] + '_'
+
+    bkp_dir = args['output_prefix']
+    bkp_meta = args['output_prefix'] + 'metadata.yaml'
+    input_yaml_blob = args['output_prefix'] + 'input.yaml'
 
     out_files = get_output_files(bkp_dir, run_destruct, run_lumpy)
 
