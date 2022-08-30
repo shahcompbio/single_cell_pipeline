@@ -18,7 +18,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \
   --tmpdir ANNOTATION/temp \
   --pipelinedir ANNOTATION/pipeline \
   --submit local \
-  --output_prefix ANNOTATION/output \
+  --output_prefix ANNOTATION/output/A97318A \
   --config_override '{"annotation": {"chromosomes": ["6", "8", "17"]}}' \
   --no_corrupt_tree
 
