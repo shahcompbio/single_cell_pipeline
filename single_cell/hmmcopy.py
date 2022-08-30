@@ -53,47 +53,47 @@ def hmmcopy_workflow(args):
         value=list(bam_files.keys()),
     )
 
-    workflow.subworkflow(
-        name='hmmcopy_workflow',
-        func=hmmcopy.create_hmmcopy_workflow,
-        args=(
-            mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files, extensions=['.bai']),
-            mgd.OutputFile(hmmcopy_files['reads_csvs']),
-            mgd.OutputFile(hmmcopy_files['segs_csvs']),
-            mgd.OutputFile(hmmcopy_files['metrics_csvs']),
-            mgd.OutputFile(hmmcopy_files['params_csvs']),
-            mgd.OutputFile(hmmcopy_files['igv_csvs']),
-            mgd.OutputFile(hmmcopy_files['segs_pdf']),
-            mgd.OutputFile(hmmcopy_files['bias_pdf']),
-            mgd.OutputFile(hmmcopy_files['heatmap_pdf']),
-            mgd.OutputFile(hmmcopy_files['metrics_pdf']),
-            mgd.OutputFile(hmmcopy_files['kernel_density_pdf']),
-            mgd.OutputFile(hmmcopy_files['hmmcopy_data_tar']),
-            cellids,
-            config,
-            sampleinfo
-        ),
-    )
-
-    workflow.transform(
-        name='generate_meta_files_results',
-        func='single_cell.utils.helpers.generate_and_upload_metadata',
-        args=(
-            sys.argv[0:],
-            hmmcopy_prefix,
-            list(hmmcopy_files.values()),
-            mgd.OutputFile(hmmcopy_meta)
-        ),
-        kwargs={
-            'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
-            'input_yaml': mgd.OutputFile(input_yaml_blob),
-            'metadata': {
-                'library_id': lib,
-                'cell_ids': list(bam_files.keys()),
-                'type': 'hmmcopy',
-            }
-        }
-    )
+    # workflow.subworkflow(
+    #     name='hmmcopy_workflow',
+    #     func=hmmcopy.create_hmmcopy_workflow,
+    #     args=(
+    #         mgd.InputFile('bam_markdups', 'cell_id', fnames=bam_files, extensions=['.bai']),
+    #         mgd.OutputFile(hmmcopy_files['reads_csvs']),
+    #         mgd.OutputFile(hmmcopy_files['segs_csvs']),
+    #         mgd.OutputFile(hmmcopy_files['metrics_csvs']),
+    #         mgd.OutputFile(hmmcopy_files['params_csvs']),
+    #         mgd.OutputFile(hmmcopy_files['igv_csvs']),
+    #         mgd.OutputFile(hmmcopy_files['segs_pdf']),
+    #         mgd.OutputFile(hmmcopy_files['bias_pdf']),
+    #         mgd.OutputFile(hmmcopy_files['heatmap_pdf']),
+    #         mgd.OutputFile(hmmcopy_files['metrics_pdf']),
+    #         mgd.OutputFile(hmmcopy_files['kernel_density_pdf']),
+    #         mgd.OutputFile(hmmcopy_files['hmmcopy_data_tar']),
+    #         cellids,
+    #         config,
+    #         sampleinfo
+    #     ),
+    # )
+    #
+    # workflow.transform(
+    #     name='generate_meta_files_results',
+    #     func='single_cell.utils.helpers.generate_and_upload_metadata',
+    #     args=(
+    #         sys.argv[0:],
+    #         hmmcopy_prefix,
+    #         list(hmmcopy_files.values()),
+    #         mgd.OutputFile(hmmcopy_meta)
+    #     ),
+    #     kwargs={
+    #         'input_yaml_data': inpututils.load_yaml(args['input_yaml']),
+    #         'input_yaml': mgd.OutputFile(input_yaml_blob),
+    #         'metadata': {
+    #             'library_id': lib,
+    #             'cell_ids': list(bam_files.keys()),
+    #             'type': 'hmmcopy',
+    #         }
+    #     }
+    # )
 
     return workflow
 
