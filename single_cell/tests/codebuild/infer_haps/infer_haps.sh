@@ -19,7 +19,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \
   --tmpdir INFER_HAPS/temp \
   --pipelinedir INFER_HAPS/pipeline \
   --submit local \
-  --out_dir INFER_HAPS/output \
+  --output_prefix INFER_HAPS/output/ \
   --config_override '{"infer_haps":{"chromosomes":["15"], "ref_data_dir": "/refdata/human/infer_haps/"}}' \
 
 
