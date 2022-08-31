@@ -5,28 +5,26 @@ Created on Feb 19, 2018
 '''
 import os
 import sys
-import re
 
+import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import inpututils
 from single_cell.workflows import hmmcopy
 
-import pypeliner
 
-
-def get_output_files(outdir, lib):
+def get_output_files(outdir):
     data = {
-        'reads_csvs': os.path.join(outdir, '{0}_reads.csv.gz'.format(lib)),
-        'segs_csvs': os.path.join(outdir, '{0}_segments.csv.gz'.format(lib)),
-        'params_csvs': os.path.join(outdir, '{0}_params.csv.gz'.format(lib)),
-        'metrics_csvs': os.path.join(outdir, '{0}_hmmcopy_metrics.csv.gz'.format(lib)),
-        'hmmcopy_data_tar': os.path.join(outdir, '{0}_hmmcopy_data.tar.gz'.format(lib)),
-        'igv_csvs': os.path.join(outdir, '{0}_igv_segments.seg'.format(lib)),
-        'segs_pdf': os.path.join(outdir, '{}_segs.tar.gz'.format(lib)),
-        'bias_pdf': os.path.join(outdir, '{}_bias.tar.gz'.format(lib)),
-        'heatmap_pdf': os.path.join(outdir, '{}_heatmap_by_ec.pdf'.format(lib)),
-        'metrics_pdf': os.path.join(outdir, '{}_hmmcopy_metrics.pdf'.format(lib)),
-        'kernel_density_pdf': os.path.join(outdir, '{}_kernel_density.pdf'.format(lib)),
+        'reads_csvs': outdir + 'reads.csv.gz',
+        'segs_csvs': outdir + 'segments.csv.gz',
+        'params_csvs': outdir + 'params.csv.gz',
+        'metrics_csvs': outdir + 'hmmcopy_metrics.csv.gz',
+        'hmmcopy_data_tar': outdir + 'hmmcopy_data.tar.gz',
+        'igv_csvs': outdir + 'igv_segments.seg',
+        'segs_pdf': outdir + 'segs.tar.gz',
+        'bias_pdf': outdir + 'bias.tar.gz',
+        'heatmap_pdf': outdir + 'heatmap_by_ec.pdf',
+        'metrics_pdf': outdir + 'hmmcopy_metrics.pdf',
+        'kernel_density_pdf': outdir + 'kernel_density.pdf',
     }
 
     return data
@@ -44,11 +42,11 @@ def hmmcopy_workflow(args):
 
     workflow = pypeliner.workflow.Workflow()
 
-    hmmcopy_dir = args["out_dir"]
+    hmmcopy_prefix = args["output_prefix"]
 
-    hmmcopy_files = get_output_files(hmmcopy_dir, lib)
-    hmmcopy_meta = os.path.join(hmmcopy_dir, 'metadata.yaml')
-    input_yaml_blob = os.path.join(hmmcopy_dir, 'input.yaml')
+    hmmcopy_files = get_output_files(hmmcopy_prefix)
+    hmmcopy_meta = os.path.join(args['out_dir'], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
@@ -82,7 +80,7 @@ def hmmcopy_workflow(args):
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
-            hmmcopy_dir,
+            args['out_dir'],
             list(hmmcopy_files.values()),
             mgd.OutputFile(hmmcopy_meta)
         ),

@@ -15,10 +15,10 @@ def create_variant_counting_workflow(args):
     )
 
     counts_template = '{sample_id}_{library_id}_counts.csv.gz'
-    counts_output_template = os.path.join(args['out_dir'], counts_template)
+    counts_output_template = args['output_prefix'] + counts_template
 
-    meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
-    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
+    meta_yaml = os.path.join(args["out_dir"], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args["out_dir"], 'input.yaml')
 
     config = inpututils.load_config(args)
     config = config['variant_calling']

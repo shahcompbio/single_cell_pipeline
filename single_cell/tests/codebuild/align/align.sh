@@ -15,12 +15,12 @@ docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_DEFAULT_REGION -
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \
   $1/single_cell_pipeline_alignment:$TAG \
   single_cell alignment --input_yaml single_cell/tests/codebuild/align/inputs.yaml \
-  --library_id A97318A --maxjobs $NUMCORES --nocleanup --sentinel_only  \
+  --library_id A97318A --maxjobs 1 --nocleanup --sentinel_only  \
   --submit local --loglevel DEBUG \
   --tmpdir ALIGN/temp \
   --pipelinedir ALIGN/pipeline \
   --submit local \
-  --out_dir ALIGN/output \
+  --output_prefix ALIGN/output/A97318A \
   --bams_dir ALIGN/bams \
   --sequencing_center TEST --trim
 

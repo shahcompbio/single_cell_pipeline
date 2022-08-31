@@ -6,11 +6,10 @@ Created on Apr 6, 2018
 import os
 import sys
 
+import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import inpututils
 from single_cell.workflows import split_bams
-
-import pypeliner
 
 
 def split_bam_workflow(args):
@@ -19,10 +18,10 @@ def split_bam_workflow(args):
 
     bam_file = inpututils.load_split_wgs_input(args['input_yaml'])
 
-    split_bam_template = os.path.join(args['out_dir'], '{region}.bam')
+    split_bam_template = args['output_prefix'] + '{region}.bam'
 
-    meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
-    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
+    meta_yaml = os.path.join(args["out_dir"], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args["out_dir"], 'input.yaml')
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -58,7 +57,7 @@ def split_bam_workflow(args):
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
-            args['out_dir'],
+            args['output_prefix'],
             mgd.Template('bam_filenames', 'region', template=split_bam_template),
             mgd.OutputFile(meta_yaml)
         ),

@@ -15,11 +15,10 @@ from single_cell.workflows import germline
 
 def get_output_files(outdir):
     data = {
-        'samtools_germline_vcf': os.path.join(outdir, 'samtools_germline.vcf.gz'),
-        'snpeff_vcf_filename': os.path.join(outdir, 'snpeff.vcf.gz'),
-        'normal_genotype_filename': os.path.join(outdir, 'normal_genotype..vcf.gz'),
-        'mappability_filename': os.path.join(outdir, 'mappability.csv.gz'),
-
+        'samtools_germline_vcf': outdir + 'samtools_germline.vcf.gz',
+        'snpeff_vcf_filename': outdir + 'snpeff.vcf.gz',
+        'normal_genotype_filename': outdir + 'normal_genotype..vcf.gz',
+        'mappability_filename': outdir + 'mappability.csv.gz'
     }
 
     return data
@@ -33,7 +32,7 @@ def germline_calling_workflow(args):
 
     varcalls_meta = os.path.join(args['out_dir'], 'metadata.yaml')
     input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
-    out_files = get_output_files(args['out_dir'])
+    out_files = get_output_files(args['output_prefix'])
 
     workflow = pypeliner.workflow.Workflow()
 

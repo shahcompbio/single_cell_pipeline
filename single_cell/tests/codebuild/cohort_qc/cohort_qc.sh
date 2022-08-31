@@ -19,7 +19,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \
   --tmpdir COHORT_QC/temp \
   --pipelinedir COHORT_QC/pipeline \
   --submit local \
-  --out_dir COHORT_QC/output \
+  --output_prefix COHORT_QC/output \
   --config_override '{"refdir":"/refdata"}' \
   --API_key $ONCOKB_KEY
 

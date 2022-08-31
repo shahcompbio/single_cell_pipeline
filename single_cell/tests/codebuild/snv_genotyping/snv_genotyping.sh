@@ -17,7 +17,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \
   --maxjobs $NUMCORES --nocleanup --sentinel_only  \
   --submit local --loglevel DEBUG \
   --tmpdir SNV_GENOTYPING/temp \
-  --pipelinedir SNV_GENOTYPING/pipeline --submit local --out_dir SNV_GENOTYPING/output \
+  --pipelinedir SNV_GENOTYPING/pipeline --submit local --output_prefix SNV_GENOTYPING/output \
   --config_override '{"variant_calling": {"chromosomes": ["6", "8", "17"]}, "version": '\"$TAG\"'}'
 
 docker run -w $PWD -v $PWD:$PWD --rm $1/single_cell_pipeline_variant:$TAG rm -rf SNV_GENOTYPING

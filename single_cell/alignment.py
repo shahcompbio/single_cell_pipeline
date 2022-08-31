@@ -1,20 +1,19 @@
 import os
-import re
+import sys
 
+import pypeliner
 import pypeliner.managed as mgd
 from single_cell.utils import inpututils
 from single_cell.workflows import align
 
-import pypeliner
-import sys
 
-def get_output_files(outdir, lib):
+def get_output_files(outdir):
     data = {
-        'alignment_metrics_csv': os.path.join(outdir, '{}_alignment_metrics.csv.gz'.format(lib)),
-        'gc_metrics_csv': os.path.join(outdir, '{}_gc_metrics.csv.gz'.format(lib)),
-        'fastqc_metrics_csv': os.path.join(outdir, '{}_detailed_fastqscreen_metrics.csv.gz'.format(lib)),
-        'plot_metrics_output': os.path.join(outdir, '{}_alignment_metrics.pdf'.format(lib)),
-        'alignment_metrics_tar': os.path.join(outdir, '{}_alignment_metrics.tar.gz'.format(lib)),
+        'alignment_metrics_csv': outdir + 'alignment_metrics.csv.gz',
+        'gc_metrics_csv': outdir + 'gc_metrics.csv.gz',
+        'fastqc_metrics_csv': outdir + 'detailed_fastqscreen_metrics.csv.gz',
+        'plot_metrics_output': outdir + 'alignment_metrics.pdf',
+        'alignment_metrics_tar': outdir + 'alignment_metrics.tar.gz',
     }
 
     return data
@@ -25,7 +24,7 @@ def alignment_workflow(args):
     config = config['alignment']
 
     lib = args["library_id"]
-    alignment_dir = args["out_dir"]
+    alignment_prefix = args["output_prefix"]
     bams_dir = args["bams_dir"]
 
     trim = args['trim']
@@ -36,8 +35,8 @@ def alignment_workflow(args):
     cellids = inpututils.get_samples(args['input_yaml'])
     fastq1_files, fastq2_files = inpututils.get_fastqs(args['input_yaml'])
 
-    alignment_files = get_output_files(alignment_dir, lib)
-    alignment_meta = os.path.join(alignment_dir, 'metadata.yaml')
+    alignment_files = get_output_files(alignment_prefix)
+    alignment_meta = os.path.join(args['out_dir'], 'metadata.yaml')
 
     bam_files_template = os.path.join(bams_dir, '{cell_id}.bam')
     mt_bam_files_template = os.path.join(bams_dir, '{cell_id}_MT.bam')
@@ -46,7 +45,7 @@ def alignment_workflow(args):
     lanes = sorted(set([v[1] for v in fastq1_files.keys()]))
     cells = sorted(set([v[0] for v in fastq1_files.keys()]))
 
-    input_yaml_blob = os.path.join(alignment_dir, 'input.yaml')
+    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
 
     workflow = pypeliner.workflow.Workflow()
 
@@ -89,7 +88,7 @@ def alignment_workflow(args):
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
-            alignment_dir,
+            args['out_dir'],
             list(alignment_files.values()),
             mgd.OutputFile(alignment_meta)
         ),

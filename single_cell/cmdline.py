@@ -65,7 +65,7 @@ def add_global_args(parser, dont_add_input_yaml=False):
                             required=True,
                             help='''yaml file with fastq files, output bams and cell metadata''')
 
-    parser.add_argument("--out_dir",
+    parser.add_argument("--output_prefix",
                         required=True,
                         help='''Path to output directory.''')
 
@@ -278,5 +278,9 @@ def parse_args():
 
     # separate pipelinedirs of subcommands
     args = separate_pypeliner_dirs_by_subcommand(args)
+
+    if not args['output_prefix'].endswith('/'):
+        args['output_prefix'] = args['output_prefix'] + '_'
+    args['out_dir'] = os.path.dirname(args['output_prefix'])
 
     return args

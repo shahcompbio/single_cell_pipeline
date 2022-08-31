@@ -22,8 +22,7 @@ def merge_bams_workflow(args):
 
     bam_files = inpututils.load_merge_cell_bams(args['input_yaml'])
 
-    merge_out_template = os.path.join(args['out_dir'], '{region}.bam')
-
+    merge_out_template = args['output_prefix'] + '{region}.bam'
     meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
     input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
 

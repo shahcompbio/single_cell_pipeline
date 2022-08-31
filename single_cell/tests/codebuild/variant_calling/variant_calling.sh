@@ -16,7 +16,7 @@ docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \
   --maxjobs $NUMCORES --nocleanup --sentinel_only  \
   --submit local --loglevel DEBUG \
   --tmpdir VARIANT_CALLING/temp \
-  --pipelinedir VARIANT_CALLING/pipeline --submit local --out_dir VARIANT_CALLING/output \
+  --pipelinedir VARIANT_CALLING/pipeline --submit local --output_prefix VARIANT_CALLING/output/ \
   --config_override '{"variant_calling": {"chromosomes": ["6", "8", "17"]}, "version": '\"$TAG\"'}'
 
 docker run -w $PWD -v $PWD:$PWD -v /refdata:/refdata --rm \

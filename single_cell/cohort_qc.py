@@ -79,7 +79,7 @@ def cohort_qc_pipeline(args):
 
     workflow = pypeliner.workflow.Workflow()
 
-    out_dir = args["out_dir"]
+    out_dir = args["output_prefix"]
     api_key = args["API_key"]
 
     meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')

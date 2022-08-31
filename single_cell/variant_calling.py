@@ -16,20 +16,21 @@ from single_cell.workflows import strelka
 
 
 def get_file_paths(root_dir, config):
-    data = {
-        'museq_vcf': os.path.join(root_dir, 'museq.vcf.gz'),
-        'mappability_csv': os.path.join(root_dir, 'snv_mappability.csv.gz'),
-        'snpeff_csv': os.path.join(root_dir, 'snv_snpeff.csv.gz'),
-        'museq_csv': os.path.join(root_dir, 'snv_museq.csv.gz'),
-        'strelka_csv': os.path.join(root_dir, 'snv_strelka.csv.gz'),
-        'trinuc_csv': os.path.join(root_dir, 'snv_trinuc.csv.gz'),
-        'strelka_indel': os.path.join(root_dir, 'strelka_indel.vcf.gz'),
-        'strelka_snv': os.path.join(root_dir, 'strelka_snv.vcf.gz'),
+    data = dict()
+
+    data['museq_vcf'] = root_dir + 'museq.vcf.gz'
+    data['mappability_csv'] = root_dir + 'snv_mappability.csv.gz'
+    data['snpeff_csv'] = root_dir + 'snv_snpeff.csv.gz'
+    data['museq_csv'] = root_dir + 'snv_museq.csv.gz'
+    data['strelka_csv'] = root_dir + 'snv_strelka.csv.gz'
+    data['trinuc_csv'] = root_dir + 'snv_trinuc.csv.gz'
+    data['strelka_indel'] = root_dir + 'strelka_indel.vcf.gz'
+    data['strelka_snv'] = root_dir + 'strelka_snv.vcf.gz'
+
+    data['additional_databases'] = {
+        k: os.path.join(root_dir, 'snv_{}_status.csv.gz'.format(k)) for k in
+        config['databases']['additional_databases']
     }
-
-
-    data['additional_databases'] = {k: os.path.join(root_dir, 'snv_{}_status.csv.gz'.format(k)) for k in config['databases']['additional_databases']}
-
 
     return data
 
@@ -40,7 +41,7 @@ def variant_calling_workflow(args):
 
     normal_bams, tumour_bams = inpututils.load_variant_calling_input(args['input_yaml'])
 
-    filepaths = get_file_paths(args['out_dir'], config)
+    filepaths = get_file_paths(args['output_prefix'], config)
 
     meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
     input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
@@ -97,7 +98,7 @@ def variant_calling_workflow(args):
             mgd.OutputFile(filepaths['mappability_csv'], extensions=['.yaml']),
             mgd.OutputFile(filepaths['snpeff_csv'], extensions=['.yaml']),
             mgd.OutputFile(filepaths['trinuc_csv'], extensions=['.yaml']),
-            {k:mgd.OutputFile(v) for k,v in filepaths['additional_databases'].items()},
+            {k: mgd.OutputFile(v) for k, v in filepaths['additional_databases'].items()},
             config['memory']
         )
     )

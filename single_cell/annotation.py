@@ -22,11 +22,11 @@ def annotation_workflow(args):
 
     workflow = pypeliner.workflow.Workflow()
 
-    annotation_dir = args["out_dir"]
+    annotation_dir = args["output_prefix"]
 
-    input_yaml_blob = os.path.join(annotation_dir, 'input.yaml')
-    annotation_files = get_output_files(annotation_dir, lib)
-    annotation_meta = os.path.join(annotation_dir, 'metadata.yaml')
+    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
+    annotation_files = get_output_files(annotation_dir)
+    annotation_meta = os.path.join(args['out_dir'], 'metadata.yaml')
 
     workflow.subworkflow(
         name='annotation_workflow',
@@ -51,7 +51,7 @@ def annotation_workflow(args):
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
-            annotation_dir,
+            args['out_dir'],
             list(annotation_files.values()),
             mgd.OutputFile(annotation_meta)
         ),
@@ -68,13 +68,13 @@ def annotation_workflow(args):
     return workflow
 
 
-def get_output_files(outdir, lib):
+def get_output_files(outdir):
     data = {
-        'merged_metrics_csvs': os.path.join(outdir, '{0}_metrics.csv.gz'.format(lib)),
-        'qc_report': os.path.join(outdir, '{0}_QC_report.html'.format(lib)),
-        'segs_pass': os.path.join(outdir, '{0}_segs_pass.tar.gz'.format(lib)),
-        'segs_fail': os.path.join(outdir, '{0}_segs_fail.tar.gz'.format(lib)),
-        'heatmap_filt_pdf': os.path.join(outdir, '{}_heatmap_by_ec_filtered.pdf'.format(lib)),
+        'merged_metrics_csvs': outdir + 'metrics.csv.gz',
+        'qc_report': outdir + 'QC_report.html',
+        'segs_pass': outdir + 'segs_pass.tar.gz',
+        'segs_fail': outdir + 'segs_fail.tar.gz',
+        'heatmap_filt_pdf': outdir + 'heatmap_by_ec_filtered.pdf',
     }
 
     return data
