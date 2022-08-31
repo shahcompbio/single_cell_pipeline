@@ -3,6 +3,7 @@ Created on Feb 22, 2018
 
 @author: dgrewal
 '''
+import os
 import sys
 
 import pypeliner
@@ -21,12 +22,9 @@ def merge_bams_workflow(args):
 
     bam_files = inpututils.load_merge_cell_bams(args['input_yaml'])
 
-    if not args['output_prefix'].endswith('/'):
-        args['output_prefix'] = args['output_prefix'] + '_'
-
     merge_out_template = args['output_prefix'] + '{region}.bam'
-    meta_yaml = args['output_prefix'] + 'metadata.yaml'
-    input_yaml_blob = args['output_prefix'] + 'input.yaml'
+    meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
@@ -71,7 +69,7 @@ def merge_bams_workflow(args):
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
-            args['output_prefix'],
+            args['out_dir'],
             mgd.Template('bam_filenames', 'region', template=merge_out_template),
             mgd.OutputFile(meta_yaml)
         ),

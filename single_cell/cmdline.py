@@ -279,4 +279,8 @@ def parse_args():
     # separate pipelinedirs of subcommands
     args = separate_pypeliner_dirs_by_subcommand(args)
 
+    if not args['output_prefix'].endswith('/'):
+        args['output_prefix'] = args['output_prefix'] + '_'
+    args['out_dir'] = os.path.dirname(args['output_prefix'])
+
     return args

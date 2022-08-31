@@ -24,9 +24,9 @@ def annotation_workflow(args):
 
     annotation_dir = args["output_prefix"]
 
-    input_yaml_blob = os.path.join(annotation_dir, 'input.yaml')
+    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
     annotation_files = get_output_files(annotation_dir)
-    annotation_meta = os.path.join(annotation_dir, 'metadata.yaml')
+    annotation_meta = os.path.join(args['out_dir'], 'metadata.yaml')
 
     workflow.subworkflow(
         name='annotation_workflow',
@@ -51,7 +51,7 @@ def annotation_workflow(args):
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
-            annotation_dir,
+            args['out_dir'],
             list(annotation_files.values()),
             mgd.OutputFile(annotation_meta)
         ),
@@ -70,11 +70,11 @@ def annotation_workflow(args):
 
 def get_output_files(outdir):
     data = {
-        'merged_metrics_csvs': outdir + '_metrics.csv.gz',
-        'qc_report': outdir + '_QC_report.html',
-        'segs_pass': outdir + '_segs_pass.tar.gz',
-        'segs_fail': outdir + '+segs_fail.tar.gz',
-        'heatmap_filt_pdf': outdir + '_heatmap_by_ec_filtered.pdf',
+        'merged_metrics_csvs': outdir + 'metrics.csv.gz',
+        'qc_report': outdir + 'QC_report.html',
+        'segs_pass': outdir + 'segs_pass.tar.gz',
+        'segs_fail': outdir + 'segs_fail.tar.gz',
+        'heatmap_filt_pdf': outdir + 'heatmap_by_ec_filtered.pdf',
     }
 
     return data

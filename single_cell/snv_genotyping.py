@@ -14,14 +14,11 @@ def create_variant_counting_workflow(args):
         args['input_yaml']
     )
 
-    if not args['output_prefix'].endswith('/'):
-        args['output_prefix'] = args['output_prefix'] + '_'
-
     counts_template = '{sample_id}_{library_id}_counts.csv.gz'
     counts_output_template = args['output_prefix'] + counts_template
 
-    meta_yaml = os.path.join(args['output_prefix'], 'metadata.yaml')
-    input_yaml_blob = os.path.join(args['output_prefix'], 'input.yaml')
+    meta_yaml = os.path.join(args["out_dir"], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args["out_dir"], 'input.yaml')
 
     config = inpututils.load_config(args)
     config = config['variant_calling']
@@ -63,7 +60,7 @@ def create_variant_counting_workflow(args):
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
-            args['output_prefix'],
+            args['out_dir'],
             mgd.Template('counts.csv.gz', 'sample_id', 'library_id', template=counts_output_template),
             mgd.OutputFile(meta_yaml)
         ),

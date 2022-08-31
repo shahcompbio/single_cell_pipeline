@@ -16,16 +16,16 @@ from single_cell.workflows import strelka
 
 
 def get_file_paths(root_dir, config):
-    data = {
-        'museq_vcf': root_dir + 'museq.vcf.gz',
-        'mappability_csv': root_dir + 'snv_mappability.csv.gz',
-        'snpeff_csv': root_dir + 'snv_snpeff.csv.gz',
-        'museq_csv': root_dir + 'snv_museq.csv.gz',
-        'strelka_csv': root_dir + 'snv_strelka.csv.gz',
-        'trinuc_csv': root_dir + 'snv_trinuc.csv.gz',
-        'strelka_indel': root_dir + 'strelka_indel.vcf.gz',
-        'strelka_snv': root_dir + 'strelka_snv.vcf.gz',
-    }
+    data = dict()
+
+    data['museq_vcf'] = root_dir + 'museq.vcf.gz'
+    data['mappability_csv'] = root_dir + 'snv_mappability.csv.gz'
+    data['snpeff_csv'] = root_dir + 'snv_snpeff.csv.gz'
+    data['museq_csv'] = root_dir + 'snv_museq.csv.gz'
+    data['strelka_csv'] = root_dir + 'snv_strelka.csv.gz'
+    data['trinuc_csv'] = root_dir + 'snv_trinuc.csv.gz'
+    data['strelka_indel'] = root_dir + 'strelka_indel.vcf.gz'
+    data['strelka_snv'] = root_dir + 'strelka_snv.vcf.gz'
 
     data['additional_databases'] = {
         k: os.path.join(root_dir, 'snv_{}_status.csv.gz'.format(k)) for k in
@@ -41,13 +41,10 @@ def variant_calling_workflow(args):
 
     normal_bams, tumour_bams = inpututils.load_variant_calling_input(args['input_yaml'])
 
-    if not args['output_prefix'].endswith('/'):
-        args['output_prefix'] = args['output_prefix'] + '_'
-
     filepaths = get_file_paths(args['output_prefix'], config)
 
-    meta_yaml = args['output_prefix'] + 'metadata.yaml'
-    input_yaml_blob = args['output_prefix'] + 'input.yaml'
+    meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
 
     ctx = {
         'ncpus': 1,
@@ -114,7 +111,7 @@ def variant_calling_workflow(args):
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
-            args['output_prefix'],
+            args['out_dir'],
             allfiles,
             mgd.OutputFile(meta_yaml)
         ),

@@ -35,12 +35,9 @@ def breakpoint_calling_workflow(args):
 
     normal_data, tumour_cells = inpututils.load_breakpoint_calling_input(args['input_yaml'])
 
-    if not args['output_prefix'].endswith('/'):
-        args['output_prefix'] = args['output_prefix'] + '_'
-
     bkp_dir = args['output_prefix']
-    bkp_meta = args['output_prefix'] + 'metadata.yaml'
-    input_yaml_blob = args['output_prefix'] + 'input.yaml'
+    bkp_meta = os.path.join(args['out_dir'], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
 
     out_files = get_output_files(bkp_dir, run_destruct, run_lumpy)
 
@@ -100,7 +97,7 @@ def breakpoint_calling_workflow(args):
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
-            bkp_dir,
+            args['out_dir'],
             list(out_files.values()),
             mgd.OutputFile(bkp_meta)
         ),

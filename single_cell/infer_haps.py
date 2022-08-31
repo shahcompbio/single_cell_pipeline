@@ -3,7 +3,7 @@ Created on Aug 29, 2018
 
 @author: dgrewal
 '''
-
+import os
 import sys
 
 import pypeliner
@@ -19,12 +19,9 @@ def infer_haps_workflow(args):
     ctx = dict(mem_retry_increment=2, disk_retry_increment=50, ncpus=1)
     workflow = pypeliner.workflow.Workflow(ctx=ctx)
 
-    if not args['output_prefix'].endswith('/'):
-        args['output_prefix'] = args['output_prefix'] + '_'
-
     haplotypes_filename = args["output_prefix"] + "haplotypes.csv.gz"
-    meta_yaml = args['output_prefix'] + 'metadata.yaml'
-    input_yaml_blob = args['output_prefix'] + 'input.yaml'
+    meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
 
     normal_data = inpututils.load_infer_haps_input(args['input_yaml'])
 
@@ -52,7 +49,7 @@ def infer_haps_workflow(args):
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
-            args['output_prefix'],
+            args['out_dir'],
             [haplotypes_filename],
             mgd.OutputFile(meta_yaml)
         ),

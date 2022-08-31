@@ -3,6 +3,7 @@ Created on Apr 6, 2018
 
 @author: dgrewal
 '''
+import os
 import sys
 
 import pypeliner
@@ -17,13 +18,10 @@ def split_bam_workflow(args):
 
     bam_file = inpututils.load_split_wgs_input(args['input_yaml'])
 
-    if not args['output_prefix'].endswith('/'):
-        args['output_prefix'] = args['output_prefix'] + '_'
-
     split_bam_template = args['output_prefix'] + '{region}.bam'
 
-    meta_yaml = args['output_prefix'] + 'metadata.yaml'
-    input_yaml_blob = args['output_prefix'] + 'input.yaml'
+    meta_yaml = os.path.join(args["out_dir"], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args["out_dir"], 'input.yaml')
 
     workflow = pypeliner.workflow.Workflow()
 

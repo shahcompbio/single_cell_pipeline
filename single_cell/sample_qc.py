@@ -128,8 +128,8 @@ def sample_qc_workflow(args):
 def make_meta(args):
     workflow = pypeliner.workflow.Workflow()
 
-    input_yaml_blob = os.path.join(args['output_prefix'], 'input.yaml')
-    meta_yaml = os.path.join(args['output_prefix'], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
+    meta_yaml = os.path.join(args['out_dir'], 'metadata.yaml')
     filelist = []
     for root, dirs, files in os.walk(args['output_prefix']):
         for file in files:
@@ -140,7 +140,7 @@ def make_meta(args):
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
-            args['output_prefix'],
+            args['out_dir'],
             filelist,
             mgd.OutputFile(meta_yaml)
         ),
@@ -154,6 +154,7 @@ def make_meta(args):
 
 
 def sample_qc_pipeline(args):
+    args["out_dir"] = os.path.realpath(args["out_dir"])
     args["output_prefix"] = os.path.realpath(args["output_prefix"])
     args["tmpdir"] = os.path.realpath(args["tmpdir"])
 

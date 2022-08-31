@@ -14,17 +14,17 @@ from single_cell.workflows import hmmcopy
 
 def get_output_files(outdir):
     data = {
-        'reads_csvs': outdir + '_reads.csv.gz',
-        'segs_csvs': outdir + '_segments.csv.gz',
-        'params_csvs': outdir + '_params.csv.gz',
-        'metrics_csvs': outdir + '_hmmcopy_metrics.csv.gz',
-        'hmmcopy_data_tar': outdir + '_hmmcopy_data.tar.gz',
-        'igv_csvs': outdir + '_igv_segments.seg',
-        'segs_pdf': outdir + '_segs.tar.gz',
-        'bias_pdf': outdir + '_bias.tar.gz',
-        'heatmap_pdf': outdir + '_heatmap_by_ec.pdf',
-        'metrics_pdf': outdir + '_hmmcopy_metrics.pdf',
-        'kernel_density_pdf': outdir + '_kernel_density.pdf',
+        'reads_csvs': outdir + 'reads.csv.gz',
+        'segs_csvs': outdir + 'segments.csv.gz',
+        'params_csvs': outdir + 'params.csv.gz',
+        'metrics_csvs': outdir + 'hmmcopy_metrics.csv.gz',
+        'hmmcopy_data_tar': outdir + 'hmmcopy_data.tar.gz',
+        'igv_csvs': outdir + 'igv_segments.seg',
+        'segs_pdf': outdir + 'segs.tar.gz',
+        'bias_pdf': outdir + 'bias.tar.gz',
+        'heatmap_pdf': outdir + 'heatmap_by_ec.pdf',
+        'metrics_pdf': outdir + 'hmmcopy_metrics.pdf',
+        'kernel_density_pdf': outdir + 'kernel_density.pdf',
     }
 
     return data
@@ -45,8 +45,8 @@ def hmmcopy_workflow(args):
     hmmcopy_prefix = args["output_prefix"]
 
     hmmcopy_files = get_output_files(hmmcopy_prefix)
-    hmmcopy_meta = os.path.join(hmmcopy_prefix, 'metadata.yaml')
-    input_yaml_blob = os.path.join(hmmcopy_prefix, 'input.yaml')
+    hmmcopy_meta = os.path.join(args['out_dir'], 'metadata.yaml')
+    input_yaml_blob = os.path.join(args['out_dir'], 'input.yaml')
 
     workflow.setobj(
         obj=mgd.OutputChunks('cell_id'),
@@ -80,7 +80,7 @@ def hmmcopy_workflow(args):
         func='single_cell.utils.helpers.generate_and_upload_metadata',
         args=(
             sys.argv[0:],
-            hmmcopy_prefix,
+            args['out_dir'],
             list(hmmcopy_files.values()),
             mgd.OutputFile(hmmcopy_meta)
         ),
