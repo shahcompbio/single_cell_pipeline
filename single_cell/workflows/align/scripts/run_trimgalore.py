@@ -105,7 +105,6 @@ class RunTrimGalore(object):
             return
 
         cmd = [self.trimgalore_path,
-               '--fastqc',
                '--paired',
                '--path_to_cutadapt', self.cutadapt_path,
                '--output_dir', self.tempdir + '/',
@@ -116,8 +115,6 @@ class RunTrimGalore(object):
 
         if self.adapter2:
             cmd.extend(['--adapter2', self.adapter2])
-
-        cmd.extend(['--fastqc_args', '--threads 2'])
 
         cmd.extend([self.seq1, self.seq2, ])
 
