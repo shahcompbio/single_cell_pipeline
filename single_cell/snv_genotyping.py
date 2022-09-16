@@ -34,7 +34,7 @@ def create_variant_counting_workflow(args):
         name='merge_snvs_museq',
         func='single_cell.utils.vcfutils.merge_vcf',
         args=(
-            [mgd.InputFile(vcf_file) for vcf_file in vcf_files],
+            [mgd.InputFile(vcf_file, extensions=['.tbi','.csi']) for vcf_file in vcf_files],
             mgd.TempOutputFile('all.snv.vcf.gz', extensions=['.tbi', '.csi']),
             mgd.TempSpace("merge_vcf_temp")
         ),
