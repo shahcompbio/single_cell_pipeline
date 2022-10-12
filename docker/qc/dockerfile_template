@@ -7,7 +7,7 @@ RUN apt update && apt install build-essential samtools -y
 RUN conda install --file /app/conda_requirements.txt
 RUN pip install -r /app/pip_requirements.txt
 
-RUN rm -rf /opt/conda/lib/python3.7/site-packages/pypeliner* && pip install git+https://github.com/shahcompbio/pypeliner.git@v0.6.2
+RUN rm -rf /opt/conda/lib/python3.7/site-packages/pypeliner* && pip install git+https://github.com/shahcompbio/pypeliner.git@v0.6.3
 RUN rm -rf /opt/conda/lib/python3.7/site-packages/single_cell* && pip install git+https://github.com/shahcompbio/single_cell_pipeline.git@{git_commit}
 RUN rm -rf /opt/conda/lib/python3.7/site-packages/biowrappers* && pip install git+https://github.com/shahcompbio/biowrappers.git@master
 
