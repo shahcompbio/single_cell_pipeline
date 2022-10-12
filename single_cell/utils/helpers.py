@@ -133,6 +133,9 @@ def generate_and_upload_metadata(
         metadata['input_yaml'] = os.path.relpath(input_yaml, root_dir)
         filepaths.append(input_yaml)
 
+    if not root_dir.endswith('/'):
+        root_dir = os.path.dirname(root_dir)
+
     __generate_meta_yaml_file(
         output, filepaths=filepaths, metadata=metadata, root_dir=root_dir
     )
