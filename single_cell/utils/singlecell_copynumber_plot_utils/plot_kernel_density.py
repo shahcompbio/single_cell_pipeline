@@ -85,7 +85,10 @@ class PlotKernelDensity(object):
             return uniq_values[0]
 
         kde = smnp.KDEUnivariate(data)
-        kde.fit()
+        try:
+            kde.fit()
+        except:
+            kde.fit(bw=0.1)
 
         maxval = np.nanmax(kde.density)
         if math.isnan(maxval):
