@@ -103,16 +103,6 @@ def generate_and_upload_metadata(
         filepaths = filepaths.values()
     filepaths = list(filepaths)
 
-    updated_filepaths = []
-    for filepath in filepaths:
-        if output.startswith('/'):
-            updated_filepaths.append(filepath)
-            continue
-        metadata_root = output.split('/')[0] + '/'
-        if filepath.startswith(metadata_root):
-            filepath = filepath[len(metadata_root):]
-        updated_filepaths.append(filepath)
-
     metadata['command'] = ' '.join(command)
     metadata['version'] = __get_version()
 
@@ -141,13 +131,13 @@ def generate_and_upload_metadata(
             input_yaml = input_yaml[:-4]
 
         metadata['input_yaml'] = os.path.relpath(input_yaml, root_dir)
-        updated_filepaths.append(input_yaml)
+        filepaths.append(input_yaml)
 
     if not root_dir.endswith('/'):
         root_dir = os.path.dirname(root_dir)
 
     __generate_meta_yaml_file(
-        output, filepaths=updated_filepaths, metadata=metadata, root_dir=root_dir
+        output, filepaths=filepaths, metadata=metadata, root_dir=root_dir
     )
 
 

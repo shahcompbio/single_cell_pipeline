@@ -192,7 +192,7 @@ def annotate_coverage_metrics(metrics, coverage_yaml, output):
 
     for cell_id, filename in coverage_yaml.items():
         with open(filename, 'rt') as reader:
-            covdata = yaml.load(reader)
+            covdata = yaml.safe_load(reader)
             if 'cell_id' in covdata:
                 assert covdata['cell_id'] == cell_id
                 del covdata['cell_id']
