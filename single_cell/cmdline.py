@@ -11,7 +11,7 @@ import pypeliner
 from single_cell import __version__
 from single_cell.config import generate_batch_config
 from single_cell.config import generate_pipeline_config
-
+import warnings
 
 class parseSentinelPattern(argparse.Action):
 
@@ -279,8 +279,11 @@ def parse_args():
     # separate pipelinedirs of subcommands
     args = separate_pypeliner_dirs_by_subcommand(args)
 
+    if '/' not in args['output_prefix']:
+        warnings.warn('output prefix is not a path, using {} as output directory'.format(args['output_prefix']))
+        args['output_prefix'] += '/'
     if not args['output_prefix'].endswith('/'):
         args['output_prefix'] = args['output_prefix'] + '_'
-    args['out_dir'] = os.path.dirname(args['output_prefix'])
+    args['out_dir'] = os.path.dirname(args['output_prefix']) + '/'
 
     return args

@@ -44,7 +44,8 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
             'sample_id': sample_id,
             'library_id': library_id,
             'report_zero_count_positions': False,
-            'dtypes': dtypes()['snv_allele_counts']
+            'dtypes': dtypes()['snv_allele_counts'],
+            'write_header': False
         }
     )
 
@@ -56,6 +57,9 @@ def create_snv_allele_counts_for_vcf_targets_workflow(
             mgd.TempInputFile('counts.csv.gz', 'cell_id', extensions=['.yaml']),
             mgd.OutputFile(out_file, extensions=['.yaml']),
         ),
+        kwargs={
+            'write_header': True,
+        }
     )
 
     return workflow
