@@ -61,7 +61,7 @@ class CoverageMetrics(object):
         if start is not None:
             regions.append((start, i))
 
-        assert len(regions) > 0
+        #assert len(regions) > 0
         return regions
 
     def _filter_reads(self, read):
@@ -119,6 +119,8 @@ class CoverageMetrics(object):
                 continue
 
             regions = self._get_read_intervals(read)
+            if len(regions) < 1:
+                continue
             read_dict[read.query_name][read.reference_name].extend(regions)
         return read_dict
 
