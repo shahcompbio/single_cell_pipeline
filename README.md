@@ -1,5 +1,8 @@
 
 # Single Cell Pipeline
+We've stopped development on this project, Please checkout mondrian for the latest DLP+ workflows:
+https://github.com/mondrian-scwgs/mondrian
+
 
 For a detailed guide see [INSTALL](docs/source/index.md)
 
